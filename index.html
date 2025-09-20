@@ -3,34 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperApp / هايبر آب</title>
+  <title>HyperApp - Stay safe & Connected</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <h1>HyperApp / هايبر آب</h1>
-    <p>Stay informed and safe in your surroundings.</p>
-  </header>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h1>HyperApp</h1>
+      <p class="subtitle">Stay informed and safe in your surroundings with real-time community reports</p>
+      
+      <div class="language-switcher" onclick="sendCommand('/language')">
+        <i class="fas fa-globe"></i> EN/AR
+      </div>
+    </header>
 
-  <main>
-    <section id="about">
-      <p>HyperApp keeps you updated with real-time reports, maps, and trending areas. Your safety, our priority.</p>
-    </section>
+    <div class="status-bar">
+      <div class="status-item">
+        <i class="fas fa-user-check"></i>
+        <span>Connected</span>
+      </div>
+      <div class="status-item reputation-display">
+        <i class="fas fa-star"></i>
+        <span>Rep: <span class="reputation">85</span></span>
+      </div>
+    </div>
 
-    <section id="menu">
-      <button onclick="sendCommand('/report')">Submit Report</button>
-      <button onclick="sendCommand('/map')">View Map</button>
-      <button onclick="sendCommand('/topareas')">Top Areas</button>
-      <button onclick="sendCommand('/subscribe')">My Subscriptions</button>
-      <button onclick="sendCommand('/unsubscribe')">Unsubscribe</button>
-      <button onclick="sendCommand('/upvote')">Upvote</button>
-      <button onclick="sendCommand('/downvote')">Downvote</button>
-      <button onclick="sendCommand('/reputation')">Reputation</button>
-      <button onclick="sendCommand('/language')">Language</button>
-      <button onclick="sendCommand('/about')">About</button>
-      <button onclick="sendCommand('/help')">Help</button>
-    </section>
-  </main>
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-map-marker-alt"></i> Area Safety
+      </div>
+      <div class="menu-grid">
+        <div class="menu-btn" onclick="sendCommand('/report')">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>Submit Report</span>
+        </div>
+        <div class="menu-btn" onclick="sendCommand('/map')">
+          <i class="fas fa-map"></i>
+          <span>View Map</span>
+        </div>
+        <div class="menu-btn" onclick="sendCommand('/topareas')">
+          <i class="fas fa-chart-line"></i>
+          <span>Top Areas</span>
+        </div>
+        <div class="menu-btn" onclick="sendCommand('/subscribe')">
+          <i class="fas fa-bell"></i>
+          <span>Subscriptions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-users"></i> Community
+      </div>
+      <div class="menu-grid">
+        <div class="menu-btn" onclick="sendCommand('/upvote')">
+          <i class="fas fa-thumbs-up"></i>
+          <span>Upvote</span>
+        </div>
+        <div class="menu-btn" onclick="sendCommand('/downvote')">
+          <i class="fas fa-thumbs-down"></i>
+          <span>Downvote</span>
+        </div>
+        <div class="menu-btn" onclick="sendCommand('/reputation')">
+          <i class="fas fa-star"></i>
+          <span>Reputation</span>
+        </div>
+        <div class="menu-btn" onclick="sendCommand('/unsubscribe')">
+          <i class="fas fa-ban"></i>
+          <span>Unsubscribe</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="emergency-section">
+      <i class="fas fa-exclamation-triangle emergency-icon"></i>
+      <h3>Emergency Situation?</h3>
+      <p>Report immediately to alert authorities and nearby users</p>
+      <button class="emergency-btn pulse" onclick="sendCommand('/report emergency')">
+        <i class="fas fa-bell"></i> Emergency Report
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-info-circle"></i> Information
+      </div>
+      <div class="menu-grid">
+        <div class="menu-btn" onclick="sendCommand('/about')">
+          <i class="fas fa-question-circle"></i>
+          <span>About</span>
+        </div>
+        <div class="menu-btn" onclick="sendCommand('/help')">
+          <i class="fas fa-life-ring"></i>
+          <span>Help</span>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>HyperApp &copy; 2023 | Your safety is our priority</p>
+      <p>Connected to Telegram Bot</p>
+    </footer>
+  </div>
 
   <script src="script.js"></script>
 </body>
