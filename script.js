@@ -8,6 +8,7 @@ class HyperApp {
         this.userReports = [];
         this.selectedVibe = null;
         this.isConnected = false;
+        this.userLocation = null;
         
         // Initialize Supabase
         this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
@@ -23,7 +24,6 @@ class HyperApp {
         // Initialize Telegram WebApp
         if (this.tg) {
             this.tg.expand();
-            this.tg.enableClosingConfirmation();
             this.tg.MainButton.hide();
             
             // Get user data
@@ -33,6 +33,9 @@ class HyperApp {
                 await this.syncUserWithSupabase();
                 this.updateUserInfo();
             }
+            
+            // Try to get user location
+            this.requestUserLocation();
             
             // Set up event listeners
             this.setupEventListeners();
@@ -55,6 +58,25 @@ class HyperApp {
             };
             this.updateUserInfo();
             await this.loadInitialData();
+        }
+    }
+    
+    async requestUserLocation() {
+        if (this.tg && this.tg.showPopup && this.tg.isLocationRequested) {
+            try {
+                // Request location permission
+                this.tg.showPopup({
+                    title: "Location Access",
+                    message: "HyperApp needs your location to show nearby reports and map features.",
+                    buttons: [{ type: "ok", text: "Allow" }, { type: "cancel", text: "Deny" }]
+                }, async (buttonId) => {
+                    if (buttonId === "ok") {
+                        this.tg.requestLocation();
+                    }
+                });
+            } catch (e) {
+                console.log("Location request not available in this Telegram version");
+            }
         }
     }
     
@@ -102,13 +124,18 @@ class HyperApp {
                             reputation: 0,
                             language: 'en'
                         }
-                    ]);
+                    ])
+                    .select();
                 
                 if (insertError) {
                     console.error("Error creating user:", insertError);
+                    return false;
                 }
+                
+                return true;
             } else if (error) {
                 console.error("Error checking user:", error);
+                return false;
             } else {
                 // Update user data with Supabase info
                 this.userData.reputation = data.reputation;
@@ -119,9 +146,12 @@ class HyperApp {
                 // Update language selector
                 document.getElementById('languageSelect').value = this.currentLanguage;
                 document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+                
+                return true;
             }
         } catch (error) {
             console.error("Error syncing user with Supabase:", error);
+            return false;
         }
     }
     
@@ -167,21 +197,38 @@ class HyperApp {
             // Get reports from Supabase
             const { data: reports, error } = await this.supabase
                 .from('reports')
-                .select('*')
+                .select(`
+                    *,
+                    votes (vote_type)
+                `)
                 .order('created_at', { ascending: false })
                 .limit(20);
             
             if (error) {
                 console.error("Error loading reports:", error);
                 this.showNotification("Failed to load reports", "error");
+                document.getElementById('nearbyReports').innerHTML = 
+                    '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
                 return;
             }
             
-            this.nearbyReports = reports;
+            // Process votes
+            this.nearbyReports = reports.map(report => {
+                const userVote = report.votes && report.votes.length > 0 ? 
+                    report.votes.find(v => v.user_id === this.userData?.id)?.vote_type : null;
+                
+                return {
+                    ...report,
+                    user_vote: userVote
+                };
+            });
+            
             this.displayNearbyReports();
         } catch (error) {
             console.error("Error loading nearby reports:", error);
             this.showNotification("Failed to load reports", "error");
+            document.getElementById('nearbyReports').innerHTML = 
+                '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
         }
     }
     
@@ -242,6 +289,8 @@ class HyperApp {
             if (error) {
                 console.error("Error loading user reports:", error);
                 this.showNotification("Failed to load your reports", "error");
+                document.getElementById('userReports').innerHTML = 
+                    '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
                 return;
             }
             
@@ -250,6 +299,8 @@ class HyperApp {
         } catch (error) {
             console.error("Error loading user reports:", error);
             this.showNotification("Failed to load your reports", "error");
+            document.getElementById('userReports').innerHTML = 
+                '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
         }
     }
     
@@ -297,7 +348,7 @@ class HyperApp {
                 .select('*')
                 .eq('user_id', this.userData.id)
                 .eq('report_id', reportId)
-                .single();
+                .maybeSingle();
             
             if (voteError && voteError.code !== 'PGRST116') {
                 console.error("Error checking vote:", voteError);
@@ -305,10 +356,11 @@ class HyperApp {
                 return;
             }
             
+            let operation;
+            
             if (existingVote) {
-                // User already voted, update the vote
                 if (existingVote.vote_type === voteType) {
-                    // Same vote type, remove the vote
+                    // Remove vote if it's the same type
                     const { error: deleteError } = await this.supabase
                         .from('votes')
                         .delete()
@@ -320,23 +372,9 @@ class HyperApp {
                         return;
                     }
                     
-                    // Update report vote counts
-                    const updateData = {};
-                    updateData[voteType === 'upvote' ? 'upvotes' : 'downvotes'] = 
-                        (this.nearbyReports.find(r => r.id === reportId)[voteType === 'upvote' ? 'upvotes' : 'downvotes'] || 0) - 1;
-                    
-                    const { error: updateError } = await this.supabase
-                        .from('reports')
-                        .update(updateData)
-                        .eq('id', reportId);
-                    
-                    if (updateError) {
-                        console.error("Error updating report votes:", updateError);
-                    }
-                    
-                    this.showNotification("Vote removed", "info");
+                    operation = 'remove';
                 } else {
-                    // Different vote type, update the vote
+                    // Update vote if it's different
                     const { error: updateError } = await this.supabase
                         .from('votes')
                         .update({ vote_type: voteType })
@@ -348,27 +386,10 @@ class HyperApp {
                         return;
                     }
                     
-                    // Update report vote counts
-                    const oldVoteType = existingVote.vote_type;
-                    const updateData = {};
-                    updateData[oldVoteType === 'upvote' ? 'upvotes' : 'downvotes'] = 
-                        (this.nearbyReports.find(r => r.id === reportId)[oldVoteType === 'upvote' ? 'upvotes' : 'downvotes'] || 0) - 1;
-                    updateData[voteType === 'upvote' ? 'upvotes' : 'downvotes'] = 
-                        (this.nearbyReports.find(r => r.id === reportId)[voteType === 'upvote' ? 'upvotes' : 'downvotes'] || 0) + 1;
-                    
-                    const { error: updateReportError } = await this.supabase
-                        .from('reports')
-                        .update(updateData)
-                        .eq('id', reportId);
-                    
-                    if (updateReportError) {
-                        console.error("Error updating report votes:", updateReportError);
-                    }
-                    
-                    this.showNotification(`Vote changed to ${voteType}`, "success");
+                    operation = 'change';
                 }
             } else {
-                // New vote
+                // Add new vote
                 const { error: insertError } = await this.supabase
                     .from('votes')
                     .insert([
@@ -385,25 +406,49 @@ class HyperApp {
                     return;
                 }
                 
-                // Update report vote counts
-                const updateData = {};
-                updateData[voteType === 'upvote' ? 'upvotes' : 'downvotes'] = 
-                    (this.nearbyReports.find(r => r.id === reportId)[voteType === 'upvote' ? 'upvotes' : 'downvotes'] || 0) + 1;
-                
-                const { error: updateError } = await this.supabase
-                    .from('reports')
-                    .update(updateData)
-                    .eq('id', reportId);
-                
-                if (updateError) {
-                    console.error("Error updating report votes:", updateError);
-                }
-                
-                this.showNotification(`Vote ${voteType === 'upvote' ? 'upvoted' : 'downvoted'}`, "success");
+                operation = 'add';
             }
             
-            // Refresh reports
-            await this.loadNearbyReports();
+            // Update report vote counts
+            const report = this.nearbyReports.find(r => r.id === reportId);
+            if (!report) return;
+            
+            let upvotes = report.upvotes || 0;
+            let downvotes = report.downvotes || 0;
+            
+            if (operation === 'add') {
+                if (voteType === 'upvote') upvotes++;
+                else downvotes++;
+            } else if (operation === 'remove') {
+                if (voteType === 'upvote') upvotes--;
+                else downvotes--;
+            } else if (operation === 'change') {
+                if (voteType === 'upvote') {
+                    upvotes++;
+                    downvotes--;
+                } else {
+                    downvotes++;
+                    upvotes--;
+                }
+            }
+            
+            // Update the report in Supabase
+            const { error: updateError } = await this.supabase
+                .from('reports')
+                .update({ upvotes, downvotes })
+                .eq('id', reportId);
+            
+            if (updateError) {
+                console.error("Error updating report votes:", updateError);
+            }
+            
+            // Update UI
+            report.upvotes = upvotes;
+            report.downvotes = downvotes;
+            report.user_vote = operation === 'remove' ? null : voteType;
+            
+            this.displayNearbyReports();
+            this.showNotification(operation === 'remove' ? 'Vote removed' : `Vote ${voteType === 'upvote' ? 'upvoted' : 'downvoted'}`, "success");
         } catch (error) {
             console.error("Error voting:", error);
             this.showNotification("Failed to submit vote", "error");
@@ -441,8 +486,15 @@ class HyperApp {
         const notes = document.getElementById('reportNotes').value;
         
         try {
+            // Ensure user exists in Supabase
+            const userSynced = await this.syncUserWithSupabase();
+            if (!userSynced) {
+                this.showNotification("Error with your account. Please try again.", "error");
+                return;
+            }
+            
             // Get user location if available
-            let location = null;
+            let location = "Unknown Location";
             let latitude = null;
             let longitude = null;
             
@@ -450,10 +502,7 @@ class HyperApp {
                 const userLocation = this.tg.initDataUnsafe.user.location;
                 latitude = userLocation.latitude;
                 longitude = userLocation.longitude;
-                
-                // Reverse geocode to get location name
-                // This would be implemented with a geocoding service
-                location = "User location";
+                location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
             }
             
             // Submit report to Supabase
@@ -471,11 +520,12 @@ class HyperApp {
                         upvotes: 0,
                         downvotes: 0
                     }
-                ]);
+                ])
+                .select();
             
             if (error) {
                 console.error("Error submitting report:", error);
-                this.showNotification("Failed to submit report", "error");
+                this.showNotification(`Failed to submit report: ${error.message}`, "error");
                 return;
             }
             
@@ -485,9 +535,7 @@ class HyperApp {
                 .update({ reputation: (this.userData.reputation || 0) + 10 })
                 .eq('user_id', this.userData.id);
             
-            if (updateError) {
-                console.error("Error updating reputation:", updateError);
-            } else {
+            if (!updateError) {
                 this.userData.reputation = (this.userData.reputation || 0) + 10;
                 this.updateUserInfo();
             }
@@ -528,8 +576,15 @@ class HyperApp {
         }
         
         try {
+            // Ensure user exists in Supabase
+            const userSynced = await this.syncUserWithSupabase();
+            if (!userSynced) {
+                this.showNotification("Error with your account. Please try again.", "error");
+                return;
+            }
+            
             // Get user location if available
-            let location = null;
+            let location = "Unknown Location";
             let latitude = null;
             let longitude = null;
             
@@ -537,10 +592,7 @@ class HyperApp {
                 const userLocation = this.tg.initDataUnsafe.user.location;
                 latitude = userLocation.latitude;
                 longitude = userLocation.longitude;
-                
-                // Reverse geocode to get location name
-                // This would be implemented with a geocoding service
-                location = "User location";
+                location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
             }
             
             // Submit emergency report to Supabase
@@ -558,11 +610,12 @@ class HyperApp {
                         upvotes: 0,
                         downvotes: 0
                     }
-                ]);
+                ])
+                .select();
             
             if (error) {
                 console.error("Error submitting emergency report:", error);
-                this.showNotification("Failed to submit emergency report", "error");
+                this.showNotification(`Failed to submit emergency report: ${error.message}`, "error");
                 return;
             }
             
@@ -572,9 +625,7 @@ class HyperApp {
                 .update({ reputation: (this.userData.reputation || 0) + 15 })
                 .eq('user_id', this.userData.id);
             
-            if (updateError) {
-                console.error("Error updating reputation:", updateError);
-            } else {
+            if (!updateError) {
                 this.userData.reputation = (this.userData.reputation || 0) + 15;
                 this.updateUserInfo();
             }
@@ -619,27 +670,177 @@ class HyperApp {
         // Load data for specific views
         if (viewName === 'map') {
             this.loadMap();
+        } else if (viewName === 'reports') {
+            this.loadUserReports();
         }
     }
     
-    loadMap() {
-        // Simulate map loading
-        document.getElementById('mapContainer').innerHTML = '<div class="loading-spinner"></div>';
-        
-        setTimeout(() => {
+    async loadMap() {
+        try {
+            // Show loading state
+            document.getElementById('mapContainer').innerHTML = '<div class="loading-spinner"></div>';
+            
+            // Get reports with location data
+            const { data: reports, error } = await this.supabase
+                .from('reports')
+                .select('*')
+                .not('latitude', 'is', null)
+                .not('longitude', 'is', null)
+                .limit(50);
+            
+            if (error) {
+                console.error("Error loading map data:", error);
+                document.getElementById('mapContainer').innerHTML = `
+                    <div class="map-placeholder">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <p data-en="Error loading map data" data-ar="خطأ في تحميل بيانات الخريطة">Error loading map data</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (reports.length === 0) {
+                document.getElementById('mapContainer').innerHTML = `
+                    <div class="map-placeholder">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <p data-en="No location data available" data-ar="لا توجد بيانات موقع متاحة">No location data available</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Create a simple map visualization
+            const mapHTML = `
+                <div class="map-visualization">
+                    <div class="map-header">
+                        <h3 data-en="Vibe Heatmap" data-ar="خريمة الحالات">Vibe Heatmap</h3>
+                        <p data-en="${reports.length} reports with location data" data-ar="${reports.length} تقرير يحتوي على بيانات الموقع">
+                            ${reports.length} reports with location data
+                        </p>
+                    </div>
+                    <div class="map-points">
+                        ${reports.map(report => `
+                            <div class="map-point" style="top: ${50 + (report.latitude % 20)}%; left: ${50 + (report.longitude % 20)}%;" 
+                                 data-vibe="${report.vibe_type}" title="${report.vibe_type} at ${report.location}">
+                                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="map-legend">
+                        <div class="legend-item"><i class="fas fa-users"></i> Crowded</div>
+                        <div class="legend-item"><i class="fas fa-volume-up"></i> Noisy</div>
+                        <div class="legend-item"><i class="fas fa-music"></i> Festive</div>
+                        <div class="legend-item"><i class="fas fa-peace"></i> Calm</div>
+                        <div class="legend-item"><i class="fas fa-eye"></i> Suspicious</div>
+                        <div class="legend-item"><i class="fas fa-exclamation-triangle"></i> Dangerous</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mapContainer').innerHTML = mapHTML;
+            this.updateTextDirection();
+        } catch (error) {
+            console.error("Error loading map:", error);
             document.getElementById('mapContainer').innerHTML = `
                 <div class="map-placeholder">
                     <i class="fas fa-map-marked-alt"></i>
-                    <p data-en="Interactive map would be displayed here" data-ar="سيتم عرض الخريطة التفاعلية هنا">Interactive map would be displayed here</p>
+                    <p data-en="Error loading map" data-ar="خطأ في تحميل الخريطة">Error loading map</p>
                 </div>
             `;
-            this.updateTextDirection();
-        }, 1000);
+        }
     }
     
-    loadTopAreas() {
-        // This would load top areas in a real implementation
-        this.showNotification("Top areas feature coming soon", "info");
+    async loadTopAreas() {
+        try {
+            // Get top areas by report count
+            const { data: areas, error } = await this.supabase
+                .from('reports')
+                .select('location, vibe_type')
+                .not('location', 'is', null)
+                .not('location', 'eq', 'Unknown Location');
+            
+            if (error) {
+                console.error("Error loading top areas:", error);
+                this.showNotification("Failed to load top areas", "error");
+                return;
+            }
+            
+            // Count reports by location
+            const locationCounts = {};
+            areas.forEach(report => {
+                if (!locationCounts[report.location]) {
+                    locationCounts[report.location] = {
+                        count: 0,
+                        vibes: {}
+                    };
+                }
+                locationCounts[report.location].count++;
+                
+                if (!locationCounts[report.location].vibes[report.vibe_type]) {
+                    locationCounts[report.location].vibes[report.vibe_type] = 0;
+                }
+                locationCounts[report.location].vibes[report.vibe_type]++;
+            });
+            
+            // Convert to array and sort
+            const topAreas = Object.entries(locationCounts)
+                .map(([location, data]) => ({ location, ...data }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
+            
+            // Show top areas in a modal
+            const modalContent = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 data-en="Top Areas" data-ar="أهم المناطق">Top Areas</h2>
+                        <span class="close" onclick="app.closeModal('topAreasModal')">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        ${topAreas.length > 0 ? `
+                            <div class="top-areas-list">
+                                ${topAreas.map(area => `
+                                    <div class="area-item">
+                                        <div class="area-header">
+                                            <h3>${area.location}</h3>
+                                            <span class="report-count">${area.count} reports</span>
+                                        </div>
+                                        <div class="area-vibes">
+                                            ${Object.entries(area.vibes)
+                                                .map(([vibe, count]) => `
+                                                    <span class="vibe-tag">
+                                                        <i class="${this.getVibeIcon(vibe)}"></i>
+                                                        ${vibe}: ${count}
+                                                    </span>
+                                                `).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <p data-en="No area data available" data-ar="لا توجد بيانات للمناطق متاحة">
+                                No area data available
+                            </p>
+                        `}
+                    </div>
+                </div>
+            `;
+            
+            // Create or update modal
+            let modal = document.getElementById('topAreasModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'topAreasModal';
+                modal.className = 'modal';
+                document.body.appendChild(modal);
+            }
+            
+            modal.innerHTML = modalContent;
+            modal.style.display = 'block';
+            this.updateTextDirection();
+        } catch (error) {
+            console.error("Error loading top areas:", error);
+            this.showNotification("Failed to load top areas", "error");
+        }
     }
     
     toggleLanguage() {
