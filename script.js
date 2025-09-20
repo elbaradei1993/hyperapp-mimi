@@ -1,4 +1,4 @@
-// HyperApp Mini App - Complete Implementation
+// HyperApp Mini App - Complete Implementation with Supabase
 class HyperApp {
     constructor() {
         this.tg = window.Telegram.WebApp;
@@ -9,11 +9,16 @@ class HyperApp {
         this.selectedVibe = null;
         this.isConnected = false;
         
+        // Initialize Supabase
+        this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+        this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        
         this.init();
     }
     
-    init() {
-        console.log("Initializing HyperApp...");
+    async init() {
+        console.log("Initializing HyperApp with Supabase...");
         
         // Initialize Telegram WebApp
         if (this.tg) {
@@ -25,6 +30,7 @@ class HyperApp {
             const user = this.tg.initDataUnsafe.user;
             if (user) {
                 this.userData = user;
+                await this.syncUserWithSupabase();
                 this.updateUserInfo();
             }
             
@@ -35,7 +41,7 @@ class HyperApp {
             this.updateConnectionStatus(true);
             
             // Load initial data
-            this.loadInitialData();
+            await this.loadInitialData();
         } else {
             console.log("Not in Telegram environment");
             this.updateConnectionStatus(false);
@@ -48,7 +54,7 @@ class HyperApp {
                 username: "testuser"
             };
             this.updateUserInfo();
-            this.loadInitialData();
+            await this.loadInitialData();
         }
     }
     
@@ -74,6 +80,51 @@ class HyperApp {
         });
     }
     
+    async syncUserWithSupabase() {
+        if (!this.userData) return;
+        
+        try {
+            // Check if user exists in Supabase
+            const { data, error } = await this.supabase
+                .from('users')
+                .select('*')
+                .eq('user_id', this.userData.id)
+                .single();
+            
+            if (error && error.code === 'PGRST116') {
+                // User doesn't exist, create a new record
+                const { data: newUser, error: insertError } = await this.supabase
+                    .from('users')
+                    .insert([
+                        {
+                            user_id: this.userData.id,
+                            username: this.userData.username || this.userData.first_name,
+                            reputation: 0,
+                            language: 'en'
+                        }
+                    ]);
+                
+                if (insertError) {
+                    console.error("Error creating user:", insertError);
+                }
+            } else if (error) {
+                console.error("Error checking user:", error);
+            } else {
+                // Update user data with Supabase info
+                this.userData.reputation = data.reputation;
+                this.userData.language = data.language;
+                this.currentLanguage = data.language;
+                this.applyLanguage(this.currentLanguage);
+                
+                // Update language selector
+                document.getElementById('languageSelect').value = this.currentLanguage;
+                document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+            }
+        } catch (error) {
+            console.error("Error syncing user with Supabase:", error);
+        }
+    }
+    
     updateConnectionStatus(connected) {
         this.isConnected = connected;
         const statusElement = document.getElementById('connectionStatus');
@@ -97,16 +148,15 @@ class HyperApp {
                 usernameElement.textContent = this.userData.username || this.userData.first_name;
             }
             
-            // Update reputation (would come from server in real implementation)
-            const reputation = Math.floor(Math.random() * 100); // Simulated
-            document.getElementById('userReputation').textContent = reputation;
-            document.getElementById('settingsReputation').textContent = reputation;
+            // Update reputation
+            document.getElementById('userReputation').textContent = this.userData.reputation || 0;
+            document.getElementById('settingsReputation').textContent = this.userData.reputation || 0;
         }
     }
     
-    loadInitialData() {
-        this.loadNearbyReports();
-        this.loadUserReports();
+    async loadInitialData() {
+        await this.loadNearbyReports();
+        await this.loadUserReports();
     }
     
     async loadNearbyReports() {
@@ -114,43 +164,20 @@ class HyperApp {
             // Show loading state
             document.getElementById('nearbyReports').innerHTML = '<div class="loading-spinner"></div>';
             
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Get reports from Supabase
+            const { data: reports, error } = await this.supabase
+                .from('reports')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(20);
             
-            // Simulated data - in real app, this would come from your backend
-            this.nearbyReports = [
-                {
-                    id: 1,
-                    type: 'crowded',
-                    location: 'Downtown',
-                    notes: 'Very busy with tourists',
-                    timestamp: new Date(Date.now() - 30 * 60000).toISOString(),
-                    upvotes: 5,
-                    downvotes: 1,
-                    userVote: 'upvote'
-                },
-                {
-                    id: 2,
-                    type: 'festive',
-                    location: 'Main Square',
-                    notes: 'Street festival happening',
-                    timestamp: new Date(Date.now() - 2 * 3600000).toISOString(),
-                    upvotes: 12,
-                    downvotes: 2,
-                    userVote: null
-                },
-                {
-                    id: 3,
-                    type: 'calm',
-                    location: 'City Park',
-                    notes: 'Quiet and peaceful',
-                    timestamp: new Date(Date.now() - 5 * 3600000).toISOString(),
-                    upvotes: 8,
-                    downvotes: 0,
-                    userVote: 'upvote'
-                }
-            ];
+            if (error) {
+                console.error("Error loading reports:", error);
+                this.showNotification("Failed to load reports", "error");
+                return;
+            }
             
+            this.nearbyReports = reports;
             this.displayNearbyReports();
         } catch (error) {
             console.error("Error loading nearby reports:", error);
@@ -163,6 +190,7 @@ class HyperApp {
         
         if (this.nearbyReports.length === 0) {
             container.innerHTML = '<div class="no-data" data-en="No reports nearby" data-ar="لا توجد تقارير قريبة">No reports nearby</div>';
+            this.updateTextDirection();
             return;
         }
         
@@ -170,25 +198,25 @@ class HyperApp {
             <div class="report-item">
                 <div class="report-info">
                     <div class="report-type">
-                        <i class="${this.getVibeIcon(report.type)}"></i>
-                        <span data-en="${this.capitalizeFirstLetter(report.type)}" data-ar="${this.getVibeArabicName(report.type)}">
-                            ${this.capitalizeFirstLetter(report.type)}
+                        <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                        <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                            ${this.capitalizeFirstLetter(report.vibe_type)}
                         </span>
                     </div>
-                    <div class="report-details">${report.notes}</div>
+                    <div class="report-details">${report.notes || ''}</div>
                     <div class="report-meta">
-                        <span>${report.location}</span>
-                        <span>${this.formatTimeAgo(report.timestamp)}</span>
+                        <span>${report.location || 'Unknown location'}</span>
+                        <span>${this.formatTimeAgo(report.created_at)}</span>
                     </div>
                 </div>
                 <div class="report-actions">
-                    <button class="vote-btn upvote-btn ${report.userVote === 'upvote' ? 'active' : ''}" 
+                    <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}" 
                             onclick="app.voteReport(${report.id}, 'upvote')">
-                        <i class="fas fa-thumbs-up"></i> ${report.upvotes}
+                        <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
                     </button>
-                    <button class="vote-btn downvote-btn ${report.userVote === 'downvote' ? 'active' : ''}" 
+                    <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}" 
                             onclick="app.voteReport(${report.id}, 'downvote')">
-                        <i class="fas fa-thumbs-down"></i> ${report.downvotes}
+                        <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
                     </button>
                 </div>
             </div>
@@ -198,35 +226,26 @@ class HyperApp {
     }
     
     async loadUserReports() {
+        if (!this.userData) return;
+        
         try {
             // Show loading state
             document.getElementById('userReports').innerHTML = '<div class="loading-spinner"></div>';
             
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Get user reports from Supabase
+            const { data: reports, error } = await this.supabase
+                .from('reports')
+                .select('*')
+                .eq('user_id', this.userData.id)
+                .order('created_at', { ascending: false });
             
-            // Simulated data
-            this.userReports = [
-                {
-                    id: 101,
-                    type: 'noisy',
-                    location: 'Market Street',
-                    notes: 'Construction noise',
-                    timestamp: new Date(Date.now() - 24 * 3600000).toISOString(),
-                    upvotes: 3,
-                    downvotes: 1
-                },
-                {
-                    id: 102,
-                    type: 'suspicious',
-                    location: 'Alley behind restaurant',
-                    notes: 'Suspicious activity noticed',
-                    timestamp: new Date(Date.now() - 3 * 24 * 3600000).toISOString(),
-                    upvotes: 2,
-                    downvotes: 0
-                }
-            ];
+            if (error) {
+                console.error("Error loading user reports:", error);
+                this.showNotification("Failed to load your reports", "error");
+                return;
+            }
             
+            this.userReports = reports;
             this.displayUserReports();
         } catch (error) {
             console.error("Error loading user reports:", error);
@@ -239,6 +258,7 @@ class HyperApp {
         
         if (this.userReports.length === 0) {
             container.innerHTML = '<div class="no-data" data-en="You haven\'t submitted any reports" data-ar="لم تقم بإرسال أي تقارير">You haven\'t submitted any reports</div>';
+            this.updateTextDirection();
             return;
         }
         
@@ -246,16 +266,16 @@ class HyperApp {
             <div class="report-item">
                 <div class="report-info">
                     <div class="report-type">
-                        <i class="${this.getVibeIcon(report.type)}"></i>
-                        <span data-en="${this.capitalizeFirstLetter(report.type)}" data-ar="${this.getVibeArabicName(report.type)}">
-                            ${this.capitalizeFirstLetter(report.type)}
+                        <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                        <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                            ${this.capitalizeFirstLetter(report.vibe_type)}
                         </span>
                     </div>
-                    <div class="report-details">${report.notes}</div>
+                    <div class="report-details">${report.notes || ''}</div>
                     <div class="report-meta">
-                        <span>${report.location}</span>
-                        <span>${this.formatTimeAgo(report.timestamp)}</span>
-                        <span>👍 ${report.upvotes} 👎 ${report.downvotes}</span>
+                        <span>${report.location || 'Unknown location'}</span>
+                        <span>${this.formatTimeAgo(report.created_at)}</span>
+                        <span>👍 ${report.upvotes || 0} 👎 ${report.downvotes || 0}</span>
                     </div>
                 </div>
             </div>
@@ -265,33 +285,125 @@ class HyperApp {
     }
     
     async voteReport(reportId, voteType) {
+        if (!this.userData) {
+            this.showNotification("Please sign in to vote", "error");
+            return;
+        }
+        
         try {
-            // Update UI immediately for better UX
-            const report = this.nearbyReports.find(r => r.id === reportId);
-            if (report) {
-                // Remove previous vote
-                if (report.userVote === 'upvote') report.upvotes--;
-                if (report.userVote === 'downvote') report.downvotes--;
-                
-                // Add new vote
-                if (voteType === 'upvote') report.upvotes++;
-                if (voteType === 'downvote') report.downvotes++;
-                
-                report.userVote = report.userVote === voteType ? null : voteType;
-                
-                this.displayNearbyReports();
+            // Check if user already voted
+            const { data: existingVote, error: voteError } = await this.supabase
+                .from('votes')
+                .select('*')
+                .eq('user_id', this.userData.id)
+                .eq('report_id', reportId)
+                .single();
+            
+            if (voteError && voteError.code !== 'PGRST116') {
+                console.error("Error checking vote:", voteError);
+                this.showNotification("Failed to submit vote", "error");
+                return;
             }
             
-            // Send vote to server
-            if (this.tg && this.tg.sendData) {
-                this.tg.sendData(JSON.stringify({
-                    type: 'vote',
-                    reportId: reportId,
-                    voteType: voteType
-                }));
+            if (existingVote) {
+                // User already voted, update the vote
+                if (existingVote.vote_type === voteType) {
+                    // Same vote type, remove the vote
+                    const { error: deleteError } = await this.supabase
+                        .from('votes')
+                        .delete()
+                        .eq('id', existingVote.id);
+                    
+                    if (deleteError) {
+                        console.error("Error removing vote:", deleteError);
+                        this.showNotification("Failed to update vote", "error");
+                        return;
+                    }
+                    
+                    // Update report vote counts
+                    const updateData = {};
+                    updateData[voteType === 'upvote' ? 'upvotes' : 'downvotes'] = 
+                        (this.nearbyReports.find(r => r.id === reportId)[voteType === 'upvote' ? 'upvotes' : 'downvotes'] || 0) - 1;
+                    
+                    const { error: updateError } = await this.supabase
+                        .from('reports')
+                        .update(updateData)
+                        .eq('id', reportId);
+                    
+                    if (updateError) {
+                        console.error("Error updating report votes:", updateError);
+                    }
+                    
+                    this.showNotification("Vote removed", "info");
+                } else {
+                    // Different vote type, update the vote
+                    const { error: updateError } = await this.supabase
+                        .from('votes')
+                        .update({ vote_type: voteType })
+                        .eq('id', existingVote.id);
+                    
+                    if (updateError) {
+                        console.error("Error updating vote:", updateError);
+                        this.showNotification("Failed to update vote", "error");
+                        return;
+                    }
+                    
+                    // Update report vote counts
+                    const oldVoteType = existingVote.vote_type;
+                    const updateData = {};
+                    updateData[oldVoteType === 'upvote' ? 'upvotes' : 'downvotes'] = 
+                        (this.nearbyReports.find(r => r.id === reportId)[oldVoteType === 'upvote' ? 'upvotes' : 'downvotes'] || 0) - 1;
+                    updateData[voteType === 'upvote' ? 'upvotes' : 'downvotes'] = 
+                        (this.nearbyReports.find(r => r.id === reportId)[voteType === 'upvote' ? 'upvotes' : 'downvotes'] || 0) + 1;
+                    
+                    const { error: updateReportError } = await this.supabase
+                        .from('reports')
+                        .update(updateData)
+                        .eq('id', reportId);
+                    
+                    if (updateReportError) {
+                        console.error("Error updating report votes:", updateReportError);
+                    }
+                    
+                    this.showNotification(`Vote changed to ${voteType}`, "success");
+                }
+            } else {
+                // New vote
+                const { error: insertError } = await this.supabase
+                    .from('votes')
+                    .insert([
+                        {
+                            user_id: this.userData.id,
+                            report_id: reportId,
+                            vote_type: voteType
+                        }
+                    ]);
+                
+                if (insertError) {
+                    console.error("Error adding vote:", insertError);
+                    this.showNotification("Failed to submit vote", "error");
+                    return;
+                }
+                
+                // Update report vote counts
+                const updateData = {};
+                updateData[voteType === 'upvote' ? 'upvotes' : 'downvotes'] = 
+                    (this.nearbyReports.find(r => r.id === reportId)[voteType === 'upvote' ? 'upvotes' : 'downvotes'] || 0) + 1;
+                
+                const { error: updateError } = await this.supabase
+                    .from('reports')
+                    .update(updateData)
+                    .eq('id', reportId);
+                
+                if (updateError) {
+                    console.error("Error updating report votes:", updateError);
+                }
+                
+                this.showNotification(`Vote ${voteType === 'upvote' ? 'upvoted' : 'downvoted'}`, "success");
             }
             
-            this.showNotification(`Vote ${voteType === 'upvote' ? 'upvoted' : 'downvoted'}`, "success");
+            // Refresh reports
+            await this.loadNearbyReports();
         } catch (error) {
             console.error("Error voting:", error);
             this.showNotification("Failed to submit vote", "error");
@@ -316,6 +428,11 @@ class HyperApp {
     }
     
     async submitReport() {
+        if (!this.userData) {
+            this.showNotification("Please sign in to submit a report", "error");
+            return;
+        }
+        
         if (!this.selectedVibe) {
             this.showNotification("Please select a vibe type", "error");
             return;
@@ -324,13 +441,55 @@ class HyperApp {
         const notes = document.getElementById('reportNotes').value;
         
         try {
-            // Send report to server
-            if (this.tg && this.tg.sendData) {
-                this.tg.sendData(JSON.stringify({
-                    type: 'report',
-                    vibe: this.selectedVibe,
-                    notes: notes
-                }));
+            // Get user location if available
+            let location = null;
+            let latitude = null;
+            let longitude = null;
+            
+            if (this.tg && this.tg.initDataUnsafe.user && this.tg.initDataUnsafe.user.location) {
+                const userLocation = this.tg.initDataUnsafe.user.location;
+                latitude = userLocation.latitude;
+                longitude = userLocation.longitude;
+                
+                // Reverse geocode to get location name
+                // This would be implemented with a geocoding service
+                location = "User location";
+            }
+            
+            // Submit report to Supabase
+            const { data, error } = await this.supabase
+                .from('reports')
+                .insert([
+                    {
+                        user_id: this.userData.id,
+                        vibe_type: this.selectedVibe,
+                        notes: notes,
+                        location: location,
+                        latitude: latitude,
+                        longitude: longitude,
+                        emergency: false,
+                        upvotes: 0,
+                        downvotes: 0
+                    }
+                ]);
+            
+            if (error) {
+                console.error("Error submitting report:", error);
+                this.showNotification("Failed to submit report", "error");
+                return;
+            }
+            
+            // Update user reputation
+            const { error: updateError } = await this.supabase
+                .from('users')
+                .update({ reputation: (this.userData.reputation || 0) + 10 })
+                .eq('user_id', this.userData.id);
+            
+            if (updateError) {
+                console.error("Error updating reputation:", updateError);
+            } else {
+                this.userData.reputation = (this.userData.reputation || 0) + 10;
+                this.updateUserInfo();
             }
             
             // Close modal
@@ -340,8 +499,8 @@ class HyperApp {
             this.showNotification("Report submitted successfully", "success");
             
             // Refresh reports
-            this.loadNearbyReports();
-            this.loadUserReports();
+            await this.loadNearbyReports();
+            await this.loadUserReports();
         } catch (error) {
             console.error("Error submitting report:", error);
             this.showNotification("Failed to submit report", "error");
@@ -355,6 +514,11 @@ class HyperApp {
     }
     
     async submitEmergencyReport() {
+        if (!this.userData) {
+            this.showNotification("Please sign in to submit an emergency report", "error");
+            return;
+        }
+        
         const emergencyType = document.getElementById('emergencyType').value;
         const details = document.getElementById('emergencyDetails').value;
         
@@ -364,13 +528,55 @@ class HyperApp {
         }
         
         try {
-            // Send emergency report to server
-            if (this.tg && this.tg.sendData) {
-                this.tg.sendData(JSON.stringify({
-                    type: 'emergency',
-                    emergencyType: emergencyType,
-                    details: details
-                }));
+            // Get user location if available
+            let location = null;
+            let latitude = null;
+            let longitude = null;
+            
+            if (this.tg && this.tg.initDataUnsafe.user && this.tg.initDataUnsafe.user.location) {
+                const userLocation = this.tg.initDataUnsafe.user.location;
+                latitude = userLocation.latitude;
+                longitude = userLocation.longitude;
+                
+                // Reverse geocode to get location name
+                // This would be implemented with a geocoding service
+                location = "User location";
+            }
+            
+            // Submit emergency report to Supabase
+            const { data, error } = await this.supabase
+                .from('reports')
+                .insert([
+                    {
+                        user_id: this.userData.id,
+                        vibe_type: 'dangerous',
+                        notes: `EMERGENCY (${emergencyType}): ${details}`,
+                        location: location,
+                        latitude: latitude,
+                        longitude: longitude,
+                        emergency: true,
+                        upvotes: 0,
+                        downvotes: 0
+                    }
+                ]);
+            
+            if (error) {
+                console.error("Error submitting emergency report:", error);
+                this.showNotification("Failed to submit emergency report", "error");
+                return;
+            }
+            
+            // Update user reputation
+            const { error: updateError } = await this.supabase
+                .from('users')
+                .update({ reputation: (this.userData.reputation || 0) + 15 })
+                .eq('user_id', this.userData.id);
+            
+            if (updateError) {
+                console.error("Error updating reputation:", updateError);
+            } else {
+                this.userData.reputation = (this.userData.reputation || 0) + 15;
+                this.updateUserInfo();
             }
             
             // Close modal
@@ -378,6 +584,19 @@ class HyperApp {
             
             // Show success message
             this.showNotification("Emergency report submitted", "success");
+            
+            // Refresh reports
+            await this.loadNearbyReports();
+            await this.loadUserReports();
+            
+            // Send to Telegram bot if available
+            if (this.tg && this.tg.sendData) {
+                this.tg.sendData(JSON.stringify({
+                    type: 'emergency',
+                    emergencyType: emergencyType,
+                    details: details
+                }));
+            }
         } catch (error) {
             console.error("Error submitting emergency report:", error);
             this.showNotification("Failed to submit emergency report", "error");
@@ -430,12 +649,43 @@ class HyperApp {
         // Update language switcher text
         document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
         
+        // Update user language in Supabase
+        if (this.userData) {
+            this.supabase
+                .from('users')
+                .update({ language: this.currentLanguage })
+                .eq('user_id', this.userData.id)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error("Error updating language:", error);
+                    }
+                });
+        }
+        
         this.showNotification(`Language changed to ${this.currentLanguage === 'en' ? 'English' : 'Arabic'}`, "success");
     }
     
     changeLanguage(lang) {
         this.currentLanguage = lang;
         this.applyLanguage(lang);
+        
+        // Update language selector
+        document.getElementById('languageSelect').value = this.currentLanguage;
+        document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+        
+        // Update user language in Supabase
+        if (this.userData) {
+            this.supabase
+                .from('users')
+                .update({ language: this.currentLanguage })
+                .eq('user_id', this.userData.id)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error("Error updating language:", error);
+                    }
+                });
+        }
+        
         this.showNotification(`Language changed to ${lang === 'en' ? 'English' : 'Arabic'}`, "success");
     }
     
@@ -536,40 +786,3 @@ let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new HyperApp();
 });
-
-// Global functions for HTML onclick attributes
-function showReportModal() {
-    app.showReportModal();
-}
-
-function closeModal(modalId) {
-    app.closeModal(modalId);
-}
-
-function selectVibe(vibe) {
-    app.selectVibe(vibe);
-}
-
-function submitReport() {
-    app.submitReport();
-}
-
-function showEmergencyReport() {
-    app.showEmergencyReport();
-}
-
-function submitEmergencyReport() {
-    app.submitEmergencyReport();
-}
-
-function loadNearbyReports() {
-    app.loadNearbyReports();
-}
-
-function loadTopAreas() {
-    app.loadTopAreas();
-}
-
-function changeLanguage(lang) {
-    app.changeLanguage(lang);
-}
