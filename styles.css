@@ -223,6 +223,67 @@ footer {
   cursor: pointer;
 }
 
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--light);
+}
+
+.form-select, .form-input, .form-textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--light);
+  font-size: 16px;
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--light);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 /* Help Section Styles */
 .help-section {
   background: rgba(255, 193, 7, 0.1) !important;
@@ -267,20 +328,9 @@ footer {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Debug Section Styles */
-.debug-section {
-  background: rgba(255, 0, 0, 0.1) !important;
-  border: 1px dashed var(--danger) !important;
-}
-
-.debug-info {
-  font-family: monospace;
-  font-size: 12px;
-  color: var(--gray);
-}
-
-.debug-info p {
-  margin-bottom: 8px;
+/* View Management */
+.hidden {
+  display: none !important;
 }
 
 /* Responsive adjustments */
@@ -304,6 +354,10 @@ footer {
   
   .help-section li {
     font-size: 13px;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
   }
 }
 
