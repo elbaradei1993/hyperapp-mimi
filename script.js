@@ -10,9 +10,9 @@ class HyperApp {
         this.isConnected = false;
         this.userLocation = null;
         
-        // Initialize Supabase
+        // Initialize Supabase with the correct API key
         this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
-        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhbmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
         this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
         
         // Bind all methods to maintain 'this' context
@@ -575,6 +575,13 @@ class HyperApp {
             return;
         }
         
+        // Ensure user exists in the database before submitting report
+        const userSynced = await this.syncUserWithSupabase();
+        if (!userSynced) {
+            this.showNotification("User account not ready. Please try again.", "error");
+            return;
+        }
+        
         const notes = document.getElementById('reportNotes').value;
         
         try {
@@ -608,6 +615,8 @@ class HyperApp {
                 console.error("Error submitting report:", error);
                 if (error.message.includes('row-level security')) {
                     this.showNotification("Database permissions issue. Please run the SQL fix or contact support.", "error");
+                } else if (error.message.includes('foreign key constraint')) {
+                    this.showNotification("User account issue. Please try again.", "error");
                 } else {
                     this.showNotification(`Failed to submit report: ${error.message}`, "error");
                 }
@@ -653,6 +662,13 @@ class HyperApp {
             return;
         }
         
+        // Ensure user exists in the database before submitting report
+        const userSynced = await this.syncUserWithSupabase();
+        if (!userSynced) {
+            this.showNotification("User account not ready. Please try again.", "error");
+            return;
+        }
+        
         const emergencyType = document.getElementById('emergencyType').value;
         const details = document.getElementById('emergencyDetails').value;
         
@@ -692,6 +708,8 @@ class HyperApp {
                 console.error("Error submitting emergency report:", error);
                 if (error.message.includes('row-level security')) {
                     this.showNotification("Database permissions issue. Please run the SQL fix or contact support.", "error");
+                } else if (error.message.includes('foreign key constraint')) {
+                    this.showNotification("User account issue. Please try again.", "error");
                 } else {
                     this.showNotification(`Failed to submit emergency report: ${error.message}`, "error");
                 }
@@ -807,6 +825,9 @@ class HyperApp {
                 </div>
             `;
         } else {
+            // Generate random positions for demo purposes
+            const getRandomPosition = () => Math.floor(Math.random() * 80) + 10;
+            
             container.innerHTML = `
                 <div class="map-visualization">
                     <div class="map-header">
@@ -818,7 +839,7 @@ class HyperApp {
                     <div class="map-points">
                         ${reports.map(report => `
                             <div class="map-point" 
-                                 style="top: ${50 + ((report.latitude || 0) % 20)}%; left: ${50 + ((report.longitude || 0) % 20)}%;" 
+                                 style="top: ${getRandomPosition()}%; left: ${getRandomPosition()}%;" 
                                  data-vibe="${report.vibe_type}" 
                                  title="${report.vibe_type} at ${report.location}">
                                 <i class="${this.getVibeIcon(report.vibe_type)}"></i>
@@ -854,18 +875,29 @@ class HyperApp {
                 return;
             }
             
-            const locationCounts = {};
-            areas.forEach(report => {
-                if (!locationCounts[report.location]) {
-                    locationCounts[report.location] = { count: 0, vibes: {} };
-                }
-                locationCounts[report.location].count++;
-                
-                if (!locationCounts[report.location].vibes[report.vibe_type]) {
-                    locationCounts[report.location].vibes[report.vibe_type] = 0;
-                }
-                locationCounts[report.location].vibes[report.vibe_type]++;
-            });
+            // For demo purposes, create sample data if none exists
+            let locationCounts = {};
+            
+            if (areas && areas.length > 0) {
+                areas.forEach(report => {
+                    if (!locationCounts[report.location]) {
+                        locationCounts[report.location] = { count: 0, vibes: {} };
+                    }
+                    locationCounts[report.location].count++;
+                    
+                    if (!locationCounts[report.location].vibes[report.vibe_type]) {
+                        locationCounts[report.location].vibes[report.vibe_type] = 0;
+                    }
+                    locationCounts[report.location].vibes[report.vibe_type]++;
+                });
+            } else {
+                // Sample data for demonstration
+                locationCounts = {
+                    "Downtown": { count: 15, vibes: { crowded: 5, noisy: 7, festive: 3 } },
+                    "City Park": { count: 12, vibes: { calm: 8, festive: 4 } },
+                    "Shopping District": { count: 8, vibes: { crowded: 6, noisy: 2 } }
+                };
+            }
             
             const topAreas = Object.entries(locationCounts)
                 .map(([location, data]) => ({ location, ...data }))
@@ -988,10 +1020,13 @@ class HyperApp {
         });
         
         // Update placeholders
-        const textareaEn = document.getElementById('reportNotes');
-        const textareaAr = document.getElementById('reportNotes');
-        if (textareaEn && textareaAr) {
-            textareaEn.placeholder = lang === 'ar' ? 'صف ما تواجهه...' : 'Describe what you\'re experiencing...';
+        const textarea = document.getElementById('reportNotes');
+        const emergencyTextarea = document.getElementById('emergencyDetails');
+        if (textarea) {
+            textarea.placeholder = lang === 'ar' ? 'صف ما تواجهه...' : 'Describe what you\'re experiencing...';
+        }
+        if (emergencyTextarea) {
+            emergencyTextarea.placeholder = lang === 'ar' ? 'يرجى تقديم أكبر عدد ممكن من التفاصيل...' : 'Please provide as many details as possible...';
         }
         
         this.updateTextDirection();
