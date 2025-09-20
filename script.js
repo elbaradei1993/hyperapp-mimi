@@ -1,6 +1,6 @@
 // Initialize Telegram WebApp
 let tg = window.Telegram.WebApp;
-let debugMode = true; // Set to false in production
+let debugMode = true;
 
 // Debug logging
 function logDebug(message, data = null) {
@@ -16,16 +16,14 @@ function init() {
     if (tg) {
         logDebug('Telegram WebApp detected');
         
-        // Expand to full height and enable closing confirmation
+        // Expand to full height but don't enable closing confirmation
         tg.expand();
-        tg.enableClosingConfirmation();
         
         // Set up theme based on Telegram theme
         updateTheme();
         
-        // Set up main button
-        tg.MainButton.text = "Open HyperApp";
-        tg.MainButton.show();
+        // Set up main button - but we'll keep it hidden for now
+        tg.MainButton.hide();
         
         // Get user data and update UI accordingly
         let user = tg.initDataUnsafe.user;
@@ -39,9 +37,9 @@ function init() {
         // Listen for theme changes
         tg.onEvent('themeChanged', updateTheme);
         
-        // Listen for events from the bot
-        tg.onEvent('viewportChanged', function() {
-            logDebug('Viewport changed');
+        // Add event listener for when the app is closed
+        tg.onEvent('viewportChanged', function(e) {
+            logDebug('Viewport changed:', e);
         });
         
         logDebug('App initialized successfully with Telegram WebApp');
@@ -76,10 +74,10 @@ function updateUserInfo(user) {
     logDebug('User info received:', user);
     
     // Update debug info
-    document.getElementById('debugUserId').textContent = user.id || '--';
-    
-    // You can add more user-specific UI updates here
-    // For example, fetch user reputation from your bot's database
+    const debugUserId = document.getElementById('debugUserId');
+    if (debugUserId) {
+        debugUserId.textContent = user.id || '--';
+    }
 }
 
 // Update connection status
@@ -91,27 +89,44 @@ function updateConnectionStatus(status) {
         statusElement.innerHTML = '<i class="fas fa-check-circle connected"></i> Connected to Bot';
         statusElement.classList.add('connected');
         statusElement.classList.remove('disconnected');
-        document.getElementById('debugStatus').textContent = 'Connected to Telegram Bot';
+        
+        const debugStatus = document.getElementById('debugStatus');
+        if (debugStatus) {
+            debugStatus.textContent = 'Connected to Telegram Bot';
+        }
     } else {
         statusElement.innerHTML = '<i class="fas fa-times-circle disconnected"></i> Not Connected';
         statusElement.classList.add('disconnected');
         statusElement.classList.remove('connected');
-        document.getElementById('debugStatus').textContent = 'Not connected to Telegram';
+        
+        const debugStatus = document.getElementById('debugStatus');
+        if (debugStatus) {
+            debugStatus.textContent = 'Not connected to Telegram';
+        }
     }
 }
 
-// Send command to the bot
+// Send command to the bot WITHOUT closing the WebApp
 function sendCommand(command) {
     logDebug('Attempting to send command:', command);
     
     // Update debug info
-    document.getElementById('debugLastCommand').textContent = command;
+    const debugLastCommand = document.getElementById('debugLastCommand');
+    if (debugLastCommand) {
+        debugLastCommand.textContent = command;
+    }
     
     if (tg && tg.sendData) {
         try {
-            // Send the command to your bot
-            tg.sendData(command);
-            logDebug('Command sent successfully to bot:', command);
+            // IMPORTANT: Use a small delay to prevent immediate closing
+            setTimeout(() => {
+                // Send the command to your bot
+                tg.sendData(command);
+                logDebug('Command sent successfully to bot:', command);
+                
+                // Show success feedback but DON'T close the WebApp
+                showTempMessage('Command sent: ' + command, 'success');
+            }, 100);
             
             // Provide visual feedback
             if (event && event.currentTarget) {
@@ -121,9 +136,6 @@ function sendCommand(command) {
                     button.style.background = '';
                 }, 300);
             }
-            
-            // Show success feedback
-            showTempMessage('Command sent: ' + command, 'success');
             
         } catch (error) {
             logDebug('Error sending command:', error);
@@ -160,6 +172,8 @@ function showTempMessage(message, type = 'info') {
         z-index: 1000;
         opacity: 0;
         transition: opacity 0.3s;
+        max-width: 80%;
+        text-align: center;
     `;
     
     // Set background color based on type
@@ -186,7 +200,9 @@ function showTempMessage(message, type = 'info') {
     setTimeout(() => {
         messageEl.style.opacity = '0';
         setTimeout(() => {
-            document.body.removeChild(messageEl);
+            if (document.body.contains(messageEl)) {
+                document.body.removeChild(messageEl);
+            }
         }, 300);
     }, 3000);
 }
@@ -196,22 +212,25 @@ function simulateTelegramEnvironment() {
     logDebug('Simulating Telegram environment for testing');
     
     // Show debug section
-    document.querySelector('.debug-section').style.display = 'block';
+    const debugSection = document.querySelector('.debug-section');
+    if (debugSection) {
+        debugSection.style.display = 'block';
+    }
     
     // Simulate user data after a delay
     setTimeout(() => {
-        document.getElementById('debugUserId').textContent = '123456789';
-        document.querySelector('.reputation').textContent = '85';
+        const debugUserId = document.getElementById('debugUserId');
+        if (debugUserId) {
+            debugUserId.textContent = '123456789';
+        }
+        
+        const reputation = document.querySelector('.reputation');
+        if (reputation) {
+            reputation.textContent = '85';
+        }
+        
         updateConnectionStatus('connected');
     }, 1000);
-}
-
-// Handle WebApp data received from bot (if needed)
-if (tg && tg.onEvent) {
-    tg.onEvent('webAppDataReceived', function(data) {
-        logDebug('Data received from bot:', data);
-        // Handle any data your bot might send back
-    });
 }
 
 // Initialize the app when the page loads
@@ -223,7 +242,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('debug') === '1') {
         debugMode = true;
-        document.querySelector('.debug-section').style.display = 'block';
+        const debugSection = document.querySelector('.debug-section');
+        if (debugSection) {
+            debugSection.style.display = 'block';
+        }
         logDebug('Debug mode enabled via URL parameter');
     }
 });
@@ -232,10 +254,3 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('error', function(e) {
     logDebug('Global error:', e.error);
 });
-
-// Export functions for potential external use
-window.HyperApp = {
-    sendCommand: sendCommand,
-    init: init,
-    debugMode: debugMode
-};
