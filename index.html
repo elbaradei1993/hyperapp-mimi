@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HyperApp / هايبر آب</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🌟 HyperApp / هايبر آب 🌟</h1>
+    <p>Feel safe and know what’s happening around you! / أشعر بالأمان واعرف ما حولك!</p>
+  </header>
+
+  <section id="about">
+    <p>
+      HyperApp / هايبر آب keeps you informed and safe! Submit reports, view maps of areas around you,
+      and track trending locations. Your community insights help everyone stay aware and secure.
+      / هايبر آب يبقيك على اطلاع ويضمن سلامتك! أرسل تقارير، شاهد خرائط المناطق حولك، وتتبع الأماكن النشطة.
+      مساهماتك تساعد الجميع على البقاء آمنين وواعين.
+    </p>
+  </section>
+
+  <section id="menu">
+    <h2>Menu / القائمة</h2>
+    <div class="button-grid">
+      <button onclick="sendCommand('/report')">📄 إرسال تقرير / Submit Report</button>
+      <button onclick="sendCommand('/map')">🗺️ خريطة / View Map</button>
+      <button onclick="sendCommand('/topareas')">🏙️ أفضل المناطق / Top Areas</button>
+      <button onclick="sendCommand('/subscribe')">➕ الاشتراكات / My Subscriptions</button>
+      <button onclick="sendCommand('/unsubscribe')">➖ إلغاء الاشتراك / Unsubscribe</button>
+      <button onclick="sendCommand('/upvote')">👍 التصويت بالإيجاب / Upvote</button>
+      <button onclick="sendCommand('/downvote')">👎 التصويت بالسلب / Downvote</button>
+      <button onclick="sendCommand('/reputation')">⭐ السمعة / Reputation</button>
+      <button onclick="sendCommand('/language')">🌐 اللغة / Language</button>
+      <button onclick="sendCommand('/about')">ℹ️ حول التطبيق / About</button>
+      <button onclick="sendCommand('/help')">❓ المساعدة / Help</button>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
