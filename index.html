@@ -17,7 +17,7 @@
       <h1>HyperApp</h1>
       <p class="subtitle">Stay informed and safe in your surroundings with real-time community reports</p>
       
-      <div class="language-switcher" onclick="sendCommand('/language')">
+      <div class="language-switcher" onclick="handleLanguageChange()">
         <i class="fas fa-globe"></i> EN/AR
       </div>
     </header>
@@ -33,75 +33,123 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">
-        <i class="fas fa-map-marker-alt"></i> Area Safety
+    <!-- Main Menu View -->
+    <div id="mainView">
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-map-marker-alt"></i> Area Safety
+        </div>
+        <div class="menu-grid">
+          <div class="menu-btn" onclick="startReportFlow()">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Submit Report</span>
+          </div>
+          <div class="menu-btn" onclick="sendCommand('/map')">
+            <i class="fas fa-map"></i>
+            <span>View Map</span>
+          </div>
+          <div class="menu-btn" onclick="sendCommand('/topareas')">
+            <i class="fas fa-chart-line"></i>
+            <span>Top Areas</span>
+          </div>
+          <div class="menu-btn" onclick="sendCommand('/subscribe')">
+            <i class="fas fa-bell"></i>
+            <span>Subscriptions</span>
+          </div>
+        </div>
       </div>
-      <div class="menu-grid">
-        <div class="menu-btn" onclick="sendCommand('/report')">
-          <i class="fas fa-exclamation-circle"></i>
-          <span>Submit Report</span>
+
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-users"></i> Community
         </div>
-        <div class="menu-btn" onclick="sendCommand('/map')">
-          <i class="fas fa-map"></i>
-          <span>View Map</span>
+        <div class="menu-grid">
+          <div class="menu-btn" onclick="startVoteFlow('upvote')">
+            <i class="fas fa-thumbs-up"></i>
+            <span>Upvote</span>
+          </div>
+          <div class="menu-btn" onclick="startVoteFlow('downvote')">
+            <i class="fas fa-thumbs-down"></i>
+            <span>Downvote</span>
+          </div>
+          <div class="menu-btn" onclick="sendCommand('/reputation')">
+            <i class="fas fa-star"></i>
+            <span>Reputation</span>
+          </div>
+          <div class="menu-btn" onclick="sendCommand('/unsubscribe')">
+            <i class="fas fa-ban"></i>
+            <span>Unsubscribe</span>
+          </div>
         </div>
-        <div class="menu-btn" onclick="sendCommand('/topareas')">
-          <i class="fas fa-chart-line"></i>
-          <span>Top Areas</span>
+      </div>
+
+      <div class="emergency-section">
+        <i class="fas fa-exclamation-triangle emergency-icon"></i>
+        <h3>Emergency Situation?</h3>
+        <p>Report immediately to alert authorities and nearby users</p>
+        <button class="emergency-btn pulse" onclick="startEmergencyReport()">
+          <i class="fas fa-bell"></i> Emergency Report
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-info-circle"></i> Information
         </div>
-        <div class="menu-btn" onclick="sendCommand('/subscribe')">
-          <i class="fas fa-bell"></i>
-          <span>Subscriptions</span>
+        <div class="menu-grid">
+          <div class="menu-btn" onclick="sendCommand('/about')">
+            <i class="fas fa-question-circle"></i>
+            <span>About</span>
+          </div>
+          <div class="menu-btn" onclick="sendCommand('/help')">
+            <i class="fas fa-life-ring"></i>
+            <span>Help</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">
-        <i class="fas fa-users"></i> Community
-      </div>
-      <div class="menu-grid">
-        <div class="menu-btn" onclick="sendCommand('/upvote')">
-          <i class="fas fa-thumbs-up"></i>
-          <span>Upvote</span>
+    <!-- Report Flow View -->
+    <div id="reportView" class="hidden">
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-exclamation-circle"></i> Submit Report
         </div>
-        <div class="menu-btn" onclick="sendCommand('/downvote')">
-          <i class="fas fa-thumbs-down"></i>
-          <span>Downvote</span>
+        <div class="form-group">
+          <label for="reportCategory">Select Category:</label>
+          <select id="reportCategory" class="form-select">
+            <option value="Crowded">Crowded / مزدحم</option>
+            <option value="Noisy">Noisy / صاخب</option>
+            <option value="Festive">Festive / احتفالي</option>
+            <option value="Calm">Calm / هادئ</option>
+            <option value="Suspicious">Suspicious / مريب</option>
+            <option value="Dangerous">Dangerous / خطر</option>
+          </select>
         </div>
-        <div class="menu-btn" onclick="sendCommand('/reputation')">
-          <i class="fas fa-star"></i>
-          <span>Reputation</span>
+        <div class="form-group">
+          <label for="reportContext">Context Notes:</label>
+          <textarea id="reportContext" class="form-textarea" placeholder="Describe the situation..."></textarea>
         </div>
-        <div class="menu-btn" onclick="sendCommand('/unsubscribe')">
-          <i class="fas fa-ban"></i>
-          <span>Unsubscribe</span>
+        <div class="form-buttons">
+          <button class="btn btn-secondary" onclick="showMainView()">Cancel</button>
+          <button class="btn btn-primary" onclick="submitReport()">Submit Report</button>
         </div>
       </div>
     </div>
 
-    <div class="emergency-section">
-      <i class="fas fa-exclamation-triangle emergency-icon"></i>
-      <h3>Emergency Situation?</h3>
-      <p>Report immediately to alert authorities and nearby users</p>
-      <button class="emergency-btn pulse" onclick="sendCommand('/report emergency')">
-        <i class="fas fa-bell"></i> Emergency Report
-      </button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">
-        <i class="fas fa-info-circle"></i> Information
-      </div>
-      <div class="menu-grid">
-        <div class="menu-btn" onclick="sendCommand('/about')">
-          <i class="fas fa-question-circle"></i>
-          <span>About</span>
+    <!-- Vote Flow View -->
+    <div id="voteView" class="hidden">
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-vote-yea"></i> <span id="voteTitle">Vote</span>
         </div>
-        <div class="menu-btn" onclick="sendCommand('/help')">
-          <i class="fas fa-life-ring"></i>
-          <span>Help</span>
+        <div class="form-group">
+          <label for="reportId">Report ID:</label>
+          <input type="number" id="reportId" class="form-input" placeholder="Enter report ID">
+        </div>
+        <div class="form-buttons">
+          <button class="btn btn-secondary" onclick="showMainView()">Cancel</button>
+          <button class="btn btn-primary" onclick="submitVote()">Submit Vote</button>
         </div>
       </div>
     </div>
@@ -111,7 +159,7 @@
       <div class="card-title">
         <i class="fas fa-question-circle"></i> Connection Help
       </div>
-      <p>If the app closes after sending commands, try these steps:</p>
+      <p>If you experience issues:</p>
       <ol>
         <li>Make sure you're using the latest version of Telegram</li>
         <li>Restart the Telegram app</li>
@@ -120,18 +168,6 @@
       <button class="btn test-btn" onclick="testConnection()">
         <i class="fas fa-wifi"></i> Test Connection
       </button>
-    </div>
-
-    <!-- Debug Section (visible only in development) -->
-    <div class="card debug-section" style="display: none;">
-      <div class="card-title">
-        <i class="fas fa-bug"></i> Debug Info
-      </div>
-      <div class="debug-info">
-        <p>User ID: <span id="debugUserId">--</span></p>
-        <p>Last Command: <span id="debugLastCommand">--</span></p>
-        <p>Status: <span id="debugStatus">--</span></p>
-      </div>
     </div>
 
     <footer>
