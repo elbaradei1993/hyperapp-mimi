@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperApp - Stay safe & Connected</title>
+  <title>HyperApp - Stay Informed & Safe</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container">
@@ -21,13 +23,13 @@
     </header>
 
     <div class="status-bar">
-      <div class="status-item">
-        <i class="fas fa-user-check"></i>
-        <span>Connected</span>
+      <div class="status-item connection-status">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span>Connecting to bot...</span>
       </div>
       <div class="status-item reputation-display">
         <i class="fas fa-star"></i>
-        <span>Rep: <span class="reputation">85</span></span>
+        <span>Rep: <span class="reputation">--</span></span>
       </div>
     </div>
 
@@ -101,6 +103,18 @@
           <i class="fas fa-life-ring"></i>
           <span>Help</span>
         </div>
+      </div>
+    </div>
+
+    <!-- Debug Section (visible only in development) -->
+    <div class="card debug-section" style="display: none;">
+      <div class="card-title">
+        <i class="fas fa-bug"></i> Debug Info
+      </div>
+      <div class="debug-info">
+        <p>User ID: <span id="debugUserId">--</span></p>
+        <p>Last Command: <span id="debugLastCommand">--</span></p>
+        <p>Status: <span id="debugStatus">--</span></p>
       </div>
     </div>
 
