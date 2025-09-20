@@ -3,131 +3,248 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperApp - Community Safety Reports</title>
+  <title>HyperApp - Community Safety Platform</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container">
+    <!-- Header Section -->
     <header>
       <div class="logo">
         <i class="fas fa-shield-alt"></i>
       </div>
       <h1>HyperApp</h1>
-      <p class="subtitle">Community-powered safety reports</p>
+      <p class="subtitle">Community-Powered Safety Reports</p>
+      
+      <div class="language-switcher" id="languageSwitcher">
+        <i class="fas fa-globe"></i> <span id="currentLanguage">EN</span>
+      </div>
     </header>
 
+    <!-- Status Bar -->
     <div class="status-bar">
-      <div class="status-item">
-        <i class="fas fa-user"></i>
-        <span>User: <span id="username">Guest</span></span>
+      <div class="status-item" id="connectionStatus">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span data-en="Connecting..." data-ar="جاري الاتصال...">Connecting...</span>
       </div>
       <div class="status-item">
         <i class="fas fa-star"></i>
-        <span>Rep: <span id="reputation">0</span></span>
+        <span data-en="Rep:" data-ar="النقاط:">Rep:</span> <span id="userReputation">0</span>
       </div>
     </div>
 
-    <!-- Main View -->
-    <div id="mainView">
-      <!-- Nearby Vibes Section -->
-      <div class="card">
-        <div class="card-title">
-          <i class="fas fa-map-marker-alt"></i> Nearby Vibes
-        </div>
-        <div id="nearbyVibes" class="vibes-list">
-          <div class="loading">Loading nearby reports...</div>
-        </div>
-        <button class="btn refresh-btn" onclick="loadNearbyVibes()">
-          <i class="fas fa-sync"></i> Refresh
-        </button>
-      </div>
+    <!-- Main Navigation -->
+    <nav class="app-nav">
+      <button class="nav-btn active" data-view="main"><i class="fas fa-home"></i></button>
+      <button class="nav-btn" data-view="map"><i class="fas fa-map"></i></button>
+      <button class="nav-btn" data-view="reports"><i class="fas fa-list"></i></button>
+      <button class="nav-btn" data-view="settings"><i class="fas fa-cog"></i></button>
+    </nav>
 
-      <!-- Quick Actions -->
-      <div class="card">
-        <div class="card-title">
-          <i class="fas fa-bolt"></i> Quick Actions
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- Main View -->
+      <div id="mainView" class="view active">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-map-marker-alt"></i> 
+            <span data-en="Nearby Reports" data-ar="التقارير القريبة">Nearby Reports</span>
+          </div>
+          <div id="nearbyReports" class="reports-container">
+            <div class="loading-spinner"></div>
+          </div>
+          <button class="btn refresh-btn" onclick="loadNearbyReports()">
+            <i class="fas fa-sync-alt"></i> 
+            <span data-en="Refresh" data-ar="تحديث">Refresh</span>
+          </button>
         </div>
-        <div class="menu-grid">
-          <div class="menu-btn" onclick="startReportFlow()">
+
+        <div class="quick-actions">
+          <div class="action-btn" onclick="showReportModal()">
             <i class="fas fa-plus-circle"></i>
-            <span>Report Vibe</span>
+            <span data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</span>
           </div>
-          <div class="menu-btn" onclick="openMap()">
-            <i class="fas fa-map"></i>
-            <span>View Map</span>
-          </div>
-          <div class="menu-btn" onclick="showTopAreas()">
+          <div class="action-btn" onclick="loadTopAreas()">
             <i class="fas fa-chart-line"></i>
-            <span>Top Areas</span>
+            <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
+          </div>
+          <div class="action-btn emergency-btn" onclick="showEmergencyReport()">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span data-en="Emergency" data-ar="طارئ">Emergency</span>
           </div>
         </div>
       </div>
 
-      <!-- Emergency Section -->
-      <div class="emergency-section">
-        <i class="fas fa-exclamation-triangle"></i>
-        <h3>Emergency Situation?</h3>
-        <p>Report immediately to alert the community</p>
-        <button class="emergency-btn" onclick="reportEmergency()">
-          <i class="fas fa-bell"></i> Emergency Report
-        </button>
-      </div>
-    </div>
-
-    <!-- Report View -->
-    <div id="reportView" class="hidden">
-      <div class="card">
-        <div class="card-title">
-          <i class="fas fa-arrow-left" onclick="showMainView()"></i>
-          Report Vibe
-        </div>
-        
-        <div class="form-group">
-          <label>What's the vibe?</label>
-          <div class="vibe-categories">
-            <div class="vibe-option" onclick="selectVibe('crowded')">
-              <i class="fas fa-users"></i>
-              <span>Crowded</span>
-            </div>
-            <div class="vibe-option" onclick="selectVibe('noisy')">
-              <i class="fas fa-volume-up"></i>
-              <span>Noisy</span>
-            </div>
-            <div class="vibe-option" onclick="selectVibe('festive')">
-              <i class="fas fa-music"></i>
-              <span>Festive</span>
-            </div>
-            <div class="vibe-option" onclick="selectVibe('calm')">
-              <i class="fas fa-peace"></i>
-              <span>Calm</span>
-            </div>
-            <div class="vibe-option" onclick="selectVibe('suspicious')">
-              <i class="fas fa-eye"></i>
-              <span>Suspicious</span>
-            </div>
-            <div class="vibe-option" onclick="selectVibe('dangerous')">
-              <i class="fas fa-exclamation-triangle"></i>
-              <span>Dangerous</span>
-            </div>
+      <!-- Map View -->
+      <div id="mapView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-map"></i> 
+            <span data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</span>
+          </div>
+          <div id="mapContainer" class="map-container">
+            <div class="loading-spinner"></div>
           </div>
         </div>
+      </div>
 
-        <div class="form-group">
-          <label for="vibeNotes">Additional notes (optional)</label>
-          <textarea id="vibeNotes" placeholder="Describe what you're seeing..."></textarea>
+      <!-- Reports View -->
+      <div id="reportsView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-list"></i> 
+            <span data-en="My Reports" data-ar="تقاريري">My Reports</span>
+          </div>
+          <div id="userReports" class="reports-container">
+            <div class="loading-spinner"></div>
+          </div>
         </div>
+      </div>
 
-        <button class="btn btn-primary" onclick="submitVibeReport()">
-          Submit Report
-        </button>
+      <!-- Settings View -->
+      <div id="settingsView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-cog"></i> 
+            <span data-en="Settings" data-ar="الإعدادات">Settings</span>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="Account" data-ar="الحساب">Account</h3>
+            <div class="setting-item">
+              <span data-en="Username" data-ar="اسم المستخدم">Username</span>
+              <span id="settingsUsername">-</span>
+            </div>
+            <div class="setting-item">
+              <span data-en="Reputation" data-ar="النقاط">Reputation</span>
+              <span id="settingsReputation">0</span>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="Preferences" data-ar="التفضيلات">Preferences</h3>
+            <div class="setting-item">
+              <span data-en="Language" data-ar="اللغة">Language</span>
+              <select id="languageSelect" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <span data-en="Notification" data-ar="الإشعارات">Notifications</span>
+              <label class="switch">
+                <input type="checkbox" id="notificationsToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="About" data-ar="عن التطبيق">About</h3>
+            <p data-en="HyperApp helps communities stay informed about safety conditions in their area." 
+               data-ar="يساعدك HyperApp على البقاء على اطلاع بظروف السلامة في منطقتك.">
+              HyperApp helps communities stay informed about safety conditions in their area.
+            </p>
+            <p>Version 1.0.0</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</h2>
+          <span class="close" onclick="closeModal('reportModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label data-en="Select vibe type:" data-ar="اختر نوع الحالة:">Select vibe type:</label>
+            <div class="vibe-options">
+              <div class="vibe-option" data-vibe="crowded" onclick="selectVibe('crowded')">
+                <i class="fas fa-users"></i>
+                <span data-en="Crowded" data-ar="مزدحم">Crowded</span>
+              </div>
+              <div class="vibe-option" data-vibe="noisy" onclick="selectVibe('noisy')">
+                <i class="fas fa-volume-up"></i>
+                <span data-en="Noisy" data-ar="صاخب">Noisy</span>
+              </div>
+              <div class="vibe-option" data-vibe="festive" onclick="selectVibe('festive')">
+                <i class="fas fa-music"></i>
+                <span data-en="Festive" data-ar="احتفالي">Festive</span>
+              </div>
+              <div class="vibe-option" data-vibe="calm" onclick="selectVibe('calm')">
+                <i class="fas fa-peace"></i>
+                <span data-en="Calm" data-ar="هادئ">Calm</span>
+              </div>
+              <div class="vibe-option" data-vibe="suspicious" onclick="selectVibe('suspicious')">
+                <i class="fas fa-eye"></i>
+                <span data-en="Suspicious" data-ar="مريب">Suspicious</span>
+              </div>
+              <div class="vibe-option" data-vibe="dangerous" onclick="selectVibe('dangerous')">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span data-en="Dangerous" data-ar="خطر">Dangerous</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="reportNotes" data-en="Additional details:" data-ar="تفاصيل إضافية:">Additional details:</label>
+            <textarea id="reportNotes" placeholder="Describe what you're experiencing..."></textarea>
+          </div>
+          
+          <button class="btn btn-primary" onclick="submitReport()" data-en="Submit Report" data-ar="إرسال التقرير">
+            Submit Report
+          </button>
+        </div>
       </div>
     </div>
 
-    <footer>
-      <p>Keep your community informed and safe</p>
-    </footer>
+    <!-- Emergency Report Modal -->
+    <div id="emergencyModal" class="modal">
+      <div class="modal-content emergency">
+        <div class="modal-header">
+          <h2><i class="fas fa-exclamation-triangle"></i> <span data-en="Emergency Report" data-ar="بلاغ طارئ">Emergency Report</span></h2>
+          <span class="close" onclick="closeModal('emergencyModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+          <p data-en="Please use this only for real emergencies. Your report will alert authorities and nearby users." 
+             data-ar="يرجى استخدام هذا للنواحي الطارئة فقط. سيتم إبلاغ السلطات والمستخدمين القريبين.">
+            Please use this only for real emergencies. Your report will alert authorities and nearby users.
+          </p>
+          
+          <div class="form-group">
+            <label data-en="Emergency type:" data-ar="نوع الطارئ:">Emergency type:</label>
+            <select id="emergencyType">
+              <option value="dangerous" data-en="Dangerous situation" data-ar="موقف خطر">Dangerous situation</option>
+              <option value="medical" data-en="Medical emergency" data-ar="طارئ طبي">Medical emergency</option>
+              <option value="fire" data-en="Fire" data-ar="حريق">Fire</option>
+              <option value="other" data-en="Other emergency" data-ar="طارئ آخر">Other emergency</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="emergencyDetails" data-en="Emergency details:" data-ar="تفاصيل الطارئ:">Emergency details:</label>
+            <textarea id="emergencyDetails" placeholder="Please provide as many details as possible..."></textarea>
+          </div>
+          
+          <button class="btn btn-emergency" onclick="submitEmergencyReport()">
+            <i class="fas fa-bell"></i> 
+            <span data-en="Send Emergency Alert" data-ar="إرسال تنبيه طارئ">Send Emergency Alert</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification System -->
+    <div id="notification" class="notification hidden">
+      <div class="notification-content">
+        <span id="notificationMessage"></span>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
