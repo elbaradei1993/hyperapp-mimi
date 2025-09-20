@@ -250,7 +250,7 @@
 
     .quick-actions {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
       gap: 10px;
       margin: 20px 0;
     }
@@ -462,6 +462,8 @@
       text-align: center;
       color: var(--text-light);
       padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
     }
 
     .map-placeholder-center i {
@@ -774,7 +776,7 @@
             <i class="fas fa-chart-line"></i>
             <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
           </div>
-          <div class="action-btn emergency-btn" data-action="emergery">
+          <div class="action-btn emergency-btn" data-action="emergency">
             <i class="fas fa-exclamation-triangle"></i>
             <span data-en="Emergency" data-ar="طارئ">Emergency</span>
           </div>
@@ -841,7 +843,7 @@
           <div class="settings-section">
             <h3 data-en="About" data-ar="عن التطبيق">About</h3>
             <p data-en="HyperApp helps communities stay informed about safety conditions in their area." 
-               data-ar="يساعدك HyperApp على البقاء على اطلاع بظروف السلامة في منطقتك.">
+               data-ar="يساعدك HyperApp على البقاء على اطلاع بظروف السلامة в منطقتك.">
               HyperApp helps communities stay informed about safety conditions in their area.
             </p>
             <p>Version 1.0.0</p>
@@ -1081,7 +1083,7 @@
               this.showReportModal();
             } else if (action === 'areas') {
               this.loadTopAreas();
-            } else if (action === 'emergery') {
+            } else if (action === 'emergency') {
               this.showEmergencyReport();
             }
           });
@@ -1258,7 +1260,7 @@
             if (error.message.includes('row-level security')) {
               this.showNotification("Database permissions issue. Please contact support.", "error");
             } else {
-              this.showNotification("Failed to load reports: " + error.message, "error");
+              this.showNotification("Failed to load reports", "error");
             }
             document.getElementById('nearbyReports').innerHTML = 
               '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
@@ -1275,9 +1277,9 @@
           this.displayNearbyReports();
         } catch (error) {
           console.error("Error loading nearby reports:", error);
-          this.showNotification("Failed to load reports: " + error.message, "error");
+          this.showNotification("Failed to load reports", "error");
           document.getElementById('nearbyReports').innerHTML = 
-            '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
+            '<div class="no-data" data-en="Error loading reports" data-ar="خطأ в تحميل التقارير">Error loading reports</div>';
         }
       }
       
@@ -1333,7 +1335,7 @@
           
           if (error) {
             console.error("Error loading user reports:", error);
-            this.showNotification("Failed to load your reports: " + error.message, "error");
+            this.showNotification("Failed to load your reports", "error");
             document.getElementById('userReports').innerHTML = 
               '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
             return;
@@ -1343,7 +1345,7 @@
           this.displayUserReports();
         } catch (error) {
           console.error("Error loading user reports:", error);
-          this.showNotification("Failed to load your reports: " + error.message, "error");
+          this.showNotification("Failed to load your reports", "error");
           document.getElementById('userReports').innerHTML = 
             '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
         }
@@ -1399,7 +1401,7 @@
             if (voteError.message.includes('row-level security')) {
               this.showNotification("Database permissions issue. Please contact support.", "error");
             } else {
-              this.showNotification("Failed to submit vote: " + voteError.message, "error");
+              this.showNotification("Failed to submit vote", "error");
             }
             return;
           }
@@ -1415,7 +1417,7 @@
               
               if (deleteError) {
                 console.error("Error removing vote:", deleteError);
-                this.showNotification("Failed to update vote: " + deleteError.message, "error");
+                this.showNotification("Failed to update vote", "error");
                 return;
               }
               
@@ -1428,7 +1430,7 @@
               
               if (updateError) {
                 console.error("Error updating vote:", updateError);
-                this.showNotification("Failed to update vote: " + updateError.message, "error");
+                this.showNotification("Failed to update vote", "error");
                 return;
               }
               
@@ -1444,7 +1446,7 @@
               if (insertError.message.includes('row-level security')) {
                 this.showNotification("Database permissions issue. Please contact support.", "error");
               } else {
-                this.showNotification("Failed to submit vote: " + insertError.message, "error");
+                this.showNotification("Failed to submit vote", "error");
               }
               return;
             }
@@ -1491,7 +1493,7 @@
           this.showNotification(operation === 'remove' ? 'Vote removed' : `Vote ${voteType === 'upvote' ? 'upvoted' : 'downvoted'}`, "success");
         } catch (error) {
           console.error("Error voting:", error);
-          this.showNotification("Failed to submit vote: " + error.message, "error");
+          this.showNotification("Failed to submit vote", "error");
         }
       }
       
@@ -1520,6 +1522,13 @@
         
         if (!this.selectedVibe) {
           this.showNotification("Please select a vibe type", "error");
+          return;
+        }
+        
+        // Ensure user exists in the database before submitting report
+        const userSynced = await this.syncUserWithSupabase();
+        if (!userSynced) {
+          this.showNotification("User account not ready. Please try again.", "error");
           return;
         }
         
@@ -1556,6 +1565,8 @@
             console.error("Error submitting report:", error);
             if (error.message.includes('row-level security')) {
               this.showNotification("Database permissions issue. Please run the SQL fix or contact support.", "error");
+            } else if (error.message.includes('foreign key constraint')) {
+              this.showNotification("User account issue. Please try again.", "error");
             } else {
               this.showNotification(`Failed to submit report: ${error.message}`, "error");
             }
@@ -1585,7 +1596,7 @@
           
         } catch (error) {
           console.error("Error submitting report:", error);
-          this.showNotification("Failed to submit report: " + error.message, "error");
+          this.showNotification("Failed to submit report", "error");
         }
       }
       
@@ -1598,6 +1609,13 @@
       async submitEmergencyReport() {
         if (!this.userData) {
           this.showNotification("Please sign in to submit an emergency report", "error");
+          return;
+        }
+        
+        // Ensure user exists in the database before submitting report
+        const userSynced = await this.syncUserWithSupabase();
+        if (!userSynced) {
+          this.showNotification("User account not ready. Please try again.", "error");
           return;
         }
         
@@ -1640,6 +1658,8 @@
             console.error("Error submitting emergency report:", error);
             if (error.message.includes('row-level security')) {
               this.showNotification("Database permissions issue. Please run the SQL fix or contact support.", "error");
+            } else if (error.message.includes('foreign key constraint')) {
+              this.showNotification("User account issue. Please try again.", "error");
             } else {
               this.showNotification(`Failed to submit emergency report: ${error.message}`, "error");
             }
@@ -1656,399 +1676,399 @@
               this.userData.reputation = (this.userData.reputation || 0) + 15;
               this.updateUserInfo();
             }
-            } catch (reputationError) {
-              console.log("Could not update reputation");
-            }
-            
-            document.getElementById('emergencyModal').style.display = 'none';
-            this.showNotification("Emergency report submitted", "success");
-            
-            await this.loadNearbyReports();
-            await this.loadUserReports();
-            this.loadMap();
-            
-            if (this.tg && this.tg.sendData) {
-              this.tg.sendData(JSON.stringify({
-                type: 'emergency',
-                emergencyType: emergencyType,
-                details: details
-              }));
-            }
-          } catch (error) {
-            console.error("Error submitting emergency report:", error);
-            this.showNotification("Failed to submit emergency report: " + error.message, "error");
-          }
-        }
-        
-        showView(viewName) {
-          document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
-          });
-          document.querySelector(`.nav-btn[data-view="${viewName}"]`).classList.add('active');
-          
-          document.querySelectorAll('.view').forEach(view => {
-            view.classList.remove('active');
-          });
-          document.getElementById(`${viewName}View`).classList.add('active');
-          
-          if (viewName === 'map') {
-            this.loadMap();
-          } else if (viewName === 'reports') {
-            this.loadUserReports();
-          }
-        }
-        
-        async loadMap() {
-          try {
-            document.getElementById('mapContainer').innerHTML = '<div class="loading-spinner"></div>';
-            
-            const { data: reports, error } = await this.supabase
-              .from('reports')
-              .select('*')
-              .not('latitude', 'is', null)
-              .not('longitude', 'is', null)
-              .limit(50);
-            
-            if (error) {
-              console.error("Error loading map data:", error);
-              this.displayMap([]);
-              return;
-            }
-            
-            this.displayMap(reports || []);
-          } catch (error) {
-            console.error("Error loading map:", error);
-            this.displayMap([]);
-          }
-        }
-        
-        displayMap(reports) {
-          const container = document.getElementById('mapContainer');
-          
-          if (reports.length === 0) {
-            container.innerHTML = `
-              <div class="map-visualization">
-                <div class="map-header">
-                  <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
-                  <p data-en="Submit reports to see them on the map" data-ar="قم بإرسال التقارير لرؤيتها على الخريطة">
-                    Submit reports to see them on the map
-                  </p>
-                </div>
-                <div class="map-points">
-                  <div class="map-placeholder-center">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <p data-en="No location data yet" data-ar="لا توجد بيانات موقع بعد">No location data yet</p>
-                    <button class="btn btn-primary" id="firstReportBtn">
-                      <i class="fas fa-plus-circle"></i>
-                      <span data-en="Submit First Report" data-ar="إرسال أول تقرير">Submit First Report</span>
-                    </button>
-                  </div>
-                </div>
-                <div class="map-legend">
-                  <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
-                  <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
-                  <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
-                  <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
-                  <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
-                  <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
-                </div>
-              </div>
-            `;
-          } else {
-            // Generate random positions for demo purposes
-            const getRandomPosition = () => Math.floor(Math.random() * 80) + 10;
-            
-            container.innerHTML = `
-              <div class="map-visualization">
-                <div class="map-header">
-                  <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
-                  <p data-en="${reports.length} reports with location data" data-ar="${reports.length} تقرير يحتوي على بيانات الموقع">
-                    ${reports.length} reports with location data
-                  </p>
-                </div>
-                <div class="map-points">
-                  ${reports.map(report => `
-                    <div class="map-point" 
-                         style="top: ${getRandomPosition()}%; left: ${getRandomPosition()}%;" 
-                         data-vibe="${report.vibe_type}" 
-                         title="${report.vibe_type} at ${report.location}">
-                      <i class="${this.getVibeIcon(report.vibe_type)}"></i>
-                    </div>
-                  `).join('')}
-                </div>
-                <div class="map-legend">
-                  <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
-                  <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
-                  <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
-                  <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
-                  <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
-                  <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
-                </div>
-              </div>
-            `;
+          } catch (reputationError) {
+            console.log("Could not update reputation");
           }
           
-          this.updateTextDirection();
-        }
-        
-        async loadTopAreas() {
-          try {
-            const { data: areas, error } = await this.supabase
-              .from('reports')
-              .select('location, vibe_type')
-              .not('location', 'is', null)
-              .not('location', 'eq', 'Unknown Location');
-            
-            if (error) {
-              console.error("Error loading top areas:", error);
-              this.showNotification("Failed to load top areas: " + error.message, "error");
-              return;
-            }
-            
-            // For demo purposes, create sample data if none exists
-            let locationCounts = {};
-            
-            if (areas && areas.length > 0) {
-              areas.forEach(report => {
-                if (!locationCounts[report.location]) {
-                  locationCounts[report.location] = { count: 0, vibes: {} };
-                }
-                locationCounts[report.location].count++;
-                
-                if (!locationCounts[report.location].vibes[report.vibe_type]) {
-                  locationCounts[report.location].vibes[report.vibe_type] = 0;
-                }
-                locationCounts[report.location].vibes[report.vibe_type]++;
-              });
-            } else {
-              // Sample data for demonstration
-              locationCounts = {
-                "Downtown": { count: 15, vibes: { crowded: 5, noisy: 7, festive: 3 } },
-                "City Park": { count: 12, vibes: { calm: 8, festive: 4 } },
-                "Shopping District": { count: 8, vibes: { crowded: 6, noisy: 2 } }
-              };
-            }
-            
-            const topAreas = Object.entries(locationCounts)
-              .map(([location, data]) => ({ location, ...data }))
-              .sort((a, b) => b.count - a.count)
-              .slice(0, 10);
-            
-            const modalContent = `
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h2 data-en="Top Areas" data-ar="أهم المناطق">Top Areas</h2>
-                  <span class="close">&times;</span>
-                </div>
-                <div class="modal-body">
-                  ${topAreas.length > 0 ? `
-                    <div class="top-areas-list">
-                      ${topAreas.map(area => `
-                        <div class="area-item">
-                          <div class="area-header">
-                            <h3>${area.location}</h3>
-                            <span class="report-count">${area.count} reports</span>
-                          </div>
-                          <div class="area-vibes">
-                            ${Object.entries(area.vibes)
-                              .map(([vibe, count]) => `
-                                <span class="vibe-tag">
-                                  <i class="${this.getVibeIcon(vibe)}"></i>
-                                  ${vibe}: ${count}
-                                </span>
-                              `).join('')}
-                          </div>
-                        </div>
-                      `).join('')}
-                    </div>
-                  ` : `
-                    <p data-en="No area data available" data-ar="لا توجد بيانات للمناطق متاحة">
-                      No area data available
-                    </p>
-                  `}
-                </div>
-              </div>
-            `;
-            
-            let modal = document.getElementById('topAreasModal');
-            if (!modal) {
-              modal = document.createElement('div');
-              modal.id = 'topAreasModal';
-              modal.className = 'modal';
-              document.body.appendChild(modal);
-            }
-            
-            modal.innerHTML = modalContent;
-            modal.style.display = 'block';
-            
-            // Add event listener to close button
-            const closeBtn = modal.querySelector('.close');
-            if (closeBtn) {
-              closeBtn.addEventListener('click', () => {
-                modal.style.display = 'none';
-              });
-            }
-            
-            this.updateTextDirection();
-          } catch (error) {
-            console.error("Error loading top areas:", error);
-            this.showNotification("Failed to load top areas: " + error.message, "error");
+          document.getElementById('emergencyModal').style.display = 'none';
+          this.showNotification("Emergency report submitted", "success");
+          
+          await this.loadNearbyReports();
+          await this.loadUserReports();
+          this.loadMap();
+          
+          if (this.tg && this.tg.sendData) {
+            this.tg.sendData(JSON.stringify({
+              type: 'emergency',
+              emergencyType: emergencyType,
+              details: details
+            }));
           }
-        }
-        
-        toggleLanguage() {
-          this.currentLanguage = this.currentLanguage === 'en' ? 'ar' : 'en';
-          this.applyLanguage(this.currentLanguage);
-          
-          document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
-          
-          if (this.userData) {
-            this.supabase
-              .from('users')
-              .update({ language: this.currentLanguage })
-              .eq('user_id', this.userData.id)
-              .then(({ error }) => {
-                if (error) {
-                  console.error("Error updating language:", error);
-                }
-              });
-          }
-          
-          this.showNotification(`Language changed to ${this.currentLanguage === 'en' ? 'English' : 'Arabic'}`, "success");
-        }
-        
-        changeLanguage(lang) {
-          this.currentLanguage = lang;
-          this.applyLanguage(lang);
-          
-          document.getElementById('languageSelect').value = this.currentLanguage;
-          document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
-          
-          if (this.userData) {
-            this.supabase
-              .from('users')
-              .update({ language: this.currentLanguage })
-              .eq('user_id', this.userData.id)
-              .then(({ error }) => {
-                if (error) {
-                  console.error("Error updating language:", error);
-                }
-              });
-          }
-        }
-        
-        applyLanguage(lang) {
-          // Update text direction
-          document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-          
-          // Update all elements with data attributes
-          document.querySelectorAll('[data-en], [data-ar]').forEach(element => {
-            const text = lang === 'ar' ? element.getAttribute('data-ar') : element.getAttribute('data-en');
-            if (text && element.textContent !== text) {
-              element.textContent = text;
-            }
-          });
-          
-          // Update placeholders
-          const textarea = document.getElementById('reportNotes');
-          const emergencyTextarea = document.getElementById('emergencyDetails');
-          if (textarea) {
-            textarea.placeholder = lang === 'ar' ? 'صف ما تواجهه...' : 'Describe what you\'re experiencing...';
-          }
-          if (emergencyTextarea) {
-            emergencyTextarea.placeholder = lang === 'ar' ? 'يرجى تقديم أكبر عدد ممكن من التفاصيل...' : 'Please provide as many details as possible...';
-          }
-          
-          this.updateTextDirection();
-        }
-        
-        updateTextDirection() {
-          document.querySelectorAll('[data-en], [data-ar]').forEach(element => {
-            if (this.currentLanguage === 'ar') {
-              element.style.textAlign = 'right';
-              element.style.direction = 'rtl';
-            } else {
-              element.style.textAlign = 'left';
-              element.style.direction = 'ltr';
-            }
-          });
-        }
-        
-        showNotification(message, type = 'info') {
-          const notification = document.getElementById('notification');
-          const messageElement = document.getElementById('notificationMessage');
-          
-          if (!notification || !messageElement) return;
-          
-          // Set message and type
-          messageElement.textContent = message;
-          notification.className = `notification ${type}`;
-          
-          // Show notification
-          notification.classList.remove('hidden');
-          
-          // Auto hide after 3 seconds
-          setTimeout(() => {
-            notification.classList.add('hidden');
-          }, 3000);
-        }
-        
-        closeModal(modalId) {
-          document.getElementById(modalId).style.display = 'none';
-        }
-        
-        getVibeIcon(vibeType) {
-          const icons = {
-            crowded: 'fas fa-users',
-            noisy: 'fas fa-volume-up',
-            festive: 'fas fa-music',
-            calm: 'fas fa-peace',
-            suspicious: 'fas fa-eye',
-            dangerous: 'fas fa-exclamation-triangle'
-          };
-          return icons[vibeType] || 'fas fa-question-circle';
-        }
-        
-        getVibeArabicName(vibeType) {
-          const names = {
-            crowded: 'مزدحم',
-            noisy: 'صاخب',
-            festive: 'احتفالي',
-            calm: 'هادئ',
-            suspicious: 'مريب',
-            dangerous: 'خطر'
-          };
-          return names[vibeType] || vibeType;
-        }
-        
-        capitalizeFirstLetter(string) {
-          return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-        
-        formatTimeAgo(dateString) {
-          const date = new Date(dateString);
-          const now = new Date();
-          const seconds = Math.floor((now - date) / 1000);
-          
-          if (seconds < 60) return this.currentLanguage === 'en' ? 'Just now' : 'الآن';
-          
-          const minutes = Math.floor(seconds / 60);
-          if (minutes < 60) return this.currentLanguage === 'en' ? `${minutes}m ago` : `منذ ${minutes} دقيقة`;
-          
-          const hours = Math.floor(minutes / 60);
-          if (hours < 24) return this.currentLanguage === 'en' ? `${hours}h ago` : `منذ ${hours} ساعة`;
-          
-          const days = Math.floor(hours / 24);
-          if (days < 7) return this.currentLanguage === 'en' ? `${days}d ago` : `منذ ${days} يوم`;
-          
-          return date.toLocaleDateString(this.currentLanguage === 'en' ? 'en-US' : 'ar-EG');
+        } catch (error) {
+          console.error("Error submitting emergency report:", error);
+          this.showNotification("Failed to submit emergency report", "error");
         }
       }
+      
+      showView(viewName) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        document.querySelector(`.nav-btn[data-view="${viewName}"]`).classList.add('active');
+        
+        document.querySelectorAll('.view').forEach(view => {
+          view.classList.remove('active');
+        });
+        document.getElementById(`${viewName}View`).classList.add('active');
+        
+        if (viewName === 'map') {
+          this.loadMap();
+        } else if (viewName === 'reports') {
+          this.loadUserReports();
+        }
+      }
+      
+      async loadMap() {
+        try {
+          document.getElementById('mapContainer').innerHTML = '<div class="loading-spinner"></div>';
+          
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('*')
+            .not('latitude', 'is', null)
+            .not('longitude', 'is', null)
+            .limit(50);
+          
+          if (error) {
+            console.error("Error loading map data:", error);
+            this.displayMap([]);
+            return;
+          }
+          
+          this.displayMap(reports || []);
+        } catch (error) {
+          console.error("Error loading map:", error);
+          this.displayMap([]);
+        }
+      }
+      
+      displayMap(reports) {
+        const container = document.getElementById('mapContainer');
+        
+        if (reports.length === 0) {
+          container.innerHTML = `
+            <div class="map-visualization">
+              <div class="map-header">
+                <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
+                <p data-en="Submit reports to see them on the map" data-ar="قم بإرسال التقارير لرؤيتها على الخريطة">
+                  Submit reports to see them on the map
+                </p>
+              </div>
+              <div class="map-points">
+                <div class="map-placeholder-center">
+                  <i class="fas fa-map-marked-alt"></i>
+                  <p data-en="No location data yet" data-ar="لا توجد بيانات موقع بعد">No location data yet</p>
+                  <button class="btn btn-primary" id="firstReportBtn">
+                    <i class="fas fa-plus-circle"></i>
+                    <span data-en="Submit First Report" data-ar="إرسال أول تقرير">Submit First Report</span>
+                  </button>
+                </div>
+              </div>
+              <div class="map-legend">
+                <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
+                <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
+                <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
+                <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
+                <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
+                <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
+              </div>
+            </div>
+          `;
+        } else {
+          // Generate random positions for demo purposes
+          const getRandomPosition = () => Math.floor(Math.random() * 80) + 10;
+          
+          container.innerHTML = `
+            <div class="map-visualization">
+              <div class="map-header">
+                <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
+                <p data-en="${reports.length} reports with location data" data-ar="${reports.length} تقرير يحتوي على بيانات الموقع">
+                  ${reports.length} reports with location data
+                </p>
+              </div>
+              <div class="map-points">
+                ${reports.map(report => `
+                  <div class="map-point" 
+                       style="top: ${getRandomPosition()}%; left: ${getRandomPosition()}%;" 
+                       data-vibe="${report.vibe_type}" 
+                       title="${report.vibe_type} at ${report.location}">
+                    <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="map-legend">
+                <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
+                <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
+                <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
+                <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
+                <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
+                <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
+              </div>
+            </div>
+          `;
+        }
+        
+        this.updateTextDirection();
+      }
+      
+      async loadTopAreas() {
+        try {
+          const { data: areas, error } = await this.supabase
+            .from('reports')
+            .select('location, vibe_type')
+            .not('location', 'is', null)
+            .not('location', 'eq', 'Unknown Location');
+          
+          if (error) {
+            console.error("Error loading top areas:", error);
+            this.showNotification("Failed to load top areas", "error");
+            return;
+          }
+          
+          // For demo purposes, create sample data if none exists
+          let locationCounts = {};
+          
+          if (areas && areas.length > 0) {
+            areas.forEach(report => {
+              if (!locationCounts[report.location]) {
+                locationCounts[report.location] = { count: 0, vibes: {} };
+              }
+              locationCounts[report.location].count++;
+              
+              if (!locationCounts[report.location].vibes[report.vibe_type]) {
+                locationCounts[report.location].vibes[report.vibe_type] = 0;
+              }
+              locationCounts[report.location].vibes[report.vibe_type]++;
+            });
+          } else {
+            // Sample data for demonstration
+            locationCounts = {
+              "Downtown": { count: 15, vibes: { crowded: 5, noisy: 7, festive: 3 } },
+              "City Park": { count: 12, vibes: { calm: 8, festive: 4 } },
+              "Shopping District": { count: 8, vibes: { crowded: 6, noisy: 2 } }
+            };
+          }
+          
+          const topAreas = Object.entries(locationCounts)
+            .map(([location, data]) => ({ location, ...data }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+          
+          const modalContent = `
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2 data-en="Top Areas" data-ar="أهم المناطق">Top Areas</h2>
+                <span class="close">&times;</span>
+              </div>
+              <div class="modal-body">
+                ${topAreas.length > 0 ? `
+                  <div class="top-areas-list">
+                    ${topAreas.map(area => `
+                      <div class="area-item">
+                        <div class="area-header">
+                          <h3>${area.location}</h3>
+                          <span class="report-count">${area.count} reports</span>
+                        </div>
+                        <div class="area-vibes">
+                          ${Object.entries(area.vibes)
+                            .map(([vibe, count]) => `
+                              <span class="vibe-tag">
+                                <i class="${this.getVibeIcon(vibe)}"></i>
+                                ${vibe}: ${count}
+                              </span>
+                            `).join('')}
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : `
+                  <p data-en="No area data available" data-ar="لا توجد بيانات للمناطق متاحة">
+                    No area data available
+                  </p>
+                `}
+              </div>
+            </div>
+          `;
+          
+          let modal = document.getElementById('topAreasModal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'topAreasModal';
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+          }
+          
+          modal.innerHTML = modalContent;
+          modal.style.display = 'block';
+          
+          // Add event listener to close button
+          const closeBtn = modal.querySelector('.close');
+          if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+              modal.style.display = 'none';
+            });
+          }
+          
+          this.updateTextDirection();
+        } catch (error) {
+          console.error("Error loading top areas:", error);
+          this.showNotification("Failed to load top areas", "error");
+        }
+      }
+      
+      toggleLanguage() {
+        this.currentLanguage = this.currentLanguage === 'en' ? 'ar' : 'en';
+        this.applyLanguage(this.currentLanguage);
+        
+        document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+        
+        if (this.userData) {
+          this.supabase
+            .from('users')
+            .update({ language: this.currentLanguage })
+            .eq('user_id', this.userData.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Error updating language:", error);
+              }
+            });
+        }
+        
+        this.showNotification(`Language changed to ${this.currentLanguage === 'en' ? 'English' : 'Arabic'}`, "success");
+      }
+      
+      changeLanguage(lang) {
+        this.currentLanguage = lang;
+        this.applyLanguage(lang);
+        
+        document.getElementById('languageSelect').value = this.currentLanguage;
+        document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+        
+        if (this.userData) {
+          this.supabase
+            .from('users')
+            .update({ language: this.currentLanguage })
+            .eq('user_id', this.userData.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Error updating language:", error);
+              }
+            });
+        }
+      }
+      
+      applyLanguage(lang) {
+        // Update text direction
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        
+        // Update all elements with data attributes
+        document.querySelectorAll('[data-en], [data-ar]').forEach(element => {
+          const text = lang === 'ar' ? element.getAttribute('data-ar') : element.getAttribute('data-en');
+          if (text && element.textContent !== text) {
+            element.textContent = text;
+          }
+        });
+        
+        // Update placeholders
+        const textarea = document.getElementById('reportNotes');
+        const emergencyTextarea = document.getElementById('emergencyDetails');
+        if (textarea) {
+          textarea.placeholder = lang === 'ar' ? 'صف ما تواجهه...' : 'Describe what you\'re experiencing...';
+        }
+        if (emergencyTextarea) {
+          emergencyTextarea.placeholder = lang === 'ar' ? 'يرجى تقديم أكبر عدد ممكن من التفاصيل...' : 'Please provide as many details as possible...';
+        }
+        
+        this.updateTextDirection();
+      }
+      
+      updateTextDirection() {
+        document.querySelectorAll('[data-en], [data-ar]').forEach(element => {
+          if (this.currentLanguage === 'ar') {
+            element.style.textAlign = 'right';
+            element.style.direction = 'rtl';
+          } else {
+            element.style.textAlign = 'left';
+            element.style.direction = 'ltr';
+          }
+        });
+      }
+      
+      showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        const messageElement = document.getElementById('notificationMessage');
+        
+        if (!notification || !messageElement) return;
+        
+        // Set message and type
+        messageElement.textContent = message;
+        notification.className = `notification ${type}`;
+        
+        // Show notification
+        notification.classList.remove('hidden');
+        
+        // Auto hide after 3 seconds
+        setTimeout(() => {
+          notification.classList.add('hidden');
+        }, 3000);
+      }
+      
+      closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+      }
+      
+      getVibeIcon(vibeType) {
+        const icons = {
+          crowded: 'fas fa-users',
+          noisy: 'fas fa-volume-up',
+          festive: 'fas fa-music',
+          calm: 'fas fa-peace',
+          suspicious: 'fas fa-eye',
+          dangerous: 'fas fa-exclamation-triangle'
+        };
+        return icons[vibeType] || 'fas fa-question-circle';
+      }
+      
+      getVibeArabicName(vibeType) {
+        const names = {
+          crowded: 'مزدحم',
+          noisy: 'صاخب',
+          festive: 'احتفالي',
+          calm: 'هادئ',
+          suspicious: 'مريب',
+          dangerous: 'خطر'
+        };
+        return names[vibeType] || vibeType;
+      }
+      
+      capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+      
+      formatTimeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        
+        if (seconds < 60) return this.currentLanguage === 'en' ? 'Just now' : 'الآن';
+        
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return this.currentLanguage === 'en' ? `${minutes}m ago` : `منذ ${minutes} دقيقة`;
+        
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return this.currentLanguage === 'en' ? `${hours}h ago` : `منذ ${hours} ساعة`;
+        
+        const days = Math.floor(hours / 24);
+        if (days < 7) return this.currentLanguage === 'en' ? `${days}d ago` : `منذ ${days} يوم`;
+        
+        return date.toLocaleDateString(this.currentLanguage === 'en' ? 'en-US' : 'ar-EG');
+      }
+    }
 
-      // Initialize the app when the page loads
-      document.addEventListener('DOMContentLoaded', function() {
-        window.app = new HyperApp();
-      });
-    </script>
+    // Initialize the app when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      window.app = new HyperApp();
+    });
+  </script>
 </body>
 </html>
