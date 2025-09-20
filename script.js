@@ -34,9 +34,6 @@ class HyperApp {
                 this.updateUserInfo();
             }
             
-            // Try to get user location
-            this.requestUserLocation();
-            
             // Set up event listeners
             this.setupEventListeners();
             
@@ -58,25 +55,6 @@ class HyperApp {
             };
             this.updateUserInfo();
             await this.loadInitialData();
-        }
-    }
-    
-    async requestUserLocation() {
-        if (this.tg && this.tg.showPopup && this.tg.isLocationRequested) {
-            try {
-                // Request location permission
-                this.tg.showPopup({
-                    title: "Location Access",
-                    message: "HyperApp needs your location to show nearby reports and map features.",
-                    buttons: [{ type: "ok", text: "Allow" }, { type: "cancel", text: "Deny" }]
-                }, async (buttonId) => {
-                    if (buttonId === "ok") {
-                        this.tg.requestLocation();
-                    }
-                });
-            } catch (e) {
-                console.log("Location request not available in this Telegram version");
-            }
         }
     }
     
@@ -103,7 +81,7 @@ class HyperApp {
     }
     
     async syncUserWithSupabase() {
-        if (!this.userData) return;
+        if (!this.userData) return false;
         
         try {
             // Check if user exists in Supabase
@@ -111,7 +89,7 @@ class HyperApp {
                 .from('users')
                 .select('*')
                 .eq('user_id', this.userData.id)
-                .single();
+                .maybeSingle();
             
             if (error && error.code === 'PGRST116') {
                 // User doesn't exist, create a new record
@@ -125,22 +103,28 @@ class HyperApp {
                             language: 'en'
                         }
                     ])
-                    .select();
+                    .select()
+                    .single();
                 
                 if (insertError) {
                     console.error("Error creating user:", insertError);
+                    // If there's an error, we'll still proceed but show a warning
+                    this.showNotification("Account setup incomplete. Some features may be limited.", "warning");
                     return false;
                 }
                 
+                this.userData.reputation = 0;
+                this.userData.language = 'en';
                 return true;
             } else if (error) {
                 console.error("Error checking user:", error);
+                // Continue without Supabase user data
                 return false;
             } else {
                 // Update user data with Supabase info
-                this.userData.reputation = data.reputation;
-                this.userData.language = data.language;
-                this.currentLanguage = data.language;
+                this.userData.reputation = data.reputation || 0;
+                this.userData.language = data.language || 'en';
+                this.currentLanguage = data.language || 'en';
                 this.applyLanguage(this.currentLanguage);
                 
                 // Update language selector
@@ -151,6 +135,7 @@ class HyperApp {
             }
         } catch (error) {
             console.error("Error syncing user with Supabase:", error);
+            // Continue without Supabase user data
             return false;
         }
     }
@@ -187,6 +172,7 @@ class HyperApp {
     async loadInitialData() {
         await this.loadNearbyReports();
         await this.loadUserReports();
+        this.loadMap(); // Always load map, even with no data
     }
     
     async loadNearbyReports() {
@@ -486,13 +472,6 @@ class HyperApp {
         const notes = document.getElementById('reportNotes').value;
         
         try {
-            // Ensure user exists in Supabase
-            const userSynced = await this.syncUserWithSupabase();
-            if (!userSynced) {
-                this.showNotification("Error with your account. Please try again.", "error");
-                return;
-            }
-            
             // Get user location if available
             let location = "Unknown Location";
             let latitude = null;
@@ -529,15 +508,19 @@ class HyperApp {
                 return;
             }
             
-            // Update user reputation
-            const { error: updateError } = await this.supabase
-                .from('users')
-                .update({ reputation: (this.userData.reputation || 0) + 10 })
-                .eq('user_id', this.userData.id);
-            
-            if (!updateError) {
-                this.userData.reputation = (this.userData.reputation || 0) + 10;
-                this.updateUserInfo();
+            // Update user reputation if user exists in Supabase
+            try {
+                const { error: updateError } = await this.supabase
+                    .from('users')
+                    .update({ reputation: (this.userData.reputation || 0) + 10 })
+                    .eq('user_id', this.userData.id);
+                
+                if (!updateError) {
+                    this.userData.reputation = (this.userData.reputation || 0) + 10;
+                    this.updateUserInfo();
+                }
+            } catch (reputationError) {
+                console.log("Could not update reputation (user might not exist in Supabase yet)");
             }
             
             // Close modal
@@ -546,9 +529,11 @@ class HyperApp {
             // Show success message
             this.showNotification("Report submitted successfully", "success");
             
-            // Refresh reports
+            // Refresh all data
             await this.loadNearbyReports();
             await this.loadUserReports();
+            this.loadMap(); // Refresh map with new data
+            
         } catch (error) {
             console.error("Error submitting report:", error);
             this.showNotification("Failed to submit report", "error");
@@ -576,13 +561,6 @@ class HyperApp {
         }
         
         try {
-            // Ensure user exists in Supabase
-            const userSynced = await this.syncUserWithSupabase();
-            if (!userSynced) {
-                this.showNotification("Error with your account. Please try again.", "error");
-                return;
-            }
-            
             // Get user location if available
             let location = "Unknown Location";
             let latitude = null;
@@ -619,15 +597,19 @@ class HyperApp {
                 return;
             }
             
-            // Update user reputation
-            const { error: updateError } = await this.supabase
-                .from('users')
-                .update({ reputation: (this.userData.reputation || 0) + 15 })
-                .eq('user_id', this.userData.id);
-            
-            if (!updateError) {
-                this.userData.reputation = (this.userData.reputation || 0) + 15;
-                this.updateUserInfo();
+            // Update user reputation if user exists in Supabase
+            try {
+                const { error: updateError } = await this.supabase
+                    .from('users')
+                    .update({ reputation: (this.userData.reputation || 0) + 15 })
+                    .eq('user_id', this.userData.id);
+                
+                if (!updateError) {
+                    this.userData.reputation = (this.userData.reputation || 0) + 15;
+                    this.updateUserInfo();
+                }
+            } catch (reputationError) {
+                console.log("Could not update reputation (user might not exist in Supabase yet)");
             }
             
             // Close modal
@@ -636,9 +618,10 @@ class HyperApp {
             // Show success message
             this.showNotification("Emergency report submitted", "success");
             
-            // Refresh reports
+            // Refresh all data
             await this.loadNearbyReports();
             await this.loadUserReports();
+            this.loadMap(); // Refresh map with new data
             
             // Send to Telegram bot if available
             if (this.tg && this.tg.sendData) {
@@ -690,64 +673,87 @@ class HyperApp {
             
             if (error) {
                 console.error("Error loading map data:", error);
-                document.getElementById('mapContainer').innerHTML = `
-                    <div class="map-placeholder">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <p data-en="Error loading map data" data-ar="خطأ في تحميل بيانات الخريطة">Error loading map data</p>
-                    </div>
-                `;
+                // Still show the map with empty state
+                this.displayMap([]);
                 return;
             }
             
-            if (reports.length === 0) {
-                document.getElementById('mapContainer').innerHTML = `
-                    <div class="map-placeholder">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <p data-en="No location data available" data-ar="لا توجد بيانات موقع متاحة">No location data available</p>
+            this.displayMap(reports || []);
+        } catch (error) {
+            console.error("Error loading map:", error);
+            // Show map with empty state on error
+            this.displayMap([]);
+        }
+    }
+    
+    displayMap(reports) {
+        const container = document.getElementById('mapContainer');
+        
+        if (reports.length === 0) {
+            // Show empty map state with instructions
+            container.innerHTML = `
+                <div class="map-visualization">
+                    <div class="map-header">
+                        <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
+                        <p data-en="Submit reports to see them on the map" data-ar="قم بإرسال التقارير لرؤيتها على الخريطة">
+                            Submit reports to see them on the map
+                        </p>
                     </div>
-                `;
-                return;
-            }
-            
-            // Create a simple map visualization
+                    <div class="map-points">
+                        <div class="map-placeholder-center">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <p data-en="No location data yet" data-ar="لا توجد بيانات موقع بعد">No location data yet</p>
+                            <button class="btn btn-primary" onclick="app.showReportModal()" style="margin-top: 15px;">
+                                <i class="fas fa-plus-circle"></i>
+                                <span data-en="Submit First Report" data-ar="إرسال أول تقرير">Submit First Report</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-legend">
+                        <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
+                        <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
+                        <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
+                        <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
+                        <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
+                        <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Create map with reports
             const mapHTML = `
                 <div class="map-visualization">
                     <div class="map-header">
-                        <h3 data-en="Vibe Heatmap" data-ar="خريمة الحالات">Vibe Heatmap</h3>
+                        <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
                         <p data-en="${reports.length} reports with location data" data-ar="${reports.length} تقرير يحتوي على بيانات الموقع">
                             ${reports.length} reports with location data
                         </p>
                     </div>
                     <div class="map-points">
                         ${reports.map(report => `
-                            <div class="map-point" style="top: ${50 + (report.latitude % 20)}%; left: ${50 + (report.longitude % 20)}%;" 
-                                 data-vibe="${report.vibe_type}" title="${report.vibe_type} at ${report.location}">
+                            <div class="map-point" 
+                                 style="top: ${50 + ((report.latitude || 0) % 20)}%; left: ${50 + ((report.longitude || 0) % 20)}%;" 
+                                 data-vibe="${report.vibe_type}" 
+                                 title="${report.vibe_type} at ${report.location}">
                                 <i class="${this.getVibeIcon(report.vibe_type)}"></i>
                             </div>
                         `).join('')}
                     </div>
                     <div class="map-legend">
-                        <div class="legend-item"><i class="fas fa-users"></i> Crowded</div>
-                        <div class="legend-item"><i class="fas fa-volume-up"></i> Noisy</div>
-                        <div class="legend-item"><i class="fas fa-music"></i> Festive</div>
-                        <div class="legend-item"><i class="fas fa-peace"></i> Calm</div>
-                        <div class="legend-item"><i class="fas fa-eye"></i> Suspicious</div>
-                        <div class="legend-item"><i class="fas fa-exclamation-triangle"></i> Dangerous</div>
+                        <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
+                        <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
+                        <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
+                        <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
+                        <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
+                        <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
                     </div>
                 </div>
             `;
             
-            document.getElementById('mapContainer').innerHTML = mapHTML;
-            this.updateTextDirection();
-        } catch (error) {
-            console.error("Error loading map:", error);
-            document.getElementById('mapContainer').innerHTML = `
-                <div class="map-placeholder">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <p data-en="Error loading map" data-ar="خطأ في تحميل الخريطة">Error loading map</p>
-                </div>
-            `;
+            container.innerHTML = mapHTML;
         }
+        
+        this.updateTextDirection();
     }
     
     async loadTopAreas() {
