@@ -9,6 +9,31 @@ function logDebug(message, data = null) {
     }
 }
 
+// Test connection function
+function testConnection() {
+    logDebug("Testing connection to bot...");
+    
+    if (tg) {
+        logDebug("Telegram WebApp detected:", tg);
+        logDebug("Init data:", tg.initData);
+        logDebug("User data:", tg.initDataUnsafe.user);
+        
+        // Show connection status
+        updateConnectionStatus('connected');
+        
+        // Show success message
+        showTempMessage('Connection test successful!', 'success');
+        
+        logDebug("Connection test completed successfully");
+    } else {
+        logDebug("Not in Telegram environment");
+        updateConnectionStatus('not_connected');
+        
+        // Show warning message
+        showTempMessage('Not in Telegram environment', 'warning');
+    }
+}
+
 // Initialize the app
 function init() {
     logDebug('Initializing HyperApp...');
