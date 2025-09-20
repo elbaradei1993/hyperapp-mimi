@@ -5,9 +5,513 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HyperApp - Community Safety Platform</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    :root {
+      --primary: #2D5BFF;
+      --primary-dark: #1A46E0;
+      --secondary: #FF6B35;
+      --success: #28A745;
+      --danger: #DC3545;
+      --warning: #FFC107;
+      --info: #17A2B8;
+      --dark-bg: #0A192F;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text-light: #F8F9FC;
+      --text-muted: #A0AEC0;
+      --border-radius: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--dark-bg);
+      color: var(--text-light);
+      min-height: 100vh;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 100%;
+      padding: 16px;
+      margin: 0 auto;
+      padding-bottom: 70px;
+    }
+
+    header {
+      text-align: center;
+      padding: 15px 0;
+      position: relative;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(45, 91, 255, 0.3);
+    }
+
+    .logo i {
+      font-size: 24px;
+      color: white;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+      background: linear-gradient(to right, #fff, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .language-switcher {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 12px 15px;
+      margin: 15px 0;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .connected {
+      color: var(--success) !important;
+    }
+
+    .app-nav {
+      display: flex;
+      justify-content: space-around;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 10px;
+      margin: 15px 0;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: fixed;
+      bottom: 15px;
+      left: 15px;
+      right: 15px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-btn.active {
+      background: rgba(45, 91, 255, 0.2);
+      color: var(--primary);
+    }
+
+    .nav-btn i {
+      font-size: 20px;
+    }
+
+    .content-area {
+      margin-bottom: 70px;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .reports-container {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .report-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .report-info {
+      flex: 1;
+    }
+
+    .report-type {
+      font-weight: 500;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .report-details {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .report-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 10px;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .vote-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    .upvote-btn.active {
+      color: var(--success);
+    }
+
+    .downvote-btn.active {
+      color: var(--danger);
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 15px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(45, 91, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .action-btn i {
+      font-size: 20px;
+      color: var(--primary);
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .action-btn span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .emergency-btn {
+      background: rgba(220, 53, 69, 0.2);
+      border-color: rgba(220, 53, 69, 0.3);
+    }
+
+    .emergency-btn i {
+      color: var(--danger);
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 91, 255, 0.3);
+    }
+
+    .refresh-btn {
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    .btn-emergency {
+      background: var(--danger);
+      width: 100%;
+    }
+
+    .btn-emergency:hover {
+      background: #c82333;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top: 3px solid var(--primary);
+      animation: spin 1s linear infinite;
+      margin: 40px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .map-container {
+      height: 400px;
+      position: relative;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: var(--dark-bg);
+      margin: 10% auto;
+      width: 90%;
+      max-width: 500px;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      animation: modalFadeIn 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      background: var(--card-bg);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .close {
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .vibe-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .vibe-option {
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .vibe-option.selected {
+      border-color: var(--primary);
+      background: rgba(45, 91, 255, 0.15);
+    }
+
+    .vibe-option i {
+      font-size: 20px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    textarea, select {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--text-light);
+      resize: vertical;
+    }
+
+    .settings-section {
+      margin-bottom: 25px;
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .notification {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 12px 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      max-width: 90%;
+      animation: slideInUp 0.3s;
+    }
+
+    .notification.hidden {
+      display: none;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    @keyframes slideInUp {
+      from {
+        transform: translate(-50%, 100%);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .vibe-options {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .action-btn:nth-child(3) {
+        grid-column: span 2;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -133,13 +637,6 @@
                 <option value="ar">العربية</option>
               </select>
             </div>
-            <div class="setting-item">
-              <span data-en="Notification" data-ar="الإشعارات">Notifications</span>
-              <label class="switch">
-                <input type="checkbox" id="notificationsToggle">
-                <span class="slider"></span>
-              </label>
-            </div>
           </div>
           
           <div class="settings-section">
@@ -241,11 +738,6 @@
       </div>
     </div>
 
-    <!-- Top Areas Modal -->
-    <div id="topAreasModal" class="modal">
-      <!-- Content will be dynamically inserted -->
-    </div>
-
     <!-- Notification System -->
     <div id="notification" class="notification hidden">
       <div class="notification-content">
@@ -254,6 +746,1093 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    // HyperApp Mini App - Complete Implementation with Supabase
+    class HyperApp {
+      constructor() {
+        this.tg = window.Telegram.WebApp;
+        this.currentLanguage = 'en';
+        this.userData = null;
+        this.nearbyReports = [];
+        this.userReports = [];
+        this.selectedVibe = null;
+        this.isConnected = false;
+        this.userLocation = null;
+        
+        // Initialize Supabase
+        this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+        this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        
+        // Bind all methods to maintain 'this' context
+        this.bindMethods();
+        
+        this.init();
+      }
+      
+      // Bind all methods to maintain proper 'this' context
+      bindMethods() {
+        const methods = [
+          'init', 'setupEventListeners', 'syncUserWithSupabase', 'updateConnectionStatus',
+          'updateUserInfo', 'loadInitialData', 'loadNearbyReports', 'displayNearbyReports',
+          'loadUserReports', 'displayUserReports', 'voteReport', 'showReportModal',
+          'selectVibe', 'submitReport', 'showEmergencyReport', 'submitEmergencyReport',
+          'showView', 'loadMap', 'displayMap', 'loadTopAreas', 'toggleLanguage',
+          'changeLanguage', 'applyLanguage', 'showNotification', 'closeModal',
+          'getVibeIcon', 'getVibeArabicName', 'capitalizeFirstLetter', 'formatTimeAgo',
+          'updateTextDirection', 'requestUserLocation'
+        ];
+        
+        methods.forEach(method => {
+          this[method] = this[method].bind(this);
+        });
+      }
+      
+      async init() {
+        console.log("Initializing HyperApp with Supabase...");
+        
+        // Initialize Telegram WebApp
+        if (this.tg) {
+          this.tg.expand();
+          this.tg.MainButton.hide();
+          
+          // Get user data
+          const user = this.tg.initDataUnsafe.user;
+          if (user) {
+            this.userData = user;
+            await this.syncUserWithSupabase();
+            this.updateUserInfo();
+          }
+          
+          // Try to get user location
+          this.requestUserLocation();
+          
+          // Set up event listeners
+          this.setupEventListeners();
+          
+          // Update connection status
+          this.updateConnectionStatus(true);
+          
+          // Load initial data
+          await this.loadInitialData();
+        } else {
+          console.log("Not in Telegram environment");
+          this.updateConnectionStatus(false);
+          this.showNotification("Running in standalone mode", "info");
+          
+          // Simulate user data for testing
+          this.userData = {
+            id: 123456789,
+            first_name: "Test User",
+            username: "testuser"
+          };
+          this.updateUserInfo();
+          await this.loadInitialData();
+        }
+        
+        // Make app instance globally available for HTML onclick handlers
+        window.hyperApp = this;
+      }
+      
+      async requestUserLocation() {
+        if (this.tg && this.tg.showPopup && this.tg.isLocationRequested) {
+          try {
+            // Request location permission
+            this.tg.showPopup({
+              title: "Location Access",
+              message: "HyperApp needs your location to show nearby reports and map features.",
+              buttons: [{ type: "ok", text: "Allow" }, { type: "cancel", text: "Deny" }]
+            }, async (buttonId) => {
+              if (buttonId === "ok") {
+                this.tg.requestLocation();
+              }
+            });
+          } catch (e) {
+            console.log("Location request not available in this Telegram version");
+          }
+        }
+      }
+      
+      setupEventListeners() {
+        // Navigation buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const view = e.currentTarget.getAttribute('data-view');
+            this.showView(view);
+          });
+        });
+        
+        // Language switcher
+        const languageSwitcher = document.getElementById('languageSwitcher');
+        if (languageSwitcher) {
+          languageSwitcher.addEventListener('click', this.toggleLanguage);
+        }
+        
+        // Refresh button
+        const refreshBtn = document.querySelector('.refresh-btn');
+        if (refreshBtn) {
+          refreshBtn.addEventListener('click', this.loadNearbyReports);
+        }
+        
+        // Quick action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const action = e.currentTarget.getAttribute('data-action');
+            if (action === 'report') {
+              this.showReportModal();
+            } else if (action === 'areas') {
+              this.loadTopAreas();
+            } else if (action === 'emergency') {
+              this.showEmergencyReport();
+            }
+          });
+        });
+        
+        // Vibe option buttons
+        document.querySelectorAll('.vibe-option').forEach(option => {
+          option.addEventListener('click', (e) => {
+            const vibe = e.currentTarget.getAttribute('data-vibe');
+            this.selectVibe(vibe);
+          });
+        });
+        
+        // Modal close buttons
+        document.querySelectorAll('.close').forEach(closeBtn => {
+          closeBtn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+              this.closeModal(modal.id);
+            }
+          });
+        });
+        
+        // Form submit buttons
+        const reportSubmitBtn = document.querySelector('[data-action="submit-report"]');
+        if (reportSubmitBtn) {
+          reportSubmitBtn.addEventListener('click', this.submitReport);
+        }
+        
+        const emergencySubmitBtn = document.querySelector('[data-action="submit-emergency"]');
+        if (emergencySubmitBtn) {
+          emergencySubmitBtn.addEventListener('click', this.submitEmergencyReport);
+        }
+        
+        // Language select dropdown
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+          languageSelect.addEventListener('change', (e) => {
+            this.changeLanguage(e.target.value);
+          });
+        }
+        
+        // Vote buttons (delegated event handling)
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('.upvote-btn')) {
+            const reportItem = e.target.closest('.report-item');
+            if (reportItem) {
+              const reportId = parseInt(reportItem.dataset.id);
+              this.voteReport(reportId, 'upvote');
+            }
+          } else if (e.target.closest('.downvote-btn')) {
+            const reportItem = e.target.closest('.report-item');
+            if (reportItem) {
+              const reportId = parseInt(reportItem.dataset.id);
+              this.voteReport(reportId, 'downvote');
+            }
+          }
+        });
+        
+        // Map button in empty state
+        document.addEventListener('click', (e) => {
+          if (e.target.id === 'firstReportBtn' || e.target.closest('#firstReportBtn')) {
+            this.showReportModal();
+          }
+        });
+      }
+      
+      async syncUserWithSupabase() {
+        if (!this.userData) return false;
+        
+        try {
+          // Check if user exists in Supabase
+          const { data, error } = await this.supabase
+            .from('users')
+            .select('*')
+            .eq('user_id', this.userData.id)
+            .maybeSingle();
+          
+          if (error && error.code === 'PGRST116') {
+            // User doesn't exist, create a new record
+            const { data: newUser, error: insertError } = await this.supabase
+              .from('users')
+              .insert([
+                {
+                  user_id: this.userData.id,
+                  username: this.userData.username || this.userData.first_name,
+                  reputation: 0,
+                  language: 'en'
+                }
+              ])
+              .select()
+              .single();
+            
+            if (insertError) {
+              console.error("Error creating user:", insertError);
+              if (insertError.message.includes('row-level security')) {
+                this.showNotification("Please check database permissions", "error");
+              } else {
+                this.showNotification("Account setup incomplete. Some features may be limited.", "warning");
+              }
+              return false;
+            }
+            
+            this.userData.reputation = 0;
+            this.userData.language = 'en';
+            return true;
+          } else if (error) {
+            console.error("Error checking user:", error);
+            return false;
+          } else {
+            // Update user data with Supabase info
+            this.userData.reputation = data.reputation || 0;
+            this.userData.language = data.language || 'en';
+            this.currentLanguage = data.language || 'en';
+            this.applyLanguage(this.currentLanguage);
+            
+            // Update language selector
+            document.getElementById('languageSelect').value = this.currentLanguage;
+            document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+            
+            return true;
+          }
+        } catch (error) {
+          console.error("Error syncing user with Supabase:", error);
+          return false;
+        }
+      }
+      
+      updateConnectionStatus(connected) {
+        this.isConnected = connected;
+        const statusElement = document.getElementById('connectionStatus');
+        
+        if (statusElement) {
+          if (connected) {
+            statusElement.innerHTML = '<i class="fas fa-check-circle"></i> <span data-en="Connected" data-ar="متصل">Connected</span>';
+            statusElement.classList.add('connected');
+          } else {
+            statusElement.innerHTML = '<i class="fas fa-times-circle"></i> <span data-en="Disconnected" data-ar="غير متصل">Disconnected</span>';
+            statusElement.classList.remove('connected');
+          }
+        }
+      }
+      
+      updateUserInfo() {
+        if (this.userData) {
+          const usernameElement = document.getElementById('settingsUsername');
+          if (usernameElement) {
+            usernameElement.textContent = this.userData.username || this.userData.first_name;
+          }
+          
+          document.getElementById('userReputation').textContent = this.userData.reputation || 0;
+          document.getElementById('settingsReputation').textContent = this.userData.reputation || 0;
+        }
+      }
+      
+      async loadInitialData() {
+        await this.loadNearbyReports();
+        await this.loadUserReports();
+        this.loadMap();
+      }
+      
+      async loadNearbyReports() {
+        try {
+          document.getElementById('nearbyReports').innerHTML = '<div class="loading-spinner"></div>';
+          
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select(`*, votes (vote_type)`)
+            .order('created_at', { ascending: false })
+            .limit(20);
+          
+          if (error) {
+            console.error("Error loading reports:", error);
+            if (error.message.includes('row-level security')) {
+              this.showNotification("Database permissions issue. Please contact support.", "error");
+            } else {
+              this.showNotification("Failed to load reports", "error");
+            }
+            document.getElementById('nearbyReports').innerHTML = 
+              '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
+            return;
+          }
+          
+          this.nearbyReports = reports.map(report => {
+            const userVote = report.votes && report.votes.length > 0 ? 
+              report.votes.find(v => v.user_id === this.userData?.id)?.vote_type : null;
+            
+            return { ...report, user_vote: userVote };
+          });
+          
+          this.displayNearbyReports();
+        } catch (error) {
+          console.error("Error loading nearby reports:", error);
+          this.showNotification("Failed to load reports", "error");
+          document.getElementById('nearbyReports').innerHTML = 
+            '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
+        }
+      }
+      
+      displayNearbyReports() {
+        const container = document.getElementById('nearbyReports');
+        
+        if (this.nearbyReports.length === 0) {
+          container.innerHTML = '<div class="no-data" data-en="No reports nearby" data-ar="لا توجد تقارير قريبة">No reports nearby</div>';
+          this.updateTextDirection();
+          return;
+        }
+        
+        container.innerHTML = this.nearbyReports.map(report => `
+          <div class="report-item" data-id="${report.id}">
+            <div class="report-info">
+              <div class="report-type">
+                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                  ${this.capitalizeFirstLetter(report.vibe_type)}
+                </span>
+              </div>
+              <div class="report-details">${report.notes || ''}</div>
+              <div class="report-meta">
+                <span>${report.location || 'Unknown location'}</span>
+                <span>${this.formatTimeAgo(report.created_at)}</span>
+              </div>
+            </div>
+            <div class="report-actions">
+              <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}">
+                <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
+              </button>
+              <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}">
+                <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
+              </button>
+            </div>
+          </div>
+        `).join('');
+        
+        this.updateTextDirection();
+      }
+      
+      async loadUserReports() {
+        if (!this.userData) return;
+        
+        try {
+          document.getElementById('userReports').innerHTML = '<div class="loading-spinner"></div>';
+          
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('*')
+            .eq('user_id', this.userData.id)
+            .order('created_at', { ascending: false });
+          
+          if (error) {
+            console.error("Error loading user reports:", error);
+            this.showNotification("Failed to load your reports", "error");
+            document.getElementById('userReports').innerHTML = 
+              '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
+            return;
+          }
+          
+          this.userReports = reports;
+          this.displayUserReports();
+        } catch (error) {
+          console.error("Error loading user reports:", error);
+          this.showNotification("Failed to load your reports", "error");
+          document.getElementById('userReports').innerHTML = 
+            '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
+        }
+      }
+      
+      displayUserReports() {
+        const container = document.getElementById('userReports');
+        
+        if (this.userReports.length === 0) {
+          container.innerHTML = '<div class="no-data" data-en="You haven\'t submitted any reports" data-ar="لم تقم بإرسال أي تقارير">You haven\'t submitted any reports</div>';
+          this.updateTextDirection();
+          return;
+        }
+        
+        container.innerHTML = this.userReports.map(report => `
+          <div class="report-item">
+            <div class="report-info">
+              <div class="report-type">
+                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                  ${this.capitalizeFirstLetter(report.vibe_type)}
+                </span>
+              </div>
+              <div class="report-details">${report.notes || ''}</div>
+              <div class="report-meta">
+                <span>${report.location || 'Unknown location'}</span>
+                <span>${this.formatTimeAgo(report.created_at)}</span>
+                <span>👍 ${report.upvotes || 0} 👎 ${report.downvotes || 0}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+        this.updateTextDirection();
+      }
+      
+      async voteReport(reportId, voteType) {
+        if (!this.userData) {
+          this.showNotification("Please sign in to vote", "error");
+          return;
+        }
+        
+        try {
+          const { data: existingVote, error: voteError } = await this.supabase
+            .from('votes')
+            .select('*')
+            .eq('user_id', this.userData.id)
+            .eq('report_id', reportId)
+            .maybeSingle();
+          
+          if (voteError && voteError.code !== 'PGRST116') {
+            console.error("Error checking vote:", voteError);
+            if (voteError.message.includes('row-level security')) {
+              this.showNotification("Database permissions issue. Please contact support.", "error");
+            } else {
+              this.showNotification("Failed to submit vote", "error");
+            }
+            return;
+          }
+          
+          let operation;
+          
+          if (existingVote) {
+            if (existingVote.vote_type === voteType) {
+              const { error: deleteError } = await this.supabase
+                .from('votes')
+                .delete()
+                .eq('id', existingVote.id);
+              
+              if (deleteError) {
+                console.error("Error removing vote:", deleteError);
+                this.showNotification("Failed to update vote", "error");
+                return;
+              }
+              
+              operation = 'remove';
+            } else {
+              const { error: updateError } = await this.supabase
+                .from('votes')
+                .update({ vote_type: voteType })
+                .eq('id', existingVote.id);
+              
+              if (updateError) {
+                console.error("Error updating vote:", updateError);
+                this.showNotification("Failed to update vote", "error");
+                return;
+              }
+              
+              operation = 'change';
+            }
+          } else {
+            const { error: insertError } = await this.supabase
+              .from('votes')
+              .insert([{ user_id: this.userData.id, report_id: reportId, vote_type: voteType }]);
+            
+            if (insertError) {
+              console.error("Error adding vote:", insertError);
+              if (insertError.message.includes('row-level security')) {
+                this.showNotification("Database permissions issue. Please contact support.", "error");
+              } else {
+                this.showNotification("Failed to submit vote", "error");
+              }
+              return;
+            }
+            
+            operation = 'add';
+          }
+          
+          const report = this.nearbyReports.find(r => r.id === reportId);
+          if (!report) return;
+          
+          let upvotes = report.upvotes || 0;
+          let downvotes = report.downvotes || 0;
+          
+          if (operation === 'add') {
+            if (voteType === 'upvote') upvotes++;
+            else downvotes++;
+          } else if (operation === 'remove') {
+            if (voteType === 'upvote') upvotes--;
+            else downvotes--;
+          } else if (operation === 'change') {
+            if (voteType === 'upvote') {
+              upvotes++;
+              downvotes--;
+            } else {
+              downvotes++;
+              upvotes--;
+            }
+          }
+          
+          const { error: updateError } = await this.supabase
+            .from('reports')
+            .update({ upvotes, downvotes })
+            .eq('id', reportId);
+          
+          if (updateError) {
+            console.error("Error updating report votes:", updateError);
+          }
+          
+          report.upvotes = upvotes;
+          report.downvotes = downvotes;
+          report.user_vote = operation === 'remove' ? null : voteType;
+          
+          this.displayNearbyReports();
+          this.showNotification(operation === 'remove' ? 'Vote removed' : `Vote ${voteType === 'upvote' ? 'upvoted' : 'downvoted'}`, "success");
+        } catch (error) {
+          console.error("Error voting:", error);
+          this.showNotification("Failed to submit vote", "error");
+        }
+      }
+      
+      showReportModal() {
+        this.selectedVibe = null;
+        document.querySelectorAll('.vibe-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        document.getElementById('reportNotes').value = '';
+        document.getElementById('reportModal').style.display = 'block';
+      }
+      
+      selectVibe(vibe) {
+        this.selectedVibe = vibe;
+        document.querySelectorAll('.vibe-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        document.querySelector(`.vibe-option[data-vibe="${vibe}"]`).classList.add('selected');
+      }
+      
+      async submitReport() {
+        if (!this.userData) {
+          this.showNotification("Please sign in to submit a report", "error");
+          return;
+        }
+        
+        if (!this.selectedVibe) {
+          this.showNotification("Please select a vibe type", "error");
+          return;
+        }
+        
+        const notes = document.getElementById('reportNotes').value;
+        
+        try {
+          let location = "Unknown Location";
+          let latitude = null;
+          let longitude = null;
+          
+          if (this.tg && this.tg.initDataUnsafe.user && this.tg.initDataUnsafe.user.location) {
+            const userLocation = this.tg.initDataUnsafe.user.location;
+            latitude = userLocation.latitude;
+            longitude = userLocation.longitude;
+            location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
+          }
+          
+          const { data, error } = await this.supabase
+            .from('reports')
+            .insert([{
+              user_id: this.userData.id,
+              vibe_type: this.selectedVibe,
+              notes: notes,
+              location: location,
+              latitude: latitude,
+              longitude: longitude,
+              emergency: false,
+              upvotes: 0,
+              downvotes: 0
+            }])
+            .select();
+          
+          if (error) {
+            console.error("Error submitting report:", error);
+            if (error.message.includes('row-level security')) {
+              this.showNotification("Database permissions issue. Please run the SQL fix or contact support.", "error");
+            } else {
+              this.showNotification(`Failed to submit report: ${error.message}`, "error");
+            }
+            return;
+          }
+          
+          try {
+            const { error: updateError } = await this.supabase
+              .from('users')
+              .update({ reputation: (this.userData.reputation || 0) + 10 })
+              .eq('user_id', this.userData.id);
+            
+            if (!updateError) {
+              this.userData.reputation = (this.userData.reputation || 0) + 10;
+              this.updateUserInfo();
+            }
+          } catch (reputationError) {
+            console.log("Could not update reputation");
+          }
+          
+          document.getElementById('reportModal').style.display = 'none';
+          this.showNotification("Report submitted successfully", "success");
+          
+          await this.loadNearbyReports();
+          await this.loadUserReports();
+          this.loadMap();
+          
+        } catch (error) {
+          console.error("Error submitting report:", error);
+          this.showNotification("Failed to submit report", "error");
+        }
+      }
+      
+      showEmergencyReport() {
+        document.getElementById('emergencyType').value = 'dangerous';
+        document.getElementById('emergencyDetails').value = '';
+        document.getElementById('emergencyModal').style.display = 'block';
+      }
+      
+      async submitEmergencyReport() {
+        if (!this.userData) {
+          this.showNotification("Please sign in to submit an emergency report", "error");
+          return;
+        }
+        
+        const emergencyType = document.getElementById('emergencyType').value;
+        const details = document.getElementById('emergencyDetails').value;
+        
+        if (!details.trim()) {
+          this.showNotification("Please provide emergency details", "error");
+          return;
+        }
+        
+        try {
+          let location = "Unknown Location";
+          let latitude = null;
+          let longitude = null;
+          
+          if (this.tg && this.tg.initDataUnsafe.user && this.tg.initDataUnsafe.user.location) {
+            const userLocation = this.tg.initDataUnsafe.user.location;
+            latitude = userLocation.latitude;
+            longitude = userLocation.longitude;
+            location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
+          }
+          
+          const { data, error } = await this.supabase
+            .from('reports')
+            .insert([{
+              user_id: this.userData.id,
+              vibe_type: 'dangerous',
+              notes: `EMERGENCY (${emergencyType}): ${details}`,
+              location: location,
+              latitude: latitude,
+              longitude: longitude,
+              emergency: true,
+              upvotes: 0,
+              downvotes: 0
+            }])
+            .select();
+          
+          if (error) {
+            console.error("Error submitting emergency report:", error);
+            if (error.message.includes('row-level security')) {
+              this.showNotification("Database permissions issue. Please run the SQL fix or contact support.", "error");
+            } else {
+              this.showNotification(`Failed to submit emergency report: ${error.message}`, "error");
+            }
+            return;
+          }
+          
+          try {
+            const { error: updateError } = await this.supabase
+              .from('users')
+              .update({ reputation: (this.userData.reputation || 0) + 15 })
+              .eq('user_id', this.userData.id);
+            
+            if (!updateError) {
+              this.userData.reputation = (this.userData.reputation || 0) + 15;
+              this.updateUserInfo();
+            }
+          } catch (reputationError) {
+            console.log("Could not update reputation");
+          }
+          
+          document.getElementById('emergencyModal').style.display = 'none';
+          this.showNotification("Emergency report submitted", "success");
+          
+          await this.loadNearbyReports();
+          await this.loadUserReports();
+          this.loadMap();
+          
+          if (this.tg && this.tg.sendData) {
+            this.tg.sendData(JSON.stringify({
+              type: 'emergency',
+              emergencyType: emergencyType,
+              details: details
+            }));
+          }
+        } catch (error) {
+          console.error("Error submitting emergency report:", error);
+          this.showNotification("Failed to submit emergency report", "error");
+        }
+      }
+      
+      showView(viewName) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        document.querySelector(`.nav-btn[data-view="${viewName}"]`).classList.add('active');
+        
+        document.querySelectorAll('.view').forEach(view => {
+          view.classList.remove('active');
+        });
+        document.getElementById(`${viewName}View`).classList.add('active');
+        
+        if (viewName === 'map') {
+          this.loadMap();
+        } else if (viewName === 'reports') {
+          this.loadUserReports();
+        }
+      }
+      
+      async loadMap() {
+        try {
+          document.getElementById('mapContainer').innerHTML = '<div class="loading-spinner"></div>';
+          
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('*')
+            .not('latitude', 'is', null)
+            .not('longitude', 'is', null)
+            .limit(50);
+          
+          if (error) {
+            console.error("Error loading map data:", error);
+            this.displayMap([]);
+            return;
+          }
+          
+          this.displayMap(reports || []);
+        } catch (error) {
+          console.error("Error loading map:", error);
+          this.displayMap([]);
+        }
+      }
+      
+      displayMap(reports) {
+        const container = document.getElementById('mapContainer');
+        
+        if (reports.length === 0) {
+          container.innerHTML = `
+            <div class="map-visualization">
+              <div class="map-header">
+                <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
+                <p data-en="Submit reports to see them on the map" data-ar="قم بإرسال التقارير لرؤيتها على الخريطة">
+                  Submit reports to see them on the map
+                </p>
+              </div>
+              <div class="map-points">
+                <div class="map-placeholder-center">
+                  <i class="fas fa-map-marked-alt"></i>
+                  <p data-en="No location data yet" data-ar="لا توجد بيانات موقع بعد">No location data yet</p>
+                  <button class="btn btn-primary" id="firstReportBtn">
+                    <i class="fas fa-plus-circle"></i>
+                    <span data-en="Submit First Report" data-ar="إرسال أول تقرير">Submit First Report</span>
+                  </button>
+                </div>
+              </div>
+              <div class="map-legend">
+                <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
+                <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
+                <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
+                <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
+                <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
+                <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
+              </div>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="map-visualization">
+              <div class="map-header">
+                <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
+                <p data-en="${reports.length} reports with location data" data-ar="${reports.length} تقرير يحتوي على بيانات الموقع">
+                  ${reports.length} reports with location data
+                </p>
+              </div>
+              <div class="map-points">
+                ${reports.map(report => `
+                  <div class="map-point" 
+                       style="top: ${50 + ((report.latitude || 0) % 20)}%; left: ${50 + ((report.longitude || 0) % 20)}%;" 
+                       data-vibe="${report.vibe_type}" 
+                       title="${report.vibe_type} at ${report.location}">
+                    <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="map-legend">
+                <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
+                <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
+                <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
+                <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
+                <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
+                <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
+              </div>
+            </div>
+          `;
+        }
+        
+        this.updateTextDirection();
+      }
+      
+      async loadTopAreas() {
+        try {
+          const { data: areas, error } = await this.supabase
+            .from('reports')
+            .select('location, vibe_type')
+            .not('location', 'is', null)
+            .not('location', 'eq', 'Unknown Location');
+          
+          if (error) {
+            console.error("Error loading top areas:", error);
+            this.showNotification("Failed to load top areas", "error");
+            return;
+          }
+          
+          const locationCounts = {};
+          areas.forEach(report => {
+            if (!locationCounts[report.location]) {
+              locationCounts[report.location] = { count: 0, vibes: {} };
+            }
+            locationCounts[report.location].count++;
+            
+            if (!locationCounts[report.location].vibes[report.vibe_type]) {
+              locationCounts[report.location].vibes[report.vibe_type] = 0;
+            }
+            locationCounts[report.location].vibes[report.vibe_type]++;
+          });
+          
+          const topAreas = Object.entries(locationCounts)
+            .map(([location, data]) => ({ location, ...data }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+          
+          const modalContent = `
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2 data-en="Top Areas" data-ar="أهم المناطق">Top Areas</h2>
+                <span class="close">&times;</span>
+              </div>
+              <div class="modal-body">
+                ${topAreas.length > 0 ? `
+                  <div class="top-areas-list">
+                    ${topAreas.map(area => `
+                      <div class="area-item">
+                        <div class="area-header">
+                          <h3>${area.location}</h3>
+                          <span class="report-count">${area.count} reports</span>
+                        </div>
+                        <div class="area-vibes">
+                          ${Object.entries(area.vibes)
+                            .map(([vibe, count]) => `
+                              <span class="vibe-tag">
+                                <i class="${this.getVibeIcon(vibe)}"></i>
+                                ${vibe}: ${count}
+                              </span>
+                            `).join('')}
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : `
+                  <p data-en="No area data available" data-ar="لا توجد بيانات للمناطق متاحة">
+                    No area data available
+                  </p>
+                `}
+              </div>
+            </div>
+          `;
+          
+          let modal = document.getElementById('topAreasModal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'topAreasModal';
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+          }
+          
+          modal.innerHTML = modalContent;
+          modal.style.display = 'block';
+          
+          // Add event listener to close button
+          const closeBtn = modal.querySelector('.close');
+          if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+              modal.style.display = 'none';
+            });
+          }
+          
+          this.updateTextDirection();
+        } catch (error) {
+          console.error("Error loading top areas:", error);
+          this.showNotification("Failed to load top areas", "error");
+        }
+      }
+      
+      toggleLanguage() {
+        this.currentLanguage = this.currentLanguage === 'en' ? 'ar' : 'en';
+        this.applyLanguage(this.currentLanguage);
+        
+        document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+        
+        if (this.userData) {
+          this.supabase
+            .from('users')
+            .update({ language: this.currentLanguage })
+            .eq('user_id', this.userData.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Error updating language:", error);
+              }
+            });
+        }
+        
+        this.showNotification(`Language changed to ${this.currentLanguage === 'en' ? 'English' : 'Arabic'}`, "success");
+      }
+      
+      changeLanguage(lang) {
+        this.currentLanguage = lang;
+        this.applyLanguage(lang);
+        
+        document.getElementById('languageSelect').value = this.currentLanguage;
+        document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+        
+        if (this.userData) {
+          this.supabase
+            .from('users')
+            .update({ language: this.currentLanguage })
+            .eq('user_id', this.userData.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Error updating language:", error);
+              }
+            });
+        }
+      }
+      
+      applyLanguage(lang) {
+        // Update text direction
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        
+        // Update all elements with data attributes
+        document.querySelectorAll('[data-en], [data-ar]').forEach(element => {
+          const text = lang === 'ar' ? element.getAttribute('data-ar') : element.getAttribute('data-en');
+          if (text && element.textContent !== text) {
+            element.textContent = text;
+          }
+        });
+        
+        // Update placeholders
+        const textareaEn = document.getElementById('reportNotes');
+        const textareaAr = document.getElementById('reportNotes');
+        if (textareaEn && textareaAr) {
+          textareaEn.placeholder = lang === 'ar' ? 'صف ما تواجهه...' : 'Describe what you\'re experiencing...';
+        }
+        
+        this.updateTextDirection();
+      }
+      
+      updateTextDirection() {
+        document.querySelectorAll('[data-en], [data-ar]').forEach(element => {
+          if (this.currentLanguage === 'ar') {
+            element.style.textAlign = 'right';
+            element.style.direction = 'rtl';
+          } else {
+            element.style.textAlign = 'left';
+            element.style.direction = 'ltr';
+          }
+        });
+      }
+      
+      showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        const messageElement = document.getElementById('notificationMessage');
+        
+        if (!notification || !messageElement) return;
+        
+        // Set message and type
+        messageElement.textContent = message;
+        notification.className = `notification ${type}`;
+        
+        // Show notification
+        notification.classList.remove('hidden');
+        
+        // Auto hide after 3 seconds
+        setTimeout(() => {
+          notification.classList.add('hidden');
+        }, 3000);
+      }
+      
+      closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+      }
+      
+      getVibeIcon(vibeType) {
+        const icons = {
+          crowded: 'fas fa-users',
+          noisy: 'fas fa-volume-up',
+          festive: 'fas fa-music',
+          calm: 'fas fa-peace',
+          suspicious: 'fas fa-eye',
+          dangerous: 'fas fa-exclamation-triangle'
+        };
+        return icons[vibeType] || 'fas fa-question-circle';
+      }
+      
+      getVibeArabicName(vibeType) {
+        const names = {
+          crowded: 'مزدحم',
+          noisy: 'صاخب',
+          festive: 'احتفالي',
+          calm: 'هادئ',
+          suspicious: 'مريب',
+          dangerous: 'خطر'
+        };
+        return names[vibeType] || vibeType;
+      }
+      
+      capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+      
+      formatTimeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        
+        if (seconds < 60) return this.currentLanguage === 'en' ? 'Just now' : 'الآن';
+        
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return this.currentLanguage === 'en' ? `${minutes}m ago` : `منذ ${minutes} دقيقة`;
+        
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return this.currentLanguage === 'en' ? `${hours}h ago` : `منذ ${hours} ساعة`;
+        
+        const days = Math.floor(hours / 24);
+        if (days < 7) return this.currentLanguage === 'en' ? `${days}d ago` : `منذ ${days} يوم`;
+        
+        return date.toLocaleDateString(this.currentLanguage === 'en' ? 'en-US' : 'ar-EG');
+      }
+    }
+
+    // Initialize the app when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      window.app = new HyperApp();
+    });
+  </script>
 </body>
 </html>
