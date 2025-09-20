@@ -1,6 +1,6 @@
 // Initialize Telegram WebApp
 let tg = window.Telegram.WebApp;
-let debugMode = true;
+let debugMode = true; // Set to false in production
 
 // Debug logging
 function logDebug(message, data = null) {
@@ -11,9 +11,12 @@ function logDebug(message, data = null) {
 
 // Initialize the app
 function init() {
-    logDebug('Initializing app...');
+    logDebug('Initializing HyperApp...');
     
     if (tg) {
+        logDebug('Telegram WebApp detected');
+        
+        // Expand to full height and enable closing confirmation
         tg.expand();
         tg.enableClosingConfirmation();
         
@@ -30,13 +33,25 @@ function init() {
             updateUserInfo(user);
         }
         
+        // Update connection status
+        updateConnectionStatus('connected');
+        
         // Listen for theme changes
         tg.onEvent('themeChanged', updateTheme);
         
-        logDebug('App initialized successfully');
+        // Listen for events from the bot
+        tg.onEvent('viewportChanged', function() {
+            logDebug('Viewport changed');
+        });
+        
+        logDebug('App initialized successfully with Telegram WebApp');
+        
     } else {
-        logDebug('Not in Telegram environment');
+        logDebug('Not in Telegram environment - running in standalone mode');
         updateConnectionStatus('not_connected');
+        
+        // Simulate Telegram environment for testing
+        simulateTelegramEnvironment();
     }
 }
 
@@ -45,6 +60,8 @@ function updateTheme() {
     if (!tg) return;
     
     const theme = tg.colorScheme;
+    logDebug('Current theme:', theme);
+    
     if (theme === 'dark') {
         document.body.style.background = 'linear-gradient(135deg, #0A192F 0%, #142538 100%)';
         document.body.style.color = '#F8F9FC';
@@ -52,70 +69,71 @@ function updateTheme() {
         document.body.style.background = 'linear-gradient(135deg, #E6EFFF 0%, #FFFFFF 100%)';
         document.body.style.color = '#121726';
     }
-    
-    logDebug('Theme updated:', theme);
 }
 
 // Update user information in the UI
 function updateUserInfo(user) {
-    logDebug('User info:', user);
+    logDebug('User info received:', user);
     
-    // Update user ID display if element exists
-    const userIdElement = document.querySelector('.user-id');
-    if (userIdElement) {
-        userIdElement.textContent = user.id;
-        document.querySelector('.user-id-display').style.display = 'flex';
-    }
+    // Update debug info
+    document.getElementById('debugUserId').textContent = user.id || '--';
+    
+    // You can add more user-specific UI updates here
+    // For example, fetch user reputation from your bot's database
 }
 
 // Update connection status
 function updateConnectionStatus(status) {
     const statusElement = document.querySelector('.connection-status');
-    if (statusElement) {
-        if (status === 'connected') {
-            statusElement.innerHTML = '<i class="fas fa-check-circle"></i> Connected to Bot';
-            statusElement.style.color = '#28A745';
-        } else {
-            statusElement.innerHTML = '<i class="fas fa-times-circle"></i> Not Connected';
-            statusElement.style.color = '#DC3545';
-        }
-    }
-}
-
-// Test connection function
-function testConnection() {
-    logDebug("Testing connection to bot...");
+    if (!statusElement) return;
     
-    if (tg) {
-        logDebug("Telegram WebApp detected:", tg);
-        logDebug("Init data:", tg.initData);
-        logDebug("User data:", tg.initDataUnsafe.user);
-        
-        // Show connection status
-        updateConnectionStatus('connected');
-        
-        logDebug("Connection test completed successfully");
+    if (status === 'connected') {
+        statusElement.innerHTML = '<i class="fas fa-check-circle connected"></i> Connected to Bot';
+        statusElement.classList.add('connected');
+        statusElement.classList.remove('disconnected');
+        document.getElementById('debugStatus').textContent = 'Connected to Telegram Bot';
     } else {
-        logDebug("Not in Telegram environment");
-        updateConnectionStatus('not_connected');
+        statusElement.innerHTML = '<i class="fas fa-times-circle disconnected"></i> Not Connected';
+        statusElement.classList.add('disconnected');
+        statusElement.classList.remove('connected');
+        document.getElementById('debugStatus').textContent = 'Not connected to Telegram';
     }
 }
 
 // Send command to the bot
 function sendCommand(command) {
-    logDebug('Sending command:', command);
+    logDebug('Attempting to send command:', command);
     
-    if (tg) {
-        tg.sendData(command);
-        logDebug('Command sent successfully');
-        
-        // Update last response display
-        const lastResponseElement = document.getElementById('lastResponse');
-        if (lastResponseElement) {
-            lastResponseElement.textContent = `Sent: ${command}`;
+    // Update debug info
+    document.getElementById('debugLastCommand').textContent = command;
+    
+    if (tg && tg.sendData) {
+        try {
+            // Send the command to your bot
+            tg.sendData(command);
+            logDebug('Command sent successfully to bot:', command);
+            
+            // Provide visual feedback
+            if (event && event.currentTarget) {
+                const button = event.currentTarget;
+                button.style.background = 'rgba(45, 91, 255, 0.3)';
+                setTimeout(() => {
+                    button.style.background = '';
+                }, 300);
+            }
+            
+            // Show success feedback
+            showTempMessage('Command sent: ' + command, 'success');
+            
+        } catch (error) {
+            logDebug('Error sending command:', error);
+            showTempMessage('Error sending command', 'error');
         }
+    } else {
+        logDebug('Not in Telegram environment, simulating command:', command);
+        showTempMessage('Simulated: ' + command, 'warning');
         
-        // Visual feedback
+        // Visual feedback even in standalone mode
         if (event && event.currentTarget) {
             const button = event.currentTarget;
             button.style.background = 'rgba(45, 91, 255, 0.3)';
@@ -123,56 +141,101 @@ function sendCommand(command) {
                 button.style.background = '';
             }, 300);
         }
+    }
+}
+
+// Show temporary message
+function showTempMessage(message, type = 'info') {
+    // Create message element
+    const messageEl = document.createElement('div');
+    messageEl.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s;
+    `;
+    
+    // Set background color based on type
+    if (type === 'success') {
+        messageEl.style.background = 'var(--success)';
+    } else if (type === 'error') {
+        messageEl.style.background = 'var(--danger)';
+    } else if (type === 'warning') {
+        messageEl.style.background = 'var(--warning)';
+        messageEl.style.color = 'black';
     } else {
-        logDebug('Not in Telegram environment, would send:', command);
-        alert("Command: " + command);
+        messageEl.style.background = 'var(--info)';
     }
+    
+    messageEl.textContent = message;
+    document.body.appendChild(messageEl);
+    
+    // Animate in
+    setTimeout(() => {
+        messageEl.style.opacity = '1';
+    }, 10);
+    
+    // Remove after delay
+    setTimeout(() => {
+        messageEl.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(messageEl);
+        }, 300);
+    }, 3000);
 }
 
-// Test functions
-function testSimpleCommand() {
-    if (tg) {
-        const testStatusElement = document.getElementById('testStatus');
-        if (testStatusElement) {
-            testStatusElement.textContent = 'Testing...';
-            testStatusElement.style.color = '#FFC107';
-        }
-        
-        // Send a test command
-        tg.sendData('/test');
-        
-        setTimeout(() => {
-            if (testStatusElement) {
-                testStatusElement.textContent = 'Command sent - check bot response';
-                testStatusElement.style.color = '#28A745';
-            }
-        }, 1000);
-    }
+// Simulate Telegram environment for testing
+function simulateTelegramEnvironment() {
+    logDebug('Simulating Telegram environment for testing');
+    
+    // Show debug section
+    document.querySelector('.debug-section').style.display = 'block';
+    
+    // Simulate user data after a delay
+    setTimeout(() => {
+        document.getElementById('debugUserId').textContent = '123456789';
+        document.querySelector('.reputation').textContent = '85';
+        updateConnectionStatus('connected');
+    }, 1000);
 }
 
-function testReportCommand() {
-    if (tg) {
-        const testStatusElement = document.getElementById('testStatus');
-        if (testStatusElement) {
-            testStatusElement.textContent = 'Testing report command...';
-            testStatusElement.style.color = '#FFC107';
-        }
-        
-        // Send a report command
-        tg.sendData('/report');
-        
-        setTimeout(() => {
-            if (testStatusElement) {
-                testStatusElement.textContent = 'Report command sent';
-                testStatusElement.style.color = '#28A745';
-            }
-        }, 1000);
-    }
+// Handle WebApp data received from bot (if needed)
+if (tg && tg.onEvent) {
+    tg.onEvent('webAppDataReceived', function(data) {
+        logDebug('Data received from bot:', data);
+        // Handle any data your bot might send back
+    });
 }
 
 // Initialize the app when the page loads
 document.addEventListener('DOMContentLoaded', function() {
-    logDebug('DOM loaded, initializing app');
+    logDebug('DOM content loaded, initializing app');
     init();
-    testConnection();
+    
+    // Enable debug mode with URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('debug') === '1') {
+        debugMode = true;
+        document.querySelector('.debug-section').style.display = 'block';
+        logDebug('Debug mode enabled via URL parameter');
+    }
 });
+
+// Error handling
+window.addEventListener('error', function(e) {
+    logDebug('Global error:', e.error);
+});
+
+// Export functions for potential external use
+window.HyperApp = {
+    sendCommand: sendCommand,
+    init: init,
+    debugMode: debugMode
+};
