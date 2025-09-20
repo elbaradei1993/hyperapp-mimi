@@ -307,10 +307,17 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  text-decoration: none;
 }
 
 .btn:hover {
   background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 91, 255, 0.3);
+}
+
+.btn:active {
+  transform: translateY(0);
 }
 
 .btn-primary {
@@ -334,11 +341,11 @@ h1 {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  border-top: 4px solid var(--primary);
+  border-top: 3px solid var(--primary);
   animation: spin 1s linear infinite;
-  margin: 20px auto;
+  margin: 40px auto;
 }
 
 @keyframes spin {
@@ -386,11 +393,11 @@ h1 {
 
 .map-points {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 60px 15px 70px 15px; /* Account for header and legend */
+  top: 60px; /* Account for header */
+  left: 15px;
+  right: 15px;
+  bottom: 70px; /* Account for legend */
+  padding: 0;
 }
 
 .map-point {
@@ -402,10 +409,11 @@ h1 {
   align-items: center;
   justify-content: center;
   transform: translate(-50%, -50%);
-  animation: pulse 2s infinite;
+  animation: pulse 2s infinite ease-in-out;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  z-index: 5;
 }
 
 .map-point:hover {
@@ -430,13 +438,14 @@ h1 {
   bottom: 15px;
   left: 15px;
   right: 15px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 8px;
-  padding: 10px;
+  padding: 12px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   z-index: 10;
+  backdrop-filter: blur(10px);
 }
 
 .legend-item {
@@ -453,6 +462,30 @@ h1 {
 .legend-item i {
   font-size: 12px;
   min-width: 12px;
+  text-align: center;
+}
+
+.map-placeholder-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-light);
+  padding: 20px;
+}
+
+.map-placeholder-center i {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.map-placeholder-center p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  opacity: 0.8;
 }
 
 .map-placeholder {
@@ -762,16 +795,23 @@ input:checked + .slider:before {
 /* No data states */
 .no-data {
   text-align: center;
-  padding: 30px 20px;
+  padding: 40px 20px;
   color: var(--text-muted);
   font-style: italic;
 }
 
+.no-data i {
+  font-size: 32px;
+  margin-bottom: 15px;
+  display: block;
+  opacity: 0.5;
+}
+
 /* Animations */
 @keyframes pulse {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
 }
 
 @keyframes slideInUp {
@@ -833,10 +873,23 @@ input:checked + .slider:before {
   
   .map-legend {
     grid-template-columns: repeat(2, 1fr);
+    padding: 10px;
   }
   
   .legend-item {
     font-size: 10px;
+  }
+  
+  .legend-item i {
+    font-size: 12px;
+  }
+  
+  .map-header h3 {
+    font-size: 14px;
+  }
+  
+  .map-header p {
+    font-size: 11px;
   }
   
   .modal-content {
@@ -900,4 +953,129 @@ footer {
   padding: 20px 0;
   color: var(--text-muted);
   font-size: 13px;
+}
+
+/* Enhanced empty states */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+  display: block;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--text-light);
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+/* Improved button states */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Better focus states for accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for all interactive elements */
+button, input, textarea, select, .vibe-option, .action-btn, .nav-btn {
+  transition: all 0.3s ease;
+}
+
+/* Enhanced card hover effects */
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Improved text selection */
+::selection {
+  background: rgba(45, 91, 255, 0.3);
+  color: var(--text-light);
+}
+
+/* Better placeholder styling */
+::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* Enhanced loading animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.view.active {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Better mobile touch targets */
+@media (max-width: 480px) {
+  .vote-btn {
+    padding: 8px 12px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .action-btn {
+    padding: 12px 8px;
+    min-height: 70px;
+  }
+  
+  .nav-btn {
+    padding: 12px;
+    min-height: 44px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .app-nav,
+  .status-bar,
+  .language-switcher,
+  .btn,
+  .vote-btn,
+  .action-btn {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .card {
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: none;
+  }
 }
