@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperApp - Stay Informed & Safe</title>
+  <title>HyperApp - Community Safety Reports</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -15,164 +15,118 @@
         <i class="fas fa-shield-alt"></i>
       </div>
       <h1>HyperApp</h1>
-      <p class="subtitle">Stay informed and safe in your surroundings with real-time community reports</p>
-      
-      <div class="language-switcher" onclick="handleLanguageChange()">
-        <i class="fas fa-globe"></i> EN/AR
-      </div>
+      <p class="subtitle">Community-powered safety reports</p>
     </header>
 
     <div class="status-bar">
-      <div class="status-item connection-status">
-        <i class="fas fa-circle-notch fa-spin"></i>
-        <span>Connecting to bot...</span>
+      <div class="status-item">
+        <i class="fas fa-user"></i>
+        <span>User: <span id="username">Guest</span></span>
       </div>
-      <div class="status-item reputation-display">
+      <div class="status-item">
         <i class="fas fa-star"></i>
-        <span>Rep: <span class="reputation">--</span></span>
+        <span>Rep: <span id="reputation">0</span></span>
       </div>
     </div>
 
-    <!-- Main Menu View -->
+    <!-- Main View -->
     <div id="mainView">
+      <!-- Nearby Vibes Section -->
       <div class="card">
         <div class="card-title">
-          <i class="fas fa-map-marker-alt"></i> Area Safety
+          <i class="fas fa-map-marker-alt"></i> Nearby Vibes
         </div>
-        <div class="menu-grid">
-          <div class="menu-btn" onclick="startReportFlow()">
-            <i class="fas fa-exclamation-circle"></i>
-            <span>Submit Report</span>
-          </div>
-          <div class="menu-btn" onclick="sendCommand('/map')">
-            <i class="fas fa-map"></i>
-            <span>View Map</span>
-          </div>
-          <div class="menu-btn" onclick="sendCommand('/topareas')">
-            <i class="fas fa-chart-line"></i>
-            <span>Top Areas</span>
-          </div>
-          <div class="menu-btn" onclick="sendCommand('/subscribe')">
-            <i class="fas fa-bell"></i>
-            <span>Subscriptions</span>
-          </div>
+        <div id="nearbyVibes" class="vibes-list">
+          <div class="loading">Loading nearby reports...</div>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <i class="fas fa-users"></i> Community
-        </div>
-        <div class="menu-grid">
-          <div class="menu-btn" onclick="startVoteFlow('upvote')">
-            <i class="fas fa-thumbs-up"></i>
-            <span>Upvote</span>
-          </div>
-          <div class="menu-btn" onclick="startVoteFlow('downvote')">
-            <i class="fas fa-thumbs-down"></i>
-            <span>Downvote</span>
-          </div>
-          <div class="menu-btn" onclick="sendCommand('/reputation')">
-            <i class="fas fa-star"></i>
-            <span>Reputation</span>
-          </div>
-          <div class="menu-btn" onclick="sendCommand('/unsubscribe')">
-            <i class="fas fa-ban"></i>
-            <span>Unsubscribe</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="emergency-section">
-        <i class="fas fa-exclamation-triangle emergency-icon"></i>
-        <h3>Emergency Situation?</h3>
-        <p>Report immediately to alert authorities and nearby users</p>
-        <button class="emergency-btn pulse" onclick="startEmergencyReport()">
-          <i class="fas fa-bell"></i> Emergency Report
+        <button class="btn refresh-btn" onclick="loadNearbyVibes()">
+          <i class="fas fa-sync"></i> Refresh
         </button>
       </div>
 
+      <!-- Quick Actions -->
       <div class="card">
         <div class="card-title">
-          <i class="fas fa-info-circle"></i> Information
+          <i class="fas fa-bolt"></i> Quick Actions
         </div>
         <div class="menu-grid">
-          <div class="menu-btn" onclick="sendCommand('/about')">
-            <i class="fas fa-question-circle"></i>
-            <span>About</span>
+          <div class="menu-btn" onclick="startReportFlow()">
+            <i class="fas fa-plus-circle"></i>
+            <span>Report Vibe</span>
           </div>
-          <div class="menu-btn" onclick="sendCommand('/help')">
-            <i class="fas fa-life-ring"></i>
-            <span>Help</span>
+          <div class="menu-btn" onclick="openMap()">
+            <i class="fas fa-map"></i>
+            <span>View Map</span>
+          </div>
+          <div class="menu-btn" onclick="showTopAreas()">
+            <i class="fas fa-chart-line"></i>
+            <span>Top Areas</span>
           </div>
         </div>
       </div>
+
+      <!-- Emergency Section -->
+      <div class="emergency-section">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Emergency Situation?</h3>
+        <p>Report immediately to alert the community</p>
+        <button class="emergency-btn" onclick="reportEmergency()">
+          <i class="fas fa-bell"></i> Emergency Report
+        </button>
+      </div>
     </div>
 
-    <!-- Report Flow View -->
+    <!-- Report View -->
     <div id="reportView" class="hidden">
       <div class="card">
         <div class="card-title">
-          <i class="fas fa-exclamation-circle"></i> Submit Report
+          <i class="fas fa-arrow-left" onclick="showMainView()"></i>
+          Report Vibe
         </div>
+        
         <div class="form-group">
-          <label for="reportCategory">Select Category:</label>
-          <select id="reportCategory" class="form-select">
-            <option value="Crowded">Crowded / مزدحم</option>
-            <option value="Noisy">Noisy / صاخب</option>
-            <option value="Festive">Festive / احتفالي</option>
-            <option value="Calm">Calm / هادئ</option>
-            <option value="Suspicious">Suspicious / مريب</option>
-            <option value="Dangerous">Dangerous / خطر</option>
-          </select>
+          <label>What's the vibe?</label>
+          <div class="vibe-categories">
+            <div class="vibe-option" onclick="selectVibe('crowded')">
+              <i class="fas fa-users"></i>
+              <span>Crowded</span>
+            </div>
+            <div class="vibe-option" onclick="selectVibe('noisy')">
+              <i class="fas fa-volume-up"></i>
+              <span>Noisy</span>
+            </div>
+            <div class="vibe-option" onclick="selectVibe('festive')">
+              <i class="fas fa-music"></i>
+              <span>Festive</span>
+            </div>
+            <div class="vibe-option" onclick="selectVibe('calm')">
+              <i class="fas fa-peace"></i>
+              <span>Calm</span>
+            </div>
+            <div class="vibe-option" onclick="selectVibe('suspicious')">
+              <i class="fas fa-eye"></i>
+              <span>Suspicious</span>
+            </div>
+            <div class="vibe-option" onclick="selectVibe('dangerous')">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>Dangerous</span>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="reportContext">Context Notes:</label>
-          <textarea id="reportContext" class="form-textarea" placeholder="Describe the situation..."></textarea>
-        </div>
-        <div class="form-buttons">
-          <button class="btn btn-secondary" onclick="showMainView()">Cancel</button>
-          <button class="btn btn-primary" onclick="submitReport()">Submit Report</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Vote Flow View -->
-    <div id="voteView" class="hidden">
-      <div class="card">
-        <div class="card-title">
-          <i class="fas fa-vote-yea"></i> <span id="voteTitle">Vote</span>
-        </div>
         <div class="form-group">
-          <label for="reportId">Report ID:</label>
-          <input type="number" id="reportId" class="form-input" placeholder="Enter report ID">
+          <label for="vibeNotes">Additional notes (optional)</label>
+          <textarea id="vibeNotes" placeholder="Describe what you're seeing..."></textarea>
         </div>
-        <div class="form-buttons">
-          <button class="btn btn-secondary" onclick="showMainView()">Cancel</button>
-          <button class="btn btn-primary" onclick="submitVote()">Submit Vote</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Connection Help Section -->
-    <div class="card help-section">
-      <div class="card-title">
-        <i class="fas fa-question-circle"></i> Connection Help
+        <button class="btn btn-primary" onclick="submitVibeReport()">
+          Submit Report
+        </button>
       </div>
-      <p>If you experience issues:</p>
-      <ol>
-        <li>Make sure you're using the latest version of Telegram</li>
-        <li>Restart the Telegram app</li>
-        <li>Open the mini app again from your bot</li>
-      </ol>
-      <button class="btn test-btn" onclick="testConnection()">
-        <i class="fas fa-wifi"></i> Test Connection
-      </button>
     </div>
 
     <footer>
-      <p>HyperApp &copy; 2023 | Your safety is our priority</p>
-      <p>Connected to Telegram Bot</p>
+      <p>Keep your community informed and safe</p>
     </footer>
   </div>
 
