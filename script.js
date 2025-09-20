@@ -12,10 +12,31 @@ class HyperApp {
         
         // Initialize Supabase
         this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
-        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhbmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
         this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
         
+        // Bind all methods to maintain 'this' context
+        this.bindMethods();
+        
         this.init();
+    }
+    
+    // Bind all methods to maintain proper 'this' context
+    bindMethods() {
+        const methods = [
+            'init', 'setupEventListeners', 'syncUserWithSupabase', 'updateConnectionStatus',
+            'updateUserInfo', 'loadInitialData', 'loadNearbyReports', 'displayNearbyReports',
+            'loadUserReports', 'displayUserReports', 'voteReport', 'showReportModal',
+            'selectVibe', 'submitReport', 'showEmergencyReport', 'submitEmergencyReport',
+            'showView', 'loadMap', 'displayMap', 'loadTopAreas', 'toggleLanguage',
+            'changeLanguage', 'applyLanguage', 'showNotification', 'closeModal',
+            'getVibeIcon', 'getVibeArabicName', 'capitalizeFirstLetter', 'formatTimeAgo',
+            'updateTextDirection', 'requestUserLocation'
+        ];
+        
+        methods.forEach(method => {
+            this[method] = this[method].bind(this);
+        });
     }
     
     async init() {
@@ -33,6 +54,9 @@ class HyperApp {
                 await this.syncUserWithSupabase();
                 this.updateUserInfo();
             }
+            
+            // Try to get user location
+            this.requestUserLocation();
             
             // Set up event listeners
             this.setupEventListeners();
@@ -56,10 +80,32 @@ class HyperApp {
             this.updateUserInfo();
             await this.loadInitialData();
         }
+        
+        // Make app instance globally available for HTML onclick handlers
+        window.hyperApp = this;
+    }
+    
+    async requestUserLocation() {
+        if (this.tg && this.tg.showPopup && this.tg.isLocationRequested) {
+            try {
+                // Request location permission
+                this.tg.showPopup({
+                    title: "Location Access",
+                    message: "HyperApp needs your location to show nearby reports and map features.",
+                    buttons: [{ type: "ok", text: "Allow" }, { type: "cancel", text: "Deny" }]
+                }, async (buttonId) => {
+                    if (buttonId === "ok") {
+                        this.tg.requestLocation();
+                    }
+                });
+            } catch (e) {
+                console.log("Location request not available in this Telegram version");
+            }
+        }
     }
     
     setupEventListeners() {
-        // Navigation
+        // Navigation buttons
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const view = e.currentTarget.getAttribute('data-view');
@@ -68,14 +114,89 @@ class HyperApp {
         });
         
         // Language switcher
-        document.getElementById('languageSwitcher').addEventListener('click', () => {
-            this.toggleLanguage();
+        const languageSwitcher = document.getElementById('languageSwitcher');
+        if (languageSwitcher) {
+            languageSwitcher.addEventListener('click', this.toggleLanguage);
+        }
+        
+        // Refresh button
+        const refreshBtn = document.querySelector('.refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', this.loadNearbyReports);
+        }
+        
+        // Quick action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const action = e.currentTarget.getAttribute('data-action');
+                if (action === 'report') {
+                    this.showReportModal();
+                } else if (action === 'areas') {
+                    this.loadTopAreas();
+                } else if (action === 'emergency') {
+                    this.showEmergencyReport();
+                }
+            });
         });
         
-        // Modal close handlers
+        // Vibe option buttons
+        document.querySelectorAll('.vibe-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const vibe = e.currentTarget.getAttribute('data-vibe');
+                this.selectVibe(vibe);
+            });
+        });
+        
+        // Modal close buttons
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', (e) => {
+                const modal = e.target.closest('.modal');
+                if (modal) {
+                    this.closeModal(modal.id);
+                }
+            });
+        });
+        
+        // Form submit buttons
+        const reportSubmitBtn = document.querySelector('[data-action="submit-report"]');
+        if (reportSubmitBtn) {
+            reportSubmitBtn.addEventListener('click', this.submitReport);
+        }
+        
+        const emergencySubmitBtn = document.querySelector('[data-action="submit-emergency"]');
+        if (emergencySubmitBtn) {
+            emergencySubmitBtn.addEventListener('click', this.submitEmergencyReport);
+        }
+        
+        // Language select dropdown
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', (e) => {
+                this.changeLanguage(e.target.value);
+            });
+        }
+        
+        // Vote buttons (delegated event handling)
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
+            if (e.target.closest('.upvote-btn')) {
+                const reportItem = e.target.closest('.report-item');
+                if (reportItem) {
+                    const reportId = parseInt(reportItem.dataset.id);
+                    this.voteReport(reportId, 'upvote');
+                }
+            } else if (e.target.closest('.downvote-btn')) {
+                const reportItem = e.target.closest('.report-item');
+                if (reportItem) {
+                    const reportId = parseInt(reportItem.dataset.id);
+                    this.voteReport(reportId, 'downvote');
+                }
+            }
+        });
+        
+        // Map button in empty state
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'firstReportBtn' || e.target.closest('#firstReportBtn')) {
+                this.showReportModal();
             }
         });
     }
@@ -108,7 +229,6 @@ class HyperApp {
                 
                 if (insertError) {
                     console.error("Error creating user:", insertError);
-                    // Check if it's RLS error and try to handle it
                     if (insertError.message.includes('row-level security')) {
                         this.showNotification("Please check database permissions", "error");
                     } else {
@@ -122,7 +242,6 @@ class HyperApp {
                 return true;
             } else if (error) {
                 console.error("Error checking user:", error);
-                // Continue without Supabase user data
                 return false;
             } else {
                 // Update user data with Supabase info
@@ -139,7 +258,6 @@ class HyperApp {
             }
         } catch (error) {
             console.error("Error syncing user with Supabase:", error);
-            // Continue without Supabase user data
             return false;
         }
     }
@@ -161,13 +279,11 @@ class HyperApp {
     
     updateUserInfo() {
         if (this.userData) {
-            // Update username
             const usernameElement = document.getElementById('settingsUsername');
             if (usernameElement) {
                 usernameElement.textContent = this.userData.username || this.userData.first_name;
             }
             
-            // Update reputation
             document.getElementById('userReputation').textContent = this.userData.reputation || 0;
             document.getElementById('settingsReputation').textContent = this.userData.reputation || 0;
         }
@@ -176,27 +292,21 @@ class HyperApp {
     async loadInitialData() {
         await this.loadNearbyReports();
         await this.loadUserReports();
-        this.loadMap(); // Always load map, even with no data
+        this.loadMap();
     }
     
     async loadNearbyReports() {
         try {
-            // Show loading state
             document.getElementById('nearbyReports').innerHTML = '<div class="loading-spinner"></div>';
             
-            // Get reports from Supabase
             const { data: reports, error } = await this.supabase
                 .from('reports')
-                .select(`
-                    *,
-                    votes (vote_type)
-                `)
+                .select(`*, votes (vote_type)`)
                 .order('created_at', { ascending: false })
                 .limit(20);
             
             if (error) {
                 console.error("Error loading reports:", error);
-                // Check if it's RLS error
                 if (error.message.includes('row-level security')) {
                     this.showNotification("Database permissions issue. Please contact support.", "error");
                 } else {
@@ -207,15 +317,11 @@ class HyperApp {
                 return;
             }
             
-            // Process votes
             this.nearbyReports = reports.map(report => {
                 const userVote = report.votes && report.votes.length > 0 ? 
                     report.votes.find(v => v.user_id === this.userData?.id)?.vote_type : null;
                 
-                return {
-                    ...report,
-                    user_vote: userVote
-                };
+                return { ...report, user_vote: userVote };
             });
             
             this.displayNearbyReports();
@@ -237,7 +343,7 @@ class HyperApp {
         }
         
         container.innerHTML = this.nearbyReports.map(report => `
-            <div class="report-item">
+            <div class="report-item" data-id="${report.id}">
                 <div class="report-info">
                     <div class="report-type">
                         <i class="${this.getVibeIcon(report.vibe_type)}"></i>
@@ -252,14 +358,73 @@ class HyperApp {
                     </div>
                 </div>
                 <div class="report-actions">
-                    <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}" 
-                            onclick="app.voteReport(${report.id}, 'upvote')">
+                    <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}">
                         <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
                     </button>
-                    <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}" 
-                            onclick="app.voteReport(${report.id}, 'downvote')">
+                    <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}">
                         <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
                     </button>
+                </div>
+            </div>
+        `).join('');
+        
+        this.updateTextDirection();
+    }
+    
+    async loadUserReports() {
+        if (!this.userData) return;
+        
+        try {
+            document.getElementById('userReports').innerHTML = '<div class="loading-spinner"></div>';
+            
+            const { data: reports, error } = await this.supabase
+                .from('reports')
+                .select('*')
+                .eq('user_id', this.userData.id)
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error("Error loading user reports:", error);
+                this.showNotification("Failed to load your reports", "error");
+                document.getElementById('userReports').innerHTML = 
+                    '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
+                return;
+            }
+            
+            this.userReports = reports;
+            this.displayUserReports();
+        } catch (error) {
+            console.error("Error loading user reports:", error);
+            this.showNotification("Failed to load your reports", "error");
+            document.getElementById('userReports').innerHTML = 
+                '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
+        }
+    }
+    
+    displayUserReports() {
+        const container = document.getElementById('userReports');
+        
+        if (this.userReports.length === 0) {
+            container.innerHTML = '<div class="no-data" data-en="You haven\'t submitted any reports" data-ar="لم تقم بإرسال أي تقارير">You haven\'t submitted any reports</div>';
+            this.updateTextDirection();
+            return;
+        }
+        
+        container.innerHTML = this.userReports.map(report => `
+            <div class="report-item">
+                <div class="report-info">
+                    <div class="report-type">
+                        <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                        <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                            ${this.capitalizeFirstLetter(report.vibe_type)}
+                        </span>
+                    </div>
+                    <div class="report-details">${report.notes || ''}</div>
+                    <div class="report-meta">
+                        <span>${report.location || 'Unknown location'}</span>
+                        <span>${this.formatTimeAgo(report.created_at)}</span>
+                        <span>👍 ${report.upvotes || 0} 👎 ${report.downvotes || 0}</span>
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -274,7 +439,6 @@ class HyperApp {
         }
         
         try {
-            // Check if user already voted
             const { data: existingVote, error: voteError } = await this.supabase
                 .from('votes')
                 .select('*')
@@ -296,7 +460,6 @@ class HyperApp {
             
             if (existingVote) {
                 if (existingVote.vote_type === voteType) {
-                    // Remove vote if it's the same type
                     const { error: deleteError } = await this.supabase
                         .from('votes')
                         .delete()
@@ -310,7 +473,6 @@ class HyperApp {
                     
                     operation = 'remove';
                 } else {
-                    // Update vote if it's different
                     const { error: updateError } = await this.supabase
                         .from('votes')
                         .update({ vote_type: voteType })
@@ -325,16 +487,9 @@ class HyperApp {
                     operation = 'change';
                 }
             } else {
-                // Add new vote
                 const { error: insertError } = await this.supabase
                     .from('votes')
-                    .insert([
-                        {
-                            user_id: this.userData.id,
-                            report_id: reportId,
-                            vote_type: voteType
-                        }
-                    ]);
+                    .insert([{ user_id: this.userData.id, report_id: reportId, vote_type: voteType }]);
                 
                 if (insertError) {
                     console.error("Error adding vote:", insertError);
@@ -349,7 +504,6 @@ class HyperApp {
                 operation = 'add';
             }
             
-            // Update report vote counts
             const report = this.nearbyReports.find(r => r.id === reportId);
             if (!report) return;
             
@@ -372,7 +526,6 @@ class HyperApp {
                 }
             }
             
-            // Update the report in Supabase
             const { error: updateError } = await this.supabase
                 .from('reports')
                 .update({ upvotes, downvotes })
@@ -382,7 +535,6 @@ class HyperApp {
                 console.error("Error updating report votes:", updateError);
             }
             
-            // Update UI
             report.upvotes = upvotes;
             report.downvotes = downvotes;
             report.user_vote = operation === 'remove' ? null : voteType;
@@ -393,6 +545,23 @@ class HyperApp {
             console.error("Error voting:", error);
             this.showNotification("Failed to submit vote", "error");
         }
+    }
+    
+    showReportModal() {
+        this.selectedVibe = null;
+        document.querySelectorAll('.vibe-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        document.getElementById('reportNotes').value = '';
+        document.getElementById('reportModal').style.display = 'block';
+    }
+    
+    selectVibe(vibe) {
+        this.selectedVibe = vibe;
+        document.querySelectorAll('.vibe-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        document.querySelector(`.vibe-option[data-vibe="${vibe}"]`).classList.add('selected');
     }
     
     async submitReport() {
@@ -409,7 +578,6 @@ class HyperApp {
         const notes = document.getElementById('reportNotes').value;
         
         try {
-            // Get user location if available
             let location = "Unknown Location";
             let latitude = null;
             let longitude = null;
@@ -421,22 +589,19 @@ class HyperApp {
                 location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
             }
             
-            // Submit report to Supabase
             const { data, error } = await this.supabase
                 .from('reports')
-                .insert([
-                    {
-                        user_id: this.userData.id,
-                        vibe_type: this.selectedVibe,
-                        notes: notes,
-                        location: location,
-                        latitude: latitude,
-                        longitude: longitude,
-                        emergency: false,
-                        upvotes: 0,
-                        downvotes: 0
-                    }
-                ])
+                .insert([{
+                    user_id: this.userData.id,
+                    vibe_type: this.selectedVibe,
+                    notes: notes,
+                    location: location,
+                    latitude: latitude,
+                    longitude: longitude,
+                    emergency: false,
+                    upvotes: 0,
+                    downvotes: 0
+                }])
                 .select();
             
             if (error) {
@@ -449,7 +614,6 @@ class HyperApp {
                 return;
             }
             
-            // Update user reputation if user exists in Supabase
             try {
                 const { error: updateError } = await this.supabase
                     .from('users')
@@ -461,24 +625,26 @@ class HyperApp {
                     this.updateUserInfo();
                 }
             } catch (reputationError) {
-                console.log("Could not update reputation (user might not exist in Supabase yet)");
+                console.log("Could not update reputation");
             }
             
-            // Close modal
             document.getElementById('reportModal').style.display = 'none';
-            
-            // Show success message
             this.showNotification("Report submitted successfully", "success");
             
-            // Refresh all data
             await this.loadNearbyReports();
             await this.loadUserReports();
-            this.loadMap(); // Refresh map with new data
+            this.loadMap();
             
         } catch (error) {
             console.error("Error submitting report:", error);
             this.showNotification("Failed to submit report", "error");
         }
+    }
+    
+    showEmergencyReport() {
+        document.getElementById('emergencyType').value = 'dangerous';
+        document.getElementById('emergencyDetails').value = '';
+        document.getElementById('emergencyModal').style.display = 'block';
     }
     
     async submitEmergencyReport() {
@@ -496,7 +662,6 @@ class HyperApp {
         }
         
         try {
-            // Get user location if available
             let location = "Unknown Location";
             let latitude = null;
             let longitude = null;
@@ -508,22 +673,19 @@ class HyperApp {
                 location = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
             }
             
-            // Submit emergency report to Supabase
             const { data, error } = await this.supabase
                 .from('reports')
-                .insert([
-                    {
-                        user_id: this.userData.id,
-                        vibe_type: 'dangerous',
-                        notes: `EMERGENCY (${emergencyType}): ${details}`,
-                        location: location,
-                        latitude: latitude,
-                        longitude: longitude,
-                        emergency: true,
-                        upvotes: 0,
-                        downvotes: 0
-                    }
-                ])
+                .insert([{
+                    user_id: this.userData.id,
+                    vibe_type: 'dangerous',
+                    notes: `EMERGENCY (${emergencyType}): ${details}`,
+                    location: location,
+                    latitude: latitude,
+                    longitude: longitude,
+                    emergency: true,
+                    upvotes: 0,
+                    downvotes: 0
+                }])
                 .select();
             
             if (error) {
@@ -536,7 +698,6 @@ class HyperApp {
                 return;
             }
             
-            // Update user reputation if user exists in Supabase
             try {
                 const { error: updateError } = await this.supabase
                     .from('users')
@@ -548,21 +709,16 @@ class HyperApp {
                     this.updateUserInfo();
                 }
             } catch (reputationError) {
-                console.log("Could not update reputation (user might not exist in Supabase yet)");
+                console.log("Could not update reputation");
             }
             
-            // Close modal
             document.getElementById('emergencyModal').style.display = 'none';
-            
-            // Show success message
             this.showNotification("Emergency report submitted", "success");
             
-            // Refresh all data
             await this.loadNearbyReports();
             await this.loadUserReports();
-            this.loadMap(); // Refresh map with new data
+            this.loadMap();
             
-            // Send to Telegram bot if available
             if (this.tg && this.tg.sendData) {
                 this.tg.sendData(JSON.stringify({
                     type: 'emergency',
@@ -576,11 +732,355 @@ class HyperApp {
         }
     }
     
-    // ... rest of the methods remain the same as previous version ...
+    showView(viewName) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`.nav-btn[data-view="${viewName}"]`).classList.add('active');
+        
+        document.querySelectorAll('.view').forEach(view => {
+            view.classList.remove('active');
+        });
+        document.getElementById(`${viewName}View`).classList.add('active');
+        
+        if (viewName === 'map') {
+            this.loadMap();
+        } else if (viewName === 'reports') {
+            this.loadUserReports();
+        }
+    }
+    
+    async loadMap() {
+        try {
+            document.getElementById('mapContainer').innerHTML = '<div class="loading-spinner"></div>';
+            
+            const { data: reports, error } = await this.supabase
+                .from('reports')
+                .select('*')
+                .not('latitude', 'is', null)
+                .not('longitude', 'is', null)
+                .limit(50);
+            
+            if (error) {
+                console.error("Error loading map data:", error);
+                this.displayMap([]);
+                return;
+            }
+            
+            this.displayMap(reports || []);
+        } catch (error) {
+            console.error("Error loading map:", error);
+            this.displayMap([]);
+        }
+    }
+    
+    displayMap(reports) {
+        const container = document.getElementById('mapContainer');
+        
+        if (reports.length === 0) {
+            container.innerHTML = `
+                <div class="map-visualization">
+                    <div class="map-header">
+                        <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
+                        <p data-en="Submit reports to see them on the map" data-ar="قم بإرسال التقارير لرؤيتها على الخريطة">
+                            Submit reports to see them on the map
+                        </p>
+                    </div>
+                    <div class="map-points">
+                        <div class="map-placeholder-center">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <p data-en="No location data yet" data-ar="لا توجد بيانات موقع بعد">No location data yet</p>
+                            <button class="btn btn-primary" id="firstReportBtn">
+                                <i class="fas fa-plus-circle"></i>
+                                <span data-en="Submit First Report" data-ar="إرسال أول تقرير">Submit First Report</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-legend">
+                        <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
+                        <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
+                        <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
+                        <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
+                        <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
+                        <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="map-visualization">
+                    <div class="map-header">
+                        <h3 data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</h3>
+                        <p data-en="${reports.length} reports with location data" data-ar="${reports.length} تقرير يحتوي على بيانات الموقع">
+                            ${reports.length} reports with location data
+                        </p>
+                    </div>
+                    <div class="map-points">
+                        ${reports.map(report => `
+                            <div class="map-point" 
+                                 style="top: ${50 + ((report.latitude || 0) % 20)}%; left: ${50 + ((report.longitude || 0) % 20)}%;" 
+                                 data-vibe="${report.vibe_type}" 
+                                 title="${report.vibe_type} at ${report.location}">
+                                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="map-legend">
+                        <div class="legend-item"><i class="fas fa-users" style="color: #FFA500;"></i> Crowded</div>
+                        <div class="legend-item"><i class="fas fa-volume-up" style="color: #FF6B35;"></i> Noisy</div>
+                        <div class="legend-item"><i class="fas fa-music" style="color: #28A745;"></i> Festive</div>
+                        <div class="legend-item"><i class="fas fa-peace" style="color: #17A2B8;"></i> Calm</div>
+                        <div class="legend-item"><i class="fas fa-eye" style="color: #FFC107;"></i> Suspicious</div>
+                        <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: #DC3545;"></i> Dangerous</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        this.updateTextDirection();
+    }
+    
+    async loadTopAreas() {
+        try {
+            const { data: areas, error } = await this.supabase
+                .from('reports')
+                .select('location, vibe_type')
+                .not('location', 'is', null)
+                .not('location', 'eq', 'Unknown Location');
+            
+            if (error) {
+                console.error("Error loading top areas:", error);
+                this.showNotification("Failed to load top areas", "error");
+                return;
+            }
+            
+            const locationCounts = {};
+            areas.forEach(report => {
+                if (!locationCounts[report.location]) {
+                    locationCounts[report.location] = { count: 0, vibes: {} };
+                }
+                locationCounts[report.location].count++;
+                
+                if (!locationCounts[report.location].vibes[report.vibe_type]) {
+                    locationCounts[report.location].vibes[report.vibe_type] = 0;
+                }
+                locationCounts[report.location].vibes[report.vibe_type]++;
+            });
+            
+            const topAreas = Object.entries(locationCounts)
+                .map(([location, data]) => ({ location, ...data }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
+            
+            const modalContent = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 data-en="Top Areas" data-ar="أهم المناطق">Top Areas</h2>
+                        <span class="close">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        ${topAreas.length > 0 ? `
+                            <div class="top-areas-list">
+                                ${topAreas.map(area => `
+                                    <div class="area-item">
+                                        <div class="area-header">
+                                            <h3>${area.location}</h3>
+                                            <span class="report-count">${area.count} reports</span>
+                                        </div>
+                                        <div class="area-vibes">
+                                            ${Object.entries(area.vibes)
+                                                .map(([vibe, count]) => `
+                                                    <span class="vibe-tag">
+                                                        <i class="${this.getVibeIcon(vibe)}"></i>
+                                                        ${vibe}: ${count}
+                                                    </span>
+                                                `).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <p data-en="No area data available" data-ar="لا توجد بيانات للمناطق متاحة">
+                                No area data available
+                            </p>
+                        `}
+                    </div>
+                </div>
+            `;
+            
+            let modal = document.getElementById('topAreasModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'topAreasModal';
+                modal.className = 'modal';
+                document.body.appendChild(modal);
+            }
+            
+            modal.innerHTML = modalContent;
+            modal.style.display = 'block';
+            
+            // Add event listener to close button
+            const closeBtn = modal.querySelector('.close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            }
+            
+            this.updateTextDirection();
+        } catch (error) {
+            console.error("Error loading top areas:", error);
+            this.showNotification("Failed to load top areas", "error");
+        }
+    }
+    
+    toggleLanguage() {
+        this.currentLanguage = this.currentLanguage === 'en' ? 'ar' : 'en';
+        this.applyLanguage(this.currentLanguage);
+        
+        document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+        
+        if (this.userData) {
+            this.supabase
+                .from('users')
+                .update({ language: this.currentLanguage })
+                .eq('user_id', this.userData.id)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error("Error updating language:", error);
+                    }
+                });
+        }
+        
+        this.showNotification(`Language changed to ${this.currentLanguage === 'en' ? 'English' : 'Arabic'}`, "success");
+    }
+    
+    changeLanguage(lang) {
+        this.currentLanguage = lang;
+        this.applyLanguage(lang);
+        
+        document.getElementById('languageSelect').value = this.currentLanguage;
+        document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+        
+        if (this.userData) {
+            this.supabase
+                .from('users')
+                .update({ language: this.currentLanguage })
+                .eq('user_id', this.userData.id)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error("Error updating language:", error);
+                    }
+                });
+        }
+    }
+    
+    applyLanguage(lang) {
+        // Update text direction
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        
+        // Update all elements with data attributes
+        document.querySelectorAll('[data-en], [data-ar]').forEach(element => {
+            const text = lang === 'ar' ? element.getAttribute('data-ar') : element.getAttribute('data-en');
+            if (text && element.textContent !== text) {
+                element.textContent = text;
+            }
+        });
+        
+        // Update placeholders
+        const textareaEn = document.getElementById('reportNotes');
+        const textareaAr = document.getElementById('reportNotes');
+        if (textareaEn && textareaAr) {
+            textareaEn.placeholder = lang === 'ar' ? 'صف ما تواجهه...' : 'Describe what you\'re experiencing...';
+        }
+        
+        this.updateTextDirection();
+    }
+    
+    updateTextDirection() {
+        document.querySelectorAll('[data-en], [data-ar]').forEach(element => {
+            if (this.currentLanguage === 'ar') {
+                element.style.textAlign = 'right';
+                element.style.direction = 'rtl';
+            } else {
+                element.style.textAlign = 'left';
+                element.style.direction = 'ltr';
+            }
+        });
+    }
+    
+    showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        const messageElement = document.getElementById('notificationMessage');
+        
+        if (!notification || !messageElement) return;
+        
+        // Set message and type
+        messageElement.textContent = message;
+        notification.className = `notification ${type}`;
+        
+        // Show notification
+        notification.classList.remove('hidden');
+        
+        // Auto hide after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('hidden');
+        }, 3000);
+    }
+    
+    closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    
+    getVibeIcon(vibeType) {
+        const icons = {
+            crowded: 'fas fa-users',
+            noisy: 'fas fa-volume-up',
+            festive: 'fas fa-music',
+            calm: 'fas fa-peace',
+            suspicious: 'fas fa-eye',
+            dangerous: 'fas fa-exclamation-triangle'
+        };
+        return icons[vibeType] || 'fas fa-question-circle';
+    }
+    
+    getVibeArabicName(vibeType) {
+        const names = {
+            crowded: 'مزدحم',
+            noisy: 'صاخب',
+            festive: 'احتفالي',
+            calm: 'هادئ',
+            suspicious: 'مريب',
+            dangerous: 'خطر'
+        };
+        return names[vibeType] || vibeType;
+    }
+    
+    capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    
+    formatTimeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        
+        if (seconds < 60) return this.currentLanguage === 'en' ? 'Just now' : 'الآن';
+        
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return this.currentLanguage === 'en' ? `${minutes}m ago` : `منذ ${minutes} دقيقة`;
+        
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return this.currentLanguage === 'en' ? `${hours}h ago` : `منذ ${hours} ساعة`;
+        
+        const days = Math.floor(hours / 24);
+        if (days < 7) return this.currentLanguage === 'en' ? `${days}d ago` : `منذ ${days} يوم`;
+        
+        return date.toLocaleDateString(this.currentLanguage === 'en' ? 'en-US' : 'ar-EG');
+    }
 }
 
 // Initialize the app when the page loads
-let app;
-document.addEventListener('DOMContentLoaded', () => {
-    app = new HyperApp();
+document.addEventListener('DOMContentLoaded', function() {
+    window.app = new HyperApp();
 });
