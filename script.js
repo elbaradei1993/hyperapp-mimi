@@ -1,14 +1,13 @@
 function sendCommand(command) {
-    if (window.Telegram.WebApp) {
-        Telegram.WebApp.sendData(command);
-    } else {
-        alert("This command will be sent to the bot: " + command);
-    }
+  if (window.Telegram.WebApp) {
+    Telegram.WebApp.sendData(command);
+  } else {
+    alert("Command: " + command);
+  }
 }
 
-// Initialize Telegram WebApp features
 if (window.Telegram.WebApp) {
-    Telegram.WebApp.expand();
-    Telegram.WebApp.MainButton.text = "Open HyperApp / فتح هايبر آب";
-    Telegram.WebApp.MainButton.show();
+  Telegram.WebApp.expand();
+  Telegram.WebApp.MainButton.text = "Open HyperApp";
+  Telegram.WebApp.MainButton.show();
 }
