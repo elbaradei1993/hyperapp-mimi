@@ -56,22 +56,22 @@
           <div id="nearbyReports" class="reports-container">
             <div class="loading-spinner"></div>
           </div>
-          <button class="btn refresh-btn" onclick="app.loadNearbyReports()">
+          <button class="btn refresh-btn">
             <i class="fas fa-sync-alt"></i> 
             <span data-en="Refresh" data-ar="تحديث">Refresh</span>
           </button>
         </div>
 
         <div class="quick-actions">
-          <div class="action-btn" onclick="app.showReportModal()">
+          <div class="action-btn" data-action="report">
             <i class="fas fa-plus-circle"></i>
             <span data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</span>
           </div>
-          <div class="action-btn" onclick="app.loadTopAreas()">
+          <div class="action-btn" data-action="areas">
             <i class="fas fa-chart-line"></i>
             <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
           </div>
-          <div class="action-btn emergency-btn" onclick="app.showEmergencyReport()">
+          <div class="action-btn emergency-btn" data-action="emergency">
             <i class="fas fa-exclamation-triangle"></i>
             <span data-en="Emergency" data-ar="طارئ">Emergency</span>
           </div>
@@ -128,7 +128,7 @@
             <h3 data-en="Preferences" data-ar="التفضيلات">Preferences</h3>
             <div class="setting-item">
               <span data-en="Language" data-ar="اللغة">Language</span>
-              <select id="languageSelect" onchange="app.changeLanguage(this.value)">
+              <select id="languageSelect">
                 <option value="en">English</option>
                 <option value="ar">العربية</option>
               </select>
@@ -159,33 +159,33 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2 data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</h2>
-          <span class="close" onclick="app.closeModal('reportModal')">&times;</span>
+          <span class="close">&times;</span>
         </div>
         <div class="modal-body">
           <div class="form-group">
             <label data-en="Select vibe type:" data-ar="اختر نوع الحالة:">Select vibe type:</label>
             <div class="vibe-options">
-              <div class="vibe-option" data-vibe="crowded" onclick="app.selectVibe('crowded')">
+              <div class="vibe-option" data-vibe="crowded">
                 <i class="fas fa-users"></i>
                 <span data-en="Crowded" data-ar="مزدحم">Crowded</span>
               </div>
-              <div class="vibe-option" data-vibe="noisy" onclick="app.selectVibe('noisy')">
+              <div class="vibe-option" data-vibe="noisy">
                 <i class="fas fa-volume-up"></i>
                 <span data-en="Noisy" data-ar="صاخب">Noisy</span>
               </div>
-              <div class="vibe-option" data-vibe="festive" onclick="app.selectVibe('festive')">
+              <div class="vibe-option" data-vibe="festive">
                 <i class="fas fa-music"></i>
                 <span data-en="Festive" data-ar="احتفالي">Festive</span>
               </div>
-              <div class="vibe-option" data-vibe="calm" onclick="app.selectVibe('calm')">
+              <div class="vibe-option" data-vibe="calm">
                 <i class="fas fa-peace"></i>
                 <span data-en="Calm" data-ar="هادئ">Calm</span>
               </div>
-              <div class="vibe-option" data-vibe="suspicious" onclick="app.selectVibe('suspicious')">
+              <div class="vibe-option" data-vibe="suspicious">
                 <i class="fas fa-eye"></i>
                 <span data-en="Suspicious" data-ar="مريب">Suspicious</span>
               </div>
-              <div class="vibe-option" data-vibe="dangerous" onclick="app.selectVibe('dangerous')">
+              <div class="vibe-option" data-vibe="dangerous">
                 <i class="fas fa-exclamation-triangle"></i>
                 <span data-en="Dangerous" data-ar="خطر">Dangerous</span>
               </div>
@@ -197,8 +197,9 @@
             <textarea id="reportNotes" placeholder="Describe what you're experiencing..."></textarea>
           </div>
           
-          <button class="btn btn-primary" onclick="app.submitReport()" data-en="Submit Report" data-ar="إرسال التقرير">
-            Submit Report
+          <button class="btn btn-primary" data-action="submit-report">
+            <i class="fas fa-paper-plane"></i>
+            <span data-en="Submit Report" data-ar="إرسال التقرير">Submit Report</span>
           </button>
         </div>
       </div>
@@ -209,7 +210,7 @@
       <div class="modal-content emergency">
         <div class="modal-header">
           <h2><i class="fas fa-exclamation-triangle"></i> <span data-en="Emergency Report" data-ar="بلاغ طارئ">Emergency Report</span></h2>
-          <span class="close" onclick="app.closeModal('emergencyModal')">&times;</span>
+          <span class="close">&times;</span>
         </div>
         <div class="modal-body">
           <p data-en="Please use this only for real emergencies. Your report will alert authorities and nearby users." 
@@ -232,12 +233,17 @@
             <textarea id="emergencyDetails" placeholder="Please provide as many details as possible..."></textarea>
           </div>
           
-          <button class="btn btn-emergency" onclick="app.submitEmergencyReport()">
+          <button class="btn btn-emergency" data-action="submit-emergency">
             <i class="fas fa-bell"></i> 
             <span data-en="Send Emergency Alert" data-ar="إرسال تنبيه طارئ">Send Emergency Alert</span>
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- Top Areas Modal -->
+    <div id="topAreasModal" class="modal">
+      <!-- Content will be dynamically inserted -->
     </div>
 
     <!-- Notification System -->
