@@ -2143,6 +2143,12 @@
           return;
         }
 
+        // Show loading state
+        const submitBtn = document.getElementById('submitEmergencyBtn');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Submitting...';
+        submitBtn.disabled = true;
+
         try {
           const emergencyType = document.getElementById('emergencyType').value;
           const location = document.getElementById('emergencyLocation').value;
@@ -2152,7 +2158,21 @@
             this.showNotification("Please fill all required fields", "error");
             return;
           }
-          
+
+          // Ensure user is synced with database before submitting
+          const synced = await this.syncUserWithSupabase();
+          if (!synced) {
+            this.showNotification("Account sync failed. Please try logging out and back in.", "error");
+            return;
+          }
+
+          console.log("Submitting emergency report:", {
+            user_id: this.userData.id,
+            vibe_type: 'dangerous',
+            location: location,
+            notes: `EMERGENCY (${emergencyType}): ${details}`
+          });
+
           const { data, error } = await this.supabase
             .from('reports')
             .insert([
@@ -2164,19 +2184,43 @@
               }
             ])
             .select();
-          
+
           if (error) {
             console.error("Error submitting emergency report:", error);
-            this.showNotification("Failed to submit emergency report", "error");
+            let errorMessage = "Failed to submit emergency report";
+            if (error.message.includes('foreign key constraint')) {
+              errorMessage = "User account issue. Please try logging out and back in.";
+            } else if (error.message.includes('row-level security')) {
+              errorMessage = "Permission denied. Please contact support.";
+            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+              errorMessage = "Network error. Please check your connection and try again.";
+            } else {
+              errorMessage = `Failed to submit emergency report: ${error.message}`;
+            }
+            this.showNotification(errorMessage, "error");
           } else {
+            console.log("Emergency report submitted successfully:", data);
             this.showNotification("Emergency report submitted successfully", "success");
             this.closeModal('emergencyModal');
-            this.loadNearbyReports();
-            this.loadUserReports();
+            // Reload data to show the new emergency report
+            await this.loadNearbyReports();
+            if (this.isAuthenticated) {
+              await this.loadUserReports();
+            }
+            // Refresh map to show new emergency report
+            this.loadMap();
           }
         } catch (error) {
           console.error("Error submitting emergency report:", error);
-          this.showNotification("Failed to submit emergency report", "error");
+          let errorMessage = "Failed to submit emergency report";
+          if (error.message.includes('network') || error.message.includes('fetch')) {
+            errorMessage = "Network error. Please check your connection and try again.";
+          }
+          this.showNotification(errorMessage, "error");
+        } finally {
+          // Reset button state
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
         }
       }
       
