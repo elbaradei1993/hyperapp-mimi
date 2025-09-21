@@ -1894,7 +1894,7 @@
           this.showNotification("Please login to vote", "error");
           return;
         }
-        
+
         try {
           const { data: existingVote, error: voteError } = await this.supabase
             .from('votes')
@@ -1902,41 +1902,41 @@
             .eq('user_id', this.userData.id)
             .eq('report_id', reportId)
             .maybeSingle();
-          
+
           if (voteError && voteError.code !== 'PGRST116') {
             console.error("Error checking vote:", voteError);
             this.showNotification("Failed to submit vote", "error");
             return;
           }
-          
+
           let operation;
-          
+
           if (existingVote) {
             if (existingVote.vote_type === voteType) {
               const { error: deleteError } = await this.supabase
                 .from('votes')
                 .delete()
                 .eq('id', existingVote.id);
-              
+
               if (deleteError) {
                 console.error("Error removing vote:", deleteError);
                 this.showNotification("Failed to update vote", "error");
                 return;
               }
-              
+
               operation = 'remove';
             } else {
               const { error: updateError } = await this.supabase
                 .from('votes')
                 .update({ vote_type: voteType })
                 .eq('id', existingVote.id);
-              
+
               if (updateError) {
                 console.error("Error updating vote:", updateError);
                 this.showNotification("Failed to update vote", "error");
                 return;
               }
-              
+
               operation = 'change';
             }
           } else {
@@ -1949,16 +1949,16 @@
                   vote_type: voteType
                 }
               ]);
-            
+
             if (insertError) {
               console.error("Error inserting vote:", insertError);
               this.showNotification("Failed to submit vote", "error");
               return;
             }
-            
+
             operation = 'add';
           }
-          
+
           // Reload nearby reports to get updated vote counts from database
           await this.loadNearbyReports();
           this.showNotification("Vote recorded", "success");
@@ -1967,7 +1967,7 @@
           this.showNotification("Failed to submit vote", "error");
         }
       }
-      
+
       showReportModal() {
         if (!this.isAuthenticated) {
           this.showAuthModal();
