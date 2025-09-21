@@ -1930,10 +1930,22 @@
         }
 
         try {
+          // Get current session to ensure we're authenticated
+          const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+
+          if (sessionError || !sessionData.session) {
+            this.showNotification("Authentication expired. Please login again.", "error");
+            this.showAuthModal();
+            return;
+          }
+
+          // Use the authenticated user ID from the session
+          const authUserId = sessionData.session.user.id;
+
           const { data: existingVote, error: voteError } = await this.supabase
             .from('votes')
             .select('*')
-            .eq('user_id', this.userData.id)
+            .eq('user_id', authUserId)
             .eq('report_id', reportId)
             .maybeSingle();
 
@@ -1978,7 +1990,7 @@
               .from('votes')
               .insert([
                 {
-                  user_id: this.userData.id,
+                  user_id: authUserId,
                   report_id: reportId,
                   vote_type: voteType
                 }
