@@ -115,7 +115,11 @@
     }
 
     .connected {
-      color: var(--success) !important;
+      color: var(--success);
+    }
+
+    .disconnected {
+      color: var(--danger);
     }
 
     .app-nav {
@@ -174,7 +178,7 @@
       padding: 20px;
       margin-bottom: 16px;
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 极细线);
     }
 
     .card-title {
@@ -238,14 +242,21 @@
       padding: 6px 10px;
       cursor: pointer;
       color: var(--text-light);
+      transition: all 0.3s ease;
+    }
+
+    .vote-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .upvote-btn.active {
       color: var(--success);
+      background: rgba(40, 167, 69, 0.2);
     }
 
     .downvote-btn.active {
       color: var(--danger);
+      background: rgba(220, 53, 69, 0.2);
     }
 
     .quick-actions {
@@ -526,6 +537,11 @@
       color: var(--text-muted);
       font-size: 24px;
       cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .close:hover {
+      color: var(--text-light);
     }
 
     .modal-body {
@@ -561,6 +577,7 @@
 
     .vibe-option:hover {
       border-color: var(--primary);
+      background: rgba(45, 91, 255, 0.1);
     }
 
     .vibe-option.selected {
@@ -587,6 +604,11 @@
       padding: 12px;
       color: var(--text-light);
       resize: vertical;
+    }
+
+    textarea:focus, select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
     }
 
     textarea {
@@ -628,6 +650,9 @@
       z-index: 1000;
       max-width: 90%;
       animation: slideInUp 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .notification.hidden {
@@ -713,6 +738,7 @@
     .auth-tab.active {
       opacity: 1;
       border-bottom: 2px solid var(--primary);
+      background: rgba(45, 91, 255, 0.1);
     }
     
     .auth-form {
@@ -721,16 +747,6 @@
     
     .auth-form.hidden {
       display: none;
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
     }
     
     .auth-btn {
@@ -922,7 +938,7 @@
             <i class="fas fa-chart-line"></i>
             <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
           </div>
-          <div class="action-btn emergency-btn" data-action="emergency">
+          <div class="action-btn emergency-btn" data-action="emergery">
             <i class="fas fa-exclamation-triangle"></i>
             <span data-en="Emergency" data-ar="طارئ">Emergency</span>
           </div>
@@ -1002,7 +1018,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</h2>
-        <span class="close">&times;</span>
+        <span class="close" data-dismiss="reportModal">&times;</span>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -1042,7 +1058,7 @@
           <label data-en="Notes (optional)" data-ar="ملاحظات (اختياري)">Notes (optional)</label>
           <textarea id="reportNotes" placeholder="Add details about what you're experiencing"></textarea>
         </div>
-        <button class="btn" data-action="submit-report" data-en="Submit Report" data-ar="إرسال التقرير">Submit Report</button>
+        <button class="btn" id="submitReportBtn" data-en="Submit Report" data-ar="إرسال التقرير">Submit Report</button>
       </div>
     </div>
   </div>
@@ -1052,7 +1068,7 @@
     <div class="modal-content emergency">
       <div class="modal-header">
         <h2 data-en="Emergency Report" data-ar="تقرير طارئ">Emergency Report</h2>
-        <span class="close">&times;</span>
+        <span class="close" data-dismiss="emergencyModal">&times;</span>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -1072,13 +1088,13 @@
           <label data-en="Details" data-ar="التفاصيل">Details</label>
           <textarea id="emergencyDetails" placeholder="Please provide details about the emergency" required></textarea>
         </div>
-        <button class="btn btn-emergency" data-action="submit-emergency" data-en="Report Emergency" data-ar="الإبلاغ عن حالة الطوارئ">Report Emergency</button>
+        <button class="btn btn-emergency" id="submitEmergencyBtn" data-en="Report Emergency" data-ar="الإبلاغ عن حالة الطوارئ">Report Emergency</button>
       </div>
     </div>
   </div>
 
   <script>
-    // HyperApp Mini App - Fixed Implementation
+    // HyperApp Mini App - Complete Fixed Implementation
     class HyperApp {
       constructor() {
         this.tg = window.Telegram.WebApp;
@@ -1091,17 +1107,21 @@
         this.userLocation = null;
         this.isAuthenticated = false;
         
-        // Initialize Supabase
+        // Initialize Supabase with the correct API key
         this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
-        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhbmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
         this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
         
-        // Bind all methods
+        // Check authentication state
+        this.checkAuthState();
+        
+        // Bind all methods to maintain 'this' context
         this.bindMethods();
         
         this.init();
       }
       
+      // Bind all methods to maintain proper 'this' context
       bindMethods() {
         const methods = [
           'init', 'setupEventListeners', 'syncUserWithSupabase', 'updateConnectionStatus',
@@ -1163,6 +1183,42 @@
         
         // Make app instance globally available
         window.hyperApp = this;
+      }
+      
+      async checkAuthState() {
+        // Check if we have a Telegram user first
+        if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
+          const telegramUser = this.tg.initDataUnsafe.user;
+          this.userData = telegramUser;
+          this.isAuthenticated = true;
+          await this.syncUserWithSupabase();
+          this.updateUserInfo();
+          return;
+        }
+        
+        // Check Supabase authentication as fallback
+        const { data: { session }, error } = await this.supabase.auth.getSession();
+        if (session && session.user) {
+          this.isAuthenticated = true;
+          this.userData = {
+            id: session.user.id,
+            email: session.user.email,
+            ...session.user.user_metadata
+          };
+          await this.syncUserWithSupabase();
+          this.updateUserInfo();
+        } else {
+          // Show auth modal if no authentication found
+          this.showAuthModal();
+        }
+      }
+      
+      showAuthModal() {
+        document.getElementById('authModal').style.display = 'block';
+      }
+      
+      hideAuthModal() {
+        document.getElementById('authModal').style.display = 'none';
       }
       
       async setupAuthListeners() {
@@ -1275,14 +1331,6 @@
         }
       }
       
-      showAuthModal() {
-        document.getElementById('authModal').style.display = 'block';
-      }
-      
-      hideAuthModal() {
-        document.getElementById('authModal').style.display = 'none';
-      }
-      
       async syncUserWithSupabase() {
         if (!this.userData) return false;
         
@@ -1346,8 +1394,12 @@
         if (statusElement) {
           if (connected) {
             statusElement.innerHTML = '<i class="fas fa-check-circle connected"></i> <span data-en="Connected" data-ar="متصل">Connected</span>';
+            statusElement.classList.add('connected');
+            statusElement.classList.remove('disconnected');
           } else {
-            statusElement.innerHTML = '<i class="fas fa-times-circle"></i> <span data-en="Disconnected" data-ar="غير متصل">Disconnected</span>';
+            statusElement.innerHTML = '<i class="fas fa-times-circle disconnected"></i> <span data-en="Disconnected" data-ar="غير متصل">Disconnected</span>';
+            statusElement.classList.add('disconnected');
+            statusElement.classList.remove('connected');
           }
         }
       }
@@ -1407,7 +1459,7 @@
       displayNearbyReports() {
         const container = document.getElementById('nearbyReports');
         
-        if (this.nearbyReports.length === 0) {
+        if (!this.nearbyReports || this.nearbyReports.length === 0) {
           container.innerHTML = '<div class="no-data" data-en="No reports nearby" data-ar="لا توجد تقارير قريبة">No reports nearby</div>';
           this.updateTextDirection();
           return;
@@ -1473,7 +1525,7 @@
       displayUserReports() {
         const container = document.getElementById('userReports');
         
-        if (this.userReports.length === 0) {
+        if (!this.userReports || this.userReports.length === 0) {
           container.innerHTML = '<div class="no-data" data-en="You haven\'t submitted any reports" data-ar="لم تقم بإرسال أي تقارير">You haven\'t submitted any reports</div>';
           this.updateTextDirection();
           return;
@@ -1725,7 +1777,7 @@
             <p data-en="Showing recent reports in your area" data-ar="عرض التقارير الحديثة في منطقتك">Showing recent reports in your area</p>
           </div>
           <div class="map-points">
-            ${this.nearbyReports.length > 0 ? this.nearbyReports.map(report => `
+            ${this.nearbyReports && this.nearbyReports.length > 0 ? this.nearbyReports.map(report => `
               <div class="map-point" data-vibe="${report.vibe_type}" style="top: ${Math.random() * 70 + 15}%; left: ${Math.random() * 80 + 10}%;">
                 <i class="${this.getVibeIcon(report.vibe_type)}"></i>
               </div>
@@ -1820,13 +1872,22 @@
         
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
-        notification.textContent = message;
+        
+        // Add icon based on notification type
+        let icon = 'fas fa-info-circle';
+        if (type === 'success') icon = 'fas fa-check-circle';
+        if (type === 'error') icon = 'fas fa-exclamation-circle';
+        if (type === 'warning') icon = 'fas fa-exclamation-triangle';
+        
+        notification.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
         
         document.body.appendChild(notification);
         
         // Auto-remove after 3 seconds
         setTimeout(() => {
-          notification.remove();
+          if (notification.parentNode) {
+            notification.remove();
+          }
         }, 3000);
       }
       
@@ -1940,7 +2001,7 @@
               this.showReportModal();
             } else if (action === 'areas') {
               this.loadTopAreas();
-            } else if (action === 'emergency') {
+            } else if (action === 'emergery') {
               this.showEmergencyReport();
             }
           });
@@ -1957,20 +2018,20 @@
         // Modal close buttons
         document.querySelectorAll('.close').forEach(closeBtn => {
           closeBtn.addEventListener('click', (e) => {
-            const modal = e.target.closest('.modal');
-            if (modal) {
-              this.closeModal(modal.id);
+            const modalId = e.target.getAttribute('data-dismiss');
+            if (modalId) {
+              this.closeModal(modalId);
             }
           });
         });
         
         // Form submit buttons
-        const reportSubmitBtn = document.querySelector('[data-action="submit-report"]');
+        const reportSubmitBtn = document.getElementById('submitReportBtn');
         if (reportSubmitBtn) {
           reportSubmitBtn.addEventListener('click', this.submitReport);
         }
         
-        const emergencySubmitBtn = document.querySelector('[data-action="submit-emergency"]');
+        const emergencySubmitBtn = document.getElementById('submitEmergencyBtn');
         if (emergencySubmitBtn) {
           emergencySubmitBtn.addEventListener('click', this.submitEmergencyReport);
         }
