@@ -2393,11 +2393,19 @@
           return;
         }
 
+        // Show loading state
+        const locationBtn = document.getElementById('myLocationBtn');
+        if (locationBtn) {
+          locationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+          locationBtn.disabled = true;
+        }
+
         try {
           const position = await new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, {
-              timeout: 10000,
-              enableHighAccuracy: true
+              timeout: 20000, // Increased timeout to 20 seconds
+              enableHighAccuracy: true,
+              maximumAge: 300000 // Accept cached position up to 5 minutes old
             });
           });
 
@@ -2412,13 +2420,19 @@
           console.error('Error getting location:', error);
           let errorMessage = "Unable to get your location";
           if (error.code === 1) {
-            errorMessage = "Location access denied. Please enable location permissions.";
+            errorMessage = "Location access denied. Please enable location permissions in your browser settings.";
           } else if (error.code === 2) {
-            errorMessage = "Location unavailable. Please check your GPS settings.";
+            errorMessage = "Location unavailable. Please check your GPS settings and try again.";
           } else if (error.code === 3) {
-            errorMessage = "Location request timed out. Please try again.";
+            errorMessage = "Location request timed out. This can happen in poor signal areas. Please try again.";
           }
           this.showNotification(errorMessage, "error");
+        } finally {
+          // Reset button state
+          if (locationBtn) {
+            locationBtn.innerHTML = '<i class="fas fa-crosshairs"></i>';
+            locationBtn.disabled = false;
+          }
         }
       }
 
