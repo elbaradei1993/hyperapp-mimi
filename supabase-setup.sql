@@ -1,7 +1,3 @@
--- Supabase schema & RLS for users, reports, votes + counters
--- Clean SQL (no backslashes), safe to run multiple times
-
--- Users table mapped to auth.users
 create table if not exists public.users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   username text,
@@ -10,7 +6,6 @@ create table if not exists public.users (
   created_at timestamptz not null default now()
 );
 
--- Reports table
 create table if not exists public.reports (
   id bigint generated always as identity primary key,
   user_id uuid not null references public.users(user_id) on delete cascade,
@@ -24,13 +19,11 @@ create table if not exists public.reports (
   created_at timestamptz not null default now()
 );
 
--- Ensure columns exist
 alter table public.reports add column if not exists upvotes int not null default 0;
 alter table public.reports add column if not exists downvotes int not null default 0;
 alter table public.reports add column if not exists latitude double precision;
 alter table public.reports add column if not exists longitude double precision;
 
--- Votes table (one vote per user per report)
 create table if not exists public.votes (
   id bigint generated always as identity primary key,
   user_id uuid not null references public.users(user_id) on delete cascade,
@@ -41,31 +34,28 @@ create table if not exists public.votes (
 );
 
 create index if not exists votes_report_id_idx on public.votes(report_id);
-create index if not exists votes_user_id_idx   on public.votes(user_id);
+create index if not exists votes_user_id_idx on public.votes(user_id);
 
--- Enable RLS
-alter table public.users   enable row level security;
+alter table public.users enable row level security;
 alter table public.reports enable row level security;
-alter table public.votes   enable row level security;
+alter table public.votes enable row level security;
 
--- Users policies (self-access)
 drop policy if exists users_insert_self on public.users;
 create policy users_insert_self on public.users
   for insert to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id::text = auth.uid()::text);
 
 drop policy if exists users_select_self on public.users;
 create policy users_select_self on public.users
   for select to authenticated
-  using (user_id = auth.uid());
+  using (user_id::text = auth.uid()::text);
 
 drop policy if exists users_update_self on public.users;
 create policy users_update_self on public.users
   for update to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id::text = auth.uid()::text)
+  with check (user_id::text = auth.uid()::text);
 
--- Reports policies
 drop policy if exists reports_select_all on public.reports;
 create policy reports_select_all on public.reports
   for select to anon, authenticated
@@ -74,43 +64,40 @@ create policy reports_select_all on public.reports
 drop policy if exists reports_insert_own on public.reports;
 create policy reports_insert_own on public.reports
   for insert to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id::text = auth.uid()::text);
 
 drop policy if exists reports_update_own on public.reports;
 create policy reports_update_own on public.reports
   for update to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id::text = auth.uid()::text)
+  with check (user_id::text = auth.uid()::text);
 
 drop policy if exists reports_delete_own on public.reports;
 create policy reports_delete_own on public.reports
   for delete to authenticated
-  using (user_id = auth.uid());
+  using (user_id::text = auth.uid()::text);
 
--- Votes policies
--- Select: only current user&#39;s votes; anon sees none but request succeeds
 drop policy if exists votes_select_own on public.votes;
 create policy votes_select_own on public.votes
-  for select to anon, authenticated
-  using (user_id = auth.uid());
+  for select to authenticated
+  using (user_id::text = auth.uid()::text);
 
 drop policy if exists votes_insert_own on public.votes;
 create policy votes_insert_own on public.votes
   for insert to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id::text = auth.uid()::text);
 
 drop policy if exists votes_update_own on public.votes;
 create policy votes_update_own on public.votes
   for update to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id::text = auth.uid()::text)
+  with check (user_id::text = auth.uid()::text);
 
 drop policy if exists votes_delete_own on public.votes;
 create policy votes_delete_own on public.votes
   for delete to authenticated
-  using (user_id = auth.uid());
+  using (user_id::text = auth.uid()::text);
 
--- Triggers to maintain upvotes/downvotes counters
 create or replace function public._votes_ai_update_report_counts()
 returns trigger
 language plpgsql
