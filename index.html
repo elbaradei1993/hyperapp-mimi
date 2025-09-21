@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HyperApp - Community Safety Platform</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     :root {
       --primary: #2D5BFF;
@@ -73,6 +75,7 @@
       margin-bottom: 5px;
       background: linear-gradient(to right, #fff, var(--primary));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -245,8 +248,14 @@
       transition: all 0.3s ease;
     }
 
-    .vote-btn:hover {
+    .vote-btn:hover:not([aria-disabled="true"]) {
       background: rgba(255, 255, 255, 0.2);
+    }
+
+    .vote-btn[aria-disabled="true"] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .upvote-btn.active {
@@ -335,6 +344,15 @@
     }
 
     .btn-emergency:hover {
+      background: #c82333;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
       background: #c82333;
     }
 
@@ -489,6 +507,143 @@
       opacity: 0.8;
     }
 
+    .map-placeholder-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 15;
+    }
+
+    .map-canvas {
+      position: relative;
+      height: 100%;
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .map-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 70px;
+      background: linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%);
+    }
+
+    .map-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .grid-line {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .grid-line.horizontal {
+      width: 100%;
+      height: 1px;
+    }
+
+    .grid-line.vertical {
+      width: 1px;
+      height: 100%;
+    }
+
+    .map-landmarks {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .landmark {
+      position: absolute;
+      color: rgba(0, 0, 0, 0.3);
+      font-size: 16px;
+      transform: translate(-50%, -50%);
+    }
+
+    .map-reports {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 70px;
+    }
+
+    .map-report-point {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      z-index: 10;
+      border: 2px solid white;
+    }
+
+    .map-report-point:hover {
+      transform: translate(-50%, -50%) scale(1.2);
+      z-index: 20;
+    }
+
+    .map-report-point i {
+      font-size: 14px;
+      color: white;
+    }
+
+    .map-report-point[data-vibe="crowded"] { background: rgba(255, 165, 0, 0.9); }
+    .map-report-point[data-vibe="noisy"] { background: rgba(255, 107, 53, 0.9); }
+    .map-report-point[data-vibe="festive"] { background: rgba(40, 167, 69, 0.9); }
+    .map-report-point[data-vibe="calm"] { background: rgba(23, 162, 184, 0.9); }
+    .map-report-point[data-vibe="suspicious"] { background: rgba(255, 193, 7, 0.9); }
+    .map-report-point[data-vibe="dangerous"] { background: rgba(220, 53, 69, 0.9); }
+
+    .report-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 30;
+      margin-bottom: 8px;
+    }
+
+    .map-report-point:hover .report-tooltip {
+      opacity: 1;
+    }
+
+    .report-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.8);
+    }
+
     .modal {
       display: none;
       position: fixed;
@@ -503,14 +658,14 @@
 
     .modal-content {
       background: var(--dark-bg);
-      margin: 10% auto;
+      margin: 1% auto;
       width: 90%;
       max-width: 500px;
       border-radius: var(--border-radius);
       overflow: hidden;
       animation: modalFadeIn 0.3s;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      max-height: 80vh;
+      max-height: 98vh;
       display: flex;
       flex-direction: column;
     }
@@ -702,11 +857,12 @@
     
     .auth-content {
       background: var(--dark-bg);
-      margin: 15% auto;
+      margin: 2% auto;
       width: 90%;
       max-width: 400px;
       border-radius: var(--border-radius);
-      overflow: hidden;
+      overflow-y: auto;
+      max-height: 96vh;
       animation: modalFadeIn 0.3s;
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
@@ -801,26 +957,114 @@
       }
     }
 
+    /* Top Areas Modal Styles */
+    .top-areas-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .area-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .area-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .area-rank {
+      background: var(--primary);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .area-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      color: var(--text-light);
+    }
+
+    .area-count {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .area-vibes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .vibe-tag {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 4px 8px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .vibe-tag.vibe-crowded { background: rgba(255, 165, 0, 0.2); border-color: rgba(255, 165, 0, 0.3); }
+    .vibe-tag.vibe-noisy { background: rgba(255, 107, 53, 0.2); border-color: rgba(255, 107, 53, 0.3); }
+    .vibe-tag.vibe-festive { background: rgba(40, 167, 69, 0.2); border-color: rgba(40, 167, 69, 0.3); }
+    .vibe-tag.vibe-calm { background: rgba(23, 162, 184, 0.2); border-color: rgba(23, 162, 184, 0.3); }
+    .vibe-tag.vibe-suspicious { background: rgba(255, 193, 7, 0.2); border-color: rgba(255, 193, 7, 0.3); }
+    .vibe-tag.vibe-dangerous { background: rgba(220, 53, 69, 0.2); border-color: rgba(220, 53, 69, 0.3); }
+
+    .vibe-tag i {
+      font-size: 10px;
+    }
+
     @media (max-width: 480px) {
       .vibe-options {
         grid-template-columns: repeat(2, 1fr);
       }
-      
+
       .quick-actions {
         grid-template-columns: repeat(2, 1fr);
       }
-      
+
       .action-btn:nth-child(3) {
         grid-column: span 2;
       }
-      
+
       .map-legend {
         grid-template-columns: repeat(2, 1fr);
         padding: 10px;
       }
-      
+
       .legend-item {
         font-size: 10px;
+      }
+
+      .area-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .area-vibes {
+        gap: 4px;
+      }
+
+      .vibe-tag {
+        font-size: 10px;
+        padding: 3px 6px;
       }
     }
   </style>
@@ -938,7 +1182,7 @@
             <i class="fas fa-chart-line"></i>
             <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
           </div>
-          <div class="action-btn emergency-btn" data-action="emergery">
+          <div class="action-btn emergency-btn" data-action="emergency">
             <i class="fas fa-exclamation-triangle"></i>
             <span data-en="Emergency" data-ar="طارئ">Emergency</span>
           </div>
@@ -988,6 +1232,10 @@
             <div class="setting-item">
               <span data-en="Reputation" data-ar="النقاط">Reputation</span>
               <span id="settingsReputation">0</span>
+            </div>
+            <div class="setting-item">
+              <span data-en="Account Actions" data-ar="إجراءات الحساب">Account Actions</span>
+              <button class="btn btn-danger" id="logoutBtn" data-en="Logout" data-ar="تسجيل الخروج">Logout</button>
             </div>
           </div>
           
@@ -1248,20 +1496,32 @@
       async handleAuthLogin() {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
-        
+
         if (!email || !password) {
           this.showNotification("Please fill all fields", "error");
           return;
         }
-        
+
+        // Show loading state
+        const loginBtn = document.getElementById('loginBtn');
+        const originalText = loginBtn.textContent;
+        loginBtn.textContent = 'Logging in...';
+        loginBtn.disabled = true;
+
         try {
           const { data, error } = await this.supabase.auth.signInWithPassword({
             email,
             password
           });
-          
+
           if (error) {
-            this.showNotification(error.message, "error");
+            let errorMessage = error.message;
+            if (error.message.includes('Invalid login credentials')) {
+              errorMessage = "Account not found. Please sign up first.";
+            } else if (error.message.includes('Email not confirmed')) {
+              errorMessage = "Please check your email and confirm your account.";
+            }
+            this.showNotification(errorMessage, "error");
           } else {
             this.isAuthenticated = true;
             this.userData = {
@@ -1278,6 +1538,10 @@
         } catch (error) {
           this.showNotification("Login failed. Please try again.", "error");
           console.error("Login error:", error);
+        } finally {
+          // Reset button state
+          loginBtn.textContent = originalText;
+          loginBtn.disabled = false;
         }
       }
       
@@ -1286,22 +1550,28 @@
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
         const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
-        
+
         if (!username || !email || !password || !passwordConfirm) {
           this.showNotification("Please fill all fields", "error");
           return;
         }
-        
+
         if (password !== passwordConfirm) {
           this.showNotification("Passwords don't match", "error");
           return;
         }
-        
+
         if (password.length < 6) {
           this.showNotification("Password must be at least 6 characters", "error");
           return;
         }
-        
+
+        // Show loading state
+        const signupBtn = document.getElementById('signupBtn');
+        const originalText = signupBtn.textContent;
+        signupBtn.textContent = 'Signing up...';
+        signupBtn.disabled = true;
+
         try {
           const { data, error } = await this.supabase.auth.signUp({
             email,
@@ -1314,9 +1584,13 @@
               }
             }
           });
-          
+
           if (error) {
-            this.showNotification(error.message, "error");
+            let errorMessage = error.message;
+            if (error.message.includes('User already registered')) {
+              errorMessage = "Account already exists. Please login instead.";
+            }
+            this.showNotification(errorMessage, "error");
           } else {
             this.showNotification("Signup successful! Please check your email for verification.", "success");
             // Switch to login tab
@@ -1328,12 +1602,48 @@
         } catch (error) {
           this.showNotification("Signup failed. Please try again.", "error");
           console.error("Signup error:", error);
+        } finally {
+          // Reset button state
+          signupBtn.textContent = originalText;
+          signupBtn.disabled = false;
+        }
+      }
+
+      async handleLogout() {
+        try {
+          const { error } = await this.supabase.auth.signOut();
+
+          if (error) {
+            this.showNotification("Logout failed", "error");
+            console.error("Logout error:", error);
+          } else {
+            // Reset app state
+            this.isAuthenticated = false;
+            this.userData = null;
+            this.userReports = [];
+            this.nearbyReports = [];
+
+            // Update UI
+            this.updateUserInfo();
+            this.showAuthModal();
+            this.loadInitialData();
+
+            this.showNotification("Logged out successfully", "success");
+          }
+        } catch (error) {
+          this.showNotification("Logout failed", "error");
+          console.error("Logout error:", error);
         }
       }
       
       async syncUserWithSupabase() {
-        if (!this.userData) return false;
-        
+        if (!this.userData) {
+          console.error("No userData available for sync");
+          return false;
+        }
+
+        console.log("Syncing user with Supabase:", this.userData.id);
+
         try {
           // Check if user exists in users table
           const { data, error } = await this.supabase
@@ -1341,48 +1651,54 @@
             .select('*')
             .eq('user_id', this.userData.id)
             .maybeSingle();
-          
-          if (error && error.code === 'PGRST116') {
+
+          if (error) {
+            console.error("Error checking user in database:", error);
+            console.error("Check error details:", JSON.stringify(error, null, 2));
+            return false;
+          } else if (data) {
+            // Update user data with Supabase info
+            console.log("User found in database:", data);
+            this.userData.reputation = data.reputation || 0;
+            this.userData.language = data.language || 'en';
+            this.currentLanguage = data.language || 'en';
+            this.applyLanguage(this.currentLanguage);
+
+            // Update language selector
+            document.getElementById('languageSelect').value = this.currentLanguage;
+            document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+
+            return true;
+          } else {
             // User doesn't exist in users table, create a new record
+            console.log("User not found in users table, creating new record");
             const { data: newUser, error: insertError } = await this.supabase
               .from('users')
               .insert([
                 {
                   user_id: this.userData.id,
-                  username: this.userData.username || this.userData.first_name,
+                  username: this.userData.username || this.userData.first_name || 'User',
                   reputation: 0,
                   language: 'en'
                 }
               ])
               .select()
               .single();
-            
+
             if (insertError) {
-              console.error("Error creating user:", insertError);
+              console.error("Error creating user in database:", insertError);
+              console.error("Insert error details:", JSON.stringify(insertError, null, 2));
               return false;
             }
-            
+
+            console.log("User created successfully:", newUser);
             this.userData.reputation = 0;
             this.userData.language = 'en';
-            return true;
-          } else if (error) {
-            console.error("Error checking user:", error);
-            return false;
-          } else {
-            // Update user data with Supabase info
-            this.userData.reputation = data.reputation || 0;
-            this.userData.language = data.language || 'en';
-            this.currentLanguage = data.language || 'en';
-            this.applyLanguage(this.currentLanguage);
-            
-            // Update language selector
-            document.getElementById('languageSelect').value = this.currentLanguage;
-            document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
-            
             return true;
           }
         } catch (error) {
           console.error("Error syncing user with Supabase:", error);
+          console.error("Sync error details:", JSON.stringify(error, null, 2));
           return false;
         }
       }
@@ -1430,7 +1746,7 @@
           
           const { data: reports, error } = await this.supabase
             .from('reports')
-            .select(`*, votes (vote_type)`)
+            .select(`id, vibe_type, location, notes, created_at, upvotes, downvotes, latitude, longitude, votes (user_id, vote_type)`)
             .order('created_at', { ascending: false })
             .limit(20);
           
@@ -1458,13 +1774,13 @@
       
       displayNearbyReports() {
         const container = document.getElementById('nearbyReports');
-        
+
         if (!this.nearbyReports || this.nearbyReports.length === 0) {
           container.innerHTML = '<div class="no-data" data-en="No reports nearby" data-ar="لا توجد تقارير قريبة">No reports nearby</div>';
           this.updateTextDirection();
           return;
         }
-        
+
         container.innerHTML = this.nearbyReports.map(report => `
           <div class="report-item" data-id="${report.id}">
             <div class="report-info">
@@ -1481,16 +1797,18 @@
               </div>
             </div>
             <div class="report-actions">
-              <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}">
+              <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}" data-report-id="${report.id}" data-vote-type="upvote" ${!this.isAuthenticated ? 'aria-disabled="true" title="Login to vote"' : ''}>
                 <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
               </button>
-              <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}">
+              <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}" data-report-id="${report.id}" data-vote-type="downvote" ${!this.isAuthenticated ? 'aria-disabled="true" title="Login to vote"' : ''}>
                 <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
               </button>
             </div>
           </div>
         `).join('');
-        
+
+        // Vote buttons are handled by delegated event listener in setupEventListeners()
+
         this.updateTextDirection();
       }
       
@@ -1656,12 +1974,17 @@
           this.showNotification("Please login to submit reports", "error");
           return;
         }
-        
+
         this.selectedVibe = null;
         document.querySelectorAll('.vibe-option').forEach(option => {
           option.classList.remove('selected');
         });
-        document.getElementById('reportLocation').value = '';
+
+        // Auto-fill location with current position
+        this.getCurrentLocation((location) => {
+          document.getElementById('reportLocation').value = location;
+        });
+
         document.getElementById('reportNotes').value = '';
         document.getElementById('reportModal').style.display = 'block';
       }
@@ -1675,35 +1998,65 @@
       }
       
       async submitReport() {
+        if (!this.isAuthenticated) {
+          this.showAuthModal();
+          this.showNotification("Please login to submit reports", "error");
+          return;
+        }
+
         if (!this.selectedVibe) {
           this.showNotification("Please select a vibe type", "error");
           return;
         }
-        
+
+        // Ensure user is synced with database before submitting
+        const synced = await this.syncUserWithSupabase();
+        if (!synced) {
+          this.showNotification("Account sync failed. Please try logging out and back in.", "error");
+          return;
+        }
+
         try {
           const location = document.getElementById('reportLocation').value;
           const notes = document.getElementById('reportNotes').value;
-          
+
+          // Prepare report data with coordinates if available
+          const reportData = {
+            user_id: this.userData.id,
+            vibe_type: this.selectedVibe,
+            location: location || null,
+            notes: notes || null
+          };
+
+          // Add coordinates if available
+          if (this.userLocation) {
+            reportData.latitude = this.userLocation.latitude;
+            reportData.longitude = this.userLocation.longitude;
+          }
+
           const { data, error } = await this.supabase
             .from('reports')
-            .insert([
-              {
-                user_id: this.userData.id,
-                vibe_type: this.selectedVibe,
-                location: location,
-                notes: notes
-              }
-            ])
+            .insert([reportData])
             .select();
-          
+
           if (error) {
             console.error("Error submitting report:", error);
-            this.showNotification("Failed to submit report", "error");
+            let errorMessage = "Failed to submit report";
+            if (error.message.includes('foreign key constraint')) {
+              errorMessage = "User account issue. Please try logging out and back in.";
+            } else if (error.message.includes('row-level security')) {
+              errorMessage = "Permission denied. Please contact support.";
+            } else {
+              errorMessage = `Failed to submit report: ${error.message}`;
+            }
+            this.showNotification(errorMessage, "error");
           } else {
             this.showNotification("Report submitted successfully", "success");
             this.closeModal('reportModal');
             this.loadNearbyReports();
             this.loadUserReports();
+            // Refresh map to show new report
+            this.loadMap();
           }
         } catch (error) {
           console.error("Error submitting report:", error);
@@ -1716,11 +2069,17 @@
       }
       
       async submitEmergencyReport() {
+        if (!this.isAuthenticated) {
+          this.showAuthModal();
+          this.showNotification("Please login to submit emergency reports", "error");
+          return;
+        }
+
         try {
           const emergencyType = document.getElementById('emergencyType').value;
           const location = document.getElementById('emergencyLocation').value;
           const details = document.getElementById('emergencyDetails').value;
-          
+
           if (!location || !details) {
             this.showNotification("Please fill all required fields", "error");
             return;
@@ -1760,35 +2119,41 @@
         document.querySelectorAll('.nav-btn').forEach(btn => {
           btn.classList.remove('active');
         });
-        
+
         document.getElementById(viewId + 'View').classList.add('active');
         document.querySelector(`.nav-btn[data-view="${viewId}"]`).classList.add('active');
-        
+
         if (viewId === 'map') {
           this.loadMap();
+        } else if (viewId === 'reports') {
+          this.loadUserReports();
+        } else if (viewId === 'settings') {
+          // Attach logout button event listener when settings view is shown
+          const logoutBtn = document.getElementById('logoutBtn');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', this.handleLogout);
+          }
         }
       }
       
       loadMap() {
         const mapContainer = document.getElementById('mapContainer');
+        const hasReports = this.nearbyReports && this.nearbyReports.length > 0;
+
+        // Clear any existing map
+        if (this.map) {
+          this.map.remove();
+          this.map = null;
+        }
+
         mapContainer.innerHTML = `
           <div class="map-header">
             <h3 data-en="Community Vibe Map" data-ar="خريطة حالة المجتمع">Community Vibe Map</h3>
-            <p data-en="Showing recent reports in your area" data-ar="عرض التقارير الحديثة في منطقتك">Showing recent reports in your area</p>
+            <p data-en="${hasReports ? 'Showing recent reports in your area' : 'Map of your area - submit reports to see them here'}" data-ar="${hasReports ? 'عرض التقارير الحديثة في منطقتك' : 'خريطة منطقتك - أرسل التقارير لرؤيتها هنا'}">
+              ${hasReports ? 'Showing recent reports in your area' : 'Map of your area - submit reports to see them here'}
+            </p>
           </div>
-          <div class="map-points">
-            ${this.nearbyReports && this.nearbyReports.length > 0 ? this.nearbyReports.map(report => `
-              <div class="map-point" data-vibe="${report.vibe_type}" style="top: ${Math.random() * 70 + 15}%; left: ${Math.random() * 80 + 10}%;">
-                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
-              </div>
-            `).join('') : `
-              <div class="map-placeholder-center">
-                <i class="fas fa-map-marked-alt"></i>
-                <p data-en="No reports to show on map" data-ar="لا توجد تقارير للعرض على الخريطة">No reports to show on map</p>
-                <button class="btn" id="firstReportBtn" data-en="Submit First Report" data-ar="أضف أول تقرير">Submit First Report</button>
-              </div>
-            `}
-          </div>
+          <div id="leaflet-map" style="height: 320px; width: 100%;"></div>
           <div class="map-legend">
             <div class="legend-item"><i class="fas fa-users" style="color: orange;"></i> <span data-en="Crowded" data-ar="مزدحم">Crowded</span></div>
             <div class="legend-item"><i class="fas fa-volume-up" style="color: var(--secondary);"></i> <span data-en="Noisy" data-ar="صاخب">Noisy</span></div>
@@ -1798,8 +2163,131 @@
             <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> <span data-en="Dangerous" data-ar="خطير">Dangerous</span></div>
           </div>
         `;
-        
+
+        // Initialize Leaflet map
+        this.initializeLeafletMap();
+
         this.updateTextDirection();
+      }
+
+      initializeLeafletMap() {
+        const mapElement = document.getElementById('leaflet-map');
+        if (!mapElement) return;
+
+        // Default center (can be user's location if available)
+        const defaultCenter = [30.0444, 31.2357]; // Cairo, Egypt as default
+        const defaultZoom = 10;
+
+        // Create map
+        this.map = L.map('leaflet-map').setView(defaultCenter, defaultZoom);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+        }).addTo(this.map);
+
+        // Add markers for reports
+        this.addReportMarkers();
+
+        // Try to get user's location for better centering
+        if (navigator.geolocation && !this.userLocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              this.userLocation = { latitude, longitude };
+              this.map.setView([latitude, longitude], 13);
+            },
+            (error) => {
+              console.log('Geolocation not available or denied');
+            },
+            { timeout: 10000 }
+          );
+        }
+      }
+
+      addReportMarkers() {
+        if (!this.map || !this.nearbyReports) return;
+
+        // Clear existing markers
+        this.map.eachLayer((layer) => {
+          if (layer instanceof L.Marker) {
+            this.map.removeLayer(layer);
+          }
+        });
+
+        // Add markers for each report
+        this.nearbyReports.forEach(report => {
+          // Use actual coordinates if available, otherwise use default location with slight randomization
+          let lat, lng;
+          if (report.latitude && report.longitude) {
+            lat = report.latitude;
+            lng = report.longitude;
+          } else {
+            // Default to Cairo area with some randomization
+            const baseLat = 30.0444;
+            const baseLng = 31.2357;
+            lat = baseLat + (Math.random() - 0.5) * 0.1;
+            lng = baseLng + (Math.random() - 0.5) * 0.1;
+          }
+
+          // Create custom icon based on vibe type
+          const iconHtml = `<div style="
+            background: ${this.getVibeColor(report.vibe_type)};
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          ">
+            <i class="${this.getVibeIcon(report.vibe_type)}" style="color: white; font-size: 12px;"></i>
+          </div>`;
+
+          const customIcon = L.divIcon({
+            html: iconHtml,
+            className: 'custom-marker',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+          });
+
+          // Create marker
+          const marker = L.marker([lat, lng], { icon: customIcon }).addTo(this.map);
+
+          // Add popup with report details
+          const popupContent = `
+            <div style="font-family: 'Segoe UI', sans-serif; max-width: 200px;">
+              <h4 style="margin: 0 0 8px 0; color: ${this.getVibeColor(report.vibe_type)};">
+                ${this.capitalizeFirstLetter(report.vibe_type)}
+              </h4>
+              <p style="margin: 4px 0;"><strong>Location:</strong> ${report.location || 'Unknown'}</p>
+              ${report.notes ? `<p style="margin: 4px 0;"><strong>Notes:</strong> ${report.notes}</p>` : ''}
+              <p style="margin: 4px 0; font-size: 12px; color: #666;">
+                ${this.formatTimeAgo(report.created_at)}
+              </p>
+              <div style="margin-top: 8px;">
+                <span style="color: #28a745;">👍 ${report.upvotes || 0}</span>
+                <span style="color: #dc3545; margin-left: 8px;">👎 ${report.downvotes || 0}</span>
+              </div>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent);
+        });
+      }
+
+      getVibeColor(vibeType) {
+        const colors = {
+          crowded: '#FFA500',
+          noisy: '#FF6B35',
+          festive: '#28A745',
+          calm: '#17A2B8',
+          suspicious: '#FFC107',
+          dangerous: '#DC3545'
+        };
+        return colors[vibeType] || '#6C757D';
       }
       
       displayMap() {
@@ -1807,8 +2295,143 @@
         this.loadMap();
       }
       
-      loadTopAreas() {
-        this.showNotification("Top areas feature coming soon", "info");
+      async loadTopAreas() {
+        try {
+          // Show loading modal
+          const modalContent = `
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2 data-en="Top Areas" data-ar="أهم المناطق">Top Areas</h2>
+                <span class="close" data-dismiss="topAreasModal">&times;</span>
+              </div>
+              <div class="modal-body">
+                <div class="loading-spinner"></div>
+                <p data-en="Analyzing community reports..." data-ar="تحليل تقارير المجتمع...">Analyzing community reports...</p>
+              </div>
+            </div>
+          `;
+
+          let modal = document.getElementById('topAreasModal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'topAreasModal';
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+          }
+          modal.innerHTML = modalContent;
+          modal.style.display = 'block';
+
+          // Fetch reports with location data
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('location, vibe_type, latitude, longitude')
+            .not('location', 'is', null)
+            .not('location', 'eq', 'Unknown Location')
+            .not('location', 'eq', 'Location unavailable')
+            .not('location', 'eq', 'Location not supported')
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+          if (error) {
+            console.error("Error loading reports for top areas:", error);
+            modal.innerHTML = `
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h2 data-en="Top Areas" data-ar="أهم المناطق">Top Areas</h2>
+                  <span class="close" data-dismiss="topAreasModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                  <p data-en="Error loading top areas data" data-ar="خطأ في تحميل بيانات أهم المناطق">Error loading top areas data</p>
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          // Analyze the data
+          const areaStats = {};
+
+          reports.forEach(report => {
+            const location = report.location || 'Unknown';
+            if (!areaStats[location]) {
+              areaStats[location] = {
+                total: 0,
+                vibes: {},
+                coordinates: report.latitude && report.longitude ? [report.latitude, report.longitude] : null
+              };
+            }
+
+            areaStats[location].total++;
+            if (!areaStats[location].vibes[report.vibe_type]) {
+              areaStats[location].vibes[report.vibe_type] = 0;
+            }
+            areaStats[location].vibes[report.vibe_type]++;
+          });
+
+          // Convert to array and sort by total reports
+          const topAreas = Object.entries(areaStats)
+            .map(([location, data]) => ({ location, ...data }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 10);
+
+          // Generate the modal content
+          const areasHtml = topAreas.length > 0 ? topAreas.map((area, index) => `
+            <div class="area-item">
+              <div class="area-header">
+                <div class="area-rank">#${index + 1}</div>
+                <div class="area-info">
+                  <h3>${area.location}</h3>
+                  <span class="area-count">${area.total} report${area.total > 1 ? 's' : ''}</span>
+                </div>
+              </div>
+              <div class="area-vibes">
+                ${Object.entries(area.vibes)
+                  .sort(([,a], [,b]) => b - a)
+                  .map(([vibe, count]) => `
+                    <span class="vibe-tag vibe-${vibe}">
+                      <i class="${this.getVibeIcon(vibe)}"></i>
+                      ${this.capitalizeFirstLetter(vibe)}: ${count}
+                    </span>
+                  `).join('')}
+              </div>
+            </div>
+          `).join('') : `
+            <p data-en="No area data available yet. Submit more reports to see top areas!" data-ar="لا توجد بيانات متاحة بعد. أرسل المزيد من التقارير لرؤية أهم المناطق!">
+              No area data available yet. Submit more reports to see top areas!
+            </p>
+          `;
+
+          modal.innerHTML = `
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2 data-en="Top Areas" data-ar="أهم المناطق">Top Areas</h2>
+                <span class="close" data-dismiss="topAreasModal">&times;</span>
+              </div>
+              <div class="modal-body">
+                <p data-en="Areas with the most community safety reports" data-ar="المناطق التي تحتوي على أكبر عدد من تقارير السلامة المجتمعية">
+                  Areas with the most community safety reports
+                </p>
+                <div class="top-areas-list">
+                  ${areasHtml}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Attach close button event listener
+          const closeBtn = modal.querySelector('.close');
+          if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+              this.closeModal('topAreasModal');
+            });
+          }
+
+          this.updateTextDirection();
+
+        } catch (error) {
+          console.error("Error loading top areas:", error);
+          this.showNotification("Failed to load top areas", "error");
+        }
       }
       
       toggleLanguage() {
@@ -1954,6 +2577,48 @@
           : `منذ ${diffInDays} يوم`;
       }
       
+      getCurrentLocation(callback) {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              this.userLocation = { latitude, longitude };
+
+              // Try to get address from coordinates (reverse geocoding)
+              this.getAddressFromCoordinates(latitude, longitude, (address) => {
+                callback(address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+              });
+            },
+            (error) => {
+              console.log('Geolocation error:', error);
+              callback('Location unavailable');
+            },
+            { timeout: 10000, enableHighAccuracy: true }
+          );
+        } else {
+          callback('Location not supported');
+        }
+      }
+
+      getAddressFromCoordinates(lat, lng, callback) {
+        // Use Nominatim (OpenStreetMap) for reverse geocoding
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.display_name) {
+              // Extract a simplified address
+              const address = data.display_name.split(',')[0] + ', ' + data.display_name.split(',')[1];
+              callback(address.trim());
+            } else {
+              callback(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            }
+          })
+          .catch(error => {
+            console.log('Reverse geocoding error:', error);
+            callback(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+          });
+      }
+
       requestUserLocation() {
         if (this.tg && this.tg.showPopup && this.tg.isLocationRequested) {
           try {
@@ -2001,7 +2666,7 @@
               this.showReportModal();
             } else if (action === 'areas') {
               this.loadTopAreas();
-            } else if (action === 'emergery') {
+            } else if (action === 'emergency') {
               this.showEmergencyReport();
             }
           });
@@ -2043,24 +2708,35 @@
             this.changeLanguage(e.target.value);
           });
         }
-        
-        // Vote buttons (delegated event handling)
+
+        // Logout button event delegation
         document.addEventListener('click', (e) => {
-          if (e.target.closest('.upvote-btn')) {
-            const reportItem = e.target.closest('.report-item');
-            if (reportItem) {
-              const reportId = reportItem.dataset.id;
-              this.voteReport(reportId, 'upvote');
-            }
-          } else if (e.target.closest('.downvote-btn')) {
-            const reportItem = e.target.closest('.report-item');
-            if (reportItem) {
-              const reportId = reportItem.dataset.id;
-              this.voteReport(reportId, 'downvote');
-            }
+          if (e.target.id === 'logoutBtn' || e.target.closest('#logoutBtn')) {
+            this.handleLogout();
           }
         });
-        
+
+        // Delegated vote buttons handler
+        document.addEventListener('click', (e) => {
+          const btn = e.target.closest('.vote-btn');
+          if (!btn) return;
+
+          e.preventDefault();
+
+          // If user not authenticated, show auth modal and info
+          if (btn.getAttribute('aria-disabled') === 'true') {
+            this.showNotification("Please login to vote on reports", "info");
+            this.showAuthModal();
+            return;
+          }
+
+          const reportId = btn.dataset.reportId;
+          const voteType = btn.dataset.voteType;
+          if (reportId && voteType) {
+            this.voteReport(reportId, voteType);
+          }
+        });
+
         // Map button in empty state
         document.addEventListener('click', (e) => {
           if (e.target.id === 'firstReportBtn' || e.target.closest('#firstReportBtn')) {
