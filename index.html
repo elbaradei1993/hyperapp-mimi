@@ -1740,35 +1740,52 @@
         this.loadMap();
       }
       
-      async loadNearbyReports() {
+      async loadNearbyReports(retryCount = 0) {
+        const maxRetries = 2;
+
         try {
           document.getElementById('nearbyReports').innerHTML = '<div class="loading-spinner"></div>';
-          
+
           const { data: reports, error } = await this.supabase
             .from('reports')
             .select(`id, vibe_type, location, notes, created_at, upvotes, downvotes, latitude, longitude, votes (user_id, vote_type)`)
             .order('created_at', { ascending: false })
             .limit(20);
-          
+
           if (error) {
             console.error("Error loading reports:", error);
-            document.getElementById('nearbyReports').innerHTML = 
-              '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
+
+            // Retry on network errors
+            if (retryCount < maxRetries && (error.message.includes('network') || error.message.includes('fetch'))) {
+              console.log(`Retrying loadNearbyReports (${retryCount + 1}/${maxRetries})...`);
+              setTimeout(() => this.loadNearbyReports(retryCount + 1), 1000);
+              return;
+            }
+
+            document.getElementById('nearbyReports').innerHTML =
+              '<div class="no-data" data-en="Error loading reports. Please try again." data-ar="خطأ في تحميل التقارير. يرجى المحاولة مرة أخرى.">Error loading reports. Please try again.</div>';
             return;
           }
-          
+
           this.nearbyReports = reports.map(report => {
-            const userVote = report.votes && report.votes.length > 0 ? 
+            const userVote = report.votes && report.votes.length > 0 ?
               report.votes.find(v => v.user_id === this.userData?.id)?.vote_type : null;
-            
+
             return { ...report, user_vote: userVote };
           });
-          
+
           this.displayNearbyReports();
         } catch (error) {
           console.error("Error loading nearby reports:", error);
-          document.getElementById('nearbyReports').innerHTML = 
-            '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
+
+          if (retryCount < maxRetries) {
+            console.log(`Retrying loadNearbyReports (${retryCount + 1}/${maxRetries})...`);
+            setTimeout(() => this.loadNearbyReports(retryCount + 1), 1000);
+            return;
+          }
+
+          document.getElementById('nearbyReports').innerHTML =
+            '<div class="no-data" data-en="Error loading reports. Please try again." data-ar="خطأ في تحميل التقارير. يرجى المحاولة مرة أخرى.">Error loading reports. Please try again.</div>';
         }
       }
       
@@ -1942,26 +1959,9 @@
             operation = 'add';
           }
           
-          // Update the report vote counts
-          const report = this.nearbyReports.find(r => r.id === reportId);
-          if (report) {
-            if (operation === 'add') {
-              report.upvotes = (report.upvotes || 0) + (voteType === 'upvote' ? 1 : 0);
-              report.downvotes = (report.downvotes || 0) + (voteType === 'downvote' ? 1 : 0);
-              report.user_vote = voteType;
-            } else if (operation === 'remove') {
-              report.upvotes = (report.upvotes || 0) - (voteType === 'upvote' ? 1 : 0);
-              report.downvotes = (report.downvotes || 0) - (voteType === 'downvote' ? 1 : 0);
-              report.user_vote = null;
-            } else if (operation === 'change') {
-              report.upvotes = (report.upvotes || 0) + (voteType === 'upvote' ? 1 : -1);
-              report.downvotes = (report.downvotes || 0) + (voteType === 'downvote' ? 1 : -1);
-              report.user_vote = voteType;
-            }
-            
-            this.displayNearbyReports();
-            this.showNotification("Vote recorded", "success");
-          }
+          // Reload nearby reports to get updated vote counts from database
+          await this.loadNearbyReports();
+          this.showNotification("Vote recorded", "success");
         } catch (error) {
           console.error("Error voting on report:", error);
           this.showNotification("Failed to submit vote", "error");
@@ -2009,14 +2009,20 @@
           return;
         }
 
-        // Ensure user is synced with database before submitting
-        const synced = await this.syncUserWithSupabase();
-        if (!synced) {
-          this.showNotification("Account sync failed. Please try logging out and back in.", "error");
-          return;
-        }
+        // Show loading state
+        const submitBtn = document.getElementById('submitReportBtn');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Submitting...';
+        submitBtn.disabled = true;
 
         try {
+          // Ensure user is synced with database before submitting
+          const synced = await this.syncUserWithSupabase();
+          if (!synced) {
+            this.showNotification("Account sync failed. Please try logging out and back in.", "error");
+            return;
+          }
+
           const location = document.getElementById('reportLocation').value;
           const notes = document.getElementById('reportNotes').value;
 
@@ -2034,6 +2040,8 @@
             reportData.longitude = this.userLocation.longitude;
           }
 
+          console.log("Submitting report:", reportData);
+
           const { data, error } = await this.supabase
             .from('reports')
             .insert([reportData])
@@ -2046,21 +2054,35 @@
               errorMessage = "User account issue. Please try logging out and back in.";
             } else if (error.message.includes('row-level security')) {
               errorMessage = "Permission denied. Please contact support.";
+            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+              errorMessage = "Network error. Please check your connection and try again.";
             } else {
               errorMessage = `Failed to submit report: ${error.message}`;
             }
             this.showNotification(errorMessage, "error");
           } else {
+            console.log("Report submitted successfully:", data);
             this.showNotification("Report submitted successfully", "success");
             this.closeModal('reportModal');
-            this.loadNearbyReports();
-            this.loadUserReports();
+            // Reload data to show the new report
+            await this.loadNearbyReports();
+            if (this.isAuthenticated) {
+              await this.loadUserReports();
+            }
             // Refresh map to show new report
             this.loadMap();
           }
         } catch (error) {
           console.error("Error submitting report:", error);
-          this.showNotification("Failed to submit report", "error");
+          let errorMessage = "Failed to submit report";
+          if (error.message.includes('network') || error.message.includes('fetch')) {
+            errorMessage = "Network error. Please check your connection and try again.";
+          }
+          this.showNotification(errorMessage, "error");
+        } finally {
+          // Reset button state
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
         }
       }
       
