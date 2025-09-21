@@ -1296,10 +1296,7 @@
             </div>
           </div>
         </div>
-        <div class="form-group">
-          <label data-en="Location (optional)" data-ar="الموقع (اختياري)">Location (optional)</label>
-          <input type="text" id="reportLocation" placeholder="Enter location">
-        </div>
+
         <div class="form-group">
           <label data-en="Notes (optional)" data-ar="ملاحظات (اختياري)">Notes (optional)</label>
           <textarea id="reportNotes" placeholder="Add details about what you're experiencing"></textarea>
@@ -1326,10 +1323,7 @@
             <option value="other" data-en="Other Emergency" data-ar="طوارئ أخرى">Other Emergency</option>
           </select>
         </div>
-        <div class="form-group">
-          <label data-en="Location" data-ar="الموقع">Location</label>
-          <input type="text" id="emergencyLocation" placeholder="Enter your current location" required>
-        </div>
+
         <div class="form-group">
           <label data-en="Details" data-ar="التفاصيل">Details</label>
           <textarea id="emergencyDetails" placeholder="Please provide details about the emergency" required></textarea>
@@ -2040,20 +2034,14 @@
       }
 
       showReportModal() {
-        if (!this.isAuthenticated) {
-          this.showAuthModal();
-          this.showNotification("Please login to submit reports", "error");
-          return;
-        }
-
         this.selectedVibe = null;
         document.querySelectorAll('.vibe-option').forEach(option => {
           option.classList.remove('selected');
         });
 
-        // Auto-fill location with current position
+        // Get current location automatically
         this.getCurrentLocation((location) => {
-          document.getElementById('reportLocation').value = location;
+          this.currentReportLocation = location;
         });
 
         document.getElementById('reportNotes').value = '';
@@ -2069,14 +2057,13 @@
       }
       
       async submitReport() {
-        if (!this.isAuthenticated) {
-          this.showAuthModal();
-          this.showNotification("Please login to submit reports", "error");
+        if (!this.selectedVibe) {
+          this.showNotification("Please select a vibe type", "error");
           return;
         }
 
-        if (!this.selectedVibe) {
-          this.showNotification("Please select a vibe type", "error");
+        if (!this.currentReportLocation) {
+          this.showNotification("Unable to get your location. Please try again.", "error");
           return;
         }
 
@@ -2087,14 +2074,6 @@
         submitBtn.disabled = true;
 
         try {
-          // Ensure user is synced with database before submitting
-          const synced = await this.syncUserWithSupabase();
-          if (!synced) {
-            this.showNotification("Account sync failed. Please try logging out and back in.", "error");
-            return;
-          }
-
-          const location = document.getElementById('reportLocation').value;
           const notes = document.getElementById('reportNotes').value;
 
           // Check for existing report with same vibe and location
@@ -2102,7 +2081,7 @@
             .from('reports')
             .select('id, created_at')
             .eq('vibe_type', this.selectedVibe)
-            .eq('location', location || null)
+            .eq('location', this.currentReportLocation)
             .order('created_at', { ascending: false })
             .limit(1);
 
@@ -2124,9 +2103,9 @@
 
           // Prepare report data with coordinates if available
           const reportData = {
-            user_id: this.userData.id,
+            user_id: null, // Anonymous report
             vibe_type: this.selectedVibe,
-            location: location || null,
+            location: this.currentReportLocation,
             notes: notes || null
           };
 
@@ -2146,11 +2125,7 @@
           if (error) {
             console.error("Error submitting report:", error);
             let errorMessage = "Failed to submit report";
-            if (error.message.includes('foreign key constraint')) {
-              errorMessage = "User account issue. Please try logging out and back in.";
-            } else if (error.message.includes('row-level security')) {
-              errorMessage = "Permission denied. Please contact support.";
-            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+            if (error.message.includes('network') || error.message.includes('fetch')) {
               errorMessage = "Network error. Please check your connection and try again.";
             } else {
               errorMessage = `Failed to submit report: ${error.message}`;
@@ -2162,9 +2137,6 @@
             this.closeModal('reportModal');
             // Reload data to show the new report
             await this.loadNearbyReports();
-            if (this.isAuthenticated) {
-              await this.loadUserReports();
-            }
             // Refresh map to show new report
             this.loadMap();
           }
@@ -2183,15 +2155,9 @@
       }
       
       showEmergencyReport() {
-        if (!this.isAuthenticated) {
-          this.showAuthModal();
-          this.showNotification("Please login to submit emergency reports", "error");
-          return;
-        }
-
-        // Auto-fill location with current position
+        // Get current location automatically
         this.getCurrentLocation((location) => {
-          document.getElementById('emergencyLocation').value = location;
+          this.currentEmergencyLocation = location;
         });
 
         document.getElementById('emergencyDetails').value = '';
@@ -2199,9 +2165,8 @@
       }
       
       async submitEmergencyReport() {
-        if (!this.isAuthenticated) {
-          this.showAuthModal();
-          this.showNotification("Please login to submit emergency reports", "error");
+        if (!this.currentEmergencyLocation) {
+          this.showNotification("Unable to get your location. Please try again.", "error");
           return;
         }
 
@@ -2213,18 +2178,10 @@
 
         try {
           const emergencyType = document.getElementById('emergencyType').value;
-          const location = document.getElementById('emergencyLocation').value;
           const details = document.getElementById('emergencyDetails').value;
 
-          if (!location || !details) {
-            this.showNotification("Please fill all required fields", "error");
-            return;
-          }
-
-          // Ensure user is synced with database before submitting
-          const synced = await this.syncUserWithSupabase();
-          if (!synced) {
-            this.showNotification("Account sync failed. Please try logging out and back in.", "error");
+          if (!details) {
+            this.showNotification("Please provide emergency details", "error");
             return;
           }
 
@@ -2233,7 +2190,7 @@
             .from('reports')
             .select('id, created_at')
             .eq('vibe_type', 'dangerous')
-            .eq('location', location)
+            .eq('location', this.currentEmergencyLocation)
             .order('created_at', { ascending: false })
             .limit(1);
 
@@ -2253,33 +2210,20 @@
             }
           }
 
-          // Get current session to ensure we're authenticated
-          const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
-
-          if (sessionError || !sessionData.session) {
-            this.showNotification("Authentication expired. Please login again.", "error");
-            this.showAuthModal();
-            return;
-          }
-
           console.log("Submitting emergency report:", {
-            user_id: this.userData.id,
-            auth_user_id: sessionData.session.user.id,
+            user_id: null, // Anonymous emergency report
             vibe_type: 'dangerous',
-            location: location,
+            location: this.currentEmergencyLocation,
             notes: `EMERGENCY (${emergencyType}): ${details}`
           });
-
-          // Use the authenticated user ID from the session
-          const authUserId = sessionData.session.user.id;
 
           const { data, error } = await this.supabase
             .from('reports')
             .insert([
               {
-                user_id: authUserId,
+                user_id: null, // Anonymous emergency report
                 vibe_type: 'dangerous',
-                location: location,
+                location: this.currentEmergencyLocation,
                 notes: `EMERGENCY (${emergencyType}): ${details}`
               }
             ])
@@ -2288,11 +2232,7 @@
           if (error) {
             console.error("Error submitting emergency report:", error);
             let errorMessage = "Failed to submit emergency report";
-            if (error.message.includes('foreign key constraint')) {
-              errorMessage = "User account issue. Please try logging out and back in.";
-            } else if (error.message.includes('row-level security')) {
-              errorMessage = "Permission denied. Please contact support.";
-            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+            if (error.message.includes('network') || error.message.includes('fetch')) {
               errorMessage = "Network error. Please check your connection and try again.";
             } else {
               errorMessage = `Failed to submit emergency report: ${error.message}`;
@@ -2304,9 +2244,6 @@
             this.closeModal('emergencyModal');
             // Reload data to show the new emergency report
             await this.loadNearbyReports();
-            if (this.isAuthenticated) {
-              await this.loadUserReports();
-            }
             // Refresh map to show new emergency report
             this.loadMap();
           }
