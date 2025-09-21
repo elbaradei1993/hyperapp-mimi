@@ -2121,6 +2121,18 @@
       }
       
       showEmergencyReport() {
+        if (!this.isAuthenticated) {
+          this.showAuthModal();
+          this.showNotification("Please login to submit emergency reports", "error");
+          return;
+        }
+
+        // Auto-fill location with current position
+        this.getCurrentLocation((location) => {
+          document.getElementById('emergencyLocation').value = location;
+        });
+
+        document.getElementById('emergencyDetails').value = '';
         document.getElementById('emergencyModal').style.display = 'block';
       }
       
