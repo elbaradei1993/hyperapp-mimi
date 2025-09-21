@@ -2097,6 +2097,31 @@
           const location = document.getElementById('reportLocation').value;
           const notes = document.getElementById('reportNotes').value;
 
+          // Check for existing report with same vibe and location
+          const { data: existingReports, error: checkError } = await this.supabase
+            .from('reports')
+            .select('id, created_at')
+            .eq('vibe_type', this.selectedVibe)
+            .eq('location', location || null)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (checkError) {
+            console.error("Error checking for existing reports:", checkError);
+          } else if (existingReports && existingReports.length > 0) {
+            const existingReport = existingReports[0];
+            const reportTime = new Date(existingReport.created_at);
+            const now = new Date();
+            const timeDiff = (now - reportTime) / (1000 * 60); // Difference in minutes
+
+            // If a similar report exists within the last 30 minutes, don't create a duplicate
+            if (timeDiff < 30) {
+              this.showNotification(`A ${this.capitalizeFirstLetter(this.selectedVibe)} report already exists for this location. Please try again later.`, "warning");
+              this.closeModal('reportModal');
+              return;
+            }
+          }
+
           // Prepare report data with coordinates if available
           const reportData = {
             user_id: this.userData.id,
@@ -2201,6 +2226,31 @@
           if (!synced) {
             this.showNotification("Account sync failed. Please try logging out and back in.", "error");
             return;
+          }
+
+          // Check for existing emergency report with same location (within last 2 hours for emergencies)
+          const { data: existingReports, error: checkError } = await this.supabase
+            .from('reports')
+            .select('id, created_at')
+            .eq('vibe_type', 'dangerous')
+            .eq('location', location)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (checkError) {
+            console.error("Error checking for existing emergency reports:", checkError);
+          } else if (existingReports && existingReports.length > 0) {
+            const existingReport = existingReports[0];
+            const reportTime = new Date(existingReport.created_at);
+            const now = new Date();
+            const timeDiff = (now - reportTime) / (1000 * 60 * 60); // Difference in hours
+
+            // If an emergency report exists within the last 2 hours for the same location, don't create a duplicate
+            if (timeDiff < 2) {
+              this.showNotification(`An emergency report already exists for this location. Emergency services may already be aware.`, "warning");
+              this.closeModal('emergencyModal');
+              return;
+            }
           }
 
           // Get current session to ensure we're authenticated
