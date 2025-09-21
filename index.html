@@ -2166,18 +2166,31 @@
             return;
           }
 
+          // Get current session to ensure we're authenticated
+          const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+
+          if (sessionError || !sessionData.session) {
+            this.showNotification("Authentication expired. Please login again.", "error");
+            this.showAuthModal();
+            return;
+          }
+
           console.log("Submitting emergency report:", {
             user_id: this.userData.id,
+            auth_user_id: sessionData.session.user.id,
             vibe_type: 'dangerous',
             location: location,
             notes: `EMERGENCY (${emergencyType}): ${details}`
           });
 
+          // Use the authenticated user ID from the session
+          const authUserId = sessionData.session.user.id;
+
           const { data, error } = await this.supabase
             .from('reports')
             .insert([
               {
-                user_id: this.userData.id,
+                user_id: authUserId,
                 vibe_type: 'dangerous',
                 location: location,
                 notes: `EMERGENCY (${emergencyType}): ${details}`
