@@ -8,9 +8,661 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* All your existing CSS remains the same */
-    /* Adding only the auth modal styles below */
-    
+    :root {
+      --primary: #2D5BFF;
+      --primary-dark: #1A46E0;
+      --secondary: #FF6B35;
+      --success: #28A745;
+      --danger: #DC3545;
+      --warning: #FFC107;
+      --info: #17A2B8;
+      --dark-bg: #0A192F;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text-light: #F8F9FC;
+      --text-muted: #A0AEC0;
+      --border-radius: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--dark-bg);
+      color: var(--text-light);
+      min-height: 100vh;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 100%;
+      padding: 16px;
+      margin: 0 auto;
+      padding-bottom: 70px;
+    }
+
+    header {
+      text-align: center;
+      padding: 15px 0;
+      position: relative;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(45, 91, 255, 0.3);
+    }
+
+    .logo i {
+      font-size: 24px;
+      color: white;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+      background: linear-gradient(to right, #fff, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .language-switcher {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 12px 15px;
+      margin: 15px 0;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .connected {
+      color: var(--success) !important;
+    }
+
+    .app-nav {
+      display: flex;
+      justify-content: space-around;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 10px;
+      margin: 15px 0;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: fixed;
+      bottom: 15px;
+      left: 15px;
+      right: 15px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-btn.active {
+      background: rgba(45, 91, 255, 0.2);
+      color: var(--primary);
+    }
+
+    .nav-btn i {
+      font-size: 20px;
+    }
+
+    .content-area {
+      margin-bottom: 70px;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .reports-container {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .report-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .report-info {
+      flex: 1;
+    }
+
+    .report-type {
+      font-weight: 500;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .report-details {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .report-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 10px;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .vote-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    .upvote-btn.active {
+      color: var(--success);
+    }
+
+    .downvote-btn.active {
+      color: var(--danger);
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 15px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(45, 91, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .action-btn i {
+      font-size: 20px;
+      color: var(--primary);
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .action-btn span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .emergency-btn {
+      background: rgba(220, 53, 69, 0.2);
+      border-color: rgba(220, 53, 69, 0.3);
+    }
+
+    .emergency-btn i {
+      color: var(--danger);
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 91, 255, 0.3);
+    }
+
+    .refresh-btn {
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    .btn-emergency {
+      background: var(--danger);
+      width: 100%;
+    }
+
+    .btn-emergency:hover {
+      background: #c82333;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top: 3px solid var(--primary);
+      animation: spin 1s linear infinite;
+      margin: 40px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .map-container {
+      height: 400px;
+      position: relative;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .map-visualization {
+      height: 100%;
+      position: relative;
+    }
+
+    .map-header {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+    }
+
+    .map-header h3 {
+      margin: 0 0 5px 0;
+      color: white;
+      font-size: 16px;
+    }
+
+    .map-header p {
+      margin: 0;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .map-points {
+      position: absolute;
+      top: 60px;
+      left: 15px;
+      right: 15px;
+      bottom: 70px;
+      padding: 0;
+    }
+
+    .map-point {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translate(-50%, -50%);
+      animation: pulse 2s infinite ease-in-out;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      z-index: 5;
+    }
+
+    .map-point:hover {
+      transform: translate(-50%, -50%) scale(1.2);
+      z-index: 20;
+    }
+
+    .map-point i {
+      font-size: 12px;
+      color: white;
+    }
+
+    .map-point[data-vibe="crowded"] { background: rgba(255, 165, 0, 0.8); }
+    .map-point[data-vibe="noisy"] { background: rgba(255, 107, 53, 0.8); }
+    .map-point[data-vibe="festive"] { background: rgba(40, 167, 69, 0.8); }
+    .map-point[data-vibe="calm"] { background: rgba(23, 162, 184, 0.8); }
+    .map-point[data-vibe="suspicious"] { background: rgba(255, 193, 7, 0.8); }
+    .map-point[data-vibe="dangerous"] { background: rgba(220, 53, 69, 0.8); }
+
+    .map-legend {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 8px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .legend-item i {
+      font-size: 12px;
+      min-width: 12px;
+      text-align: center;
+    }
+
+    .map-placeholder-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      color: var(--text-light);
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+    }
+
+    .map-placeholder-center i {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.7;
+    }
+
+    .map-placeholder-center p {
+      font-size: 16px;
+      margin-bottom: 20px;
+      opacity: 0.8;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: var(--dark-bg);
+      margin: 10% auto;
+      width: 90%;
+      max-width: 500px;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      animation: modalFadeIn 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-content.emergency {
+      border: 2px solid var(--danger);
+    }
+
+    .modal-header {
+      background: var(--card-bg);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-header h2 {
+      font-size: 18px;
+      color: var(--text-light);
+    }
+
+    .close {
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .vibe-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .vibe-option {
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .vibe-option:hover {
+      border-color: var(--primary);
+    }
+
+    .vibe-option.selected {
+      border-color: var(--primary);
+      background: rgba(45, 91, 255, 0.15);
+    }
+
+    .vibe-option i {
+      font-size: 20px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .vibe-option span {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    textarea, select, input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px;
+      color: var(--text-light);
+      resize: vertical;
+    }
+
+    textarea {
+      min-height: 100px;
+    }
+
+    .settings-section {
+      margin-bottom: 25px;
+    }
+
+    .settings-section h3 {
+      margin-bottom: 15px;
+      color: var(--primary);
+      font-size: 16px;
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 12px 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      max-width: 90%;
+      animation: slideInUp 0.3s;
+    }
+
+    .notification.hidden {
+      display: none;
+    }
+
+    .notification.success {
+      background: rgba(40, 167, 69, 0.9);
+      border-color: rgba(40, 167, 69, 0.5);
+    }
+
+    .notification.error {
+      background: rgba(220, 53, 69, 0.9);
+      border-color: rgba(220, 53, 69, 0.5);
+    }
+
+    .notification.warning {
+      background: rgba(255, 193, 7, 0.9);
+      border-color: rgba(255, 193, 7, 0.5);
+      color: #000;
+    }
+
+    .notification.info {
+      background: rgba(23, 162, 184, 0.9);
+      border-color: rgba(23, 162, 184, 0.5);
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Authentication Styles */
     .auth-modal {
       display: none;
       position: fixed;
@@ -104,6 +756,57 @@
       font-size: 14px;
       color: var(--text-muted);
     }
+
+    @keyframes pulse {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+    }
+
+    @keyframes slideInUp {
+      from {
+        transform: translate(-50%, 100%);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .vibe-options {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .action-btn:nth-child(3) {
+        grid-column: span 2;
+      }
+      
+      .map-legend {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 10px;
+      }
+      
+      .legend-item {
+        font-size: 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -159,12 +862,223 @@
   </div>
 
   <div class="container">
-    <!-- Your existing HTML content remains the same -->
-    <!-- ... -->
+    <!-- Header Section -->
+    <header>
+      <div class="logo">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h1>HyperApp</h1>
+      <p class="subtitle">Community-Powered Safety Reports</p>
+      
+      <div class="language-switcher" id="languageSwitcher">
+        <i class="fas fa-globe"></i> <span id="currentLanguage">EN</span>
+      </div>
+    </header>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-item" id="connectionStatus">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span data-en="Connecting..." data-ar="جاري الاتصال...">Connecting...</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-star"></i>
+        <span data-en="Rep:" data-ar="النقاط:">Rep:</span> <span id="userReputation">0</span>
+      </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="app-nav">
+      <button class="nav-btn active" data-view="main"><i class="fas fa-home"></i></button>
+      <button class="nav-btn" data-view="map"><i class="fas fa-map"></i></button>
+      <button class="nav-btn" data-view="reports"><i class="fas fa-list"></i></button>
+      <button class="nav-btn" data-view="settings"><i class="fas fa-cog"></i></button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- Main View -->
+      <div id="mainView" class="view active">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-map-marker-alt"></i> 
+            <span data-en="Nearby Reports" data-ar="التقارير القريبة">Nearby Reports</span>
+          </div>
+          <div id="nearbyReports" class="reports-container">
+            <div class="loading-spinner"></div>
+          </div>
+          <button class="btn refresh-btn" id="refreshReports">
+            <i class="fas fa-sync-alt"></i> 
+            <span data-en="Refresh" data-ar="تحديث">Refresh</span>
+          </button>
+        </div>
+
+        <div class="quick-actions">
+          <div class="action-btn" data-action="report">
+            <i class="fas fa-plus-circle"></i>
+            <span data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</span>
+          </div>
+          <div class="action-btn" data-action="areas">
+            <i class="fas fa-chart-line"></i>
+            <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
+          </div>
+          <div class="action-btn emergency-btn" data-action="emergency">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span data-en="Emergency" data-ar="طارئ">Emergency</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map View -->
+      <div id="mapView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-map"></i> 
+            <span data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</span>
+          </div>
+          <div id="mapContainer" class="map-container">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reports View -->
+      <div id="reportsView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-list"></i> 
+            <span data-en="My Reports" data-ar="تقاريري">My Reports</span>
+          </div>
+          <div id="userReports" class="reports-container">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings View -->
+      <div id="settingsView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-cog"></i> 
+            <span data-en="Settings" data-ar="الإعدادات">Settings</span>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="Account" data-ar="الحساب">Account</h3>
+            <div class="setting-item">
+              <span data-en="Username" data-ar="اسم المستخدم">Username</span>
+              <span id="settingsUsername">-</span>
+            </div>
+            <div class="setting-item">
+              <span data-en="Reputation" data-ar="النقاط">Reputation</span>
+              <span id="settingsReputation">0</span>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="Preferences" data-ar="التفضيلات">Preferences</h3>
+            <div class="setting-item">
+              <span data-en="Language" data-ar="اللغة">Language</span>
+              <select id="languageSelect">
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="About" data-ar="عن التطبيق">About</h3>
+            <p data-en="HyperApp helps communities stay informed about safety conditions in their area." data-ar="يساعد HyperApp المجتمعات على البقاء على اطلاع بظروف السلامة في منطقتهم.">
+              HyperApp helps communities stay informed about safety conditions in their area.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label data-en="What's the vibe?" data-ar="ما هي الحالة؟">What's the vibe?</label>
+          <div class="vibe-options">
+            <div class="vibe-option" data-vibe="crowded">
+              <i class="fas fa-users"></i>
+              <span data-en="Crowded" data-ar="مزدحم">Crowded</span>
+            </div>
+            <div class="vibe-option" data-vibe="noisy">
+              <i class="fas fa-volume-up"></i>
+              <span data-en="Noisy" data-ar="صاخب">Noisy</span>
+            </div>
+            <div class="vibe-option" data-vibe="festive">
+              <i class="fas fa-glass-cheers"></i>
+              <span data-en="Festive" data-ar="احتفالي">Festive</span>
+            </div>
+            <div class="vibe-option" data-vibe="calm">
+              <i class="fas fa-peace"></i>
+              <span data-en="Calm" data-ar="هادئ">Calm</span>
+            </div>
+            <div class="vibe-option" data-vibe="suspicious">
+              <i class="fas fa-eye-slash"></i>
+              <span data-en="Suspicious" data-ar="مشبوه">Suspicious</span>
+            </div>
+            <div class="vibe-option" data-vibe="dangerous">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span data-en="Dangerous" data-ar="خطير">Dangerous</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-en="Location (optional)" data-ar="الموقع (اختياري)">Location (optional)</label>
+          <input type="text" id="reportLocation" placeholder="Enter location">
+        </div>
+        <div class="form-group">
+          <label data-en="Notes (optional)" data-ar="ملاحظات (اختياري)">Notes (optional)</label>
+          <textarea id="reportNotes" placeholder="Add details about what you're experiencing"></textarea>
+        </div>
+        <button class="btn" data-action="submit-report" data-en="Submit Report" data-ar="إرسال التقرير">Submit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emergency Modal -->
+  <div id="emergencyModal" class="modal">
+    <div class="modal-content emergency">
+      <div class="modal-header">
+        <h2 data-en="Emergency Report" data-ar="تقرير طارئ">Emergency Report</h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label data-en="Emergency Type" data-ar="نوع الطوارئ">Emergency Type</label>
+          <select id="emergencyType">
+            <option value="medical" data-en="Medical Emergency" data-ar="طوارئ طبية">Medical Emergency</option>
+            <option value="police" data-en="Police Needed" data-ar="الحاجة إلى الشرطة">Police Needed</option>
+            <option value="fire" data-en="Fire Emergency" data-ar="طوارئ حريق">Fire Emergency</option>
+            <option value="other" data-en="Other Emergency" data-ar="طوارئ أخرى">Other Emergency</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-en="Location" data-ar="الموقع">Location</label>
+          <input type="text" id="emergencyLocation" placeholder="Enter your current location" required>
+        </div>
+        <div class="form-group">
+          <label data-en="Details" data-ar="التفاصيل">Details</label>
+          <textarea id="emergencyDetails" placeholder="Please provide details about the emergency" required></textarea>
+        </div>
+        <button class="btn btn-emergency" data-action="submit-emergency" data-en="Report Emergency" data-ar="الإبلاغ عن حالة الطوارئ">Report Emergency</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // HyperApp Mini App - Fixed Authentication Implementation
+    // HyperApp Mini App - Fixed Implementation
     class HyperApp {
       constructor() {
         this.tg = window.Telegram.WebApp;
@@ -179,11 +1093,8 @@
         
         // Initialize Supabase
         this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
-        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhbmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
         this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
-        
-        // Check authentication state
-        this.checkAuthState();
         
         // Bind all methods
         this.bindMethods();
@@ -191,40 +1102,67 @@
         this.init();
       }
       
-      async checkAuthState() {
-        // Check if we have a Telegram user first
-        if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
-          const telegramUser = this.tg.initDataUnsafe.user;
-          this.userData = telegramUser;
-          this.isAuthenticated = true;
-          await this.syncUserWithSupabase();
-          this.updateUserInfo();
-          return;
-        }
+      bindMethods() {
+        const methods = [
+          'init', 'setupEventListeners', 'syncUserWithSupabase', 'updateConnectionStatus',
+          'updateUserInfo', 'loadInitialData', 'loadNearbyReports', 'displayNearbyReports',
+          'loadUserReports', 'displayUserReports', 'voteReport', 'showReportModal',
+          'selectVibe', 'submitReport', 'showEmergencyReport', 'submitEmergencyReport',
+          'showView', 'loadMap', 'displayMap', 'loadTopAreas', 'toggleLanguage',
+          'changeLanguage', 'applyLanguage', 'showNotification', 'closeModal',
+          'getVibeIcon', 'getVibeArabicName', 'capitalizeFirstLetter', 'formatTimeAgo',
+          'updateTextDirection', 'requestUserLocation', 'checkAuthState',
+          'showAuthModal', 'hideAuthModal', 'setupAuthListeners', 'handleAuthLogin',
+          'handleAuthSignup'
+        ];
         
-        // Check Supabase authentication as fallback
-        const { data: { session }, error } = await this.supabase.auth.getSession();
-        if (session && session.user) {
-          this.isAuthenticated = true;
-          this.userData = {
-            id: session.user.id,
-            email: session.user.email,
-            ...session.user.user_metadata
-          };
-          await this.syncUserWithSupabase();
-          this.updateUserInfo();
+        methods.forEach(method => {
+          this[method] = this[method].bind(this);
+        });
+      }
+      
+      async init() {
+        console.log("Initializing HyperApp with Supabase...");
+        
+        // Set up auth listeners
+        this.setupAuthListeners();
+        
+        // Initialize Telegram WebApp
+        if (this.tg) {
+          this.tg.expand();
+          this.tg.MainButton.hide();
+          
+          // Get user data
+          const user = this.tg.initDataUnsafe.user;
+          if (user) {
+            this.userData = user;
+            this.isAuthenticated = true;
+            await this.syncUserWithSupabase();
+            this.updateUserInfo();
+          }
+          
+          // Try to get user location
+          this.requestUserLocation();
+          
+          // Set up event listeners
+          this.setupEventListeners();
+          
+          // Update connection status
+          this.updateConnectionStatus(true);
         } else {
-          // Show auth modal if no authentication found
+          console.log("Not in Telegram environment");
+          this.updateConnectionStatus(false);
+          this.showNotification("Running in standalone mode", "info");
+          
+          // For testing without Telegram, show auth modal
           this.showAuthModal();
         }
-      }
-      
-      showAuthModal() {
-        document.getElementById('authModal').style.display = 'block';
-      }
-      
-      hideAuthModal() {
-        document.getElementById('authModal').style.display = 'none';
+        
+        // Load initial data
+        await this.loadInitialData();
+        
+        // Make app instance globally available
+        window.hyperApp = this;
       }
       
       async setupAuthListeners() {
@@ -245,92 +1183,104 @@
         });
         
         // Login button
-        document.getElementById('loginBtn').addEventListener('click', async () => {
-          const email = document.getElementById('loginEmail').value;
-          const password = document.getElementById('loginPassword').value;
-          
-          if (!email || !password) {
-            this.showNotification("Please fill all fields", "error");
-            return;
-          }
-          
-          try {
-            const { data, error } = await this.supabase.auth.signInWithPassword({
-              email,
-              password
-            });
-            
-            if (error) {
-              this.showNotification(error.message, "error");
-            } else {
-              this.isAuthenticated = true;
-              this.userData = {
-                id: data.user.id,
-                email: data.user.email,
-                ...data.user.user_metadata
-              };
-              await this.syncUserWithSupabase();
-              this.updateUserInfo();
-              this.hideAuthModal();
-              this.loadInitialData();
-              this.showNotification("Login successful", "success");
-            }
-          } catch (error) {
-            this.showNotification("Login failed. Please try again.", "error");
-            console.error("Login error:", error);
-          }
-        });
+        document.getElementById('loginBtn').addEventListener('click', this.handleAuthLogin);
         
         // Signup button
-        document.getElementById('signupBtn').addEventListener('click', async () => {
-          const username = document.getElementById('signupUsername').value;
-          const email = document.getElementById('signupEmail').value;
-          const password = document.getElementById('signupPassword').value;
-          const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+        document.getElementById('signupBtn').addEventListener('click', this.handleAuthSignup);
+      }
+      
+      async handleAuthLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!email || !password) {
+          this.showNotification("Please fill all fields", "error");
+          return;
+        }
+        
+        try {
+          const { data, error } = await this.supabase.auth.signInWithPassword({
+            email,
+            password
+          });
           
-          if (!username || !email || !password || !passwordConfirm) {
-            this.showNotification("Please fill all fields", "error");
-            return;
+          if (error) {
+            this.showNotification(error.message, "error");
+          } else {
+            this.isAuthenticated = true;
+            this.userData = {
+              id: data.user.id,
+              email: data.user.email,
+              ...data.user.user_metadata
+            };
+            await this.syncUserWithSupabase();
+            this.updateUserInfo();
+            this.hideAuthModal();
+            this.loadInitialData();
+            this.showNotification("Login successful", "success");
           }
-          
-          if (password !== passwordConfirm) {
-            this.showNotification("Passwords don't match", "error");
-            return;
-          }
-          
-          if (password.length < 6) {
-            this.showNotification("Password must be at least 6 characters", "error");
-            return;
-          }
-          
-          try {
-            const { data, error } = await this.supabase.auth.signUp({
-              email,
-              password,
-              options: {
-                data: {
-                  username: username,
-                  reputation: 0,
-                  language: 'en'
-                }
+        } catch (error) {
+          this.showNotification("Login failed. Please try again.", "error");
+          console.error("Login error:", error);
+        }
+      }
+      
+      async handleAuthSignup() {
+        const username = document.getElementById('signupUsername').value;
+        const email = document.getElementById('signupEmail').value;
+        const password = document.getElementById('signupPassword').value;
+        const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+        
+        if (!username || !email || !password || !passwordConfirm) {
+          this.showNotification("Please fill all fields", "error");
+          return;
+        }
+        
+        if (password !== passwordConfirm) {
+          this.showNotification("Passwords don't match", "error");
+          return;
+        }
+        
+        if (password.length < 6) {
+          this.showNotification("Password must be at least 6 characters", "error");
+          return;
+        }
+        
+        try {
+          const { data, error } = await this.supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                username: username,
+                reputation: 0,
+                language: 'en'
               }
-            });
-            
-            if (error) {
-              this.showNotification(error.message, "error");
-            } else {
-              this.showNotification("Signup successful! Please check your email for verification.", "success");
-              // Switch to login tab
-              document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-              document.querySelectorAll('.auth-form').forEach(f => f.classList.add('hidden'));
-              document.querySelector('[data-tab="login"]').classList.add('active');
-              document.getElementById('loginForm').classList.remove('hidden');
             }
-          } catch (error) {
-            this.showNotification("Signup failed. Please try again.", "error");
-            console.error("Signup error:", error);
+          });
+          
+          if (error) {
+            this.showNotification(error.message, "error");
+          } else {
+            this.showNotification("Signup successful! Please check your email for verification.", "success");
+            // Switch to login tab
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.add('hidden'));
+            document.querySelector('[data-tab="login"]').classList.add('active');
+            document.getElementById('loginForm').classList.remove('hidden');
           }
-        });
+        } catch (error) {
+          this.showNotification("Signup failed. Please try again.", "error");
+          console.error("Signup error:", error);
+        }
+      }
+      
+      showAuthModal() {
+        document.getElementById('authModal').style.display = 'block';
+      }
+      
+      hideAuthModal() {
+        document.getElementById('authModal').style.display = 'none';
       }
       
       async syncUserWithSupabase() {
@@ -378,11 +1328,8 @@
             this.applyLanguage(this.currentLanguage);
             
             // Update language selector
-            const languageSelect = document.getElementById('languageSelect');
-            const currentLanguage = document.getElementById('currentLanguage');
-            
-            if (languageSelect) languageSelect.value = this.currentLanguage;
-            if (currentLanguage) currentLanguage.textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
+            document.getElementById('languageSelect').value = this.currentLanguage;
+            document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
             
             return true;
           }
@@ -392,58 +1339,168 @@
         }
       }
       
-      // Your existing methods remain the same with minor adjustments
-      // ... (init, setupEventListeners, updateConnectionStatus, etc.)
-      
-      // Make sure to call setupAuthListeners in your init method
-      async init() {
-        console.log("Initializing HyperApp with Supabase...");
+      updateConnectionStatus(connected) {
+        this.isConnected = connected;
+        const statusElement = document.getElementById('connectionStatus');
         
-        // Set up auth listeners
-        this.setupAuthListeners();
-        
-        // Initialize Telegram WebApp
-        if (this.tg) {
-          this.tg.expand();
-          this.tg.MainButton.hide();
-          
-          // Get user data
-          const user = this.tg.initDataUnsafe.user;
-          if (user) {
-            this.userData = user;
+        if (statusElement) {
+          if (connected) {
+            statusElement.innerHTML = '<i class="fas fa-check-circle connected"></i> <span data-en="Connected" data-ar="متصل">Connected</span>';
+          } else {
+            statusElement.innerHTML = '<i class="fas fa-times-circle"></i> <span data-en="Disconnected" data-ar="غير متصل">Disconnected</span>';
           }
-          
-          // Try to get user location
-          this.requestUserLocation();
-          
-          // Set up event listeners
-          this.setupEventListeners();
-          
-          // Update connection status
-          this.updateConnectionStatus(true);
-        } else {
-          console.log("Not in Telegram environment");
-          this.updateConnectionStatus(false);
-          this.showNotification("Running in standalone mode", "info");
-          
-          // Simulate user data for testing
-          this.userData = {
-            id: 123456789,
-            first_name: "Test User",
-            username: "testuser"
-          };
         }
-        
-        // Load initial data if authenticated
-        if (this.isAuthenticated) {
-          await this.loadInitialData();
-        }
-        
-        // Make app instance globally available
-        window.hyperApp = this;
       }
       
-      // Add authentication checks to relevant methods
+      updateUserInfo() {
+        if (this.userData) {
+          const usernameElement = document.getElementById('settingsUsername');
+          if (usernameElement) {
+            usernameElement.textContent = this.userData.username || this.userData.first_name;
+          }
+          
+          document.getElementById('userReputation').textContent = this.userData.reputation || 0;
+          document.getElementById('settingsReputation').textContent = this.userData.reputation || 0;
+        }
+      }
+      
+      async loadInitialData() {
+        await this.loadNearbyReports();
+        if (this.isAuthenticated) {
+          await this.loadUserReports();
+        }
+        this.loadMap();
+      }
+      
+      async loadNearbyReports() {
+        try {
+          document.getElementById('nearbyReports').innerHTML = '<div class="loading-spinner"></div>';
+          
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select(`*, votes (vote_type)`)
+            .order('created_at', { ascending: false })
+            .limit(20);
+          
+          if (error) {
+            console.error("Error loading reports:", error);
+            document.getElementById('nearbyReports').innerHTML = 
+              '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
+            return;
+          }
+          
+          this.nearbyReports = reports.map(report => {
+            const userVote = report.votes && report.votes.length > 0 ? 
+              report.votes.find(v => v.user_id === this.userData?.id)?.vote_type : null;
+            
+            return { ...report, user_vote: userVote };
+          });
+          
+          this.displayNearbyReports();
+        } catch (error) {
+          console.error("Error loading nearby reports:", error);
+          document.getElementById('nearbyReports').innerHTML = 
+            '<div class="no-data" data-en="Error loading reports" data-ar="خطأ في تحميل التقارير">Error loading reports</div>';
+        }
+      }
+      
+      displayNearbyReports() {
+        const container = document.getElementById('nearbyReports');
+        
+        if (this.nearbyReports.length === 0) {
+          container.innerHTML = '<div class="no-data" data-en="No reports nearby" data-ar="لا توجد تقارير قريبة">No reports nearby</div>';
+          this.updateTextDirection();
+          return;
+        }
+        
+        container.innerHTML = this.nearbyReports.map(report => `
+          <div class="report-item" data-id="${report.id}">
+            <div class="report-info">
+              <div class="report-type">
+                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                  ${this.capitalizeFirstLetter(report.vibe_type)}
+                </span>
+              </div>
+              <div class="report-details">${report.notes || ''}</div>
+              <div class="report-meta">
+                <span>${report.location || 'Unknown location'}</span>
+                <span>${this.formatTimeAgo(report.created_at)}</span>
+              </div>
+            </div>
+            <div class="report-actions">
+              <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}">
+                <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
+              </button>
+              <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}">
+                <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
+              </button>
+            </div>
+          </div>
+        `).join('');
+        
+        this.updateTextDirection();
+      }
+      
+      async loadUserReports() {
+        if (!this.userData) return;
+        
+        try {
+          document.getElementById('userReports').innerHTML = '<div class="loading-spinner"></div>';
+          
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('*')
+            .eq('user_id', this.userData.id)
+            .order('created_at', { ascending: false });
+          
+          if (error) {
+            console.error("Error loading user reports:", error);
+            document.getElementById('userReports').innerHTML = 
+              '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
+            return;
+          }
+          
+          this.userReports = reports;
+          this.displayUserReports();
+        } catch (error) {
+          console.error("Error loading user reports:", error);
+          document.getElementById('userReports').innerHTML = 
+            '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
+        }
+      }
+      
+      displayUserReports() {
+        const container = document.getElementById('userReports');
+        
+        if (this.userReports.length === 0) {
+          container.innerHTML = '<div class="no-data" data-en="You haven\'t submitted any reports" data-ar="لم تقم بإرسال أي تقارير">You haven\'t submitted any reports</div>';
+          this.updateTextDirection();
+          return;
+        }
+        
+        container.innerHTML = this.userReports.map(report => `
+          <div class="report-item">
+            <div class="report-info">
+              <div class="report-type">
+                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                  ${this.capitalizeFirstLetter(report.vibe_type)}
+                </span>
+              </div>
+              <div class="report-details">${report.notes || ''}</div>
+              <div class="report-meta">
+                <span>${report.location || 'Unknown location'}</span>
+                <span>${this.formatTimeAgo(report.created_at)}</span>
+                <span>👍 ${report.upvotes || 0} 👎 ${report.downvotes || 0}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+        this.updateTextDirection();
+      }
+      
       async voteReport(reportId, voteType) {
         if (!this.isAuthenticated) {
           this.showAuthModal();
@@ -451,22 +1508,505 @@
           return;
         }
         
-        // Your existing voteReport implementation
-        // ...
+        try {
+          const { data: existingVote, error: voteError } = await this.supabase
+            .from('votes')
+            .select('*')
+            .eq('user_id', this.userData.id)
+            .eq('report_id', reportId)
+            .maybeSingle();
+          
+          if (voteError && voteError.code !== 'PGRST116') {
+            console.error("Error checking vote:", voteError);
+            this.showNotification("Failed to submit vote", "error");
+            return;
+          }
+          
+          let operation;
+          
+          if (existingVote) {
+            if (existingVote.vote_type === voteType) {
+              const { error: deleteError } = await this.supabase
+                .from('votes')
+                .delete()
+                .eq('id', existingVote.id);
+              
+              if (deleteError) {
+                console.error("Error removing vote:", deleteError);
+                this.showNotification("Failed to update vote", "error");
+                return;
+              }
+              
+              operation = 'remove';
+            } else {
+              const { error: updateError } = await this.supabase
+                .from('votes')
+                .update({ vote_type: voteType })
+                .eq('id', existingVote.id);
+              
+              if (updateError) {
+                console.error("Error updating vote:", updateError);
+                this.showNotification("Failed to update vote", "error");
+                return;
+              }
+              
+              operation = 'change';
+            }
+          } else {
+            const { error: insertError } = await this.supabase
+              .from('votes')
+              .insert([
+                {
+                  user_id: this.userData.id,
+                  report_id: reportId,
+                  vote_type: voteType
+                }
+              ]);
+            
+            if (insertError) {
+              console.error("Error inserting vote:", insertError);
+              this.showNotification("Failed to submit vote", "error");
+              return;
+            }
+            
+            operation = 'add';
+          }
+          
+          // Update the report vote counts
+          const report = this.nearbyReports.find(r => r.id === reportId);
+          if (report) {
+            if (operation === 'add') {
+              report.upvotes = (report.upvotes || 0) + (voteType === 'upvote' ? 1 : 0);
+              report.downvotes = (report.downvotes || 0) + (voteType === 'downvote' ? 1 : 0);
+              report.user_vote = voteType;
+            } else if (operation === 'remove') {
+              report.upvotes = (report.upvotes || 0) - (voteType === 'upvote' ? 1 : 0);
+              report.downvotes = (report.downvotes || 0) - (voteType === 'downvote' ? 1 : 0);
+              report.user_vote = null;
+            } else if (operation === 'change') {
+              report.upvotes = (report.upvotes || 0) + (voteType === 'upvote' ? 1 : -1);
+              report.downvotes = (report.downvotes || 0) + (voteType === 'downvote' ? 1 : -1);
+              report.user_vote = voteType;
+            }
+            
+            this.displayNearbyReports();
+            this.showNotification("Vote recorded", "success");
+          }
+        } catch (error) {
+          console.error("Error voting on report:", error);
+          this.showNotification("Failed to submit vote", "error");
+        }
       }
       
-      async showReportModal() {
+      showReportModal() {
         if (!this.isAuthenticated) {
           this.showAuthModal();
           this.showNotification("Please login to submit reports", "error");
           return;
         }
         
-        // Your existing showReportModal implementation
-        // ...
+        this.selectedVibe = null;
+        document.querySelectorAll('.vibe-option').forEach(option => {
+          option.classList.remove('selected');
+        });
+        document.getElementById('reportLocation').value = '';
+        document.getElementById('reportNotes').value = '';
+        document.getElementById('reportModal').style.display = 'block';
       }
       
-      // ... other methods remain the same
+      selectVibe(vibe) {
+        this.selectedVibe = vibe;
+        document.querySelectorAll('.vibe-option').forEach(option => {
+          option.classList.remove('selected');
+        });
+        document.querySelector(`.vibe-option[data-vibe="${vibe}"]`).classList.add('selected');
+      }
+      
+      async submitReport() {
+        if (!this.selectedVibe) {
+          this.showNotification("Please select a vibe type", "error");
+          return;
+        }
+        
+        try {
+          const location = document.getElementById('reportLocation').value;
+          const notes = document.getElementById('reportNotes').value;
+          
+          const { data, error } = await this.supabase
+            .from('reports')
+            .insert([
+              {
+                user_id: this.userData.id,
+                vibe_type: this.selectedVibe,
+                location: location,
+                notes: notes
+              }
+            ])
+            .select();
+          
+          if (error) {
+            console.error("Error submitting report:", error);
+            this.showNotification("Failed to submit report", "error");
+          } else {
+            this.showNotification("Report submitted successfully", "success");
+            this.closeModal('reportModal');
+            this.loadNearbyReports();
+            this.loadUserReports();
+          }
+        } catch (error) {
+          console.error("Error submitting report:", error);
+          this.showNotification("Failed to submit report", "error");
+        }
+      }
+      
+      showEmergencyReport() {
+        document.getElementById('emergencyModal').style.display = 'block';
+      }
+      
+      async submitEmergencyReport() {
+        try {
+          const emergencyType = document.getElementById('emergencyType').value;
+          const location = document.getElementById('emergencyLocation').value;
+          const details = document.getElementById('emergencyDetails').value;
+          
+          if (!location || !details) {
+            this.showNotification("Please fill all required fields", "error");
+            return;
+          }
+          
+          const { data, error } = await this.supabase
+            .from('reports')
+            .insert([
+              {
+                user_id: this.userData.id,
+                vibe_type: 'dangerous',
+                location: location,
+                notes: `EMERGENCY (${emergencyType}): ${details}`
+              }
+            ])
+            .select();
+          
+          if (error) {
+            console.error("Error submitting emergency report:", error);
+            this.showNotification("Failed to submit emergency report", "error");
+          } else {
+            this.showNotification("Emergency report submitted successfully", "success");
+            this.closeModal('emergencyModal');
+            this.loadNearbyReports();
+            this.loadUserReports();
+          }
+        } catch (error) {
+          console.error("Error submitting emergency report:", error);
+          this.showNotification("Failed to submit emergency report", "error");
+        }
+      }
+      
+      showView(viewId) {
+        document.querySelectorAll('.view').forEach(view => {
+          view.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        document.getElementById(viewId + 'View').classList.add('active');
+        document.querySelector(`.nav-btn[data-view="${viewId}"]`).classList.add('active');
+        
+        if (viewId === 'map') {
+          this.loadMap();
+        }
+      }
+      
+      loadMap() {
+        const mapContainer = document.getElementById('mapContainer');
+        mapContainer.innerHTML = `
+          <div class="map-header">
+            <h3 data-en="Community Vibe Map" data-ar="خريطة حالة المجتمع">Community Vibe Map</h3>
+            <p data-en="Showing recent reports in your area" data-ar="عرض التقارير الحديثة في منطقتك">Showing recent reports in your area</p>
+          </div>
+          <div class="map-points">
+            ${this.nearbyReports.length > 0 ? this.nearbyReports.map(report => `
+              <div class="map-point" data-vibe="${report.vibe_type}" style="top: ${Math.random() * 70 + 15}%; left: ${Math.random() * 80 + 10}%;">
+                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+              </div>
+            `).join('') : `
+              <div class="map-placeholder-center">
+                <i class="fas fa-map-marked-alt"></i>
+                <p data-en="No reports to show on map" data-ar="لا توجد تقارير للعرض على الخريطة">No reports to show on map</p>
+                <button class="btn" id="firstReportBtn" data-en="Submit First Report" data-ar="أضف أول تقرير">Submit First Report</button>
+              </div>
+            `}
+          </div>
+          <div class="map-legend">
+            <div class="legend-item"><i class="fas fa-users" style="color: orange;"></i> <span data-en="Crowded" data-ar="مزدحم">Crowded</span></div>
+            <div class="legend-item"><i class="fas fa-volume-up" style="color: var(--secondary);"></i> <span data-en="Noisy" data-ar="صاخب">Noisy</span></div>
+            <div class="legend-item"><i class="fas fa-glass-cheers" style="color: var(--success);"></i> <span data-en="Festive" data-ar="احتفالي">Festive</span></div>
+            <div class="legend-item"><i class="fas fa-peace" style="color: var(--info);"></i> <span data-en="Calm" data-ar="هادئ">Calm</span></div>
+            <div class="legend-item"><i class="fas fa-eye-slash" style="color: var(--warning);"></i> <span data-en="Suspicious" data-ar="مشبوه">Suspicious</span></div>
+            <div class="legend-item"><i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> <span data-en="Dangerous" data-ar="خطير">Dangerous</span></div>
+          </div>
+        `;
+        
+        this.updateTextDirection();
+      }
+      
+      displayMap() {
+        // This will be called when the map view is shown
+        this.loadMap();
+      }
+      
+      loadTopAreas() {
+        this.showNotification("Top areas feature coming soon", "info");
+      }
+      
+      toggleLanguage() {
+        this.currentLanguage = this.currentLanguage === 'en' ? 'ar' : 'en';
+        document.getElementById('currentLanguage').textContent = this.currentLanguage.toUpperCase();
+        this.applyLanguage(this.currentLanguage);
+        
+        // Save language preference if user is authenticated
+        if (this.isAuthenticated) {
+          this.supabase
+            .from('users')
+            .update({ language: this.currentLanguage })
+            .eq('user_id', this.userData.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Error updating language preference:", error);
+              }
+            });
+        }
+      }
+      
+      changeLanguage(lang) {
+        this.currentLanguage = lang;
+        document.getElementById('currentLanguage').textContent = this.currentLanguage.toUpperCase();
+        this.applyLanguage(this.currentLanguage);
+        
+        // Save language preference if user is authenticated
+        if (this.isAuthenticated) {
+          this.supabase
+            .from('users')
+            .update({ language: this.currentLanguage })
+            .eq('user_id', this.userData.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Error updating language preference:", error);
+              }
+            });
+        }
+      }
+      
+      applyLanguage(lang) {
+        document.querySelectorAll('[data-en]').forEach(element => {
+          if (element.getAttribute('data-' + lang)) {
+            element.textContent = element.getAttribute('data-' + lang);
+          }
+        });
+        
+        this.updateTextDirection();
+      }
+      
+      updateTextDirection() {
+        document.body.setAttribute('dir', this.currentLanguage === 'ar' ? 'rtl' : 'ltr');
+      }
+      
+      showNotification(message, type = 'info') {
+        // Remove any existing notification
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+          existingNotification.remove();
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      }
+      
+      closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+      }
+      
+      getVibeIcon(vibeType) {
+        const icons = {
+          crowded: 'fas fa-users',
+          noisy: 'fas fa-volume-up',
+          festive: 'fas fa-glass-cheers',
+          calm: 'fas fa-peace',
+          suspicious: 'fas fa-eye-slash',
+          dangerous: 'fas fa-exclamation-triangle'
+        };
+        
+        return icons[vibeType] || 'fas fa-question-circle';
+      }
+      
+      getVibeArabicName(vibeType) {
+        const names = {
+          crowded: 'مزدحم',
+          noisy: 'صاخب',
+          festive: 'احتفالي',
+          calm: 'هادئ',
+          suspicious: 'مشبوه',
+          dangerous: 'خطير'
+        };
+        
+        return names[vibeType] || vibeType;
+      }
+      
+      capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+      
+      formatTimeAgo(timestamp) {
+        const now = new Date();
+        const time = new Date(timestamp);
+        const diffInSeconds = Math.floor((now - time) / 1000);
+        
+        if (diffInSeconds < 60) {
+          return this.currentLanguage === 'en' ? 'Just now' : 'الآن';
+        }
+        
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) {
+          return this.currentLanguage === 'en' 
+            ? `${diffInMinutes} min ago` 
+            : `منذ ${diffInMinutes} دقيقة`;
+        }
+        
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) {
+          return this.currentLanguage === 'en' 
+            ? `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago` 
+            : `منذ ${diffInHours} ساعة`;
+        }
+        
+        const diffInDays = Math.floor(diffInHours / 24);
+        return this.currentLanguage === 'en' 
+          ? `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago` 
+          : `منذ ${diffInDays} يوم`;
+      }
+      
+      requestUserLocation() {
+        if (this.tg && this.tg.showPopup && this.tg.isLocationRequested) {
+          try {
+            this.tg.showPopup({
+              title: "Location Access",
+              message: "HyperApp needs your location to show nearby reports and map features.",
+              buttons: [{ type: "ok", text: "Allow" }, { type: "cancel", text: "Deny" }]
+            }, async (buttonId) => {
+              if (buttonId === "ok") {
+                this.tg.requestLocation();
+              }
+            });
+          } catch (e) {
+            console.log("Location request not available in this Telegram version");
+          }
+        }
+      }
+      
+      setupEventListeners() {
+        // Navigation buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const view = e.currentTarget.getAttribute('data-view');
+            this.showView(view);
+          });
+        });
+        
+        // Language switcher
+        const languageSwitcher = document.getElementById('languageSwitcher');
+        if (languageSwitcher) {
+          languageSwitcher.addEventListener('click', this.toggleLanguage);
+        }
+        
+        // Refresh button
+        const refreshBtn = document.getElementById('refreshReports');
+        if (refreshBtn) {
+          refreshBtn.addEventListener('click', this.loadNearbyReports);
+        }
+        
+        // Quick action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const action = e.currentTarget.getAttribute('data-action');
+            if (action === 'report') {
+              this.showReportModal();
+            } else if (action === 'areas') {
+              this.loadTopAreas();
+            } else if (action === 'emergency') {
+              this.showEmergencyReport();
+            }
+          });
+        });
+        
+        // Vibe option buttons
+        document.querySelectorAll('.vibe-option').forEach(option => {
+          option.addEventListener('click', (e) => {
+            const vibe = e.currentTarget.getAttribute('data-vibe');
+            this.selectVibe(vibe);
+          });
+        });
+        
+        // Modal close buttons
+        document.querySelectorAll('.close').forEach(closeBtn => {
+          closeBtn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+              this.closeModal(modal.id);
+            }
+          });
+        });
+        
+        // Form submit buttons
+        const reportSubmitBtn = document.querySelector('[data-action="submit-report"]');
+        if (reportSubmitBtn) {
+          reportSubmitBtn.addEventListener('click', this.submitReport);
+        }
+        
+        const emergencySubmitBtn = document.querySelector('[data-action="submit-emergency"]');
+        if (emergencySubmitBtn) {
+          emergencySubmitBtn.addEventListener('click', this.submitEmergencyReport);
+        }
+        
+        // Language select dropdown
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+          languageSelect.addEventListener('change', (e) => {
+            this.changeLanguage(e.target.value);
+          });
+        }
+        
+        // Vote buttons (delegated event handling)
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('.upvote-btn')) {
+            const reportItem = e.target.closest('.report-item');
+            if (reportItem) {
+              const reportId = reportItem.dataset.id;
+              this.voteReport(reportId, 'upvote');
+            }
+          } else if (e.target.closest('.downvote-btn')) {
+            const reportItem = e.target.closest('.report-item');
+            if (reportItem) {
+              const reportId = reportItem.dataset.id;
+              this.voteReport(reportId, 'downvote');
+            }
+          }
+        });
+        
+        // Map button in empty state
+        document.addEventListener('click', (e) => {
+          if (e.target.id === 'firstReportBtn' || e.target.closest('#firstReportBtn')) {
+            this.showReportModal();
+          }
+        });
+      }
     }
 
     // Initialize the app when the page loads
