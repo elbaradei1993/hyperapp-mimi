@@ -135,12 +135,48 @@
     .status-bar {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       background: var(--card-bg);
       border-radius: var(--border-radius);
       padding: 12px 15px;
       margin: 15px 0;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .refresh-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      position: relative;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    .refresh-btn:active {
+      transform: scale(0.95);
+    }
+
+    .refresh-btn.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    .refresh-btn.spinning i {
+      color: var(--primary);
     }
 
     .status-item {
@@ -4780,9 +4816,7 @@
         const refreshBtn = document.getElementById('refreshBtn');
         if (refreshBtn) {
           refreshBtn.addEventListener('click', () => {
-            // Force fresh data load
-            this.loadNearbyReports(0, true);
-            this.showNotification("Refreshing data...", "info");
+            this.forceDataRefresh();
           });
         }
         
@@ -6293,6 +6327,61 @@
 
           // Update the UI
           this.displayNearbyReports();
+        }
+      }
+
+      async forceDataRefresh() {
+        // Show spinning animation on refresh button
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+          refreshBtn.classList.add('spinning');
+          refreshBtn.disabled = true;
+        }
+
+        try {
+          // Show loading notification
+          this.showNotification("Refreshing all data...", "info");
+
+          // Force reload all data sources
+          await Promise.all([
+            this.loadNearbyReports(0, true), // Force fresh reports
+            this.loadEnhancedStats(), // Reload enhanced stats
+            this.loadWeatherData(true) // Force fresh weather data
+          ]);
+
+          // Ensure all UI components are updated with consistent data
+          const vibeCounts = this.getVibeCounts();
+
+          // Update all components in sequence to ensure consistency
+          this.updateStats();
+          this.updateVibeCategories(vibeCounts);
+          this.updateCommunityVibeSidebar(vibeCounts);
+          this.updateEnhancedVibeStats(vibeCounts);
+          this.updateSafetyHub();
+
+          // Update user data if authenticated
+          if (this.isAuthenticated) {
+            await this.updateUserReputation();
+            await this.loadUserReports();
+          }
+
+          // Update map if visible
+          if (document.getElementById('mapView').classList.contains('active')) {
+            this.loadMap();
+          }
+
+          // Show success notification
+          this.showNotification("All data refreshed successfully", "success");
+
+        } catch (error) {
+          console.error("Error during data refresh:", error);
+          this.showNotification("Failed to refresh data. Please try again.", "error");
+        } finally {
+          // Reset refresh button state
+          if (refreshBtn) {
+            refreshBtn.classList.remove('spinning');
+            refreshBtn.disabled = false;
+          }
         }
       }
 
