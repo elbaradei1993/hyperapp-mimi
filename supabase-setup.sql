@@ -37,7 +37,7 @@ create index if not exists votes_report_id_idx on public.votes(report_id);
 create index if not exists votes_user_id_idx on public.votes(user_id);
 
 alter table public.users enable row level security;
-alter table public.reports enable row level security;
+alter table public.reports disable row level security;
 alter table public.votes enable row level security;
 
 drop policy if exists users_insert_self on public.users;
