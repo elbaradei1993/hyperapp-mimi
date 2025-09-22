@@ -25,6 +25,21 @@
       --border-radius: 12px;
     }
 
+    /* Light theme variables */
+    [data-theme="light"] {
+      --primary: #1A46E0;
+      --primary-dark: #1E3A8A;
+      --secondary: #EA580C;
+      --success: #16A34A;
+      --danger: #DC2626;
+      --warning: #D97706;
+      --info: #0891B2;
+      --dark-bg: #F8FAFC;
+      --card-bg: rgba(0, 0, 0, 0.05);
+      --text-light: #1E293B;
+      --text-muted: #64748B;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -139,6 +154,137 @@
       left: 15px;
       right: 15px;
       z-index: 100;
+    }
+
+    /* Filter Controls */
+    .filter-controls {
+      display: flex;
+      gap: 8px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: var(--text-light);
+    }
+
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .filter-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    /* Emergency Contacts */
+    .emergency-contacts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 15px 0;
+    }
+
+    .emergency-btn {
+      background: rgba(220, 53, 69, 0.9);
+      border: 1px solid rgba(220, 53, 69, 0.5);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .emergency-btn:hover {
+      background: rgba(220, 53, 69, 1);
+      transform: scale(1.02);
+    }
+
+    .emergency-btn i {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: absolute;
+      top: 15px;
+      right: 60px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .theme-toggle i {
+      color: var(--text-light);
+      font-size: 16px;
+    }
+
+    /* Statistics Card */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Offline indicator */
+    .offline-indicator {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 193, 7, 0.9);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      z-index: 1000;
+      display: none;
+    }
+
+    .offline-indicator.online {
+      background: rgba(40, 167, 69, 0.9);
+      color: white;
     }
 
     .nav-btn {
@@ -1131,6 +1277,11 @@
       <div class="language-switcher" id="languageSwitcher">
         <i class="fas fa-globe"></i> <span id="currentLanguage">EN</span>
       </div>
+
+      <!-- Theme Toggle -->
+      <div class="theme-toggle" id="themeToggle" title="Toggle theme">
+        <i class="fas fa-moon"></i>
+      </div>
     </header>
 
     <!-- Status Bar -->
@@ -1157,18 +1308,78 @@
     <main class="content-area">
       <!-- Main View -->
       <div id="mainView" class="view active">
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+          <button class="filter-btn active" data-filter="all">
+            <i class="fas fa-list"></i> All
+          </button>
+          <button class="filter-btn" data-filter="dangerous">
+            <i class="fas fa-exclamation-triangle"></i> Emergency
+          </button>
+          <button class="filter-btn" data-filter="crowded">
+            <i class="fas fa-users"></i> Crowded
+          </button>
+          <button class="filter-btn" data-filter="suspicious">
+            <i class="fas fa-eye-slash"></i> Suspicious
+          </button>
+        </div>
+
         <div class="card">
           <div class="card-title">
-            <i class="fas fa-map-marker-alt"></i> 
+            <i class="fas fa-map-marker-alt"></i>
             <span data-en="Nearby Reports" data-ar="التقارير القريبة">Nearby Reports</span>
           </div>
           <div id="nearbyReports" class="reports-container">
             <div class="loading-spinner"></div>
           </div>
           <button class="btn refresh-btn" id="refreshReports">
-            <i class="fas fa-sync-alt"></i> 
+            <i class="fas fa-sync-alt"></i>
             <span data-en="Refresh" data-ar="تحديث">Refresh</span>
           </button>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-chart-bar"></i>
+            <span data-en="Community Stats" data-ar="إحصائيات المجتمع">Community Stats</span>
+          </div>
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+              <div class="stat-number" id="totalReports">0</div>
+              <div class="stat-label">Reports</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="activeUsers">0</div>
+              <div class="stat-label">Active Users</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emergency Contacts -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-phone"></i>
+            <span data-en="Emergency Contacts" data-ar="جهات الاتصال الطارئة">Emergency Contacts</span>
+          </div>
+          <div class="emergency-contacts">
+            <button class="emergency-btn" data-contact="police">
+              <i class="fas fa-shield-alt"></i>
+              <span>Police</span>
+            </button>
+            <button class="emergency-btn" data-contact="ambulance">
+              <i class="fas fa-ambulance"></i>
+              <span>Ambulance</span>
+            </button>
+            <button class="emergency-btn" data-contact="fire">
+              <i class="fas fa-fire-extinguisher"></i>
+              <span>Fire Dept</span>
+            </button>
+            <button class="emergency-btn" data-contact="emergency">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>Emergency</span>
+            </button>
+          </div>
         </div>
 
         <div class="quick-actions">
@@ -1383,15 +1594,25 @@
       
       async init() {
         console.log("Initializing HyperApp with Supabase...");
-        
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('hyperapp-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Update theme toggle icon
+        const themeIcon = document.querySelector('#themeToggle i');
+        if (themeIcon) {
+          themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
         // Set up auth listeners
         this.setupAuthListeners();
-        
+
         // Initialize Telegram WebApp
         if (this.tg) {
           this.tg.expand();
           this.tg.MainButton.hide();
-          
+
           // Get user data
           const user = this.tg.initDataUnsafe.user;
           if (user) {
@@ -1400,27 +1621,27 @@
             await this.syncUserWithSupabase();
             this.updateUserInfo();
           }
-          
+
           // Try to get user location
           this.requestUserLocation();
-          
+
           // Set up event listeners
           this.setupEventListeners();
-          
+
           // Update connection status
           this.updateConnectionStatus(true);
         } else {
           console.log("Not in Telegram environment");
           this.updateConnectionStatus(false);
           this.showNotification("Running in standalone mode", "info");
-          
+
           // For testing without Telegram, show auth modal
           this.showAuthModal();
         }
-        
+
         // Load initial data
         await this.loadInitialData();
-        
+
         // Make app instance globally available
         window.hyperApp = this;
       }
@@ -2985,6 +3206,143 @@
             this.showReportModal();
           }
         });
+
+        // Filter buttons
+        document.addEventListener('click', (e) => {
+          const filterBtn = e.target.closest('.filter-btn');
+          if (filterBtn) {
+            const filter = filterBtn.dataset.filter;
+            this.filterReports(filter);
+          }
+        });
+
+        // Emergency contact buttons
+        document.addEventListener('click', (e) => {
+          const emergencyBtn = e.target.closest('.emergency-btn');
+          if (emergencyBtn && emergencyBtn.dataset.contact) {
+            const contact = emergencyBtn.dataset.contact;
+            this.callEmergency(contact);
+          }
+        });
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+          themeToggle.addEventListener('click', () => {
+            this.toggleTheme();
+          });
+        }
+
+        // Setup offline indicator
+        this.setupOfflineIndicator();
+      }
+
+      filterReports(filterType) {
+        // Update active filter button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        document.querySelector(`[data-filter="${filterType}"]`).classList.add('active');
+
+        // Filter reports
+        const container = document.getElementById('nearbyReports');
+        const reports = container.querySelectorAll('.report-item');
+
+        reports.forEach(report => {
+          const reportId = report.dataset.id;
+          const reportData = this.nearbyReports.find(r => r.id == reportId);
+
+          if (!reportData) return;
+
+          if (filterType === 'all') {
+            report.style.display = 'block';
+          } else if (filterType === 'dangerous') {
+            report.style.display = reportData.vibe_type === 'dangerous' ? 'block' : 'none';
+          } else {
+            report.style.display = reportData.vibe_type === filterType ? 'block' : 'none';
+          }
+        });
+
+        // Update stats
+        this.updateStats();
+      }
+
+      toggleTheme() {
+        const root = document.documentElement;
+        const currentTheme = root.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        root.setAttribute('data-theme', newTheme);
+
+        // Update theme toggle icon
+        const themeIcon = document.querySelector('#themeToggle i');
+        if (themeIcon) {
+          themeIcon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        // Save theme preference
+        localStorage.setItem('hyperapp-theme', newTheme);
+
+        this.showNotification(`Switched to ${newTheme} theme`, 'info');
+      }
+
+      updateStats() {
+        const totalReports = this.nearbyReports.length;
+        const activeUsers = Math.max(1, Math.floor(totalReports / 3)); // Estimate based on reports
+
+        document.getElementById('totalReports').textContent = totalReports;
+        document.getElementById('activeUsers').textContent = activeUsers;
+      }
+
+      callEmergency(contactType) {
+        const emergencyNumbers = {
+          police: '122',
+          ambulance: '123',
+          fire: '180',
+          emergency: '112'
+        };
+
+        const number = emergencyNumbers[contactType];
+        if (!number) return;
+
+        // Try to call directly (works on mobile)
+        window.location.href = `tel:${number}`;
+
+        // Show confirmation
+        this.showNotification(`Calling emergency services (${number})`, 'warning');
+      }
+
+      setupOfflineIndicator() {
+        // Check online status
+        const updateOnlineStatus = () => {
+          const isOnline = navigator.onLine;
+          const indicator = document.querySelector('.offline-indicator') || this.createOfflineIndicator();
+
+          if (isOnline) {
+            indicator.classList.add('online');
+            indicator.classList.remove('offline-indicator'); // Hide when online
+            indicator.style.display = 'none';
+          } else {
+            indicator.classList.remove('online');
+            indicator.classList.add('offline-indicator');
+            indicator.style.display = 'block';
+            indicator.textContent = 'You are offline - reports will be cached';
+          }
+        };
+
+        // Listen for online/offline events
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Initial check
+        updateOnlineStatus();
+      }
+
+      createOfflineIndicator() {
+        const indicator = document.createElement('div');
+        indicator.className = 'offline-indicator';
+        document.body.appendChild(indicator);
+        return indicator;
       }
     }
 
