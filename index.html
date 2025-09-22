@@ -6024,16 +6024,16 @@
           <div class="card">
             <div class="card-title">
               <i class="fas fa-map-marker-alt"></i>
-              <span data-en="Local Area Vibe (1km radius)" data-ar="حالة المنطقة المحلية (نصف قطر 1 كم)">Local Area Vibe (1km radius)</span>
+              <span data-en="Local Area Vibe (${localStats.radius}km radius)" data-ar="حالة المنطقة المحلية (نصف قطر ${localStats.radius} كم)">Local Area Vibe (${localStats.radius}km radius)</span>
             </div>
             <div class="local-area-stats">
               <div class="local-vibe-display">
-                <div class="local-vibe-icon" style="background: ${this.getVibeColor(localStats.dominantVibe)}">
-                  <i class="${this.getVibeIcon(localStats.dominantVibe)}"></i>
+                <div class="local-vibe-icon" style="background: ${localStats.dominantVibe ? this.getVibeColor(localStats.dominantVibe) : '#ccc'}">
+                  <i class="${localStats.dominantVibe ? this.getVibeIcon(localStats.dominantVibe) : 'fas fa-question-circle'}"></i>
                 </div>
                 <div class="local-vibe-info">
-                  <div class="local-vibe-name">${this.capitalizeFirstLetter(localStats.dominantVibe)}</div>
-                  <div class="local-vibe-percentage">${localStats.percentage}%</div>
+                  <div class="local-vibe-name">${localStats.dominantVibe ? this.capitalizeFirstLetter(localStats.dominantVibe) : 'No Data'}</div>
+                  <div class="local-vibe-percentage">${localStats.dominantVibe ? localStats.percentage + '%' : ''}</div>
                   <div class="local-vibe-count">${localStats.totalLocalReports} reports in area</div>
                 </div>
               </div>
@@ -6095,12 +6095,13 @@
       }
 
       calculateLocalAreaStats(stats) {
-        // Calculate stats for reports within 1km of user location
+        // Calculate stats for reports within expanding radius of user location
         const localStats = {
           totalLocalReports: 0,
           vibeDistribution: {},
-          dominantVibe: 'calm',
-          percentage: 0
+          dominantVibe: null,
+          percentage: 0,
+          radius: 1
         };
 
         if (!this.userLocation || !stats.reports) {
@@ -6110,16 +6111,28 @@
         const userLat = this.userLocation.latitude;
         const userLng = this.userLocation.longitude;
 
-        // Filter reports within 1km radius
-        stats.reports.forEach(report => {
-          if (report.latitude && report.longitude) {
-            const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
-            if (distance <= 1) { // Within 1km
-              localStats.totalLocalReports++;
-              localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
+        // Try expanding radii until we find reports
+        const radii = [1, 5, 10, 25, 50];
+
+        for (const radius of radii) {
+          localStats.totalLocalReports = 0;
+          localStats.vibeDistribution = {};
+          localStats.radius = radius;
+
+          stats.reports.forEach(report => {
+            if (report.latitude && report.longitude) {
+              const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
+              if (distance <= radius) {
+                localStats.totalLocalReports++;
+                localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
+              }
             }
+          });
+
+          if (localStats.totalLocalReports > 0) {
+            break; // Found reports, use this radius
           }
-        });
+        }
 
         // Find dominant vibe
         let maxCount = 0;
