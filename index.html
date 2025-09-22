@@ -6423,10 +6423,8 @@
           }
 
           // Show appropriate notification based on results
-          if (successCount > 0 && errorCount === 0) {
-            this.showNotification("All data refreshed successfully", "success");
-          } else if (successCount > 0 && errorCount > 0) {
-            this.showNotification(`Data partially refreshed (${successCount} successful, ${errorCount} failed)`, "warning");
+          if (successCount > 0) {
+            this.showNotification("Data refreshed successfully", "success");
           } else {
             this.showNotification("Failed to refresh data. Please check your connection and try again.", "error");
           }
