@@ -115,6 +115,7 @@
       color: var(--text-muted);
       font-size: 14px;
       margin-bottom: 20px;
+      font-weight: 500;
     }
 
     .language-switcher {
@@ -1279,6 +1280,440 @@
       font-size: 10px;
     }
 
+    /* Action Buttons Section */
+    .action-buttons-section {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 20px 0;
+      padding: 0 4px;
+    }
+
+    .action-buttons-section .action-btn {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-buttons-section .action-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .action-buttons-section .action-btn:hover::before {
+      left: 100%;
+    }
+
+    .action-buttons-section .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .action-buttons-section .action-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    }
+
+    .action-buttons-section .action-btn.secondary {
+      background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+    }
+
+    .action-buttons-section .action-btn.emergency {
+      background: linear-gradient(135deg, var(--danger), #c82333);
+    }
+
+    .action-buttons-section .action-btn i {
+      font-size: 18px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .action-buttons-section .action-btn span {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+    }
+
+    /* Safety Hub Styles */
+    .safety-hub {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .weather-alert {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(23, 162, 184, 0.1);
+      border: 1px solid rgba(23, 162, 184, 0.3);
+      border-radius: 10px;
+      padding: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .weather-alert i {
+      font-size: 24px;
+      color: var(--info);
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      color: var(--info);
+      margin-bottom: 2px;
+    }
+
+    .alert-message {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .safety-guidelines {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .guideline-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .guideline-item:last-child {
+      border-bottom: none;
+    }
+
+    .guideline-item i {
+      font-size: 16px;
+      color: var(--success);
+      min-width: 16px;
+      text-align: center;
+    }
+
+    .guideline-item span {
+      font-size: 13px;
+      color: var(--text-light);
+    }
+
+    /* Vibe Categories Styles */
+    .vibe-categories {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .vibe-category-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .vibe-category-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .category-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .vibe-category-card[data-vibe="crowded"] .category-icon {
+      background: rgba(255, 165, 0, 0.2);
+      color: #FFA500;
+    }
+
+    .vibe-category-card[data-vibe="noisy"] .category-icon {
+      background: rgba(255, 107, 53, 0.2);
+      color: #FF6B35;
+    }
+
+    .vibe-category-card[data-vibe="festive"] .category-icon {
+      background: rgba(40, 167, 69, 0.2);
+      color: #28A745;
+    }
+
+    .vibe-category-card[data-vibe="calm"] .category-icon {
+      background: rgba(23, 162, 184, 0.2);
+      color: #17A2B8;
+    }
+
+    .vibe-category-card[data-vibe="suspicious"] .category-icon {
+      background: rgba(255, 193, 7, 0.2);
+      color: #FFC107;
+    }
+
+    .vibe-category-card[data-vibe="dangerous"] .category-icon {
+      background: rgba(220, 53, 69, 0.2);
+      color: #DC3545;
+    }
+
+    .category-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .category-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .category-count {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    /* Pulsing Map Icons */
+    @keyframes pulse-map {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+      }
+    }
+
+    .map-point {
+      animation: pulse-map 2s infinite ease-in-out;
+    }
+
+    .map-point[data-vibe="dangerous"] {
+      animation-duration: 1.5s;
+      animation-timing-function: ease-in-out;
+    }
+
+    .map-point[data-vibe="suspicious"] {
+      animation-duration: 2.5s;
+    }
+
+    /* Mobile Responsiveness Fixes */
+    @media (max-width: 768px) {
+      .container {
+        padding: 12px;
+      }
+
+      .language-switcher {
+        right: 50px;
+        z-index: 10;
+      }
+
+      .theme-toggle {
+        right: 10px;
+        z-index: 5;
+      }
+
+      .header {
+        padding: 12px 0;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .subtitle {
+        font-size: 12px;
+      }
+
+      .card {
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .reports-container {
+        max-height: 250px;
+      }
+
+      .report-item {
+        padding: 10px;
+      }
+
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin: 16px 0;
+      }
+
+      .action-btn {
+        padding: 12px 8px;
+        font-size: 12px;
+      }
+
+      .action-btn i {
+        margin-bottom: 3px;
+        font-size: 16px;
+      }
+
+      .nav-btn i {
+        font-size: 16px;
+      }
+
+      .status-bar {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .filter-controls {
+        gap: 6px;
+        margin: 8px 0;
+      }
+
+      .filter-btn {
+        padding: 4px 8px;
+        font-size: 11px;
+      }
+
+      .emergency-contacts {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+
+      .emergency-btn {
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      .emergency-btn i {
+        font-size: 16px;
+        margin-bottom: 2px;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        font-size: 13px;
+      }
+
+      .modal-content {
+        width: 95%;
+        max-width: none;
+        margin: 2% auto;
+      }
+
+      .modal-body {
+        padding: 16px;
+      }
+
+      .vibe-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .vibe-option {
+        padding: 10px 6px;
+        font-size: 11px;
+      }
+
+      .vibe-option i {
+        font-size: 16px;
+        margin-bottom: 3px;
+      }
+
+      .map-legend {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        padding: 10px;
+      }
+
+      .legend-item {
+        font-size: 10px;
+      }
+
+      .legend-item i {
+        font-size: 11px;
+        min-width: 11px;
+      }
+
+      .notification {
+        bottom: 70px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        font-size: 13px;
+      }
+
+      .stats-grid {
+        gap: 8px;
+      }
+
+      .stat-card {
+        padding: 10px;
+      }
+
+      .stat-number {
+        font-size: 20px;
+      }
+
+      .stat-label {
+        font-size: 11px;
+      }
+    }
+
+    /* Force display for mobile views */
+    @media (max-width: 480px) {
+      #mainView,
+      #mapView,
+      #reportsView,
+      #settingsView {
+        display: none;
+      }
+
+      #mainView.active,
+      #mapView.active,
+      #reportsView.active,
+      #settingsView.active {
+        display: block !important;
+      }
+
+      .view.active {
+        display: block !important;
+      }
+    }
+
 
   </style>
 </head>
@@ -1341,8 +1776,8 @@
         <i class="fas fa-shield-alt"></i>
       </div>
       <h1>HyperApp</h1>
-      <p class="subtitle">Community-Powered Safety Reports</p>
-      
+      <p class="subtitle">Stay Safe...Stay Connected</p>
+
       <div class="language-switcher" id="languageSwitcher">
         <i class="fas fa-globe"></i> <span id="currentLanguage">EN</span>
       </div>
@@ -1352,6 +1787,22 @@
         <i class="fas fa-moon"></i>
       </div>
     </header>
+
+    <!-- Action Buttons Section -->
+    <div class="action-buttons-section">
+      <div class="action-btn primary" data-action="report">
+        <i class="fas fa-plus-circle"></i>
+        <span data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</span>
+      </div>
+      <div class="action-btn secondary" data-action="areas">
+        <i class="fas fa-chart-line"></i>
+        <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
+      </div>
+      <div class="action-btn emergency" data-action="emergency">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span data-en="Emergency" data-ar="طارئ">Emergency</span>
+      </div>
+    </div>
 
     <!-- Status Bar -->
     <div class="status-bar">
@@ -1425,29 +1876,98 @@
           </div>
         </div>
 
-        <!-- Emergency Contacts -->
+        <!-- Safety Hub -->
         <div class="card">
           <div class="card-title">
-            <i class="fas fa-phone"></i>
-            <span data-en="Emergency Contacts" data-ar="جهات الاتصال الطارئة">Emergency Contacts</span>
+            <i class="fas fa-shield-alt"></i>
+            <span data-en="Safety Hub" data-ar="مركز السلامة">Safety Hub</span>
           </div>
-          <div class="emergency-contacts">
-            <button class="emergency-btn" data-contact="police">
-              <i class="fas fa-shield-alt"></i>
-              <span>Police</span>
-            </button>
-            <button class="emergency-btn" data-contact="ambulance">
-              <i class="fas fa-ambulance"></i>
-              <span>Ambulance</span>
-            </button>
-            <button class="emergency-btn" data-contact="fire">
-              <i class="fas fa-fire-extinguisher"></i>
-              <span>Fire Dept</span>
-            </button>
-            <button class="emergency-btn" data-contact="emergency">
-              <i class="fas fa-exclamation-triangle"></i>
-              <span>Emergency</span>
-            </button>
+          <div class="safety-hub">
+            <div class="weather-alert" id="weatherAlert">
+              <i class="fas fa-cloud-sun"></i>
+              <div class="alert-content">
+                <span class="alert-title" data-en="Weather Alert" data-ar="تنبيه جوي">Weather Alert</span>
+                <span class="alert-message" data-en="Stay safe during weather changes" data-ar="ابق آمناً أثناء تغيرات الطقس">Stay safe during weather changes</span>
+              </div>
+            </div>
+            <div class="safety-guidelines">
+              <div class="guideline-item">
+                <i class="fas fa-users"></i>
+                <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
+              </div>
+              <div class="guideline-item">
+                <i class="fas fa-mobile-alt"></i>
+                <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
+              </div>
+              <div class="guideline-item">
+                <i class="fas fa-share-alt"></i>
+                <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vibe Categories -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-chart-pie"></i>
+            <span data-en="Vibe Categories" data-ar="فئات الحالات">Vibe Categories</span>
+          </div>
+          <div class="vibe-categories" id="vibeCategories">
+            <div class="vibe-category-card" data-vibe="crowded">
+              <div class="category-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="category-info">
+                <span class="category-name" data-en="Crowded" data-ar="مزدحم">Crowded</span>
+                <span class="category-count" id="crowdedCount">0</span>
+              </div>
+            </div>
+            <div class="vibe-category-card" data-vibe="noisy">
+              <div class="category-icon">
+                <i class="fas fa-volume-up"></i>
+              </div>
+              <div class="category-info">
+                <span class="category-name" data-en="Noisy" data-ar="صاخب">Noisy</span>
+                <span class="category-count" id="noisyCount">0</span>
+              </div>
+            </div>
+            <div class="vibe-category-card" data-vibe="festive">
+              <div class="category-icon">
+                <i class="fas fa-glass-cheers"></i>
+              </div>
+              <div class="category-info">
+                <span class="category-name" data-en="Festive" data-ar="احتفالي">Festive</span>
+                <span class="category-count" id="festiveCount">0</span>
+              </div>
+            </div>
+            <div class="vibe-category-card" data-vibe="calm">
+              <div class="category-icon">
+                <i class="fas fa-peace"></i>
+              </div>
+              <div class="category-info">
+                <span class="category-name" data-en="Calm" data-ar="هادئ">Calm</span>
+                <span class="category-count" id="calmCount">0</span>
+              </div>
+            </div>
+            <div class="vibe-category-card" data-vibe="suspicious">
+              <div class="category-icon">
+                <i class="fas fa-eye-slash"></i>
+              </div>
+              <div class="category-info">
+                <span class="category-name" data-en="Suspicious" data-ar="مشبوه">Suspicious</span>
+                <span class="category-count" id="suspiciousCount">0</span>
+              </div>
+            </div>
+            <div class="vibe-category-card" data-vibe="dangerous">
+              <div class="category-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="category-info">
+                <span class="category-name" data-en="Dangerous" data-ar="خطير">Dangerous</span>
+                <span class="category-count" id="dangerousCount">0</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -3302,6 +3822,15 @@
           });
         }
 
+        // Vibe category cards click handler
+        document.addEventListener('click', (e) => {
+          const vibeCard = e.target.closest('.vibe-category-card');
+          if (vibeCard) {
+            const vibeType = vibeCard.dataset.vibe;
+            this.showVibeCategoryReports(vibeType);
+          }
+        });
+
         // Setup offline indicator
         this.setupOfflineIndicator();
       }
@@ -3361,6 +3890,109 @@
 
         document.getElementById('totalReports').textContent = totalReports;
         document.getElementById('activeUsers').textContent = activeUsers;
+
+        // Update vibe category counts
+        this.updateVibeCategories();
+      }
+
+      updateVibeCategories() {
+        // Count reports by vibe type
+        const vibeCounts = {
+          crowded: 0,
+          noisy: 0,
+          festive: 0,
+          calm: 0,
+          suspicious: 0,
+          dangerous: 0
+        };
+
+        this.nearbyReports.forEach(report => {
+          if (vibeCounts.hasOwnProperty(report.vibe_type)) {
+            vibeCounts[report.vibe_type]++;
+          }
+        });
+
+        // Update the UI
+        Object.keys(vibeCounts).forEach(vibe => {
+          const countElement = document.getElementById(vibe + 'Count');
+          if (countElement) {
+            countElement.textContent = vibeCounts[vibe];
+          }
+        });
+      }
+
+      showVibeCategoryReports(vibeType) {
+        // Filter reports by vibe type
+        const filteredReports = this.nearbyReports.filter(report => report.vibe_type === vibeType);
+
+        // Create modal content
+        const modalContent = `
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 data-en="${this.capitalizeFirstLetter(vibeType)} Reports" data-ar="تقارير ${this.getVibeArabicName(vibeType)}">
+                ${this.capitalizeFirstLetter(vibeType)} Reports
+              </h2>
+              <span class="close" data-dismiss="vibeCategoryModal">&times;</span>
+            </div>
+            <div class="modal-body">
+              <p data-en="Showing ${filteredReports.length} ${vibeType} report${filteredReports.length !== 1 ? 's' : ''}" data-ar="عرض ${filteredReports.length} تقرير ${this.getVibeArabicName(vibeType)}">
+                Showing ${filteredReports.length} ${vibeType} report${filteredReports.length !== 1 ? 's' : ''}
+              </p>
+              <div class="reports-container">
+                ${filteredReports.length > 0 ? filteredReports.map(report => `
+                  <div class="report-item">
+                    <div class="report-info">
+                      <div class="report-type">
+                        <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                        <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                          ${this.capitalizeFirstLetter(report.vibe_type)}
+                        </span>
+                      </div>
+                      <div class="report-details">${report.notes || ''}</div>
+                      <div class="report-meta">
+                        <span>${report.location || 'Unknown location'}</span>
+                        <span>${this.formatTimeAgo(report.created_at)}</span>
+                      </div>
+                    </div>
+                    <div class="report-actions">
+                      <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}" data-report-id="${report.id}" data-vote-type="upvote" ${!this.isAuthenticated ? 'aria-disabled="true" title="Login to vote"' : ''}>
+                        <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
+                      </button>
+                      <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}" data-report-id="${report.id}" data-vote-type="downvote" ${!this.isAuthenticated ? 'aria-disabled="true" title="Login to vote"' : ''}>
+                        <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
+                      </button>
+                    </div>
+                  </div>
+                `).join('') : `
+                  <div class="no-data" data-en="No ${vibeType} reports found" data-ar="لم يتم العثور على تقارير ${this.getVibeArabicName(vibeType)}">
+                    No ${vibeType} reports found
+                  </div>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Create or update modal
+        let modal = document.getElementById('vibeCategoryModal');
+        if (!modal) {
+          modal = document.createElement('div');
+          modal.id = 'vibeCategoryModal';
+          modal.className = 'modal';
+          document.body.appendChild(modal);
+        }
+        modal.innerHTML = modalContent;
+        modal.style.display = 'block';
+
+        // Attach close button event listener
+        const closeBtn = modal.querySelector('.close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            this.closeModal('vibeCategoryModal');
+          });
+        }
+
+        this.updateTextDirection();
       }
 
       callEmergency(contactType) {
