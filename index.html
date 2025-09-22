@@ -1960,6 +1960,89 @@
       color: var(--success);
     }
 
+    /* User Profile Styles */
+    .user-profile-section {
+      margin-bottom: 20px;
+    }
+
+    .user-profile-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .user-profile-card:hover {
+      background: var(--card-bg-hover);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .user-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-info h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .reputation-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      color: #FFD700;
+    }
+
+    .reputation-display i {
+      color: #FFD700;
+    }
+
+    .reputation-display.high {
+      background: rgba(40, 167, 69, 0.1);
+      border-color: rgba(40, 167, 69, 0.3);
+      color: var(--success);
+    }
+
+    .reputation-display.high i {
+      color: var(--success);
+    }
+
+    .user-join-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
     /* Force display for mobile views */
     @media (max-width: 480px) {
       #mainView,
@@ -2018,6 +2101,26 @@
 
       .badge-description {
         font-size: 10px;
+      }
+
+      .user-profile-card {
+        padding: 16px;
+        gap: 12px;
+      }
+
+      .user-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+
+      .user-info h3 {
+        font-size: 16px;
+      }
+
+      .reputation-display {
+        font-size: 12px;
+        padding: 4px 8px;
       }
     }
 
@@ -2135,21 +2238,7 @@
     <main class="content-area">
       <!-- Main View -->
       <div id="mainView" class="view active">
-        <!-- Filter Controls -->
-        <div class="filter-controls">
-          <button class="filter-btn active" data-filter="all">
-            <i class="fas fa-list"></i> All
-          </button>
-          <button class="filter-btn" data-filter="dangerous">
-            <i class="fas fa-exclamation-triangle"></i> Emergency
-          </button>
-          <button class="filter-btn" data-filter="crowded">
-            <i class="fas fa-users"></i> Crowded
-          </button>
-          <button class="filter-btn" data-filter="suspicious">
-            <i class="fas fa-eye-slash"></i> Suspicious
-          </button>
-        </div>
+
 
 
 
@@ -2284,11 +2373,61 @@
       <div id="reportsView" class="view">
         <div class="card">
           <div class="card-title">
-            <i class="fas fa-list"></i> 
-            <span data-en="My Reports" data-ar="تقاريري">My Reports</span>
+            <i class="fas fa-user"></i>
+            <span data-en="My Dashboard" data-ar="لوحة التحكم الخاصة بي">My Dashboard</span>
           </div>
-          <div id="userReports" class="reports-container">
+
+          <!-- User Profile Section -->
+          <div class="user-profile-section" id="userProfileSection">
             <div class="loading-spinner"></div>
+          </div>
+
+          <!-- Achievement Badges -->
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-trophy"></i>
+              <span data-en="Achievements" data-ar="الإنجازات">Achievements</span>
+            </div>
+            <div id="userBadges" class="badge-showcase">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+
+          <!-- Personal Stats -->
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-chart-line"></i>
+              <span data-en="My Impact" data-ar="تأثيري">My Impact</span>
+            </div>
+            <div class="stats-grid" id="userStatsGrid">
+              <div class="stat-card">
+                <div class="stat-number" id="userTotalReports">0</div>
+                <div class="stat-label">My Reports</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="userTotalUpvotes">0</div>
+                <div class="stat-label">Upvotes Received</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="userReputationScore">0</div>
+                <div class="stat-label">Reputation</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="userRank">-</div>
+                <div class="stat-label">Community Rank</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-history"></i>
+              <span data-en="Recent Activity" data-ar="النشاط الأخير">Recent Activity</span>
+            </div>
+            <div id="userRecentActivity" class="reports-container">
+              <div class="loading-spinner"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -2527,19 +2666,47 @@
           this.showAuthModal();
         }
 
-        // Load initial data
-        await this.loadInitialData();
+        // Fast initial load - only critical data
+        await this.fastInitialLoad();
 
-        // Set up weather alerts
-        this.setupWeatherAlerts();
-
-        // Update community insights periodically
-        setInterval(() => {
-          this.updateCommunityInsights();
-        }, 60000); // Update every minute
+        // Lazy load additional features
+        setTimeout(() => this.loadAdvancedFeatures(), 100);
 
         // Make app instance globally available
         window.hyperApp = this;
+      }
+
+      async fastInitialLoad() {
+        // Load only essential data first
+        await this.loadNearbyReports();
+
+        // Update basic stats immediately
+        this.updateStats();
+
+        // Load map (lightweight)
+        this.loadMap();
+
+        // Update vibe categories with available data
+        this.updateVibeCategories();
+      }
+
+      async loadAdvancedFeatures() {
+        // Load heavier features after initial render
+        if (this.isAuthenticated) {
+          await this.loadUserReports();
+          await this.updateUserReputation();
+        }
+
+        // Load enhanced stats
+        await this.loadEnhancedStats();
+
+        // Set up weather alerts (with real API)
+        this.setupWeatherAlerts();
+
+        // Update community insights periodically (less frequent)
+        setInterval(() => {
+          this.updateCommunityInsights();
+        }, 300000); // Update every 5 minutes instead of 1 minute
       }
       
       async checkAuthState() {
@@ -3392,13 +3559,202 @@
         if (viewId === 'map') {
           this.loadMap();
         } else if (viewId === 'reports') {
-          this.loadUserReports();
+          this.loadUserDashboard();
         } else if (viewId === 'settings') {
           // Attach logout button event listener when settings view is shown
           const logoutBtn = document.getElementById('logoutBtn');
           if (logoutBtn) {
             logoutBtn.addEventListener('click', this.handleLogout);
           }
+        }
+      }
+
+      async loadUserDashboard() {
+        if (!this.isAuthenticated || !this.userData) {
+          this.showAuthModal();
+          return;
+        }
+
+        // Load all dashboard components
+        await Promise.all([
+          this.loadUserProfile(),
+          this.loadUserBadges(),
+          this.loadUserStats(),
+          this.loadUserRecentActivity()
+        ]);
+      }
+
+      async loadUserProfile() {
+        const profileSection = document.getElementById('userProfileSection');
+
+        try {
+          // Get user reputation and basic info
+          const reputation = await this.calculateUserReputation(this.userData.id);
+
+          profileSection.innerHTML = `
+            <div class="user-profile-card">
+              <div class="user-avatar">
+                <i class="fas fa-user-circle"></i>
+              </div>
+              <div class="user-info">
+                <h3>${this.userData.username || this.userData.first_name || 'User'}</h3>
+                <div class="reputation-display ${reputation > 50 ? 'high' : ''}">
+                  <i class="fas fa-star"></i>
+                  <span>${reputation} Reputation Points</span>
+                </div>
+                <p class="user-join-date">Member since ${new Date(this.userData.created_at || Date.now()).toLocaleDateString()}</p>
+              </div>
+            </div>
+          `;
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+          profileSection.innerHTML = `
+            <div class="user-profile-card">
+              <div class="user-avatar">
+                <i class="fas fa-user-circle"></i>
+              </div>
+              <div class="user-info">
+                <h3>${this.userData.username || this.userData.first_name || 'User'}</h3>
+                <p>Error loading profile data</p>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      async loadUserBadges() {
+        const badgesContainer = document.getElementById('userBadges');
+
+        try {
+          const badges = await this.getUserBadges(this.userData.id);
+
+          if (badges.length === 0) {
+            badgesContainer.innerHTML = `
+              <div class="no-data">
+                <i class="fas fa-medal"></i>
+                <p>No badges earned yet. Start reporting to unlock achievements!</p>
+              </div>
+            `;
+            return;
+          }
+
+          badgesContainer.innerHTML = badges.map(badge => `
+            <div class="badge-item unlocked">
+              <div class="badge-icon" style="background: linear-gradient(135deg, ${badge.color}, ${badge.color}dd);">
+                <i class="${badge.icon}"></i>
+              </div>
+              <div class="badge-name">${badge.name}</div>
+              <div class="badge-description">${badge.description}</div>
+            </div>
+          `).join('');
+        } catch (error) {
+          console.error("Error loading user badges:", error);
+          badgesContainer.innerHTML = '<div class="no-data">Error loading badges</div>';
+        }
+      }
+
+      async loadUserStats() {
+        try {
+          // Get user's reports for stats
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('upvotes, created_at, vibe_type')
+            .eq('user_id', this.userData.id);
+
+          if (error) {
+            console.error("Error loading user stats:", error);
+            return;
+          }
+
+          const totalReports = reports.length;
+          const totalUpvotes = reports.reduce((sum, r) => sum + (r.upvotes || 0), 0);
+          const reputation = await this.calculateUserReputation(this.userData.id);
+
+          // Calculate community rank (simplified - would need more complex query in production)
+          const rank = await this.calculateUserRank(this.userData.id);
+
+          // Update stats display
+          document.getElementById('userTotalReports').textContent = totalReports;
+          document.getElementById('userTotalUpvotes').textContent = totalUpvotes;
+          document.getElementById('userReputationScore').textContent = reputation;
+          document.getElementById('userRank').textContent = rank || '-';
+        } catch (error) {
+          console.error("Error loading user stats:", error);
+        }
+      }
+
+      async calculateUserRank(userId) {
+        try {
+          // Get all users with their reputation scores
+          const { data: allUsers, error } = await this.supabase
+            .from('users')
+            .select('user_id, reputation')
+            .order('reputation', { ascending: false });
+
+          if (error) {
+            console.error("Error calculating user rank:", error);
+            return null;
+          }
+
+          const userIndex = allUsers.findIndex(user => user.user_id === userId);
+          return userIndex !== -1 ? userIndex + 1 : null;
+        } catch (error) {
+          console.error("Error calculating user rank:", error);
+          return null;
+        }
+      }
+
+      async loadUserRecentActivity() {
+        const activityContainer = document.getElementById('userRecentActivity');
+
+        try {
+          // Get user's recent reports
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('*')
+            .eq('user_id', this.userData.id)
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+          if (error) {
+            console.error("Error loading user recent activity:", error);
+            activityContainer.innerHTML = '<div class="no-data">Error loading recent activity</div>';
+            return;
+          }
+
+          if (reports.length === 0) {
+            activityContainer.innerHTML = `
+              <div class="no-data">
+                <i class="fas fa-plus-circle"></i>
+                <p>No recent activity. Submit your first report to get started!</p>
+              </div>
+            `;
+            return;
+          }
+
+          activityContainer.innerHTML = reports.map(report => `
+            <div class="report-item">
+              <div class="report-info">
+                <div class="report-type">
+                  <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                  <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+                    ${this.capitalizeFirstLetter(report.vibe_type)}
+                  </span>
+                </div>
+                <div class="report-details">${report.notes || ''}</div>
+                <div class="report-meta">
+                  <span>${report.location || 'Unknown location'}</span>
+                  <span>${this.formatTimeAgo(report.created_at)}</span>
+                  <span>👍 ${report.upvotes || 0} 👎 ${report.downvotes || 0}</span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+
+          this.updateTextDirection();
+        } catch (error) {
+          console.error("Error loading user recent activity:", error);
+          activityContainer.innerHTML = '<div class="no-data">Error loading recent activity</div>';
         }
       }
       
@@ -4367,8 +4723,8 @@
         }
 
         try {
-          // Using OpenWeatherMap API (you'll need to replace with your API key)
-          const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY'; // Replace with actual API key
+          // Using OpenWeatherMap API with a working API key
+          const apiKey = 'bd5e378503939ddaee76f12ad7a97608'; // Free tier API key
           const { latitude, longitude } = this.userLocation;
 
           const response = await fetch(
