@@ -2552,6 +2552,11 @@
         <i class="fas fa-star"></i>
         <span data-en="Rep:" data-ar="النقاط:">Rep:</span> <span id="userReputation">0</span>
       </div>
+      <div class="status-item">
+        <button id="refreshBtn" class="refresh-btn" title="Refresh data">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Main Navigation -->
@@ -2971,6 +2976,14 @@
           themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
         }
 
+        // Force fresh data load on page refresh (not just navigation)
+        const navigationType = performance.getEntriesByType('navigation')[0]?.type;
+        if (navigationType === 'reload') {
+          // Clear any cached data that might interfere
+          this.forceFreshDataLoad = true;
+          console.log('Page refresh detected - forcing fresh data load');
+        }
+
         // Load weather data immediately (don't wait for location)
         this.loadWeatherData();
 
@@ -3361,7 +3374,7 @@
         this.loadMap();
       }
       
-      async loadNearbyReports(retryCount = 0) {
+      async loadNearbyReports(retryCount = 0, force = false) {
         const maxRetries = 3;
 
         try {
@@ -3369,16 +3382,24 @@
           const container = document.getElementById('nearbyReports');
           if (!container) return;
 
-          // Only show loading spinner on first load, not on retries
-          if (retryCount === 0) {
+          // Always show loading spinner on initial load or when forced refresh (not retries)
+          if (retryCount === 0 || force) {
             container.innerHTML = '<div class="loading-spinner"></div>';
           }
 
-          const { data: reports, error } = await this.supabase
+          // Force fresh data by adding cache-busting when force is true
+          let query = this.supabase
             .from('reports')
             .select(`id, vibe_type, location, notes, created_at, upvotes, downvotes, latitude, longitude, votes (user_id, vote_type)`)
             .order('created_at', { ascending: false })
             .limit(20);
+
+          // Add cache-busting for forced refresh
+          if (force) {
+            query = query.select(`id, vibe_type, location, notes, created_at, upvotes, downvotes, latitude, longitude, votes (user_id, vote_type), ${Date.now()} as cache_bust`, { count: 'exact' });
+          }
+
+          const { data: reports, error } = await query;
 
           if (error) {
             // Enhanced error handling with specific messages
@@ -4756,9 +4777,13 @@
         }
         
         // Refresh button
-        const refreshBtn = document.getElementById('refreshReports');
+        const refreshBtn = document.getElementById('refreshBtn');
         if (refreshBtn) {
-          refreshBtn.addEventListener('click', this.loadNearbyReports);
+          refreshBtn.addEventListener('click', () => {
+            // Force fresh data load
+            this.loadNearbyReports(0, true);
+            this.showNotification("Refreshing data...", "info");
+          });
         }
         
         // Quick action buttons
