@@ -1047,7 +1047,7 @@
 
     .notification {
       position: fixed;
-      bottom: 90px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--card-bg);
@@ -1058,7 +1058,7 @@
       z-index: 10000;
       max-width: calc(100vw - 40px);
       min-width: 300px;
-      animation: slideInUp 0.3s;
+      animation: slideInDown 0.3s;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -1797,11 +1797,12 @@
       }
 
       .notification {
-        bottom: 70px;
+        top: 20px;
         left: 10px;
         right: 10px;
         max-width: none;
         font-size: 13px;
+        transform: none;
       }
 
       .stats-grid {
@@ -4913,10 +4914,27 @@
         return indicator;
       }
 
-      async loadWeatherData() {
+      async loadWeatherData(force = false) {
         if (!this.userLocation) {
           console.log("No user location available for weather data");
           return;
+        }
+
+        // Check if we have cached weather data that's less than 30 minutes old
+        const cachedWeather = localStorage.getItem('hyperapp_weather_data');
+        const cachedTime = localStorage.getItem('hyperapp_weather_time');
+
+        if (!force && cachedWeather && cachedTime) {
+          const age = Date.now() - parseInt(cachedTime);
+          if (age < 1800000) { // 30 minutes
+            try {
+              const weatherData = JSON.parse(cachedWeather);
+              this.updateWeatherAlert(weatherData);
+              return;
+            } catch (e) {
+              console.log("Invalid cached weather data");
+            }
+          }
         }
 
         try {
@@ -4933,6 +4951,11 @@
           }
 
           const weatherData = await response.json();
+
+          // Cache the weather data
+          localStorage.setItem('hyperapp_weather_data', JSON.stringify(weatherData));
+          localStorage.setItem('hyperapp_weather_time', Date.now().toString());
+
           this.updateWeatherAlert(weatherData);
         } catch (error) {
           console.error("Error loading weather data:", error);
@@ -4999,8 +5022,14 @@
       }
 
       updateSafetyHub() {
-        // Load weather data
-        this.loadWeatherData();
+        // Only load weather data if we haven't loaded it recently (every 30 minutes)
+        const lastWeatherUpdate = localStorage.getItem('hyperapp_last_weather_update');
+        const now = Date.now();
+
+        if (!lastWeatherUpdate || (now - parseInt(lastWeatherUpdate)) > 1800000) { // 30 minutes
+          this.loadWeatherData();
+          localStorage.setItem('hyperapp_last_weather_update', now.toString());
+        }
 
         // Generate dynamic safety tips based on recent reports
         this.generateDynamicSafetyTips();
@@ -5579,7 +5608,7 @@
         if (!this.userLocation) return;
 
         try {
-          const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
+          const apiKey = 'bd5e378503939ddaee76f12ad7a97608'; // Working API key
           const { latitude, longitude } = this.userLocation;
 
           const response = await fetch(
@@ -5710,10 +5739,11 @@
           this.nearbyReports = this.nearbyReports.slice(0, 20);
         }
 
-        // Update the UI
+        // Update all UI components that depend on report data
         this.displayNearbyReports();
         this.updateStats();
         this.updateVibeCategories();
+        this.updateSafetyHub(); // Update safety tips based on new reports
 
         // Update map if it's currently visible
         if (document.getElementById('mapView').classList.contains('active')) {
