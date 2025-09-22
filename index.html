@@ -2182,6 +2182,147 @@
       margin-top: 4px;
     }
 
+    /* Local Area Stats Styles */
+    .local-area-stats {
+      padding: 20px 0;
+    }
+
+    .local-vibe-display {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .local-vibe-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .local-vibe-info {
+      flex: 1;
+    }
+
+    .local-vibe-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+
+    .local-vibe-percentage {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+
+    .local-vibe-count {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Vibe Sidebars Chart Styles */
+    .vibe-sidebars-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px 0;
+    }
+
+    .vibe-sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .vibe-sidebar-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateX(4px);
+    }
+
+    .vibe-sidebar-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 120px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .vibe-sidebar-label i {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .vibe-sidebar-bar {
+      flex: 1;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .vibe-sidebar-fill {
+      height: 100%;
+      border-radius: 12px;
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .vibe-sidebar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      animation: sidebar-shimmer 3s infinite;
+    }
+
+    @keyframes sidebar-shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .vibe-sidebar-count {
+      min-width: 40px;
+      text-align: right;
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .vibe-sidebar-percentage {
+      min-width: 50px;
+      text-align: right;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
     /* Force display for mobile views */
     @media (max-width: 480px) {
       #mainView,
@@ -2260,6 +2401,54 @@
       .reputation-display {
         font-size: 12px;
         padding: 4px 8px;
+      }
+
+      .local-vibe-display {
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .local-vibe-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+
+      .local-vibe-name {
+        font-size: 18px;
+      }
+
+      .local-vibe-percentage {
+        font-size: 24px;
+      }
+
+      .vibe-sidebar-item {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+
+      .vibe-sidebar-label {
+        min-width: 100px;
+        font-size: 14px;
+      }
+
+      .vibe-sidebar-label i {
+        font-size: 14px;
+        width: 18px;
+      }
+
+      .vibe-sidebar-bar {
+        height: 20px;
+      }
+
+      .vibe-sidebar-count {
+        min-width: 35px;
+        font-size: 14px;
+      }
+
+      .vibe-sidebar-percentage {
+        min-width: 45px;
+        font-size: 12px;
       }
     }
 
@@ -5641,6 +5830,9 @@
         // Update existing stats
         document.getElementById('totalReports').textContent = stats.totalReports;
 
+        // Calculate local area stats (within 1km of user location)
+        const localStats = this.calculateLocalAreaStats(stats);
+
         // Always show enhanced stats display (responsive for mobile)
         const isMobile = window.innerWidth <= 768;
 
@@ -5666,19 +5858,47 @@
 
           <div class="card">
             <div class="card-title">
-              <i class="fas fa-chart-bar"></i>
-              <span data-en="Vibe Distribution" data-ar="توزيع الحالات">Vibe Distribution</span>
+              <i class="fas fa-map-marker-alt"></i>
+              <span data-en="Local Area Vibe (1km radius)" data-ar="حالة المنطقة المحلية (نصف قطر 1 كم)">Local Area Vibe (1km radius)</span>
             </div>
-            <div class="vibe-distribution-chart ${isMobile ? 'mobile' : ''}">
-              ${Object.entries(stats.vibeDistribution).map(([vibe, count]) => `
-                <div class="vibe-bar">
-                  <div class="vibe-label">${this.capitalizeFirstLetter(vibe)}</div>
-                  <div class="vibe-progress">
-                    <div class="vibe-fill" style="width: ${(count / stats.totalReports) * 100}%; background: ${this.getVibeColor(vibe)}"></div>
-                  </div>
-                  <div class="vibe-count">${count}</div>
+            <div class="local-area-stats">
+              <div class="local-vibe-display">
+                <div class="local-vibe-icon" style="background: ${this.getVibeColor(localStats.dominantVibe)}">
+                  <i class="${this.getVibeIcon(localStats.dominantVibe)}"></i>
                 </div>
-              `).join('')}
+                <div class="local-vibe-info">
+                  <div class="local-vibe-name">${this.capitalizeFirstLetter(localStats.dominantVibe)}</div>
+                  <div class="local-vibe-percentage">${localStats.percentage}%</div>
+                  <div class="local-vibe-count">${localStats.totalLocalReports} reports in area</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-chart-bar"></i>
+              <span data-en="Community Vibe Sidebars" data-ar="أشرطة حالة المجتمع">Community Vibe Sidebars</span>
+            </div>
+            <div class="vibe-sidebars-chart">
+              ${Object.entries(stats.vibeDistribution)
+                .sort(([,a], [,b]) => b - a) // Sort by count descending
+                .map(([vibe, count]) => {
+                  const percentage = stats.totalReports > 0 ? (count / stats.totalReports) * 100 : 0;
+                  return `
+                    <div class="vibe-sidebar-item">
+                      <div class="vibe-sidebar-label">
+                        <i class="${this.getVibeIcon(vibe)}"></i>
+                        <span>${this.capitalizeFirstLetter(vibe)}</span>
+                      </div>
+                      <div class="vibe-sidebar-bar">
+                        <div class="vibe-sidebar-fill" style="width: ${percentage}%; background: ${this.getVibeColor(vibe)}"></div>
+                      </div>
+                      <div class="vibe-sidebar-count">${count}</div>
+                      <div class="vibe-sidebar-percentage">${percentage.toFixed(1)}%</div>
+                    </div>
+                  `;
+                }).join('')}
             </div>
           </div>
 
@@ -5707,6 +5927,62 @@
         statsContainer.innerHTML = enhancedStatsHtml;
 
         this.updateTextDirection();
+      }
+
+      calculateLocalAreaStats(stats) {
+        // Calculate stats for reports within 1km of user location
+        const localStats = {
+          totalLocalReports: 0,
+          vibeDistribution: {},
+          dominantVibe: 'calm',
+          percentage: 0
+        };
+
+        if (!this.userLocation || !stats.reports) {
+          return localStats;
+        }
+
+        const userLat = this.userLocation.latitude;
+        const userLng = this.userLocation.longitude;
+
+        // Filter reports within 1km radius
+        stats.reports.forEach(report => {
+          if (report.latitude && report.longitude) {
+            const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
+            if (distance <= 1) { // Within 1km
+              localStats.totalLocalReports++;
+              localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
+            }
+          }
+        });
+
+        // Find dominant vibe
+        let maxCount = 0;
+        Object.entries(localStats.vibeDistribution).forEach(([vibe, count]) => {
+          if (count > maxCount) {
+            maxCount = count;
+            localStats.dominantVibe = vibe;
+          }
+        });
+
+        // Calculate percentage
+        localStats.percentage = localStats.totalLocalReports > 0
+          ? Math.round((maxCount / localStats.totalLocalReports) * 100)
+          : 0;
+
+        return localStats;
+      }
+
+      calculateDistance(lat1, lng1, lat2, lng2) {
+        // Haversine formula to calculate distance between two points
+        const R = 6371; // Earth's radius in kilometers
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
       }
 
       setupWeatherAlerts() {
