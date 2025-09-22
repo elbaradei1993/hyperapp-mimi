@@ -2955,8 +2955,6 @@
       }
       
       async init() {
-        console.log("Initializing HyperApp with Supabase...");
-
         // Load saved theme
         const savedTheme = localStorage.getItem('hyperapp-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
@@ -2996,7 +2994,6 @@
           // Update connection status
           this.updateConnectionStatus(true);
         } else {
-          console.log("Not in Telegram environment");
           this.updateConnectionStatus(false);
           this.showNotification("Running in standalone mode", "info");
 
@@ -3258,11 +3255,8 @@
       
       async syncUserWithSupabase() {
         if (!this.userData) {
-          console.error("No userData available for sync");
           return false;
         }
-
-        console.log("Syncing user with Supabase:", this.userData.id);
 
         try {
           // Check if user exists in users table
@@ -3273,12 +3267,9 @@
             .maybeSingle();
 
           if (error) {
-            console.error("Error checking user in database:", error);
-            console.error("Check error details:", JSON.stringify(error, null, 2));
             return false;
           } else if (data) {
             // Update user data with Supabase info
-            console.log("User found in database:", data);
             this.userData.reputation = data.reputation || 0;
             this.userData.language = data.language || 'en';
             this.currentLanguage = data.language || 'en';
@@ -3291,7 +3282,6 @@
             return true;
           } else {
             // User doesn't exist in users table, create a new record
-            console.log("User not found in users table, creating new record");
             const { data: newUser, error: insertError } = await this.supabase
               .from('users')
               .insert([
@@ -3306,19 +3296,14 @@
               .single();
 
             if (insertError) {
-              console.error("Error creating user in database:", insertError);
-              console.error("Insert error details:", JSON.stringify(insertError, null, 2));
               return false;
             }
 
-            console.log("User created successfully:", newUser);
             this.userData.reputation = 0;
             this.userData.language = 'en';
             return true;
           }
         } catch (error) {
-          console.error("Error syncing user with Supabase:", error);
-          console.error("Sync error details:", JSON.stringify(error, null, 2));
           return false;
         }
       }
@@ -3380,8 +3365,6 @@
             .limit(20);
 
           if (error) {
-            console.error("Error loading reports:", error);
-
             // Enhanced error handling with specific messages
             let errorMessage = this.currentLanguage === 'en' ? 'Error loading reports.' : 'خطأ في تحميل التقارير.';
             let retryText = this.currentLanguage === 'en' ? 'Tap to retry' : 'اضغط لإعادة المحاولة';
@@ -3395,7 +3378,6 @@
             // Retry on network errors with exponential backoff
             if (retryCount < maxRetries && (error.message.includes('network') || error.message.includes('fetch'))) {
               const delay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff, max 5s
-              console.log(`Retrying loadNearbyReports (${retryCount + 1}/${maxRetries}) in ${delay}ms...`);
 
               setTimeout(() => this.loadNearbyReports(retryCount + 1), delay);
               return;
@@ -3426,11 +3408,8 @@
           this.updateConnectionStatus(true);
 
         } catch (error) {
-          console.error("Error loading nearby reports:", error);
-
           if (retryCount < maxRetries) {
             const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-            console.log(`Retrying loadNearbyReports (${retryCount + 1}/${maxRetries}) in ${delay}ms...`);
             setTimeout(() => this.loadNearbyReports(retryCount + 1), delay);
             return;
           }
@@ -3495,28 +3474,26 @@
       
       async loadUserReports() {
         if (!this.userData) return;
-        
+
         try {
           document.getElementById('userReports').innerHTML = '<div class="loading-spinner"></div>';
-          
+
           const { data: reports, error } = await this.supabase
             .from('reports')
             .select('*')
             .eq('user_id', this.userData.id)
             .order('created_at', { ascending: false });
-          
+
           if (error) {
-            console.error("Error loading user reports:", error);
-            document.getElementById('userReports').innerHTML = 
+            document.getElementById('userReports').innerHTML =
               '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
             return;
           }
-          
+
           this.userReports = reports;
           this.displayUserReports();
         } catch (error) {
-          console.error("Error loading user reports:", error);
-          document.getElementById('userReports').innerHTML = 
+          document.getElementById('userReports').innerHTML =
             '<div class="no-data" data-en="Error loading your reports" data-ar="خطأ في تحميل تقاريرك">Error loading your reports</div>';
         }
       }
@@ -3787,8 +3764,6 @@
             reportData.longitude = this.userLocation.longitude;
           }
 
-          console.log("Submitting report:", reportData);
-
           const { data, error } = await this.supabase
             .from('reports')
             .insert([reportData])
@@ -3804,7 +3779,6 @@
             }
             this.showNotification(errorMessage, "error");
           } else {
-            console.log("Report submitted successfully:", data);
             this.showNotification("Report submitted successfully", "success");
             this.closeModal('reportModal');
             // Reload data to show the new report
@@ -3812,18 +3786,17 @@
             // Refresh map to show new report
             this.loadMap();
           }
-        } catch (error) {
-          console.error("Error submitting report:", error);
-          let errorMessage = "Failed to submit report";
-          if (error.message.includes('network') || error.message.includes('fetch')) {
-            errorMessage = "Network error. Please check your connection and try again.";
+          } catch (error) {
+            let errorMessage = "Unable to get your location";
+            if (error.code === 1) {
+              errorMessage = "Location access denied. Please enable location permissions in your browser settings.";
+            } else if (error.code === 2) {
+              errorMessage = "Location unavailable. Please check your GPS settings and try again.";
+            } else if (error.code === 3) {
+              errorMessage = "Location request timed out. This can happen in poor signal areas. Please try again.";
+            }
+            this.showNotification(errorMessage, "error");
           }
-          this.showNotification(errorMessage, "error");
-        } finally {
-          // Reset button state
-          submitBtn.textContent = originalText;
-          submitBtn.disabled = false;
-        }
       }
       
       showEmergencyReport() {
@@ -3881,13 +3854,6 @@
               return;
             }
           }
-
-          console.log("Submitting emergency report:", {
-            user_id: null, // Anonymous report - no user association
-            vibe_type: 'dangerous',
-            location: this.currentEmergencyLocation,
-            notes: `EMERGENCY (${emergencyType}): ${details}`
-          });
 
           const { data, error } = await this.supabase
             .from('reports')
@@ -4220,7 +4186,6 @@
               this.map.setView([latitude, longitude], 13);
             },
             (error) => {
-              console.log('Geolocation not available or denied');
             },
             { timeout: 10000, enableHighAccuracy: true }
           );
@@ -4712,11 +4677,9 @@
               });
             },
             (error) => {
-              console.log('Geolocation error:', error);
-              // Use fallback location for demo purposes
-              const fallbackLocation = 'Demo Location';
-              this.showNotification("Using demo location - enable GPS for accurate reporting", "warning");
-              callback(fallbackLocation);
+              // Don't use fallback location - be honest about location requirements
+              this.showNotification("Location access required for accurate reporting. Please enable GPS and try again.", "error");
+              callback(null);
             },
             {
               timeout: 8000, // Reduced timeout for faster response
@@ -4743,7 +4706,6 @@
             }
           })
           .catch(error => {
-            console.log('Reverse geocoding error:', error);
             callback(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
           });
       }
@@ -4761,7 +4723,7 @@
               }
             });
           } catch (e) {
-            console.log("Location request not available in this Telegram version");
+            // Location request not available in this Telegram version
           }
         }
       }
@@ -5204,7 +5166,6 @@
 
       async loadWeatherData(force = false) {
         // Always try to load weather data immediately, don't wait for location
-        console.log("Loading weather data...");
 
         // Check if we have cached weather data that's less than 15 minutes old
         const cachedWeather = localStorage.getItem('hyperapp_weather_data');
@@ -5216,10 +5177,8 @@
             try {
               const weatherData = JSON.parse(cachedWeather);
               this.updateWeatherAlert(weatherData);
-              console.log("Using cached weather data");
               return;
             } catch (e) {
-              console.log("Invalid cached weather data");
             }
           }
         }
@@ -5234,7 +5193,6 @@
         }
 
         try {
-          console.log("Fetching weather data for:", lat, lng);
           // Using OpenWeatherMap API with a working API key
           const apiKey = 'bd5e378503939ddaee76f12ad7a97608'; // Free tier API key
 
@@ -5250,7 +5208,6 @@
           }
 
           const weatherData = await response.json();
-          console.log("Weather data received:", weatherData);
 
           // Cache the weather data
           localStorage.setItem('hyperapp_weather_data', JSON.stringify(weatherData));
@@ -5258,7 +5215,6 @@
 
           this.updateWeatherAlert(weatherData);
         } catch (error) {
-          console.error("Error loading weather data:", error);
           // Fallback to generic weather message
           this.updateWeatherAlert(null);
         }
@@ -5784,6 +5740,7 @@
       processStatsData(reports) {
         const stats = {
           totalReports: reports.length,
+          reports: reports, // Include reports array for local area calculation
           vibeDistribution: {},
           hourlyActivity: new Array(24).fill(0),
           dailyActivity: {},
@@ -6076,8 +6033,6 @@
       }
 
       setupRealtimeSubscriptions() {
-        console.log("Setting up real-time subscriptions...");
-
         // Subscribe to new reports
         this.supabase
           .channel('reports_changes')
@@ -6086,7 +6041,6 @@
             schema: 'public',
             table: 'reports'
           }, (payload) => {
-            console.log('New report received:', payload.new);
             this.handleNewReport(payload.new);
           })
           .on('postgres_changes', {
@@ -6094,7 +6048,6 @@
             schema: 'public',
             table: 'reports'
           }, (payload) => {
-            console.log('Report updated:', payload.new);
             this.handleReportUpdate(payload.new);
           })
           .subscribe();
@@ -6107,12 +6060,9 @@
             schema: 'public',
             table: 'votes'
           }, (payload) => {
-            console.log('New vote received:', payload.new);
             this.handleNewVote(payload.new);
           })
           .subscribe();
-
-        console.log("Real-time subscriptions established");
       }
 
       handleNewReport(newReport) {
