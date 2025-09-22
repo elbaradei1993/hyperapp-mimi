@@ -121,7 +121,7 @@
     .language-switcher {
       position: absolute;
       top: 15px;
-      left: 15px;
+      right: 15px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 20px;
       padding: 6px 12px;
@@ -2627,7 +2627,7 @@
           <!-- Color-coded Community Vibe Sidebar -->
           <div class="community-vibe-sidebar" id="communityVibeSidebar">
             <div class="sidebar-header">
-              <span data-en="Community Atmosphere" data-ar="أجواء المجتمع">Community Atmosphere</span>
+              <span data-en="Community Vibe" data-ar="حالة المجتمع">Community Vibe</span>
               <div class="dominant-vibe" id="dominantVibe">
                 <i class="fas fa-peace"></i>
                 <span data-en="Calm" data-ar="هادئ">Calm</span>
@@ -4346,17 +4346,31 @@
 
         // Add markers for each report
         this.nearbyReports.forEach(report => {
-          // Use actual coordinates if available, otherwise use default location with slight randomization
+          // Use actual coordinates if available, otherwise cluster around user location or default area
           let lat, lng;
           if (report.latitude && report.longitude) {
             lat = report.latitude;
             lng = report.longitude;
           } else {
-            // Default to Cairo area with some randomization
-            const baseLat = 30.0444;
-            const baseLng = 31.2357;
-            lat = baseLat + (Math.random() - 0.5) * 0.1;
-            lng = baseLng + (Math.random() - 0.5) * 0.1;
+            // For reports without coordinates, place them in a cluster around the user's location
+            // or default to Cairo area if no user location
+            let baseLat, baseLng;
+            if (this.userLocation) {
+              baseLat = this.userLocation.latitude;
+              baseLng = this.userLocation.longitude;
+            } else {
+              baseLat = 30.0444; // Cairo, Egypt
+              baseLng = 31.2357;
+            }
+
+            // Create a more intelligent clustering - group reports without coordinates
+            // Use report ID to create consistent positioning for the same report
+            const hash = report.id % 100; // Simple hash based on report ID
+            const angle = (hash / 100) * 2 * Math.PI; // Distribute in a circle
+            const radius = 0.005 + (hash % 3) * 0.002; // Vary radius slightly
+
+            lat = baseLat + Math.sin(angle) * radius;
+            lng = baseLng + Math.cos(angle) * radius;
           }
 
           // Create custom icon based on vibe type
@@ -4370,6 +4384,7 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            ${!report.latitude || !report.longitude ? 'opacity: 0.7;' : ''}
           ">
             <i class="${this.getVibeIcon(report.vibe_type)}" style="color: white; font-size: 12px;"></i>
           </div>`;
@@ -4385,16 +4400,19 @@
           const marker = L.marker([lat, lng], { icon: customIcon }).addTo(this.map);
 
           // Add popup with report details
+          const locationText = this.formatLocationForDisplay(report);
           const popupContent = `
             <div style="font-family: 'Segoe UI', sans-serif; max-width: 200px;">
               <h4 style="margin: 0 0 8px 0; color: ${this.getVibeColor(report.vibe_type)};">
                 ${this.capitalizeFirstLetter(report.vibe_type)}
               </h4>
-              <p style="margin: 4px 0;"><strong>Location:</strong> ${report.location || 'Unknown'}</p>
+              <p style="margin: 4px 0;"><strong>Location:</strong> ${locationText}</p>
               ${report.notes ? `<p style="margin: 4px 0;"><strong>Notes:</strong> ${report.notes}</p>` : ''}
               <p style="margin: 4px 0; font-size: 12px; color: #666;">
                 ${this.formatTimeAgo(report.created_at)}
               </p>
+              ${!report.latitude || !report.longitude ?
+                '<p style="margin: 4px 0; font-size: 11px; color: #888; font-style: italic;">Approximate location</p>' : ''}
               <div style="margin-top: 8px;">
                 <span style="color: #28a745;">👍 ${report.upvotes || 0}</span>
                 <span style="color: #dc3545; margin-left: 8px;">👎 ${report.downvotes || 0}</span>
@@ -4728,49 +4746,59 @@
       }
       
       getCurrentLocation(callback) {
-        // Use cached location if available and recent (within 5 minutes)
-        if (this.userLocation && this.userLocation.timestamp) {
-          const age = Date.now() - this.userLocation.timestamp;
-          if (age < 300000) { // 5 minutes
-            this.getAddressFromCoordinates(this.userLocation.latitude, this.userLocation.longitude, (address) => {
-              callback(address || `${this.userLocation.latitude.toFixed(4)}, ${this.userLocation.longitude.toFixed(4)}`);
-            });
-            return;
-          }
+        // For backward compatibility, if callback provided, use promise internally
+        if (callback) {
+          this.getCurrentLocationPromise().then(callback).catch(() => callback(null));
+          return;
         }
 
-        if (navigator.geolocation) {
-          // Show loading notification for location
-          this.showNotification("Getting your location...", "info");
+        return this.getCurrentLocationPromise();
+      }
 
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              this.userLocation = {
-                latitude,
-                longitude,
-                timestamp: Date.now()
-              };
-
-              // Try to get address from coordinates (reverse geocoding)
-              this.getAddressFromCoordinates(latitude, longitude, (address) => {
-                callback(address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+      getCurrentLocationPromise() {
+        return new Promise((resolve, reject) => {
+          // Use cached location if available and recent (within 5 minutes)
+          if (this.userLocation && this.userLocation.timestamp) {
+            const age = Date.now() - this.userLocation.timestamp;
+            if (age < 300000) { // 5 minutes
+              this.getAddressFromCoordinates(this.userLocation.latitude, this.userLocation.longitude, (address) => {
+                resolve(address || `${this.userLocation.latitude.toFixed(4)}, ${this.userLocation.longitude.toFixed(4)}`);
               });
-            },
-            (error) => {
-              // Don't use fallback location - be honest about location requirements
-              this.showNotification("Location access required for accurate reporting. Please enable GPS and try again.", "error");
-              callback(null);
-            },
-            {
-              timeout: 8000, // Reduced timeout for faster response
-              enableHighAccuracy: true,
-              maximumAge: 300000 // Accept cached position up to 5 minutes old
+              return;
             }
-          );
-        } else {
-          callback('Location not supported');
-        }
+          }
+
+          if (navigator.geolocation) {
+            // Show loading notification for location
+            this.showNotification("Getting your location...", "info");
+
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const { latitude, longitude } = position.coords;
+                this.userLocation = {
+                  latitude,
+                  longitude,
+                  timestamp: Date.now()
+                };
+
+                // Try to get address from coordinates (reverse geocoding)
+                this.getAddressFromCoordinates(latitude, longitude, (address) => {
+                  resolve(address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+                });
+              },
+              (error) => {
+                reject(error);
+              },
+              {
+                timeout: 8000, // Reduced timeout for faster response
+                enableHighAccuracy: true,
+                maximumAge: 300000 // Accept cached position up to 5 minutes old
+              }
+            );
+          } else {
+            reject(new Error('Geolocation not supported'));
+          }
+        });
       }
 
       getAddressFromCoordinates(lat, lng, callback) {
@@ -6161,6 +6189,61 @@
                   Math.sin(dLng/2) * Math.sin(dLng/2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         return R * c;
+      }
+
+      formatLocationForDisplay(report) {
+        // Format location for display, preferring readable addresses over coordinates
+        if (!report.location) {
+          return 'Unknown location';
+        }
+
+        // If location looks like coordinates (contains comma and numbers), try to get a readable address
+        if (report.location.match(/^-?\d+\.\d+,\s*-?\d+\.\d+$/)) {
+          // This is coordinates, try to get address if we have coordinates
+          if (report.latitude && report.longitude) {
+            // For now, return a simplified version. In production, you might cache addresses
+            return `${report.latitude.toFixed(2)}, ${report.longitude.toFixed(2)}`;
+          }
+          return 'Approximate location';
+        }
+
+        // Return the stored location (should be a readable address)
+        return report.location;
+      }
+
+      updateLocalAreaDisplay(localStats) {
+        // Update the local area display with new stats
+        const localVibeIcon = document.querySelector('.local-vibe-icon');
+        const localVibeName = document.querySelector('.local-vibe-name');
+        const localVibePercentage = document.querySelector('.local-vibe-percentage');
+        const localVibeCount = document.querySelector('.local-vibe-count');
+
+        if (localVibeIcon && localStats.dominantVibe) {
+          localVibeIcon.style.background = this.getVibeColor(localStats.dominantVibe);
+          localVibeIcon.innerHTML = `<i class="${this.getVibeIcon(localStats.dominantVibe)}"></i>`;
+        }
+
+        if (localVibeName) {
+          localVibeName.textContent = localStats.dominantVibe ? this.capitalizeFirstLetter(localStats.dominantVibe) : 'No Data';
+        }
+
+        if (localVibePercentage) {
+          localVibePercentage.textContent = localStats.dominantVibe ? localStats.percentage + '%' : '';
+        }
+
+        if (localVibeCount) {
+          const radiusText = localStats.radius === 'N/A (no location)' ? 'N/A' : `${localStats.radius}km`;
+          localVibeCount.textContent = `${localStats.totalLocalReports} reports in area`;
+        }
+
+        // Update the card title with address if available
+        const cardTitle = document.querySelector('.card-title span[data-en*="Local Area Vibe"]');
+        if (cardTitle && localStats.address && localStats.address !== 'Unknown Location') {
+          const currentText = cardTitle.getAttribute('data-en');
+          const newText = `Local Area Vibe (${localStats.radius}km radius) - ${localStats.address}`;
+          cardTitle.setAttribute('data-en', newText);
+          cardTitle.textContent = newText;
+        }
       }
 
       setupWeatherAlerts() {
