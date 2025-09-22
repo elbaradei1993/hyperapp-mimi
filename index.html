@@ -705,14 +705,17 @@
       bottom: 15px;
       left: 15px;
       right: 15px;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.9);
       border-radius: 8px;
-      padding: 12px;
+      padding: 8px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 4px;
       z-index: 10;
       backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-height: 60px;
+      overflow: hidden;
     }
 
     .legend-item {
@@ -1053,11 +1056,12 @@
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 1000;
-      max-width: 90%;
+      max-width: calc(100vw - 40px);
       animation: slideInUp 0.3s;
       display: flex;
       align-items: center;
       gap: 10px;
+      box-sizing: border-box;
     }
 
     .notification.hidden {
@@ -1693,6 +1697,269 @@
       }
     }
 
+    /* Enhanced Stats Charts */
+    .vibe-distribution-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .vibe-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .vibe-label {
+      min-width: 80px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-light);
+    }
+
+    .vibe-progress {
+      flex: 1;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .vibe-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.8s ease;
+      position: relative;
+    }
+
+    .vibe-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .vibe-count {
+      min-width: 30px;
+      text-align: right;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .activity-chart {
+      margin-top: 15px;
+    }
+
+    .activity-bars {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      height: 120px;
+      gap: 2px;
+      margin-bottom: 10px;
+    }
+
+    .activity-bar {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px 2px 0 0;
+      position: relative;
+      min-height: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .activity-bar:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .activity-fill {
+      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+      border-radius: 2px 2px 0 0;
+      width: 100%;
+      transition: height 0.8s ease;
+      position: relative;
+    }
+
+    .activity-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent);
+      border-radius: 2px 2px 0 0;
+    }
+
+    .activity-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 0 2px;
+    }
+
+    .activity-labels span {
+      flex: 1;
+      text-align: center;
+    }
+
+    /* Badge System Styles */
+    .badge-notification {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+      border: 2px solid #FFD700;
+      animation: badgePulse 0.6s ease-in-out;
+    }
+
+    @keyframes badgePulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .badge-showcase {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .badge-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .badge-item.unlocked {
+      border-color: var(--success);
+      background: rgba(40, 167, 69, 0.1);
+    }
+
+    .badge-item.locked {
+      opacity: 0.6;
+      filter: grayscale(100%);
+    }
+
+    .badge-item.unlocked::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(40, 167, 69, 0.1) 0%, transparent 70%);
+      animation: badgeGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes badgeGlow {
+      0% { opacity: 0.3; }
+      100% { opacity: 0.8; }
+    }
+
+    .badge-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .badge-item.unlocked .badge-icon {
+      background: linear-gradient(135deg, var(--success), #28A745);
+      color: white;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .badge-item.locked .badge-icon {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+    }
+
+    .badge-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+
+    .badge-description {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    /* Weather Alert Enhancements */
+    .weather-alert.severe {
+      border-color: rgba(220, 53, 69, 0.5);
+      background: rgba(220, 53, 69, 0.1);
+      animation: weatherAlertPulse 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes weatherAlertPulse {
+      0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+      100% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+    }
+
+    .weather-alert i {
+      animation: weatherIconPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes weatherIconPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Reputation Display Enhancement */
+    .reputation-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #FFD700;
+    }
+
+    .reputation-display i {
+      color: #FFD700;
+    }
+
+    .reputation-display.high {
+      background: rgba(40, 167, 69, 0.1);
+      border-color: rgba(40, 167, 69, 0.3);
+      color: var(--success);
+    }
+
+    .reputation-display.high i {
+      color: var(--success);
+    }
+
     /* Force display for mobile views */
     @media (max-width: 480px) {
       #mainView,
@@ -1711,6 +1978,46 @@
 
       .view.active {
         display: block !important;
+      }
+
+      .vibe-distribution-chart {
+        gap: 10px;
+      }
+
+      .vibe-bar {
+        gap: 8px;
+      }
+
+      .vibe-label {
+        min-width: 60px;
+        font-size: 13px;
+      }
+
+      .activity-bars {
+        height: 100px;
+      }
+
+      .badge-showcase {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .badge-item {
+        padding: 10px;
+      }
+
+      .badge-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+      }
+
+      .badge-name {
+        font-size: 12px;
+      }
+
+      .badge-description {
+        font-size: 10px;
       }
     }
 
@@ -1844,19 +2151,7 @@
           </button>
         </div>
 
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-map-marker-alt"></i>
-            <span data-en="Nearby Reports" data-ar="التقارير القريبة">Nearby Reports</span>
-          </div>
-          <div id="nearbyReports" class="reports-container">
-            <div class="loading-spinner"></div>
-          </div>
-          <button class="btn refresh-btn" id="refreshReports">
-            <i class="fas fa-sync-alt"></i>
-            <span data-en="Refresh" data-ar="تحديث">Refresh</span>
-          </button>
-        </div>
+
 
         <!-- Statistics Card -->
         <div class="card">
@@ -1887,10 +2182,10 @@
               <i class="fas fa-cloud-sun"></i>
               <div class="alert-content">
                 <span class="alert-title" data-en="Weather Alert" data-ar="تنبيه جوي">Weather Alert</span>
-                <span class="alert-message" data-en="Stay safe during weather changes" data-ar="ابق آمناً أثناء تغيرات الطقس">Stay safe during weather changes</span>
+                <span class="alert-message" data-en="Loading weather information..." data-ar="جاري تحميل معلومات الطقس...">Loading weather information...</span>
               </div>
             </div>
-            <div class="safety-guidelines">
+            <div class="safety-tips" id="safetyTips">
               <div class="guideline-item">
                 <i class="fas fa-users"></i>
                 <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
@@ -1970,21 +2265,6 @@
             </div>
           </div>
         </div>
-
-        <div class="quick-actions">
-          <div class="action-btn" data-action="report">
-            <i class="fas fa-plus-circle"></i>
-            <span data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</span>
-          </div>
-          <div class="action-btn" data-action="areas">
-            <i class="fas fa-chart-line"></i>
-            <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
-          </div>
-          <div class="action-btn emergency-btn" data-action="emergency">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span data-en="Emergency" data-ar="طارئ">Emergency</span>
-          </div>
-        </div>
       </div>
 
       <!-- Map View -->
@@ -2048,6 +2328,22 @@
             </div>
           </div>
           
+          <div class="settings-section">
+            <h3 data-en="Privacy & Policy" data-ar="الخصوصية والسياسة">Privacy & Policy</h3>
+            <div class="setting-item">
+              <span data-en="Data Collection" data-ar="جمع البيانات">Data Collection</span>
+              <button class="btn" data-action="privacy-policy" data-en="View Policy" data-ar="عرض السياسة">View Policy</button>
+            </div>
+            <div class="setting-item">
+              <span data-en="Location Data" data-ar="بيانات الموقع">Location Data</span>
+              <span data-en="Used for safety reports only" data-ar="تُستخدم لتقارير السلامة فقط">Used for safety reports only</span>
+            </div>
+            <div class="setting-item">
+              <span data-en="Anonymous Reporting" data-ar="الإبلاغ المجهول">Anonymous Reporting</span>
+              <span data-en="Reports are anonymous by default" data-ar="التقارير مجهولة افتراضياً">Reports are anonymous by default</span>
+            </div>
+          </div>
+
           <div class="settings-section">
             <h3 data-en="About" data-ar="عن التطبيق">About</h3>
             <p data-en="HyperApp helps communities stay informed about safety conditions in their area." data-ar="يساعد HyperApp المجتمعات على البقاء على اطلاع بظروف السلامة في منطقتهم.">
@@ -2173,7 +2469,10 @@
           'getVibeIcon', 'getVibeArabicName', 'capitalizeFirstLetter', 'formatTimeAgo',
           'updateTextDirection', 'requestUserLocation', 'checkAuthState',
           'showAuthModal', 'hideAuthModal', 'setupAuthListeners', 'handleAuthLogin',
-          'handleAuthSignup'
+          'handleAuthSignup', 'loadWeatherData', 'updateSafetyHub', 'generateDynamicSafetyTips',
+          'calculateUserReputation', 'updateUserReputation', 'getUserBadges', 'checkBadgeUnlocks',
+          'showBadgeNotification', 'loadEnhancedStats', 'renderStatsCharts', 'setupWeatherAlerts',
+          'checkWeatherAlerts', 'sendWeatherAlert', 'updateCommunityInsights'
         ];
         
         methods.forEach(method => {
@@ -2230,6 +2529,14 @@
 
         // Load initial data
         await this.loadInitialData();
+
+        // Set up weather alerts
+        this.setupWeatherAlerts();
+
+        // Update community insights periodically
+        setInterval(() => {
+          this.updateCommunityInsights();
+        }, 60000); // Update every minute
 
         // Make app instance globally available
         window.hyperApp = this;
@@ -3831,6 +4138,13 @@
           }
         });
 
+        // Privacy policy button handler
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('[data-action="privacy-policy"]')) {
+            this.showPrivacyPolicy();
+          }
+        });
+
         // Setup offline indicator
         this.setupOfflineIndicator();
       }
@@ -4044,6 +4358,759 @@
         indicator.className = 'offline-indicator';
         document.body.appendChild(indicator);
         return indicator;
+      }
+
+      async loadWeatherData() {
+        if (!this.userLocation) {
+          console.log("No user location available for weather data");
+          return;
+        }
+
+        try {
+          // Using OpenWeatherMap API (you'll need to replace with your API key)
+          const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY'; // Replace with actual API key
+          const { latitude, longitude } = this.userLocation;
+
+          const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`
+          );
+
+          if (!response.ok) {
+            throw new Error('Weather API request failed');
+          }
+
+          const weatherData = await response.json();
+          this.updateWeatherAlert(weatherData);
+        } catch (error) {
+          console.error("Error loading weather data:", error);
+          // Fallback to generic weather message
+          this.updateWeatherAlert(null);
+        }
+      }
+
+      updateWeatherAlert(weatherData) {
+        const weatherAlert = document.getElementById('weatherAlert');
+        const alertTitle = weatherAlert.querySelector('.alert-title');
+        const alertMessage = weatherAlert.querySelector('.alert-message');
+        const weatherIcon = weatherAlert.querySelector('i');
+
+        if (!weatherData) {
+          // Fallback message
+          alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Alert' : 'تنبيه جوي';
+          alertMessage.textContent = this.currentLanguage === 'en'
+            ? 'Stay safe during weather changes'
+            : 'ابق آمناً أثناء تغيرات الطقس';
+          weatherIcon.className = 'fas fa-cloud-sun';
+          return;
+        }
+
+        const temp = Math.round(weatherData.main.temp);
+        const condition = weatherData.weather[0].main.toLowerCase();
+        const description = weatherData.weather[0].description;
+
+        // Update icon based on weather condition
+        const iconMap = {
+          clear: 'fas fa-sun',
+          clouds: 'fas fa-cloud',
+          rain: 'fas fa-cloud-rain',
+          drizzle: 'fas fa-cloud-rain',
+          thunderstorm: 'fas fa-bolt',
+          snow: 'fas fa-snowflake',
+          mist: 'fas fa-smog',
+          fog: 'fas fa-smog'
+        };
+
+        weatherIcon.className = iconMap[condition] || 'fas fa-cloud-sun';
+
+        // Determine if weather requires safety alert
+        const severeConditions = ['thunderstorm', 'rain', 'snow', 'fog'];
+        const isSevere = severeConditions.includes(condition) ||
+                        weatherData.main.temp < 5 ||
+                        weatherData.main.temp > 35;
+
+        if (isSevere) {
+          alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Warning' : 'تحذير جوي';
+          alertMessage.textContent = this.currentLanguage === 'en'
+            ? `${temp}°C - ${description}. Take precautions!`
+            : `${temp}°C - ${description}. خذ احتياطاتك!`;
+          weatherAlert.style.borderColor = 'rgba(255, 193, 7, 0.5)';
+          weatherAlert.style.background = 'rgba(255, 193, 7, 0.1)';
+        } else {
+          alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Update' : 'تحديث جوي';
+          alertMessage.textContent = this.currentLanguage === 'en'
+            ? `${temp}°C - ${description}. Enjoy your day!`
+            : `${temp}°C - ${description}. استمتع بيومك!`;
+          weatherAlert.style.borderColor = 'rgba(23, 162, 184, 0.3)';
+          weatherAlert.style.background = 'rgba(23, 162, 184, 0.1)';
+        }
+      }
+
+      updateSafetyHub() {
+        // Load weather data
+        this.loadWeatherData();
+
+        // Generate dynamic safety tips based on recent reports
+        this.generateDynamicSafetyTips();
+      }
+
+      generateDynamicSafetyTips() {
+        const safetyTipsContainer = document.getElementById('safetyTips');
+
+        if (!this.nearbyReports || this.nearbyReports.length === 0) {
+          // Default tips when no reports
+          safetyTipsContainer.innerHTML = `
+            <div class="guideline-item">
+              <i class="fas fa-users"></i>
+              <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
+            </div>
+            <div class="guideline-item">
+              <i class="fas fa-mobile-alt"></i>
+              <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
+            </div>
+            <div class="guideline-item">
+              <i class="fas fa-share-alt"></i>
+              <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
+            </div>
+          `;
+          return;
+        }
+
+        // Analyze recent reports to generate relevant safety tips
+        const recentReports = this.nearbyReports.slice(0, 10); // Last 10 reports
+        const vibeCounts = {};
+
+        recentReports.forEach(report => {
+          vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
+        });
+
+        const tips = [];
+
+        // Generate tips based on most common vibes
+        if (vibeCounts.dangerous > 0) {
+          tips.push({
+            icon: 'fas fa-exclamation-triangle',
+            text: this.currentLanguage === 'en'
+              ? 'High danger reports in area - stay vigilant'
+              : 'تقارير خطر عالية في المنطقة - كن يقظاً'
+          });
+        }
+
+        if (vibeCounts.crowded > vibeCounts.calm) {
+          tips.push({
+            icon: 'fas fa-users',
+            text: this.currentLanguage === 'en'
+              ? 'Area appears crowded - be aware of surroundings'
+              : 'المنطقة تبدو مزدحمة - كن على دراية بمحيطك'
+          });
+        }
+
+        if (vibeCounts.suspicious > 0) {
+          tips.push({
+            icon: 'fas fa-eye-slash',
+            text: this.currentLanguage === 'en'
+              ? 'Suspicious activity reported - trust your instincts'
+              : 'تم الإبلاغ عن نشاط مشبوه - ثق بغريزتك'
+          });
+        }
+
+        // Add default tips if we don't have enough specific ones
+        if (tips.length < 3) {
+          const defaultTips = [
+            {
+              icon: 'fas fa-mobile-alt',
+              text: this.currentLanguage === 'en'
+                ? 'Keep your phone charged and accessible'
+                : 'احتفظ بهاتفك مشحوناً ومتاحاً'
+            },
+            {
+              icon: 'fas fa-share-alt',
+              text: this.currentLanguage === 'en'
+                ? 'Share your location with trusted contacts'
+                : 'شارك موقعك مع جهات الاتصال الموثوقة'
+            },
+            {
+              icon: 'fas fa-users',
+              text: this.currentLanguage === 'en'
+                ? 'Stay aware of your surroundings'
+                : 'ابق على دراية بمحيطك'
+            }
+          ];
+
+          // Add default tips to fill up to 3
+          while (tips.length < 3 && defaultTips.length > 0) {
+            const tip = defaultTips.shift();
+            if (!tips.find(t => t.text === tip.text)) {
+              tips.push(tip);
+            }
+          }
+        }
+
+        // Limit to 3 tips and update UI
+        const displayTips = tips.slice(0, 3);
+        safetyTipsContainer.innerHTML = displayTips.map(tip => `
+          <div class="guideline-item">
+            <i class="${tip.icon}"></i>
+            <span>${tip.text}</span>
+          </div>
+        `).join('');
+      }
+
+      showPrivacyPolicy() {
+        const modalContent = `
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 data-en="Privacy Policy" data-ar="سياسة الخصوصية">Privacy Policy</h2>
+              <span class="close" data-dismiss="privacyModal">&times;</span>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+              <div style="text-align: left; line-height: 1.6;">
+                <h3 data-en="Data Collection" data-ar="جمع البيانات">Data Collection</h3>
+                <p data-en="HyperApp collects location data and safety reports to help communities stay informed about local conditions. All reports are anonymous by default." data-ar="يجمع HyperApp بيانات الموقع وتقارير السلامة لمساعدة المجتمعات على البقاء على اطلاع بظروف المنطقة المحلية. جميع التقارير مجهولة افتراضياً.">
+                  HyperApp collects location data and safety reports to help communities stay informed about local conditions. All reports are anonymous by default.
+                </p>
+
+                <h3 data-en="Location Data" data-ar="بيانات الموقع">Location Data</h3>
+                <p data-en="Location information is used solely for safety reporting and map visualization. We do not share your precise location with third parties." data-ar="تُستخدم معلومات الموقع فقط للإبلاغ عن السلامة وتصور الخريطة. نحن لا نشارك موقعك الدقيق مع أطراف ثالثة.">
+                  Location information is used solely for safety reporting and map visualization. We do not share your precise location with third parties.
+                </p>
+
+                <h3 data-en="Anonymous Reporting" data-ar="الإبلاغ المجهول">Anonymous Reporting</h3>
+                <p data-en="You can submit safety reports without creating an account. Reports are stored anonymously and cannot be traced back to individual users." data-ar="يمكنك إرسال تقارير السلامة دون إنشاء حساب. يتم تخزين التقارير بشكل مجهول ولا يمكن تتبعها إلى مستخدمين فرديين.">
+                  You can submit safety reports without creating an account. Reports are stored anonymously and cannot be traced back to individual users.
+                </p>
+
+                <h3 data-en="Account Data (Optional)" data-ar="بيانات الحساب (اختياري)">Account Data (Optional)</h3>
+                <p data-en="If you choose to create an account, we store your email and username for authentication and reputation tracking. This data is encrypted and never shared." data-ar="إذا اخترت إنشاء حساب، نحن نخزن بريدك الإلكتروني واسم المستخدم للمصادقة وتتبع السمعة. هذه البيانات مشفرة ولا تُشارك أبداً.">
+                  If you choose to create an account, we store your email and username for authentication and reputation tracking. This data is encrypted and never shared.
+                </p>
+
+                <h3 data-en="Data Retention" data-ar="الاحتفاظ بالبيانات">Data Retention</h3>
+                <p data-en="Safety reports are retained indefinitely to maintain community safety records. Account data is kept as long as your account is active." data-ar="يتم الاحتفاظ بتقارير السلامة إلى أجل غير مسمى للحفاظ على سجلات السلامة المجتمعية. يتم الاحتفاظ ببيانات الحساب طالما كان حسابك نشطاً.">
+                  Safety reports are retained indefinitely to maintain community safety records. Account data is kept as long as your account is active.
+                </p>
+
+                <h3 data-en="Contact Us" data-ar="اتصل بنا">Contact Us</h3>
+                <p data-en="If you have any questions about this Privacy Policy, please contact us through the app or email us at privacy@hyperapp.com." data-ar="إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا من خلال التطبيق أو مراسلتنا عبر البريد الإلكتروني على privacy@hyperapp.com.">
+                  If you have any questions about this Privacy Policy, please contact us through the app or email us at privacy@hyperapp.com.
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Create or update modal
+        let modal = document.getElementById('privacyModal');
+        if (!modal) {
+          modal = document.createElement('div');
+          modal.id = 'privacyModal';
+          modal.className = 'modal';
+          document.body.appendChild(modal);
+        }
+        modal.innerHTML = modalContent;
+        modal.style.display = 'block';
+
+        // Attach close button event listener
+        const closeBtn = modal.querySelector('.close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            this.closeModal('privacyModal');
+          });
+        }
+
+        this.updateTextDirection();
+      }
+
+      async calculateUserReputation(userId) {
+        if (!userId) return 0;
+
+        try {
+          // Get user's reports
+          const { data: reports, error: reportsError } = await this.supabase
+            .from('reports')
+            .select('id, vibe_type, upvotes, downvotes, created_at')
+            .eq('user_id', userId);
+
+          if (reportsError) {
+            console.error("Error fetching user reports for reputation:", reportsError);
+            return 0;
+          }
+
+          // Get user's votes
+          const { data: votes, error: votesError } = await this.supabase
+            .from('votes')
+            .select('vote_type')
+            .eq('user_id', userId);
+
+          if (votesError) {
+            console.error("Error fetching user votes for reputation:", votesError);
+            return 0;
+          }
+
+          let reputation = 0;
+
+          // Base points for reports (10 points each)
+          reputation += reports.length * 10;
+
+          // Emergency reports bonus (2x multiplier)
+          const emergencyReports = reports.filter(r => r.vibe_type === 'dangerous').length;
+          reputation += emergencyReports * 10; // Additional 10 points for emergency reports
+
+          // Quality multiplier based on upvotes/downvotes
+          reports.forEach(report => {
+            const totalVotes = (report.upvotes || 0) + (report.downvotes || 0);
+            if (totalVotes > 0) {
+              const upvoteRatio = (report.upvotes || 0) / totalVotes;
+              if (upvoteRatio > 0.7) {
+                reputation += 5; // Quality bonus for highly upvoted reports
+              } else if (upvoteRatio < 0.3) {
+                reputation -= 2; // Penalty for downvoted reports
+              }
+            }
+          });
+
+          // Community engagement bonus (voting on reports)
+          reputation += votes.length * 2;
+
+          // Consistency bonus (reports in last 7 days)
+          const recentReports = reports.filter(r => {
+            const reportDate = new Date(r.created_at);
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return reportDate > weekAgo;
+          }).length;
+
+          if (recentReports > 0) {
+            reputation += Math.min(recentReports * 3, 15); // Up to 15 points for consistency
+          }
+
+          // Minimum reputation of 0
+          return Math.max(0, Math.round(reputation));
+        } catch (error) {
+          console.error("Error calculating reputation:", error);
+          return 0;
+        }
+      }
+
+      async updateUserReputation() {
+        if (!this.isAuthenticated || !this.userData) return;
+
+        try {
+          const reputation = await this.calculateUserReputation(this.userData.id);
+
+          // Update user data
+          this.userData.reputation = reputation;
+
+          // Update UI
+          document.getElementById('userReputation').textContent = reputation;
+          document.getElementById('settingsReputation').textContent = reputation;
+
+          // Update database
+          await this.supabase
+            .from('users')
+            .update({ reputation: reputation })
+            .eq('user_id', this.userData.id);
+
+          // Check for badge unlocks
+          await this.checkBadgeUnlocks();
+
+        } catch (error) {
+          console.error("Error updating user reputation:", error);
+        }
+      }
+
+      async getUserBadges(userId) {
+        if (!userId) return [];
+
+        try {
+          // Get user's stats for badge calculation
+          const { data: reports, error: reportsError } = await this.supabase
+            .from('reports')
+            .select('vibe_type, upvotes, created_at')
+            .eq('user_id', userId);
+
+          if (reportsError) {
+            console.error("Error fetching reports for badges:", reportsError);
+            return [];
+          }
+
+          const badges = [];
+          const totalReports = reports.length;
+          const totalUpvotes = reports.reduce((sum, r) => sum + (r.upvotes || 0), 0);
+          const emergencyReports = reports.filter(r => r.vibe_type === 'dangerous').length;
+
+          // Reporting Badges
+          if (totalReports >= 1) badges.push({
+            id: 'first_report',
+            name: 'First Responder',
+            icon: 'fas fa-plus-circle',
+            description: 'Submitted your first safety report',
+            color: '#28A745',
+            unlocked: true
+          });
+
+          if (totalReports >= 10) badges.push({
+            id: 'safety_guardian',
+            name: 'Safety Guardian',
+            icon: 'fas fa-shield-alt',
+            description: 'Submitted 10+ safety reports',
+            color: '#17A2B8',
+            unlocked: true
+          });
+
+          if (emergencyReports >= 5) badges.push({
+            id: 'emergency_responder',
+            name: 'Emergency Responder',
+            icon: 'fas fa-exclamation-triangle',
+            description: 'Reported 5+ emergencies',
+            color: '#DC3545',
+            unlocked: true
+          });
+
+          // Community Badges
+          if (totalUpvotes >= 50) badges.push({
+            id: 'helpful_citizen',
+            name: 'Helpful Citizen',
+            icon: 'fas fa-hands-helping',
+            description: 'Received 50+ upvotes on reports',
+            color: '#FFC107',
+            unlocked: true
+          });
+
+          if (totalUpvotes >= 100) badges.push({
+            id: 'community_leader',
+            name: 'Community Leader',
+            icon: 'fas fa-crown',
+            description: 'Received 100+ upvotes on reports',
+            color: '#FF6B35',
+            unlocked: true
+          });
+
+          // Quality Badges
+          const highQualityReports = reports.filter(r => (r.upvotes || 0) > 5).length;
+          if (highQualityReports >= 3) badges.push({
+            id: 'trusted_reporter',
+            name: 'Trusted Reporter',
+            icon: 'fas fa-star',
+            description: '3+ reports with high community approval',
+            color: '#28A745',
+            unlocked: true
+          });
+
+          // Engagement Badges
+          const recentReports = reports.filter(r => {
+            const reportDate = new Date(r.created_at);
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return reportDate > weekAgo;
+          }).length;
+
+          if (recentReports >= 3) badges.push({
+            id: 'active_contributor',
+            name: 'Active Contributor',
+            icon: 'fas fa-fire',
+            description: '3+ reports in the last week',
+            color: '#FF6B35',
+            unlocked: true
+          });
+
+          return badges;
+        } catch (error) {
+          console.error("Error getting user badges:", error);
+          return [];
+        }
+      }
+
+      async checkBadgeUnlocks() {
+        if (!this.isAuthenticated || !this.userData) return;
+
+        try {
+          const currentBadges = await this.getUserBadges(this.userData.id);
+          const unlockedBadgeIds = currentBadges.map(b => b.id);
+
+          // Check if we have new badges (this would need to be stored in localStorage or database)
+          const previouslyUnlocked = JSON.parse(localStorage.getItem('hyperapp_unlocked_badges') || '[]');
+          const newBadges = unlockedBadgeIds.filter(id => !previouslyUnlocked.includes(id));
+
+          if (newBadges.length > 0) {
+            // Show badge notification for new unlocks
+            newBadges.forEach(badgeId => {
+              const badge = currentBadges.find(b => b.id === badgeId);
+              if (badge) {
+                this.showBadgeNotification(badge);
+              }
+            });
+
+            // Update stored badges
+            localStorage.setItem('hyperapp_unlocked_badges', JSON.stringify(unlockedBadgeIds));
+          }
+        } catch (error) {
+          console.error("Error checking badge unlocks:", error);
+        }
+      }
+
+      showBadgeNotification(badge) {
+        const notification = document.createElement('div');
+        notification.className = 'notification success';
+        notification.innerHTML = `
+          <i class="fas fa-trophy"></i>
+          <span><strong>Badge Unlocked!</strong> ${badge.name} - ${badge.description}</span>
+        `;
+
+        // Remove any existing notification
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+          existingNotification.remove();
+        }
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 5 seconds for badge notifications
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 5000);
+      }
+
+      async loadEnhancedStats() {
+        try {
+          // Get comprehensive stats
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('vibe_type, created_at, upvotes, downvotes, latitude, longitude')
+            .order('created_at', { ascending: false })
+            .limit(500);
+
+          if (error) {
+            console.error("Error loading enhanced stats:", error);
+            return;
+          }
+
+          // Process stats data
+          const stats = this.processStatsData(reports);
+
+          // Update the stats display
+          this.renderStatsCharts(stats);
+
+        } catch (error) {
+          console.error("Error loading enhanced stats:", error);
+        }
+      }
+
+      processStatsData(reports) {
+        const stats = {
+          totalReports: reports.length,
+          vibeDistribution: {},
+          hourlyActivity: new Array(24).fill(0),
+          dailyActivity: {},
+          topLocations: {},
+          averageUpvotes: 0,
+          safetyScore: 0
+        };
+
+        let totalUpvotes = 0;
+
+        reports.forEach(report => {
+          // Vibe distribution
+          stats.vibeDistribution[report.vibe_type] = (stats.vibeDistribution[report.vibe_type] || 0) + 1;
+
+          // Hourly activity
+          const hour = new Date(report.created_at).getHours();
+          stats.hourlyActivity[hour]++;
+
+          // Daily activity
+          const date = new Date(report.created_at).toDateString();
+          stats.dailyActivity[date] = (stats.dailyActivity[date] || 0) + 1;
+
+          // Top locations (simplified)
+          const location = report.latitude && report.longitude
+            ? `${report.latitude.toFixed(2)},${report.longitude.toFixed(2)}`
+            : 'Unknown';
+          stats.topLocations[location] = (stats.topLocations[location] || 0) + 1;
+
+          // Upvotes
+          totalUpvotes += report.upvotes || 0;
+        });
+
+        stats.averageUpvotes = reports.length > 0 ? (totalUpvotes / reports.length).toFixed(1) : 0;
+
+        // Calculate safety score (higher is safer)
+        const dangerousReports = stats.vibeDistribution.dangerous || 0;
+        const totalReports = stats.totalReports;
+        stats.safetyScore = totalReports > 0 ? Math.round(((totalReports - dangerousReports) / totalReports) * 100) : 100;
+
+        return stats;
+      }
+
+      renderStatsCharts(stats) {
+        // Update existing stats
+        document.getElementById('totalReports').textContent = stats.totalReports;
+
+        // Create enhanced stats display
+        const enhancedStatsHtml = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">${stats.totalReports}</div>
+              <div class="stat-label">Total Reports</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${stats.averageUpvotes}</div>
+              <div class="stat-label">Avg. Upvotes</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${stats.safetyScore}%</div>
+              <div class="stat-label">Safety Score</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${Object.keys(stats.dailyActivity).length}</div>
+              <div class="stat-label">Active Days</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-chart-bar"></i>
+              <span data-en="Vibe Distribution" data-ar="توزيع الحالات">Vibe Distribution</span>
+            </div>
+            <div class="vibe-distribution-chart">
+              ${Object.entries(stats.vibeDistribution).map(([vibe, count]) => `
+                <div class="vibe-bar">
+                  <div class="vibe-label">${this.capitalizeFirstLetter(vibe)}</div>
+                  <div class="vibe-progress">
+                    <div class="vibe-fill" style="width: ${(count / stats.totalReports) * 100}%; background: ${this.getVibeColor(vibe)}"></div>
+                  </div>
+                  <div class="vibe-count">${count}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-clock"></i>
+              <span data-en="Activity Patterns" data-ar="أنماط النشاط">Activity Patterns</span>
+            </div>
+            <div class="activity-chart">
+              <div class="activity-bars">
+                ${stats.hourlyActivity.map((count, hour) => `
+                  <div class="activity-bar" title="${hour}:00 - ${count} reports">
+                    <div class="activity-fill" style="height: ${Math.min((count / Math.max(...stats.hourlyActivity)) * 100, 100)}%"></div>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="activity-labels">
+                ${Array.from({length: 6}, (_, i) => `<span>${i * 4}:00</span>`).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Replace the stats grid with enhanced version
+        const statsContainer = document.getElementById('statsGrid').parentElement;
+        statsContainer.innerHTML = enhancedStatsHtml;
+
+        this.updateTextDirection();
+      }
+
+      setupWeatherAlerts() {
+        // Set up weather alert checking (would run periodically)
+        this.weatherAlertInterval = setInterval(() => {
+          this.checkWeatherAlerts();
+        }, 300000); // Check every 5 minutes
+
+        // Initial check
+        this.checkWeatherAlerts();
+      }
+
+      async checkWeatherAlerts() {
+        if (!this.userLocation) return;
+
+        try {
+          const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
+          const { latitude, longitude } = this.userLocation;
+
+          const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`
+          );
+
+          if (!response.ok) return;
+
+          const weatherData = await response.json();
+
+          // Check for severe weather conditions
+          const severeConditions = ['thunderstorm', 'rain', 'snow', 'fog'];
+          const isSevere = severeConditions.includes(weatherData.weather[0].main.toLowerCase()) ||
+                          weatherData.main.temp < 5 ||
+                          weatherData.main.temp > 35;
+
+          if (isSevere) {
+            // Check if we already alerted recently (prevent spam)
+            const lastAlert = localStorage.getItem('hyperapp_last_weather_alert');
+            const now = Date.now();
+
+            if (!lastAlert || (now - parseInt(lastAlert)) > 3600000) { // 1 hour cooldown
+              this.sendWeatherAlert(weatherData);
+              localStorage.setItem('hyperapp_last_weather_alert', now.toString());
+            }
+          }
+        } catch (error) {
+          console.error("Error checking weather alerts:", error);
+        }
+      }
+
+      sendWeatherAlert(weatherData) {
+        const temp = Math.round(weatherData.main.temp);
+        const condition = weatherData.weather[0].description;
+        const mainCondition = weatherData.weather[0].main.toLowerCase();
+
+        let alertMessage = '';
+        let alertType = 'warning';
+
+        if (mainCondition === 'thunderstorm') {
+          alertMessage = `⚡ Thunderstorm Warning: ${temp}°C with ${condition}. Stay indoors and avoid open areas!`;
+        } else if (mainCondition === 'rain' || mainCondition === 'drizzle') {
+          alertMessage = `🌧️ Heavy Rain Alert: ${temp}°C with ${condition}. Drive carefully and watch for flooding.`;
+        } else if (mainCondition === 'snow') {
+          alertMessage = `❄️ Snow Warning: ${temp}°C with ${condition}. Roads may be slippery - take precautions.`;
+        } else if (mainCondition === 'fog') {
+          alertMessage = `🌫️ Dense Fog Alert: ${temp}°C with ${condition}. Reduce speed and use headlights.`;
+        } else if (temp < 5) {
+          alertMessage = `🥶 Extreme Cold Warning: ${temp}°C. Dress warmly and avoid prolonged exposure.`;
+        } else if (temp > 35) {
+          alertMessage = `🔥 Extreme Heat Warning: ${temp}°C. Stay hydrated and avoid direct sun exposure.`;
+        }
+
+        if (alertMessage) {
+          const notification = document.createElement('div');
+          notification.className = `notification ${alertType}`;
+          notification.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>${alertMessage}</span>`;
+
+          // Remove any existing notification
+          const existingNotification = document.querySelector('.notification');
+          if (existingNotification) {
+            existingNotification.remove();
+          }
+
+          document.body.appendChild(notification);
+
+          // Weather alerts stay longer (10 seconds)
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 10000);
+        }
+      }
+
+      updateCommunityInsights() {
+        // Update community insights based on recent activity
+        this.loadEnhancedStats();
+        this.updateSafetyHub();
+
+        // Update reputation for authenticated users
+        if (this.isAuthenticated) {
+          this.updateUserReputation();
+        }
       }
     }
 
