@@ -3071,17 +3071,16 @@
 
       async fastInitialLoad() {
         try {
-          // Load only essential data first
-          await this.loadNearbyReports();
+          // Load only essential data first - use force refresh on page reload
+          const forceRefresh = this.forceFreshDataLoad || false;
+          await this.loadNearbyReports(0, forceRefresh);
 
-          // Ensure we have data before updating UI
-          if (this.nearbyReports && this.nearbyReports.length >= 0) {
-            // Update all UI components in sequence to avoid race conditions
-            await this.updateStats();
-            await this.updateVibeCategories();
-            await this.updateCommunityVibeSidebar();
-            await this.updateEnhancedVibeStats();
-          }
+          // Always update UI components after loading attempt
+          // Update all UI components in sequence to avoid race conditions
+          await this.updateStats();
+          await this.updateVibeCategories();
+          await this.updateCommunityVibeSidebar();
+          await this.updateEnhancedVibeStats();
 
           // Load map (lightweight)
           this.loadMap();
@@ -3091,7 +3090,7 @@
 
         } catch (error) {
           console.error('Error in fastInitialLoad:', error);
-          // Fallback: try to update UI anyway
+          // Fallback: try to update UI anyway with empty data
           this.updateStats();
         }
       }
@@ -6338,18 +6337,33 @@
           refreshBtn.disabled = true;
         }
 
+        // Show loading notification
+        this.showNotification("Refreshing all data...", "info");
+
+        let successCount = 0;
+        let errorCount = 0;
+
         try {
-          // Show loading notification
-          this.showNotification("Refreshing all data...", "info");
+          // Force reload all data sources independently (don't fail all if one fails)
+          const refreshPromises = [
+            this.loadNearbyReports(0, true).then(() => { successCount++; }).catch(err => {
+              console.error("Error loading reports:", err);
+              errorCount++;
+            }),
+            this.loadEnhancedStats().then(() => { successCount++; }).catch(err => {
+              console.error("Error loading enhanced stats:", err);
+              errorCount++;
+            }),
+            this.loadWeatherData(true).then(() => { successCount++; }).catch(err => {
+              console.error("Error loading weather:", err);
+              errorCount++;
+            })
+          ];
 
-          // Force reload all data sources
-          await Promise.all([
-            this.loadNearbyReports(0, true), // Force fresh reports
-            this.loadEnhancedStats(), // Reload enhanced stats
-            this.loadWeatherData(true) // Force fresh weather data
-          ]);
+          // Wait for all refresh operations to complete (or fail)
+          await Promise.allSettled(refreshPromises);
 
-          // Ensure all UI components are updated with consistent data
+          // Always update UI components, even if some data loading failed
           const vibeCounts = this.getVibeCounts();
 
           // Update all components in sequence to ensure consistency
@@ -6359,23 +6373,48 @@
           this.updateEnhancedVibeStats(vibeCounts);
           this.updateSafetyHub();
 
-          // Update user data if authenticated
+          // Update user data if authenticated (independently)
           if (this.isAuthenticated) {
-            await this.updateUserReputation();
-            await this.loadUserReports();
+            try {
+              await this.updateUserReputation();
+              successCount++;
+            } catch (err) {
+              console.error("Error updating user reputation:", err);
+              errorCount++;
+            }
+
+            try {
+              await this.loadUserReports();
+              successCount++;
+            } catch (err) {
+              console.error("Error loading user reports:", err);
+              errorCount++;
+            }
           }
 
-          // Update map if visible
+          // Update map if visible (independently)
           if (document.getElementById('mapView').classList.contains('active')) {
-            this.loadMap();
+            try {
+              this.loadMap();
+              successCount++;
+            } catch (err) {
+              console.error("Error loading map:", err);
+              errorCount++;
+            }
           }
 
-          // Show success notification
-          this.showNotification("All data refreshed successfully", "success");
+          // Show appropriate notification based on results
+          if (successCount > 0 && errorCount === 0) {
+            this.showNotification("All data refreshed successfully", "success");
+          } else if (successCount > 0 && errorCount > 0) {
+            this.showNotification(`Data partially refreshed (${successCount} successful, ${errorCount} failed)`, "warning");
+          } else {
+            this.showNotification("Failed to refresh data. Please check your connection and try again.", "error");
+          }
 
         } catch (error) {
-          console.error("Error during data refresh:", error);
-          this.showNotification("Failed to refresh data. Please try again.", "error");
+          console.error("Unexpected error during data refresh:", error);
+          this.showNotification("An unexpected error occurred. Please try again.", "error");
         } finally {
           // Reset refresh button state
           if (refreshBtn) {
