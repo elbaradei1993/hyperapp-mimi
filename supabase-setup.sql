@@ -61,15 +61,11 @@ create policy reports_select_all on public.reports
   for select to anon, authenticated
   using (true);
 
-drop policy if exists reports_insert_own on public.reports;
-create policy reports_insert_own on public.reports
-  for insert to authenticated
-  with check (user_id::text = auth.uid()::text);
-
-drop policy if exists reports_insert_anonymous on public.reports;
-create policy reports_insert_anonymous on public.reports
-  for insert to anon
-  with check (user_id is null);
+-- Allow all inserts (both authenticated and anonymous)
+drop policy if exists reports_insert_all on public.reports;
+create policy reports_insert_all on public.reports
+  for insert to anon, authenticated
+  with check (true);
 
 drop policy if exists reports_update_own on public.reports;
 create policy reports_update_own on public.reports
