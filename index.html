@@ -3017,7 +3017,13 @@
         if (navigationType === 'reload') {
           // Clear any cached data that might interfere
           this.forceFreshDataLoad = true;
-          console.log('Page refresh detected - forcing fresh data load');
+          // Clear local data to ensure fresh load
+          this.nearbyReports = [];
+          this.userReports = [];
+          // Clear any cached weather data
+          localStorage.removeItem('hyperapp_weather_data');
+          localStorage.removeItem('hyperapp_weather_time');
+          console.log('Page refresh detected - cleared cached data and forcing fresh load');
         }
 
         // Load weather data immediately (don't wait for location)
@@ -3422,19 +3428,20 @@
             container.innerHTML = '<div class="loading-spinner"></div>';
           }
 
-          // Force fresh data by adding cache-busting when force is true
-          let query = this.supabase
+          // Force fresh data by using different query parameters and clearing any client-side cache
+          const cacheBust = force ? `&t=${Date.now()}` : '';
+
+          // Create fresh Supabase client instance for forced refresh to avoid any caching
+          let supabaseClient = this.supabase;
+          if (force) {
+            supabaseClient = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+          }
+
+          const { data: reports, error } = await supabaseClient
             .from('reports')
             .select(`id, vibe_type, location, notes, created_at, upvotes, downvotes, latitude, longitude, votes (user_id, vote_type)`)
             .order('created_at', { ascending: false })
             .limit(20);
-
-          // Add cache-busting for forced refresh
-          if (force) {
-            query = query.select(`id, vibe_type, location, notes, created_at, upvotes, downvotes, latitude, longitude, votes (user_id, vote_type), ${Date.now()} as cache_bust`, { count: 'exact' });
-          }
-
-          const { data: reports, error } = await query;
 
           if (error) {
             // Enhanced error handling with specific messages
@@ -3451,7 +3458,7 @@
             if (retryCount < maxRetries && (error.message.includes('network') || error.message.includes('fetch'))) {
               const delay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff, max 5s
 
-              setTimeout(() => this.loadNearbyReports(retryCount + 1), delay);
+              setTimeout(() => this.loadNearbyReports(retryCount + 1, force), delay);
               return;
             }
 
@@ -3463,7 +3470,7 @@
                 <small style="color: var(--text-muted); cursor: pointer;">${retryText}</small>
               </div>
             `;
-            return;
+            throw new Error(`Failed to load reports: ${error.message}`);
           }
 
           // Process reports data
@@ -3479,10 +3486,14 @@
           // Update connection status to connected
           this.updateConnectionStatus(true);
 
+          return true; // Success indicator
+
         } catch (error) {
+          console.error('Error in loadNearbyReports:', error);
+
           if (retryCount < maxRetries) {
             const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-            setTimeout(() => this.loadNearbyReports(retryCount + 1), delay);
+            setTimeout(() => this.loadNearbyReports(retryCount + 1, force), delay);
             return;
           }
 
@@ -3501,6 +3512,8 @@
 
           // Update connection status to disconnected
           this.updateConnectionStatus(false);
+
+          throw error; // Re-throw to indicate failure
         }
       }
       
@@ -6344,6 +6357,12 @@
         let errorCount = 0;
 
         try {
+          // Clear any cached data first to ensure fresh load
+          this.nearbyReports = [];
+          this.userReports = [];
+          localStorage.removeItem('hyperapp_weather_data');
+          localStorage.removeItem('hyperapp_weather_time');
+
           // Force reload all data sources independently (don't fail all if one fails)
           const refreshPromises = [
             this.loadNearbyReports(0, true).then(() => { successCount++; }).catch(err => {
