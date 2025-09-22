@@ -6129,52 +6129,77 @@
           vibeDistribution: {},
           dominantVibe: null,
           percentage: 0,
-          radius: 1
+          radius: 1,
+          address: null
         };
 
-        if (!this.userLocation || !stats.reports) {
+        if (!stats.reports) {
           return localStats;
         }
 
-        const userLat = this.userLocation.latitude;
-        const userLng = this.userLocation.longitude;
+        // If user has location, calculate based on distance
+        if (this.userLocation) {
+          const userLat = this.userLocation.latitude;
+          const userLng = this.userLocation.longitude;
 
-        // Try expanding radii until we find reports
-        const radii = [1, 5, 10, 25, 50];
+          // Try expanding radii until we find reports
+          const radii = [1, 5, 10, 25, 50];
 
-        for (const radius of radii) {
-          localStats.totalLocalReports = 0;
-          localStats.vibeDistribution = {};
-          localStats.radius = radius;
+          for (const radius of radii) {
+            localStats.totalLocalReports = 0;
+            localStats.vibeDistribution = {};
+            localStats.radius = radius;
+
+            stats.reports.forEach(report => {
+              if (report.latitude && report.longitude) {
+                const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
+                if (distance <= radius) {
+                  localStats.totalLocalReports++;
+                  localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
+                }
+              }
+            });
+
+            if (localStats.totalLocalReports > 0) {
+              break; // Found reports, use this radius
+            }
+          }
+
+          // Get address for user location
+          this.getAddressFromCoordinates(userLat, userLng, (address) => {
+            localStats.address = address;
+            this.updateLocalAreaDisplay(localStats);
+          });
+        }
+
+        // If no location-based reports found, or no user location, include all recent reports
+        if (localStats.totalLocalReports === 0) {
+          // Include all reports from the last 24 hours as "local area"
+          const oneDayAgo = new Date();
+          oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
           stats.reports.forEach(report => {
-            if (report.latitude && report.longitude) {
-              const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
-              if (distance <= radius) {
-                localStats.totalLocalReports++;
-                localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
-              }
+            const reportDate = new Date(report.created_at);
+            if (reportDate > oneDayAgo) {
+              localStats.totalLocalReports++;
+              localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
             }
           });
 
-          if (localStats.totalLocalReports > 0) {
-            break; // Found reports, use this radius
-          }
+          localStats.radius = 'N/A (no location)';
         }
 
-        // Find dominant vibe
-        let maxCount = 0;
-        Object.entries(localStats.vibeDistribution).forEach(([vibe, count]) => {
-          if (count > maxCount) {
-            maxCount = count;
-            localStats.dominantVibe = vibe;
+        // Calculate dominant vibe and percentage
+        if (localStats.totalLocalReports > 0) {
+          let maxCount = 0;
+          for (const [vibe, count] of Object.entries(localStats.vibeDistribution)) {
+            if (count > maxCount) {
+              maxCount = count;
+              localStats.dominantVibe = vibe;
+            }
           }
-        });
-
-        // Calculate percentage
-        localStats.percentage = localStats.totalLocalReports > 0
-          ? Math.round((maxCount / localStats.totalLocalReports) * 100)
-          : 0;
+          localStats.percentage = Math.round((maxCount / localStats.totalLocalReports) * 100);
+        }
 
         return localStats;
       }
@@ -6233,7 +6258,8 @@
 
         if (localVibeCount) {
           const radiusText = localStats.radius === 'N/A (no location)' ? 'N/A' : `${localStats.radius}km`;
-          localVibeCount.textContent = `${localStats.totalLocalReports} reports in area`;
+          const addressText = localStats.address && localStats.address !== 'Unknown Location' ? ` - ${localStats.address}` : '';
+          localVibeCount.textContent = `${localStats.totalLocalReports} reports in area${addressText}`;
         }
 
         // Update the card title with address if available
@@ -6243,6 +6269,20 @@
           const newText = `Local Area Vibe (${localStats.radius}km radius) - ${localStats.address}`;
           cardTitle.setAttribute('data-en', newText);
           cardTitle.textContent = newText;
+        }
+
+        // Force update the local area stats display
+        this.forceLocalAreaUpdate(localStats);
+      }
+
+      forceLocalAreaUpdate(localStats) {
+        // Ensure the local area display is updated immediately
+        const localAreaCard = document.querySelector('.local-area-stats');
+        if (localAreaCard) {
+          // Trigger a re-render by temporarily hiding and showing
+          localAreaCard.style.display = 'none';
+          localAreaCard.offsetHeight; // Force reflow
+          localAreaCard.style.display = 'block';
         }
       }
 
