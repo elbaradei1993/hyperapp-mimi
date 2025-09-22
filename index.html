@@ -2103,6 +2103,7 @@
 
           // Prepare report data with coordinates if available
           const reportData = {
+            user_id: '00000000-0000-0000-0000-000000000000', // Anonymous user UUID
             vibe_type: this.selectedVibe,
             location: this.currentReportLocation,
             notes: notes || null
@@ -2210,6 +2211,7 @@
           }
 
           console.log("Submitting emergency report:", {
+            user_id: '00000000-0000-0000-0000-000000000000', // Anonymous user UUID
             vibe_type: 'dangerous',
             location: this.currentEmergencyLocation,
             notes: `EMERGENCY (${emergencyType}): ${details}`
@@ -2219,6 +2221,7 @@
             .from('reports')
             .insert([
               {
+                user_id: '00000000-0000-0000-0000-000000000000', // Anonymous user UUID
                 vibe_type: 'dangerous',
                 location: this.currentEmergencyLocation,
                 notes: `EMERGENCY (${emergencyType}): ${details}`
