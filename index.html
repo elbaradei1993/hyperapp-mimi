@@ -1047,21 +1047,27 @@
 
     .notification {
       position: fixed;
-      bottom: 80px;
+      bottom: 90px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--card-bg);
       border-radius: var(--border-radius);
       padding: 12px 20px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      z-index: 1000;
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      z-index: 10000;
       max-width: calc(100vw - 40px);
+      min-width: 300px;
       animation: slideInUp 0.3s;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       box-sizing: border-box;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 1.4;
+      justify-content: flex-start;
     }
 
     .notification.hidden {
@@ -1094,6 +1100,124 @@
       padding: 40px 20px;
       color: var(--text-muted);
       font-style: italic;
+    }
+
+    .no-data.error-state {
+      color: var(--danger);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .no-data.error-state:hover {
+      color: var(--text-light);
+      background: rgba(220, 53, 69, 0.1);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px;
+    }
+
+    .no-data.error-state i {
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .no-data.error-state small {
+      display: block;
+      margin-top: 10px;
+      color: var(--text-subtle);
+      font-style: normal;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 20px;
+      display: block;
+      opacity: 0.6;
+    }
+
+    .empty-state h3 {
+      margin-bottom: 10px;
+      color: var(--text-light);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .empty-state p {
+      margin-bottom: 20px;
+      max-width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.5;
+    }
+
+    .empty-state .btn {
+      margin-top: 10px;
+    }
+
+    .loading-skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes loading-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton-text {
+      height: 16px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+
+    .skeleton-text:last-child {
+      width: 60%;
+    }
+
+    .skeleton-card {
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .skeleton-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .skeleton-button {
+      height: 36px;
+      width: 80px;
+      border-radius: 18px;
+      margin: 5px;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-up {
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Authentication Styles */
@@ -2672,6 +2796,9 @@
         // Lazy load additional features
         setTimeout(() => this.loadAdvancedFeatures(), 100);
 
+        // Set up real-time subscriptions
+        this.setupRealtimeSubscriptions();
+
         // Make app instance globally available
         window.hyperApp = this;
       }
@@ -3017,10 +3144,17 @@
       }
       
       async loadNearbyReports(retryCount = 0) {
-        const maxRetries = 2;
+        const maxRetries = 3;
 
         try {
-          document.getElementById('nearbyReports').innerHTML = '<div class="loading-spinner"></div>';
+          // Show loading state with better UX
+          const container = document.getElementById('nearbyReports');
+          if (!container) return;
+
+          // Only show loading spinner on first load, not on retries
+          if (retryCount === 0) {
+            container.innerHTML = '<div class="loading-spinner"></div>';
+          }
 
           const { data: reports, error } = await this.supabase
             .from('reports')
@@ -3031,18 +3165,37 @@
           if (error) {
             console.error("Error loading reports:", error);
 
-            // Retry on network errors
+            // Enhanced error handling with specific messages
+            let errorMessage = this.currentLanguage === 'en' ? 'Error loading reports.' : 'خطأ في تحميل التقارير.';
+            let retryText = this.currentLanguage === 'en' ? 'Tap to retry' : 'اضغط لإعادة المحاولة';
+
+            if (error.message.includes('network') || error.message.includes('fetch')) {
+              errorMessage = this.currentLanguage === 'en' ? 'Network error. Check your connection.' : 'خطأ في الشبكة. تحقق من اتصالك.';
+            } else if (error.message.includes('permission')) {
+              errorMessage = this.currentLanguage === 'en' ? 'Permission denied.' : 'تم رفض الإذن.';
+            }
+
+            // Retry on network errors with exponential backoff
             if (retryCount < maxRetries && (error.message.includes('network') || error.message.includes('fetch'))) {
-              console.log(`Retrying loadNearbyReports (${retryCount + 1}/${maxRetries})...`);
-              setTimeout(() => this.loadNearbyReports(retryCount + 1), 1000);
+              const delay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff, max 5s
+              console.log(`Retrying loadNearbyReports (${retryCount + 1}/${maxRetries}) in ${delay}ms...`);
+
+              setTimeout(() => this.loadNearbyReports(retryCount + 1), delay);
               return;
             }
 
-            document.getElementById('nearbyReports').innerHTML =
-              '<div class="no-data" data-en="Error loading reports. Please try again." data-ar="خطأ في تحميل التقارير. يرجى المحاولة مرة أخرى.">Error loading reports. Please try again.</div>';
+            // Show error with retry option
+            container.innerHTML = `
+              <div class="no-data error-state" onclick="window.app.loadNearbyReports()">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>${errorMessage}</p>
+                <small style="color: var(--text-muted); cursor: pointer;">${retryText}</small>
+              </div>
+            `;
             return;
           }
 
+          // Process reports data
           this.nearbyReports = reports.map(report => {
             const userVote = report.votes && report.votes.length > 0 ?
               report.votes.find(v => v.user_id === this.userData?.id)?.vote_type : null;
@@ -3051,17 +3204,35 @@
           });
 
           this.displayNearbyReports();
+
+          // Update connection status to connected
+          this.updateConnectionStatus(true);
+
         } catch (error) {
           console.error("Error loading nearby reports:", error);
 
           if (retryCount < maxRetries) {
-            console.log(`Retrying loadNearbyReports (${retryCount + 1}/${maxRetries})...`);
-            setTimeout(() => this.loadNearbyReports(retryCount + 1), 1000);
+            const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+            console.log(`Retrying loadNearbyReports (${retryCount + 1}/${maxRetries}) in ${delay}ms...`);
+            setTimeout(() => this.loadNearbyReports(retryCount + 1), delay);
             return;
           }
 
-          document.getElementById('nearbyReports').innerHTML =
-            '<div class="no-data" data-en="Error loading reports. Please try again." data-ar="خطأ في تحميل التقارير. يرجى المحاولة مرة أخرى.">Error loading reports. Please try again.</div>';
+          // Show final error state
+          const container = document.getElementById('nearbyReports');
+          if (container) {
+            const errorMsg = this.currentLanguage === 'en' ? 'Unable to load reports. Please check your connection and try again.' : 'تعذر تحميل التقارير. يرجى التحقق من اتصالك وحاول مرة أخرى.';
+            container.innerHTML = `
+              <div class="no-data error-state" onclick="window.app.loadNearbyReports()">
+                <i class="fas fa-wifi-slash"></i>
+                <p>${errorMsg}</p>
+                <small style="color: var(--text-muted); cursor: pointer;">${this.currentLanguage === 'en' ? 'Tap to retry' : 'اضغط لإعادة المحاولة'}</small>
+              </div>
+            `;
+          }
+
+          // Update connection status to disconnected
+          this.updateConnectionStatus(false);
         }
       }
       
@@ -4176,32 +4347,58 @@
         document.body.setAttribute('dir', this.currentLanguage === 'ar' ? 'rtl' : 'ltr');
       }
       
-      showNotification(message, type = 'info') {
+      showNotification(message, type = 'info', duration = 3000) {
         // Remove any existing notification
         const existingNotification = document.querySelector('.notification');
         if (existingNotification) {
           existingNotification.remove();
         }
-        
+
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
-        
+
         // Add icon based on notification type
         let icon = 'fas fa-info-circle';
         if (type === 'success') icon = 'fas fa-check-circle';
         if (type === 'error') icon = 'fas fa-exclamation-circle';
         if (type === 'warning') icon = 'fas fa-exclamation-triangle';
-        
-        notification.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
-        
+
+        // Add close button for manual dismissal
+        notification.innerHTML = `
+          <i class="${icon}"></i>
+          <span>${message}</span>
+          <button class="notification-close" onclick="this.parentElement.remove()" aria-label="Close notification">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+
         document.body.appendChild(notification);
-        
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
+
+        // Auto-remove after specified duration
+        const timeoutId = setTimeout(() => {
           if (notification.parentNode) {
             notification.remove();
           }
-        }, 3000);
+        }, duration);
+
+        // Store timeout ID for potential clearing
+        notification.dataset.timeoutId = timeoutId;
+
+        // Add hover behavior to pause auto-dismiss
+        notification.addEventListener('mouseenter', () => {
+          clearTimeout(timeoutId);
+        });
+
+        notification.addEventListener('mouseleave', () => {
+          const newTimeoutId = setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, duration);
+          notification.dataset.timeoutId = newTimeoutId;
+        });
+
+        return notification;
       }
       
       closeModal(modalId) {
@@ -5455,6 +5652,114 @@
               notification.remove();
             }
           }, 10000);
+        }
+      }
+
+      setupRealtimeSubscriptions() {
+        console.log("Setting up real-time subscriptions...");
+
+        // Subscribe to new reports
+        this.supabase
+          .channel('reports_changes')
+          .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'reports'
+          }, (payload) => {
+            console.log('New report received:', payload.new);
+            this.handleNewReport(payload.new);
+          })
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'reports'
+          }, (payload) => {
+            console.log('Report updated:', payload.new);
+            this.handleReportUpdate(payload.new);
+          })
+          .subscribe();
+
+        // Subscribe to vote changes
+        this.supabase
+          .channel('votes_changes')
+          .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'votes'
+          }, (payload) => {
+            console.log('New vote received:', payload.new);
+            this.handleNewVote(payload.new);
+          })
+          .subscribe();
+
+        console.log("Real-time subscriptions established");
+      }
+
+      handleNewReport(newReport) {
+        // Add the new report to our local data
+        const reportWithVote = {
+          ...newReport,
+          user_vote: null // New reports don't have user votes yet
+        };
+
+        // Add to the beginning of the array (most recent first)
+        this.nearbyReports.unshift(reportWithVote);
+
+        // Keep only the most recent 20 reports
+        if (this.nearbyReports.length > 20) {
+          this.nearbyReports = this.nearbyReports.slice(0, 20);
+        }
+
+        // Update the UI
+        this.displayNearbyReports();
+        this.updateStats();
+        this.updateVibeCategories();
+
+        // Update map if it's currently visible
+        if (document.getElementById('mapView').classList.contains('active')) {
+          this.addReportMarkers();
+        }
+
+        // Show a subtle notification for new reports
+        this.showNotification("New safety report added nearby", "info", 2000);
+      }
+
+      handleReportUpdate(updatedReport) {
+        // Find and update the report in our local data
+        const reportIndex = this.nearbyReports.findIndex(r => r.id === updatedReport.id);
+        if (reportIndex !== -1) {
+          this.nearbyReports[reportIndex] = {
+            ...this.nearbyReports[reportIndex],
+            ...updatedReport
+          };
+
+          // Update the UI
+          this.displayNearbyReports();
+          this.updateStats();
+        }
+      }
+
+      handleNewVote(newVote) {
+        // If this is our vote, update the UI immediately
+        if (this.isAuthenticated && newVote.user_id === this.userData.id) {
+          // The vote was already handled locally, no need to update
+          return;
+        }
+
+        // Find the report and update its vote counts
+        const reportIndex = this.nearbyReports.findIndex(r => r.id === newVote.report_id);
+        if (reportIndex !== -1) {
+          const report = this.nearbyReports[reportIndex];
+
+          // Update vote counts (this is a simplified approach - in production you'd want to get accurate counts)
+          if (newVote.vote_type === 'upvote') {
+            report.upvotes = (report.upvotes || 0) + 1;
+          } else if (newVote.vote_type === 'downvote') {
+            report.downvotes = (report.downvotes || 0) + 1;
+          }
+
+          // Update the UI
+          this.displayNearbyReports();
         }
       }
 
