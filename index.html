@@ -6052,7 +6052,7 @@
           <div class="card">
             <div class="card-title">
               <i class="fas fa-map-marker-alt"></i>
-              <span data-en="Local Area Vibe (${localStats.radius}km radius)" data-ar="حالة المنطقة المحلية (نصف قطر ${localStats.radius} كم)">Local Area Vibe (${localStats.radius}km radius)</span>
+              <span data-en="Local Area Vibe" data-ar="حالة المنطقة المحلية">Local Area Vibe</span>
             </div>
             <div class="local-area-stats">
               <div class="local-vibe-display">
@@ -6062,7 +6062,8 @@
                 <div class="local-vibe-info">
                   <div class="local-vibe-name">${localStats.dominantVibe ? this.capitalizeFirstLetter(localStats.dominantVibe) : 'No Data'}</div>
                   <div class="local-vibe-percentage">${localStats.dominantVibe ? localStats.percentage + '%' : ''}</div>
-                  <div class="local-vibe-count">${localStats.totalLocalReports} reports in area</div>
+                  <div class="local-vibe-count">${localStats.totalLocalReports} reports in ${localStats.radius}km radius</div>
+                  ${localStats.address && localStats.address !== 'Unknown Location' ? `<div class="local-area-address" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><i class="fas fa-map-pin"></i> ${localStats.address}</div>` : ''}
                 </div>
               </div>
             </div>
@@ -6130,67 +6131,51 @@
           dominantVibe: null,
           percentage: 0,
           radius: 1,
-          address: null
+          address: null,
+          hasLocationData: false
         };
 
-        if (!stats.reports) {
+        if (!stats.reports || !this.userLocation) {
           return localStats;
         }
 
-        // If user has location, calculate based on distance
-        if (this.userLocation) {
-          const userLat = this.userLocation.latitude;
-          const userLng = this.userLocation.longitude;
+        const userLat = this.userLocation.latitude;
+        const userLng = this.userLocation.longitude;
 
-          // Try expanding radii until we find reports
-          const radii = [1, 5, 10, 25, 50];
+        // Try expanding radii until we find reports (strictly location-based only)
+        const radii = [1, 2, 5, 10, 25];
 
-          for (const radius of radii) {
-            localStats.totalLocalReports = 0;
-            localStats.vibeDistribution = {};
-            localStats.radius = radius;
+        for (const radius of radii) {
+          localStats.totalLocalReports = 0;
+          localStats.vibeDistribution = {};
+          localStats.radius = radius;
 
-            stats.reports.forEach(report => {
-              if (report.latitude && report.longitude) {
-                const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
-                if (distance <= radius) {
-                  localStats.totalLocalReports++;
-                  localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
-                }
+          stats.reports.forEach(report => {
+            if (report.latitude && report.longitude) {
+              const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
+              if (distance <= radius) {
+                localStats.totalLocalReports++;
+                localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
+                localStats.hasLocationData = true;
               }
-            });
-
-            if (localStats.totalLocalReports > 0) {
-              break; // Found reports, use this radius
             }
-          }
+          });
 
-          // Get address for user location
+          if (localStats.totalLocalReports > 0) {
+            break; // Found reports within this radius, use it
+          }
+        }
+
+        // Get address for user location (only if we have location data)
+        if (localStats.hasLocationData) {
           this.getAddressFromCoordinates(userLat, userLng, (address) => {
             localStats.address = address;
             this.updateLocalAreaDisplay(localStats);
           });
         }
 
-        // If no location-based reports found, or no user location, include all recent reports
-        if (localStats.totalLocalReports === 0) {
-          // Include all reports from the last 24 hours as "local area"
-          const oneDayAgo = new Date();
-          oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-
-          stats.reports.forEach(report => {
-            const reportDate = new Date(report.created_at);
-            if (reportDate > oneDayAgo) {
-              localStats.totalLocalReports++;
-              localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
-            }
-          });
-
-          localStats.radius = 'N/A (no location)';
-        }
-
-        // Calculate dominant vibe and percentage
-        if (localStats.totalLocalReports > 0) {
+        // Calculate dominant vibe and percentage (only for location-based reports)
+        if (localStats.totalLocalReports > 0 && localStats.hasLocationData) {
           let maxCount = 0;
           for (const [vibe, count] of Object.entries(localStats.vibeDistribution)) {
             if (count > maxCount) {
