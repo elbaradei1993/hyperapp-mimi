@@ -1887,6 +1887,20 @@
       margin-top: 15px;
     }
 
+    .activity-chart.mobile {
+      margin-top: 10px;
+    }
+
+    .activity-chart.mobile .activity-bars {
+      height: 80px;
+      gap: 1px;
+    }
+
+    .activity-chart.mobile .activity-labels {
+      font-size: 10px;
+      padding: 0 1px;
+    }
+
     .activity-bars {
       display: flex;
       align-items: end;
@@ -2763,6 +2777,9 @@
         if (themeIcon) {
           themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
         }
+
+        // Load weather data immediately (don't wait for location)
+        this.loadWeatherData();
 
         // Set up auth listeners
         this.setupAuthListeners();
@@ -5665,13 +5682,12 @@
             </div>
           </div>
 
-          ${!isMobile ? `
           <div class="card">
             <div class="card-title">
               <i class="fas fa-clock"></i>
               <span data-en="Activity Patterns" data-ar="أنماط النشاط">Activity Patterns</span>
             </div>
-            <div class="activity-chart">
+            <div class="activity-chart ${isMobile ? 'mobile' : ''}">
               <div class="activity-bars">
                 ${stats.hourlyActivity.map((count, hour) => `
                   <div class="activity-bar" title="${hour}:00 - ${count} reports">
@@ -5684,7 +5700,6 @@
               </div>
             </div>
           </div>
-          ` : ''}
         `;
 
         // Replace the stats grid with enhanced version
