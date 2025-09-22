@@ -4932,6 +4932,26 @@
         this.showNotification(`Switched to ${newTheme} theme`, 'info');
       }
 
+      getVibeCounts() {
+        // Count reports by vibe type
+        const vibeCounts = {
+          crowded: 0,
+          noisy: 0,
+          festive: 0,
+          calm: 0,
+          suspicious: 0,
+          dangerous: 0
+        };
+
+        this.nearbyReports.forEach(report => {
+          if (vibeCounts.hasOwnProperty(report.vibe_type)) {
+            vibeCounts[report.vibe_type]++;
+          }
+        });
+
+        return vibeCounts;
+      }
+
       updateStats() {
         const totalReports = this.nearbyReports.length;
         const activeUsers = Math.max(1, Math.floor(totalReports / 3)); // Estimate based on reports
@@ -4958,8 +4978,22 @@
         // Update vibe category counts
         this.updateVibeCategories();
 
+        // Update community vibe sidebar with current data
+        this.updateCommunityVibeSidebar(this.getVibeCounts());
+
+        // Update enhanced stats if available
+        this.updateEnhancedVibeStats(this.getVibeCounts());
+
         // Force update for mobile views
         this.forceMobileStatsUpdate();
+
+        // Update safety hub with latest data
+        this.updateSafetyHub();
+
+        // Update achievement system if user is authenticated
+        if (this.isAuthenticated) {
+          this.updateUserReputation();
+        }
       }
 
       forceMobileStatsUpdate() {
