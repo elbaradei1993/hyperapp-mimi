@@ -2103,7 +2103,7 @@
 
           // Prepare report data with coordinates if available
           const reportData = {
-            user_id: '00000000-0000-0000-0000-000000000000', // Anonymous user UUID
+            user_id: null, // Anonymous report - no user association
             vibe_type: this.selectedVibe,
             location: this.currentReportLocation,
             notes: notes || null
@@ -2211,7 +2211,7 @@
           }
 
           console.log("Submitting emergency report:", {
-            user_id: '00000000-0000-0000-0000-000000000000', // Anonymous user UUID
+            user_id: null, // Anonymous report - no user association
             vibe_type: 'dangerous',
             location: this.currentEmergencyLocation,
             notes: `EMERGENCY (${emergencyType}): ${details}`
@@ -2221,7 +2221,7 @@
             .from('reports')
             .insert([
               {
-                user_id: '00000000-0000-0000-0000-000000000000', // Anonymous user UUID
+                user_id: null, // Anonymous report - no user association
                 vibe_type: 'dangerous',
                 location: this.currentEmergencyLocation,
                 notes: `EMERGENCY (${emergencyType}): ${details}`
@@ -2795,11 +2795,29 @@
       }
       
       getCurrentLocation(callback) {
+        // Use cached location if available and recent (within 5 minutes)
+        if (this.userLocation && this.userLocation.timestamp) {
+          const age = Date.now() - this.userLocation.timestamp;
+          if (age < 300000) { // 5 minutes
+            this.getAddressFromCoordinates(this.userLocation.latitude, this.userLocation.longitude, (address) => {
+              callback(address || `${this.userLocation.latitude.toFixed(4)}, ${this.userLocation.longitude.toFixed(4)}`);
+            });
+            return;
+          }
+        }
+
         if (navigator.geolocation) {
+          // Show loading notification for location
+          this.showNotification("Getting your location...", "info");
+
           navigator.geolocation.getCurrentPosition(
             (position) => {
               const { latitude, longitude } = position.coords;
-              this.userLocation = { latitude, longitude };
+              this.userLocation = {
+                latitude,
+                longitude,
+                timestamp: Date.now()
+              };
 
               // Try to get address from coordinates (reverse geocoding)
               this.getAddressFromCoordinates(latitude, longitude, (address) => {
@@ -2808,9 +2826,16 @@
             },
             (error) => {
               console.log('Geolocation error:', error);
-              callback('Location unavailable');
+              // Use fallback location for demo purposes
+              const fallbackLocation = 'Demo Location';
+              this.showNotification("Using demo location - enable GPS for accurate reporting", "warning");
+              callback(fallbackLocation);
             },
-            { timeout: 10000, enableHighAccuracy: true }
+            {
+              timeout: 8000, // Reduced timeout for faster response
+              enableHighAccuracy: true,
+              maximumAge: 300000 // Accept cached position up to 5 minutes old
+            }
           );
         } else {
           callback('Location not supported');
