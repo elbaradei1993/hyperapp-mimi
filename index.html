@@ -4975,17 +4975,14 @@
           activeUsersElement.style.display = '';
         }
 
-        // Get current vibe counts for consistent data across all components
-        const vibeCounts = this.getVibeCounts();
-
         // Update vibe category counts
-        this.updateVibeCategories(vibeCounts);
+        this.updateVibeCategories();
 
         // Update community vibe sidebar with current data
-        this.updateCommunityVibeSidebar(vibeCounts);
+        this.updateCommunityVibeSidebar(this.getVibeCounts());
 
         // Update enhanced stats if available
-        this.updateEnhancedVibeStats(vibeCounts);
+        this.updateEnhancedVibeStats(this.getVibeCounts());
 
         // Force update for mobile views
         this.forceMobileStatsUpdate();
@@ -5022,11 +5019,22 @@
         }
       }
 
-      updateVibeCategories(vibeCounts = null) {
-        // If vibeCounts not provided, calculate from current reports
-        if (!vibeCounts) {
-          vibeCounts = this.getVibeCounts();
-        }
+      updateVibeCategories() {
+        // Count reports by vibe type
+        const vibeCounts = {
+          crowded: 0,
+          noisy: 0,
+          festive: 0,
+          calm: 0,
+          suspicious: 0,
+          dangerous: 0
+        };
+
+        this.nearbyReports.forEach(report => {
+          if (vibeCounts.hasOwnProperty(report.vibe_type)) {
+            vibeCounts[report.vibe_type]++;
+          }
+        });
 
         // Update the UI with proper error handling
         Object.keys(vibeCounts).forEach(vibe => {
