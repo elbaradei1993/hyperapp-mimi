@@ -8,7 +8,7 @@ create table if not exists public.users (
 
 create table if not exists public.reports (
   id bigint generated always as identity primary key,
-  user_id uuid not null references public.users(user_id) on delete cascade,
+  user_id uuid references public.users(user_id) on delete cascade,
   vibe_type text not null check (vibe_type in ('crowded','noisy','festive','calm','suspicious','dangerous')),
   location text,
   notes text,
@@ -65,6 +65,11 @@ drop policy if exists reports_insert_own on public.reports;
 create policy reports_insert_own on public.reports
   for insert to authenticated
   with check (user_id::text = auth.uid()::text);
+
+drop policy if exists reports_insert_anonymous on public.reports;
+create policy reports_insert_anonymous on public.reports
+  for insert to anon
+  with check (user_id is null);
 
 drop policy if exists reports_update_own on public.reports;
 create policy reports_update_own on public.reports
