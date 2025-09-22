@@ -2363,9 +2363,16 @@
     <main class="content-area">
       <!-- Main View -->
       <div id="mainView" class="view active">
-
-
-
+        <!-- Nearby Reports -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-list"></i>
+            <span data-en="Nearby Reports" data-ar="التقارير القريبة">Nearby Reports</span>
+          </div>
+          <div id="nearbyReports" class="reports-container">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
 
         <!-- Statistics Card -->
         <div class="card">
@@ -2816,6 +2823,9 @@
 
         // Update vibe categories with available data
         this.updateVibeCategories();
+
+        // Try to load weather data immediately
+        this.loadWeatherData();
       }
 
       async loadAdvancedFeatures() {
@@ -4756,11 +4766,53 @@
         const totalReports = this.nearbyReports.length;
         const activeUsers = Math.max(1, Math.floor(totalReports / 3)); // Estimate based on reports
 
-        document.getElementById('totalReports').textContent = totalReports;
-        document.getElementById('activeUsers').textContent = activeUsers;
+        // Update stats display - ensure it works on both desktop and mobile
+        const totalReportsElement = document.getElementById('totalReports');
+        const activeUsersElement = document.getElementById('activeUsers');
+
+        if (totalReportsElement) {
+          totalReportsElement.textContent = totalReports;
+          // Force style recalculation for mobile
+          totalReportsElement.style.display = 'block';
+          totalReportsElement.offsetHeight; // Trigger reflow
+          totalReportsElement.style.display = '';
+        }
+        if (activeUsersElement) {
+          activeUsersElement.textContent = activeUsers;
+          // Force style recalculation for mobile
+          activeUsersElement.style.display = 'block';
+          activeUsersElement.offsetHeight; // Trigger reflow
+          activeUsersElement.style.display = '';
+        }
 
         // Update vibe category counts
         this.updateVibeCategories();
+
+        // Force update for mobile views
+        this.forceMobileStatsUpdate();
+      }
+
+      forceMobileStatsUpdate() {
+        // Ensure stats are visible on mobile by forcing DOM updates
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+          // Force a re-render of the stats section
+          const statsGrid = document.getElementById('statsGrid');
+          if (statsGrid) {
+            // Add a temporary class to force re-render
+            statsGrid.classList.add('force-update');
+            // Force reflow
+            statsGrid.offsetHeight;
+            statsGrid.classList.remove('force-update');
+
+            // Also update parent container
+            const parentCard = statsGrid.closest('.card');
+            if (parentCard) {
+              parentCard.style.display = 'block';
+              parentCard.offsetHeight;
+            }
+          }
+        }
       }
 
       updateVibeCategories() {
@@ -4780,11 +4832,41 @@
           }
         });
 
-        // Update the UI
+        // Update the UI with proper error handling
         Object.keys(vibeCounts).forEach(vibe => {
           const countElement = document.getElementById(vibe + 'Count');
           if (countElement) {
             countElement.textContent = vibeCounts[vibe];
+          } else {
+            console.warn(`Element with ID '${vibe}Count' not found`);
+          }
+        });
+
+        // Also update the enhanced stats if available
+        this.updateEnhancedVibeStats(vibeCounts);
+      }
+
+      updateEnhancedVibeStats(vibeCounts) {
+        // Update vibe distribution in enhanced stats if they exist
+        const vibeBars = document.querySelectorAll('.vibe-bar');
+        vibeBars.forEach(bar => {
+          const vibeLabel = bar.querySelector('.vibe-label');
+          if (vibeLabel) {
+            const vibeType = vibeLabel.textContent.toLowerCase();
+            const vibeCount = vibeCounts[vibeType];
+            const countElement = bar.querySelector('.vibe-count');
+            if (countElement) {
+              countElement.textContent = vibeCount;
+            }
+
+            // Update progress bar width
+            const progressElement = bar.querySelector('.vibe-progress');
+            const fillElement = bar.querySelector('.vibe-fill');
+            if (progressElement && fillElement) {
+              const totalReports = this.nearbyReports.length;
+              const percentage = totalReports > 0 ? (vibeCount / totalReports) * 100 : 0;
+              fillElement.style.width = `${percentage}%`;
+            }
           }
         });
       }
@@ -4966,17 +5048,19 @@
 
       updateWeatherAlert(weatherData) {
         const weatherAlert = document.getElementById('weatherAlert');
+        if (!weatherAlert) return;
+
         const alertTitle = weatherAlert.querySelector('.alert-title');
         const alertMessage = weatherAlert.querySelector('.alert-message');
         const weatherIcon = weatherAlert.querySelector('i');
 
         if (!weatherData) {
           // Fallback message
-          alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Alert' : 'تنبيه جوي';
-          alertMessage.textContent = this.currentLanguage === 'en'
+          if (alertTitle) alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Alert' : 'تنبيه جوي';
+          if (alertMessage) alertMessage.textContent = this.currentLanguage === 'en'
             ? 'Stay safe during weather changes'
             : 'ابق آمناً أثناء تغيرات الطقس';
-          weatherIcon.className = 'fas fa-cloud-sun';
+          if (weatherIcon) weatherIcon.className = 'fas fa-cloud-sun';
           return;
         }
 
@@ -4996,7 +5080,7 @@
           fog: 'fas fa-smog'
         };
 
-        weatherIcon.className = iconMap[condition] || 'fas fa-cloud-sun';
+        if (weatherIcon) weatherIcon.className = iconMap[condition] || 'fas fa-cloud-sun';
 
         // Determine if weather requires safety alert
         const severeConditions = ['thunderstorm', 'rain', 'snow', 'fog'];
@@ -5005,15 +5089,15 @@
                         weatherData.main.temp > 35;
 
         if (isSevere) {
-          alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Warning' : 'تحذير جوي';
-          alertMessage.textContent = this.currentLanguage === 'en'
+          if (alertTitle) alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Warning' : 'تحذير جوي';
+          if (alertMessage) alertMessage.textContent = this.currentLanguage === 'en'
             ? `${temp}°C - ${description}. Take precautions!`
             : `${temp}°C - ${description}. خذ احتياطاتك!`;
           weatherAlert.style.borderColor = 'rgba(255, 193, 7, 0.5)';
           weatherAlert.style.background = 'rgba(255, 193, 7, 0.1)';
         } else {
-          alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Update' : 'تحديث جوي';
-          alertMessage.textContent = this.currentLanguage === 'en'
+          if (alertTitle) alertTitle.textContent = this.currentLanguage === 'en' ? 'Weather Update' : 'تحديث جوي';
+          if (alertMessage) alertMessage.textContent = this.currentLanguage === 'en'
             ? `${temp}°C - ${description}. Enjoy your day!`
             : `${temp}°C - ${description}. استمتع بيومك!`;
           weatherAlert.style.borderColor = 'rgba(23, 162, 184, 0.3)';
