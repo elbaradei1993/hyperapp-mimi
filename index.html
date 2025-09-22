@@ -3021,20 +3021,30 @@
       }
 
       async fastInitialLoad() {
-        // Load only essential data first
-        await this.loadNearbyReports();
+        try {
+          // Load only essential data first
+          await this.loadNearbyReports();
 
-        // Update basic stats immediately
-        this.updateStats();
+          // Ensure we have data before updating UI
+          if (this.nearbyReports && this.nearbyReports.length >= 0) {
+            // Update all UI components in sequence to avoid race conditions
+            await this.updateStats();
+            await this.updateVibeCategories();
+            await this.updateCommunityVibeSidebar();
+            await this.updateEnhancedVibeStats();
+          }
 
-        // Load map (lightweight)
-        this.loadMap();
+          // Load map (lightweight)
+          this.loadMap();
 
-        // Update vibe categories with available data
-        this.updateVibeCategories();
+          // Try to load weather data immediately
+          this.loadWeatherData();
 
-        // Try to load weather data immediately
-        this.loadWeatherData();
+        } catch (error) {
+          console.error('Error in fastInitialLoad:', error);
+          // Fallback: try to update UI anyway
+          this.updateStats();
+        }
       }
 
       async loadAdvancedFeatures() {
@@ -4953,6 +4963,12 @@
       }
 
       updateStats() {
+        // Ensure we have reports data
+        if (!this.nearbyReports) {
+          console.warn('No reports data available for stats update');
+          return;
+        }
+
         const totalReports = this.nearbyReports.length;
         const activeUsers = Math.max(1, Math.floor(totalReports / 3)); // Estimate based on reports
 
@@ -4975,14 +4991,13 @@
           activeUsersElement.style.display = '';
         }
 
-        // Update vibe category counts
-        this.updateVibeCategories();
+        // Get current vibe counts for consistent data across all components
+        const vibeCounts = this.getVibeCounts();
 
-        // Update community vibe sidebar with current data
-        this.updateCommunityVibeSidebar(this.getVibeCounts());
-
-        // Update enhanced stats if available
-        this.updateEnhancedVibeStats(this.getVibeCounts());
+        // Update all components with the same data
+        this.updateVibeCategories(vibeCounts);
+        this.updateCommunityVibeSidebar(vibeCounts);
+        this.updateEnhancedVibeStats(vibeCounts);
 
         // Force update for mobile views
         this.forceMobileStatsUpdate();
@@ -4993,6 +5008,11 @@
         // Update achievement system if user is authenticated
         if (this.isAuthenticated) {
           this.updateUserReputation();
+        }
+
+        // Debug logging in development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          console.log('Stats updated:', { totalReports, activeUsers, vibeCounts });
         }
       }
 
@@ -5019,22 +5039,11 @@
         }
       }
 
-      updateVibeCategories() {
-        // Count reports by vibe type
-        const vibeCounts = {
-          crowded: 0,
-          noisy: 0,
-          festive: 0,
-          calm: 0,
-          suspicious: 0,
-          dangerous: 0
-        };
-
-        this.nearbyReports.forEach(report => {
-          if (vibeCounts.hasOwnProperty(report.vibe_type)) {
-            vibeCounts[report.vibe_type]++;
-          }
-        });
+      updateVibeCategories(vibeCounts = null) {
+        // If vibeCounts not provided, calculate from current reports
+        if (!vibeCounts) {
+          vibeCounts = this.getVibeCounts();
+        }
 
         // Update the UI with proper error handling
         Object.keys(vibeCounts).forEach(vibe => {
