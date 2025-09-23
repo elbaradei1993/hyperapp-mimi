@@ -6644,6 +6644,22 @@
           localStats.percentage = Math.round((maxCount / localStats.totalLocalReports) * 100);
         }
 
+        // If no local reports found, fall back to general community stats
+        if (localStats.totalLocalReports === 0) {
+          localStats.totalLocalReports = stats.totalReports;
+          localStats.vibeDistribution = stats.vibeDistribution;
+          localStats.radius = 'General Area';
+          // Calculate dominant vibe from general stats
+          let maxCount = 0;
+          for (const [vibe, count] of Object.entries(stats.vibeDistribution)) {
+            if (count > maxCount) {
+              maxCount = count;
+              localStats.dominantVibe = vibe;
+            }
+          }
+          localStats.percentage = stats.totalReports > 0 ? Math.round((maxCount / stats.totalReports) * 100) : 0;
+        }
+
         return localStats;
       }
 
