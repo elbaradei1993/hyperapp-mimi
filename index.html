@@ -3227,6 +3227,11 @@
           // Try to get user location
           this.requestUserLocation();
 
+          // Also try to get location using standard browser API if not in Telegram
+          if (!this.tg) {
+            this.requestBrowserLocationSilently();
+          }
+
           // Set up event listeners
           this.setupEventListeners();
 
@@ -5033,6 +5038,43 @@
         }
       }
 
+      async requestBrowserLocationSilently() {
+        // Try to get location using standard browser API without showing UI
+        if (!navigator.geolocation) {
+          console.log('Geolocation not supported by this browser');
+          return;
+        }
+
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 10000, // 10 seconds timeout
+              enableHighAccuracy: true,
+              maximumAge: 300000 // Accept cached position up to 5 minutes old
+            });
+          });
+
+          const { latitude, longitude } = position.coords;
+          this.userLocation = {
+            latitude,
+            longitude,
+            timestamp: Date.now()
+          };
+
+          console.log('Location obtained silently:', latitude, longitude);
+
+          // Update location-based data immediately
+          this.updateLocationBasedData();
+
+          // Refresh enhanced stats to show location-based data
+          await this.loadEnhancedStats();
+
+        } catch (error) {
+          // Silently fail - user can manually enable location later
+          console.log('Location not available on app start, user can enable it manually');
+        }
+      }
+
       async requestUserLocationManually() {
         // Show loading state on location button
         const locationBtn = document.getElementById('locationBtn');
@@ -6716,12 +6758,9 @@
         }
 
         if (localVibeCount) {
-          const radiusText = localStats.radius === 'N/A (no location)' ? 'N/A' : `${localStats.radius}km`;
-          const addressText = localStats.address && localStats.address !== 'Unknown Location' ? ` - ${localStats.address}` : '';
-          localVibeCount.textContent = `${localStats.totalLocalReports} reports in area${addressText}`;
+          const addressText = localStats.address && localStats.address !== 'Unknown Location' ? localStats.address : 'Your Area';
+          localVibeCount.textContent = addressText;
         }
-
-
 
         // Force update the local area stats display
         this.forceLocalAreaUpdate(localStats);
