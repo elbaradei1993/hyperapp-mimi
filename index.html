@@ -6624,8 +6624,8 @@
           }
         }
 
-        // Get address for user location (only if we have location data)
-        if (localStats.hasLocationData) {
+        // Always try to get address for user location if available
+        if (this.userLocation) {
           this.getAddressFromCoordinates(userLat, userLng, (address) => {
             localStats.address = address;
             this.updateLocalAreaDisplay(localStats);
