@@ -4763,6 +4763,8 @@
             if (age < 300000) { // 5 minutes
               this.getAddressFromCoordinates(this.userLocation.latitude, this.userLocation.longitude, (address) => {
                 resolve(address || `${this.userLocation.latitude.toFixed(4)}, ${this.userLocation.longitude.toFixed(4)}`);
+                // Update location-based data when we have a valid cached location
+                this.updateLocationBasedData();
               });
               return;
             }
@@ -4784,6 +4786,8 @@
                 // Try to get address from coordinates (reverse geocoding)
                 this.getAddressFromCoordinates(latitude, longitude, (address) => {
                   resolve(address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+                  // Update location-based data when location is first obtained
+                  this.updateLocationBasedData();
                 });
               },
               (error) => {
@@ -4834,6 +4838,133 @@
           } catch (e) {
             // Location request not available in this Telegram version
           }
+        }
+      }
+
+      // Update location-based data when user location changes
+      updateLocationBasedData() {
+        if (this.userLocation && this.nearbyReports.length > 0) {
+          // Calculate local area stats with current reports
+          const stats = {
+            reports: this.nearbyReports,
+            totalReports: this.nearbyReports.length
+          };
+
+          const localStats = this.calculateLocalAreaStats(stats);
+          this.updateLocalAreaDisplay(localStats);
+
+          // Update community stats to reflect location-based data
+          this.updateCommunityStatsWithLocation();
+        }
+      }
+
+      // Update community stats to include location-based insights
+      updateCommunityStatsWithLocation() {
+        if (!this.userLocation || this.nearbyReports.length === 0) return;
+
+        // Calculate location-based community stats
+        const locationBasedStats = this.calculateLocationBasedCommunityStats();
+
+        // Update the community stats display with location context
+        this.updateCommunityStatsDisplay(locationBasedStats);
+      }
+
+      // Calculate community stats based on user's location
+      calculateLocationBasedCommunityStats() {
+        const stats = {
+          nearbyReports: 0,
+          localVibeDistribution: {},
+          dominantLocalVibe: null,
+          localSafetyScore: 0,
+          address: null
+        };
+
+        if (!this.userLocation) return stats;
+
+        const userLat = this.userLocation.latitude;
+        const userLng = this.userLocation.longitude;
+
+        // Count reports within 5km radius for "nearby" stats
+        this.nearbyReports.forEach(report => {
+          if (report.latitude && report.longitude) {
+            const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
+            if (distance <= 5) { // 5km radius for community stats
+              stats.nearbyReports++;
+              stats.localVibeDistribution[report.vibe_type] = (stats.localVibeDistribution[report.vibe_type] || 0) + 1;
+            }
+          }
+        });
+
+        // Calculate dominant local vibe
+        if (stats.nearbyReports > 0) {
+          let maxCount = 0;
+          for (const [vibe, count] of Object.entries(stats.localVibeDistribution)) {
+            if (count > maxCount) {
+              maxCount = count;
+              stats.dominantLocalVibe = vibe;
+            }
+          }
+
+          // Calculate local safety score (higher is safer)
+          const dangerousCount = stats.localVibeDistribution.dangerous || 0;
+          stats.localSafetyScore = Math.round(((stats.nearbyReports - dangerousCount) / stats.nearbyReports) * 100);
+        }
+
+        // Get address for the location
+        this.getAddressFromCoordinates(userLat, userLng, (address) => {
+          stats.address = address;
+          this.updateCommunityStatsDisplay(stats);
+        });
+
+        return stats;
+      }
+
+      // Update community stats display with location data
+      updateCommunityStatsDisplay(locationStats) {
+        // Update the stats grid to show location-aware data
+        const totalReportsElement = document.getElementById('totalReports');
+        const activeUsersElement = document.getElementById('activeUsers');
+
+        if (totalReportsElement && locationStats.nearbyReports > 0) {
+          // Show nearby reports count instead of total
+          totalReportsElement.textContent = locationStats.nearbyReports;
+          // Add tooltip or subtitle to indicate these are nearby reports
+          totalReportsElement.title = `Reports within 5km of your location`;
+        }
+
+        // Update active users estimate based on nearby activity
+        if (activeUsersElement && locationStats.nearbyReports > 0) {
+          const estimatedUsers = Math.max(1, Math.floor(locationStats.nearbyReports / 2)); // Estimate users from reports
+          activeUsersElement.textContent = estimatedUsers;
+          activeUsersElement.title = `Estimated active users in your area`;
+        }
+
+        // Update the community vibe sidebar with local data if available
+        if (locationStats.dominantLocalVibe) {
+          const dominantVibeElement = document.getElementById('dominantVibe');
+          if (dominantVibeElement) {
+            const iconElement = dominantVibeElement.querySelector('i');
+            const nameElement = dominantVibeElement.querySelector('span:first-of-type');
+            const percentageElement = dominantVibeElement.querySelector('.vibe-percentage');
+
+            if (iconElement) iconElement.className = `${this.getVibeIcon(locationStats.dominantLocalVibe)}`;
+            if (nameElement) nameElement.textContent = this.capitalizeFirstLetter(locationStats.dominantLocalVibe);
+            if (percentageElement) {
+              const totalLocal = Object.values(locationStats.localVibeDistribution).reduce((a, b) => a + b, 0);
+              const dominantCount = locationStats.localVibeDistribution[locationStats.dominantLocalVibe] || 0;
+              const percentage = totalLocal > 0 ? Math.round((dominantCount / totalLocal) * 100) : 0;
+              percentageElement.textContent = `${percentage}%`;
+            }
+          }
+        }
+
+        // Add location context to the community stats card title
+        const communityStatsCard = document.querySelector('.card-title span[data-en="Community Stats"]');
+        if (communityStatsCard && locationStats.address) {
+          const currentTitle = communityStatsCard.getAttribute('data-en');
+          const locationAwareTitle = `Community Stats - ${locationStats.address}`;
+          communityStatsCard.setAttribute('data-en', locationAwareTitle);
+          communityStatsCard.textContent = locationAwareTitle;
         }
       }
       
@@ -6414,6 +6545,9 @@
         this.updateStats();
         this.updateVibeCategories();
         this.updateSafetyHub(); // Update safety tips based on new reports
+
+        // Update location-based data when new reports are added
+        this.updateLocationBasedData();
 
         // Update map if it's currently visible
         if (document.getElementById('mapView').classList.contains('active')) {
