@@ -6462,7 +6462,7 @@
                 <div class="local-vibe-info">
                   <div class="local-vibe-name" style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${localStats.dominantVibe ? this.capitalizeFirstLetter(localStats.dominantVibe) : 'No Data'}</div>
                   <div class="local-vibe-percentage" style="font-size: 32px; font-weight: bold; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;">${localStats.dominantVibe && localStats.percentage > 0 ? localStats.percentage + '%' : ''}</div>
-                  ${localStats.address && localStats.address !== 'Unknown Location' && localStats.address !== 'Unknown' ? `<div class="local-area-address" style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><i class="fas fa-map-pin"></i> ${localStats.address}</div>` : ''}
+                  <div class="local-area-address" style="font-size: 14px; color: var(--text-light); display: flex; align-items: center; gap: 6px; margin-top: 8px;"><i class="fas fa-map-pin"></i> ${localStats.address || 'Your Area'}</div>
                 </div>
               </div>
             </div>
