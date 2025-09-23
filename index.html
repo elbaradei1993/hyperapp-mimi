@@ -6454,10 +6454,6 @@
           </div>
 
           <div class="card">
-            <div class="card-title">
-              <i class="fas fa-map-marker-alt"></i>
-              <span data-en="Local Area Vibe" data-ar="حالة المنطقة المحلية">Local Area Vibe</span>
-            </div>
             <div class="local-area-stats">
               <div class="local-vibe-display">
                 <div class="local-vibe-icon" style="background: ${localStats.dominantVibe ? this.getVibeColor(localStats.dominantVibe) : '#ccc'}; box-shadow: 0 0 20px ${localStats.dominantVibe ? this.getVibeColor(localStats.dominantVibe) + '40' : '#ccc40'};">
@@ -6725,14 +6721,7 @@
           localVibeCount.textContent = `${localStats.totalLocalReports} reports in area${addressText}`;
         }
 
-        // Update the card title with address if available
-        const cardTitle = document.querySelector('.card-title span[data-en*="Local Area Vibe"]');
-        if (cardTitle && localStats.address && localStats.address !== 'Unknown Location') {
-          const currentText = cardTitle.getAttribute('data-en');
-          const newText = `Local Area Vibe (${localStats.radius}km radius) - ${localStats.address}`;
-          cardTitle.setAttribute('data-en', newText);
-          cardTitle.textContent = newText;
-        }
+
 
         // Force update the local area stats display
         this.forceLocalAreaUpdate(localStats);
