@@ -6466,7 +6466,7 @@
                 <div class="local-vibe-info">
                   <div class="local-vibe-name">${localStats.dominantVibe ? this.capitalizeFirstLetter(localStats.dominantVibe) : 'No Data'}</div>
                   <div class="local-vibe-percentage">${localStats.dominantVibe && localStats.percentage > 0 ? localStats.percentage + '%' : ''}</div>
-                  <div class="local-vibe-count">${localStats.totalLocalReports} ${localStats.totalLocalReports === 1 ? 'report' : 'reports'} within ${localStats.radius}km radius</div>
+                  <div class="local-vibe-count">${localStats.totalLocalReports} ${localStats.totalLocalReports === 1 ? 'report' : 'reports'} ${localStats.radius === 'General Area' ? 'in general area' : 'within ' + localStats.radius + 'km radius'}</div>
                   ${localStats.address && localStats.address !== 'Unknown Location' && localStats.address !== 'Unknown' ? `<div class="local-area-address" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><i class="fas fa-map-pin"></i> ${localStats.address}</div>` : ''}
                 </div>
               </div>
@@ -6592,9 +6592,14 @@
           });
         }
 
-        if (!stats.reports || !this.userLocation) {
-          console.log('❌ Returning "No Data" - missing reports or user location');
+        if (!stats.reports) {
+          console.log('❌ Returning "No Data" - no reports available');
           return localStats;
+        }
+
+        if (!this.userLocation) {
+          console.log('No user location available, will fall back to general community stats');
+          // Continue to fallback logic below
         }
 
         const userLat = this.userLocation.latitude;
