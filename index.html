@@ -6282,16 +6282,7 @@
                 </div>
               </div>
 
-              <!-- DEBUG INFO - Remove after testing -->
-              <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; font-size: 11px; font-family: monospace;">
-                <div><strong>DEBUG INFO:</strong></div>
-                <div>User Location: ${this.userLocation ? `${this.userLocation.latitude.toFixed(4)}, ${this.userLocation.longitude.toFixed(4)}` : 'Not available'}</div>
-                <div>Total Reports: ${stats.reports ? stats.reports.length : 0}</div>
-                <div>Reports with coordinates: ${stats.reports ? stats.reports.filter(r => r.latitude && r.longitude).length : 0}</div>
-                <div>Local Reports Found: ${localStats.totalLocalReports}</div>
-                <div>Search Radius: ${localStats.radius}km</div>
-                <div>Has Location Data: ${localStats.hasLocationData ? 'Yes' : 'No'}</div>
-              </div>
+
             </div>
           </div>
 
