@@ -6197,6 +6197,17 @@
                   ${localStats.address && localStats.address !== 'Unknown Location' ? `<div class="local-area-address" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><i class="fas fa-map-pin"></i> ${localStats.address}</div>` : ''}
                 </div>
               </div>
+
+              <!-- DEBUG INFO - Remove after testing -->
+              <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; font-size: 11px; font-family: monospace;">
+                <div><strong>DEBUG INFO:</strong></div>
+                <div>User Location: ${this.userLocation ? `${this.userLocation.latitude.toFixed(4)}, ${this.userLocation.longitude.toFixed(4)}` : 'Not available'}</div>
+                <div>Total Reports: ${stats.reports ? stats.reports.length : 0}</div>
+                <div>Reports with coordinates: ${stats.reports ? stats.reports.filter(r => r.latitude && r.longitude).length : 0}</div>
+                <div>Local Reports Found: ${localStats.totalLocalReports}</div>
+                <div>Search Radius: ${localStats.radius}km</div>
+                <div>Has Location Data: ${localStats.hasLocationData ? 'Yes' : 'No'}</div>
+              </div>
             </div>
           </div>
 
@@ -6266,7 +6277,30 @@
           hasLocationData: false
         };
 
+        // DEBUG: Log location and report data status
+        console.log('=== Local Area Stats Debug ===');
+        console.log('User location available:', !!this.userLocation);
+        if (this.userLocation) {
+          console.log('User coordinates:', this.userLocation.latitude, this.userLocation.longitude);
+        }
+        console.log('Reports available:', !!stats.reports);
+        console.log('Number of reports:', stats.reports ? stats.reports.length : 0);
+
+        if (stats.reports && stats.reports.length > 0) {
+          console.log('Sample report data:');
+          console.log('Report 1:', {
+            id: stats.reports[0].id,
+            vibe_type: stats.reports[0].vibe_type,
+            location: stats.reports[0].location,
+            hasLatitude: !!stats.reports[0].latitude,
+            hasLongitude: !!stats.reports[0].longitude,
+            latitude: stats.reports[0].latitude,
+            longitude: stats.reports[0].longitude
+          });
+        }
+
         if (!stats.reports || !this.userLocation) {
+          console.log('❌ Returning "No Data" - missing reports or user location');
           return localStats;
         }
 
