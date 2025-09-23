@@ -6532,7 +6532,7 @@
                 <div class="safety-indicator">
                   <div class="indicator-bar">
                     <div class="indicator-fill ${stats.safetyScore >= 70 ? 'safe' : stats.safetyScore >= 40 ? 'moderate' : 'dangerous'}"
-                         style="width: ${stats.safetyScore}%"></div>
+                         style="width: ${100 - stats.safetyScore}%"></div>
                   </div>
                   <div class="indicator-labels">
                     <span data-en="Low Risk" data-ar="خطر منخفض">Low Risk</span>
