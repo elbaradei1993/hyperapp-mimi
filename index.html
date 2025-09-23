@@ -6460,14 +6460,13 @@
             </div>
             <div class="local-area-stats">
               <div class="local-vibe-display">
-                <div class="local-vibe-icon" style="background: ${localStats.dominantVibe ? this.getVibeColor(localStats.dominantVibe) : '#ccc'}">
+                <div class="local-vibe-icon" style="background: ${localStats.dominantVibe ? this.getVibeColor(localStats.dominantVibe) : '#ccc'}; box-shadow: 0 0 20px ${localStats.dominantVibe ? this.getVibeColor(localStats.dominantVibe) + '40' : '#ccc40'};">
                   <i class="${localStats.dominantVibe ? this.getVibeIcon(localStats.dominantVibe) : 'fas fa-question-circle'}"></i>
                 </div>
                 <div class="local-vibe-info">
-                  <div class="local-vibe-name">${localStats.dominantVibe ? this.capitalizeFirstLetter(localStats.dominantVibe) : 'No Data'}</div>
-                  <div class="local-vibe-percentage">${localStats.dominantVibe && localStats.percentage > 0 ? localStats.percentage + '%' : ''}</div>
-                  <div class="local-vibe-count">${localStats.totalLocalReports} ${localStats.totalLocalReports === 1 ? 'report' : 'reports'} ${localStats.radius === 'General Area' ? 'in general area' : 'within ' + localStats.radius + 'km radius'}</div>
-                  ${localStats.address && localStats.address !== 'Unknown Location' && localStats.address !== 'Unknown' ? `<div class="local-area-address" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><i class="fas fa-map-pin"></i> ${localStats.address}</div>` : ''}
+                  <div class="local-vibe-name" style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${localStats.dominantVibe ? this.capitalizeFirstLetter(localStats.dominantVibe) : 'No Data'}</div>
+                  <div class="local-vibe-percentage" style="font-size: 32px; font-weight: bold; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;">${localStats.dominantVibe && localStats.percentage > 0 ? localStats.percentage + '%' : ''}</div>
+                  ${localStats.address && localStats.address !== 'Unknown Location' && localStats.address !== 'Unknown' ? `<div class="local-area-address" style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><i class="fas fa-map-pin"></i> ${localStats.address}</div>` : ''}
                 </div>
               </div>
             </div>
