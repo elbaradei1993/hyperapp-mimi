@@ -3101,6 +3101,57 @@
         }
       }
 
+      async loadAdvancedFeatures() {
+        // Load heavier features after initial render
+        if (this.isAuthenticated) {
+          await this.loadUserReports();
+          await this.updateUserReputation();
+        }
+
+        // Load enhanced stats
+        await this.loadEnhancedStats();
+
+        // Set up weather alerts (with real API)
+        this.setupWeatherAlerts();
+
+        // Update community insights periodically (less frequent)
+        setInterval(() => {
+          this.updateCommunityInsights();
+        }, 300000); // Update every 5 minutes instead of 1 minute
+      }
+      
+      async checkAuthState() {
+        // Check if we have a Telegram user first
+        if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
+          const telegramUser = this.tg.initDataUnsafe.user;
+          this.userData = telegramUser;
+          this.isAuthenticated = true;
+          await this.syncUserWithSupabase();
+          this.updateUserInfo();
+          return;
+        }
+        
+        // Check Supabase authentication as fallback
+        const { data: { session }, error } = await this.supabase.auth.getSession();
+        if (session && session.user) {
+          this.isAuthenticated = true;
+          this.userData = {
+            id: session.user.id,
+            email: session.user.email,
+            ...session.user.user_metadata
+          };
+          await this.syncUserWithSupabase();
+          this.updateUserInfo();
+        } else {
+          // Show auth modal if no authentication found
+          this.showAuthModal();
+        }
+      }
+      
+      showAuthModal() {
+        document.getElementById('authModal').style.display = 'block';
+      }
+      
       hideAuthModal() {
         document.getElementById('authModal').style.display = 'none';
       }
@@ -3745,8 +3796,8 @@
           return;
         }
 
-        if (!this.userLocation) {
-          this.showNotification("Location is required for all reports. Please enable location access and try again.", "error");
+        if (!this.currentReportLocation) {
+          this.showNotification("Unable to get your location. Please try again.", "error");
           return;
         }
 
@@ -3759,18 +3810,48 @@
         try {
           const notes = document.getElementById('reportNotes').value;
 
+          // Check for existing report with same vibe and location
+          const { data: existingReports, error: checkError } = await this.supabase
+            .from('reports')
+            .select('id, created_at')
+            .eq('vibe_type', this.selectedVibe)
+            .eq('location', this.currentReportLocation)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (checkError) {
+            console.error("Error checking for existing reports:", checkError);
+          } else if (existingReports && existingReports.length > 0) {
+            const existingReport = existingReports[0];
+            const reportTime = new Date(existingReport.created_at);
+            const now = new Date();
+            const timeDiff = (now - reportTime) / (1000 * 60); // Difference in minutes
+
+            // If a similar report exists within the last 30 minutes, don't create a duplicate
+            if (timeDiff < 30) {
+              this.showNotification(`A ${this.capitalizeFirstLetter(this.selectedVibe)} report already exists for this location. Please try again later.`, "warning");
+              this.closeModal('reportModal');
+              return;
+            }
+          }
+
+          // Prepare report data with coordinates if available
+          const reportData = {
+            user_id: null, // Anonymous report - no user association
+            vibe_type: this.selectedVibe,
+            location: this.currentReportLocation,
+            notes: notes || null
+          };
+
+          // Add coordinates if available
+          if (this.userLocation) {
+            reportData.latitude = this.userLocation.latitude;
+            reportData.longitude = this.userLocation.longitude;
+          }
+
           const { data, error } = await this.supabase
             .from('reports')
-            .insert([
-              {
-                user_id: this.userData?.id,
-                vibe_type: this.selectedVibe,
-                location: this.currentReportLocation,
-                notes: notes,
-                latitude: this.userLocation.latitude,
-                longitude: this.userLocation.longitude
-              }
-            ])
+            .insert([reportData])
             .select();
 
           if (error) {
@@ -3783,36 +3864,26 @@
             }
             this.showNotification(errorMessage, "error");
           } else {
-            console.log("Report submitted successfully:", data);
             this.showNotification("Report submitted successfully", "success");
             this.closeModal('reportModal');
-
-            // Reset form
-            this.selectedVibe = null;
-            document.querySelectorAll('.vibe-option').forEach(option => {
-              option.classList.remove('selected');
-            });
-            document.getElementById('reportNotes').value = '';
-
             // Reload data to show the new report
             await this.loadNearbyReports();
             // Refresh map to show new report
             this.loadMap();
           }
-        } catch (error) {
-          console.error("Error submitting report:", error);
-          let errorMessage = "Failed to submit report";
-          if (error.message.includes('network') || error.message.includes('fetch')) {
-            errorMessage = "Network error. Please check your connection and try again.";
+          } catch (error) {
+            let errorMessage = "Unable to get your location";
+            if (error.code === 1) {
+              errorMessage = "Location access denied. Please enable location permissions in your browser settings.";
+            } else if (error.code === 2) {
+              errorMessage = "Location unavailable. Please check your GPS settings and try again.";
+            } else if (error.code === 3) {
+              errorMessage = "Location request timed out. This can happen in poor signal areas. Please try again.";
+            }
+            this.showNotification(errorMessage, "error");
           }
-          this.showNotification(errorMessage, "error");
-        } finally {
-          // Reset button state
-          submitBtn.textContent = originalText;
-          submitBtn.disabled = false;
-        }
       }
-
+      
       showEmergencyReport() {
         // Get current location automatically
         this.getCurrentLocation((location) => {
@@ -6061,67 +6132,50 @@
           percentage: 0,
           radius: 1,
           address: null,
-          hasLocationData: false,
-          fallbackMode: false
+          hasLocationData: false
         };
 
-        if (!stats.reports) {
+        if (!stats.reports || !this.userLocation) {
           return localStats;
         }
 
-        // If we have user location, try to find local reports first
-        if (this.userLocation) {
-          const userLat = this.userLocation.latitude;
-          const userLng = this.userLocation.longitude;
+        const userLat = this.userLocation.latitude;
+        const userLng = this.userLocation.longitude;
 
-          // Try expanding radii until we find reports (strictly location-based only)
-          const radii = [1, 2, 5, 10, 25];
+        // Try expanding radii until we find reports (strictly location-based only)
+        const radii = [1, 2, 5, 10, 25];
 
-          for (const radius of radii) {
-            localStats.totalLocalReports = 0;
-            localStats.vibeDistribution = {};
-            localStats.radius = radius;
+        for (const radius of radii) {
+          localStats.totalLocalReports = 0;
+          localStats.vibeDistribution = {};
+          localStats.radius = radius;
 
-            stats.reports.forEach(report => {
-              if (report.latitude && report.longitude) {
-                const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
-                if (distance <= radius) {
-                  localStats.totalLocalReports++;
-                  localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
-                  localStats.hasLocationData = true;
-                }
+          stats.reports.forEach(report => {
+            if (report.latitude && report.longitude) {
+              const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
+              if (distance <= radius) {
+                localStats.totalLocalReports++;
+                localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
+                localStats.hasLocationData = true;
               }
-            });
-
-            if (localStats.totalLocalReports > 0) {
-              break; // Found reports within this radius, use it
             }
-          }
+          });
 
-          // Get address for user location
+          if (localStats.totalLocalReports > 0) {
+            break; // Found reports within this radius, use it
+          }
+        }
+
+        // Get address for user location (only if we have location data)
+        if (localStats.hasLocationData) {
           this.getAddressFromCoordinates(userLat, userLng, (address) => {
             localStats.address = address;
             this.updateLocalAreaDisplay(localStats);
           });
         }
 
-        // If no location-based reports found, fall back to showing recent reports in general area
-        if (localStats.totalLocalReports === 0) {
-          localStats.fallbackMode = true;
-          // Show the most recent reports (up to 10) as a general area vibe
-          const recentReports = stats.reports.slice(0, Math.min(10, stats.reports.length));
-
-          recentReports.forEach(report => {
-            localStats.totalLocalReports++;
-            localStats.vibeDistribution[report.vibe_type] = (localStats.vibeDistribution[report.vibe_type] || 0) + 1;
-          });
-
-          localStats.radius = 'general area';
-          localStats.address = 'General area (no location data)';
-        }
-
-        // Calculate dominant vibe and percentage
-        if (localStats.totalLocalReports > 0) {
+        // Calculate dominant vibe and percentage (only for location-based reports)
+        if (localStats.totalLocalReports > 0 && localStats.hasLocationData) {
           let maxCount = 0;
           for (const [vibe, count] of Object.entries(localStats.vibeDistribution)) {
             if (count > maxCount) {
