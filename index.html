@@ -3264,12 +3264,11 @@
           const forceRefresh = this.forceFreshDataLoad || false;
           await this.loadNearbyReports(0, forceRefresh);
 
-          // Always update UI components after loading attempt
-          // Update all UI components in sequence to avoid race conditions
+          // Load enhanced stats first (this creates the UI)
+          await this.loadEnhancedStats();
+
+          // Now update all UI components in sequence to avoid race conditions
           await this.updateStats();
-          await this.updateVibeCategories();
-          await this.updateCommunityVibeSidebar();
-          await this.updateEnhancedVibeStats();
 
           // Load map (lightweight)
           this.loadMap();
@@ -5544,7 +5543,11 @@
         // Update all components with the same data
         this.updateVibeCategories(vibeCounts);
         this.updateCommunityVibeSidebar(vibeCounts);
-        this.updateEnhancedVibeStats(vibeCounts);
+
+        // Only update enhanced vibe stats if the UI has been rendered
+        if (document.querySelector('.vibe-bar')) {
+          this.updateEnhancedVibeStats(vibeCounts);
+        }
 
         // Force update for mobile views
         this.forceMobileStatsUpdate();
