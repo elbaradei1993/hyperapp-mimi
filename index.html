@@ -3141,6 +3141,14 @@
         this.isConnected = false;
         this.userLocation = null;
         this.isAuthenticated = false;
+
+        // Geofence properties
+        this.geofenceEnabled = false;
+        this.geofenceSettings = null;
+        this.geofences = [];
+        this.geofenceWatchId = null;
+        this.currentGeofenceZones = new Set(); // Track which zones user is currently in
+        this.lastGeofenceCheck = null;
         
         // Initialize Supabase with the correct API key
         this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
@@ -3171,9 +3179,14 @@
           'handleAuthSignup', 'loadWeatherData', 'updateSafetyHub', 'generateDynamicSafetyTips',
           'calculateUserReputation', 'updateUserReputation', 'getUserBadges', 'checkBadgeUnlocks',
           'showBadgeNotification', 'loadEnhancedStats', 'renderStatsCharts', 'setupWeatherAlerts',
-          'checkWeatherAlerts', 'sendWeatherAlert', 'updateCommunityInsights'
+          'checkWeatherAlerts', 'sendWeatherAlert', 'updateCommunityInsights',
+          // Geofence methods
+          'loadGeofenceSettings', 'saveGeofenceSettings', 'toggleGeofenceMonitoring',
+          'classifyGeofenceZones', 'startGeofenceMonitoring', 'stopGeofenceMonitoring',
+          'checkGeofenceStatus', 'handleGeofenceEvent', 'sendGeofenceNotification',
+          'getGeofenceNotificationPriority', 'getGeofenceNotificationMessage'
         ];
-        
+
         methods.forEach(method => {
           this[method] = this[method].bind(this);
         });
@@ -3253,6 +3266,11 @@
 
         // Set up real-time subscriptions
         this.setupRealtimeSubscriptions();
+
+        // Initialize geofence functionality
+        if (this.isAuthenticated) {
+          await this.loadGeofenceSettings();
+        }
 
         // Make app instance globally available
         window.hyperApp = this;
@@ -7598,6 +7616,472 @@
         if (this.isAuthenticated) {
           this.updateUserReputation();
         }
+      }
+
+      // ===== GEOFENCE METHODS =====
+
+      async loadGeofenceSettings() {
+        if (!this.isAuthenticated) return;
+
+        try {
+          const { data: settings, error } = await this.supabase
+            .from('user_geofence_settings')
+            .select('*')
+            .eq('user_id', this.userData.id)
+            .maybeSingle();
+
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error loading geofence settings:', error);
+            return;
+          }
+
+          if (settings) {
+            this.geofenceSettings = settings;
+            this.geofenceEnabled = settings.geofence_enabled;
+          } else {
+            // Create default settings
+            this.geofenceSettings = {
+              geofence_enabled: false,
+              notify_safe_zones: true,
+              notify_risk_zones: true,
+              notification_radius: 100
+            };
+            await this.saveGeofenceSettings();
+          }
+
+          // Update UI based on settings
+          this.updateGeofenceToggleUI();
+        } catch (error) {
+          console.error('Error in loadGeofenceSettings:', error);
+        }
+      }
+
+      async saveGeofenceSettings() {
+        if (!this.isAuthenticated || !this.geofenceSettings) return;
+
+        try {
+          const { error } = await this.supabase
+            .from('user_geofence_settings')
+            .upsert({
+              user_id: this.userData.id,
+              geofence_enabled: this.geofenceSettings.geofence_enabled,
+              notify_safe_zones: this.geofenceSettings.notify_safe_zones,
+              notify_risk_zones: this.geofenceSettings.notify_risk_zones,
+              notification_radius: this.geofenceSettings.notification_radius
+            });
+
+          if (error) {
+            console.error('Error saving geofence settings:', error);
+          }
+        } catch (error) {
+          console.error('Error in saveGeofenceSettings:', error);
+        }
+      }
+
+      async toggleGeofenceMonitoring() {
+        if (!this.isAuthenticated) {
+          this.showAuthModal();
+          return;
+        }
+
+        this.geofenceEnabled = !this.geofenceEnabled;
+
+        if (this.geofenceSettings) {
+          this.geofenceSettings.geofence_enabled = this.geofenceEnabled;
+          await this.saveGeofenceSettings();
+        }
+
+        if (this.geofenceEnabled) {
+          await this.startGeofenceMonitoring();
+          this.showNotification("Geofence monitoring enabled", "success");
+        } else {
+          this.stopGeofenceMonitoring();
+          this.showNotification("Geofence monitoring disabled", "info");
+        }
+
+        this.updateGeofenceToggleUI();
+      }
+
+      updateGeofenceToggleUI() {
+        // Update the geofence toggle in the status bar
+        const statusBar = document.querySelector('.status-bar');
+        if (!statusBar) return;
+
+        // Remove existing geofence status if present
+        const existingGeofenceStatus = statusBar.querySelector('.geofence-status');
+        if (existingGeofenceStatus) {
+          existingGeofenceStatus.remove();
+        }
+
+        // Add geofence toggle/status
+        const geofenceStatus = document.createElement('div');
+        geofenceStatus.className = 'status-item geofence-status';
+
+        if (this.geofenceEnabled) {
+          geofenceStatus.innerHTML = `
+            <button id="geofenceToggle" class="geofence-toggle-btn active" title="Geofence monitoring active - click to disable">
+              <i class="fas fa-map-marker-alt" style="color: var(--success);"></i>
+            </button>
+          `;
+        } else {
+          geofenceStatus.innerHTML = `
+            <button id="geofenceToggle" class="geofence-toggle-btn inactive" title="Geofence monitoring disabled - click to enable">
+              <i class="fas fa-map-marker-alt" style="color: var(--text-muted);"></i>
+            </button>
+          `;
+        }
+
+        // Insert before the refresh button
+        const refreshBtn = statusBar.querySelector('.refresh-btn');
+        if (refreshBtn) {
+          statusBar.insertBefore(geofenceStatus, refreshBtn.parentElement);
+        }
+
+        // Add event listener
+        const toggleBtn = geofenceStatus.querySelector('#geofenceToggle');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', () => this.toggleGeofenceMonitoring());
+        }
+      }
+
+      async classifyGeofenceZones() {
+        try {
+          // Load geofence zones from database (or create based on reports)
+          const { data: existingGeofences, error } = await this.supabase
+            .from('geofences')
+            .select('*')
+            .eq('is_active', true);
+
+          if (error) {
+            console.error('Error loading geofences:', error);
+            return [];
+          }
+
+          if (existingGeofences && existingGeofences.length > 0) {
+            this.geofences = existingGeofences;
+            return existingGeofences;
+          }
+
+          // If no geofences exist, create them based on report clusters
+          const zones = await this.createGeofenceZonesFromReports();
+          this.geofences = zones;
+          return zones;
+        } catch (error) {
+          console.error('Error in classifyGeofenceZones:', error);
+          return [];
+        }
+      }
+
+      async createGeofenceZonesFromReports() {
+        try {
+          // Get recent reports with coordinates
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('latitude, longitude, vibe_type, created_at')
+            .not('latitude', 'is', null)
+            .not('longitude', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1000);
+
+          if (error || !reports || reports.length === 0) {
+            return [];
+          }
+
+          // Group reports into clusters (simplified clustering)
+          const clusters = this.clusterReports(reports);
+
+          // Create geofence zones from clusters
+          const zones = [];
+          for (const cluster of clusters) {
+            const zoneType = this.determineZoneType(cluster.reports);
+            if (zoneType) {
+              const zone = {
+                name: `${this.capitalizeFirstLetter(zoneType)} Zone ${zones.length + 1}`,
+                zone_type: zoneType,
+                latitude: cluster.center.lat,
+                longitude: cluster.center.lng,
+                radius_meters: Math.max(200, Math.min(1000, cluster.radius)), // Between 200m and 1km
+                description: `Auto-generated ${zoneType} zone based on community reports`,
+                is_active: true
+              };
+
+              // Save to database
+              const { data: savedZone, error: saveError } = await this.supabase
+                .from('geofences')
+                .insert([zone])
+                .select()
+                .single();
+
+              if (!saveError && savedZone) {
+                zones.push(savedZone);
+              }
+            }
+          }
+
+          return zones;
+        } catch (error) {
+          console.error('Error creating geofence zones:', error);
+          return [];
+        }
+      }
+
+      clusterReports(reports) {
+        // Simple clustering algorithm - group reports within 500m of each other
+        const clusters = [];
+        const processed = new Set();
+
+        for (const report of reports) {
+          if (processed.has(report.id)) continue;
+
+          const cluster = {
+            center: { lat: report.latitude, lng: report.longitude },
+            reports: [report],
+            radius: 200 // Start with 200m radius
+          };
+
+          processed.add(report.id);
+
+          // Find nearby reports
+          for (const otherReport of reports) {
+            if (processed.has(otherReport.id)) continue;
+
+            const distance = this.calculateDistance(
+              report.latitude, report.longitude,
+              otherReport.latitude, otherReport.longitude
+            );
+
+            if (distance <= 0.5) { // Within 500m
+              cluster.reports.push(otherReport);
+              processed.add(otherReport.id);
+
+              // Update cluster center (weighted average)
+              const totalWeight = cluster.reports.length;
+              cluster.center.lat = cluster.reports.reduce((sum, r) => sum + r.latitude, 0) / totalWeight;
+              cluster.center.lng = cluster.reports.reduce((sum, r) => sum + r.longitude, 0) / totalWeight;
+
+              // Update radius to encompass all reports
+              cluster.radius = Math.max(cluster.radius, distance * 1000);
+            }
+          }
+
+          if (cluster.reports.length >= 3) { // Only create zones for clusters with 3+ reports
+            clusters.push(cluster);
+          }
+        }
+
+        return clusters;
+      }
+
+      determineZoneType(reports) {
+        if (!reports || reports.length === 0) return null;
+
+        // Count vibe types in the cluster
+        const vibeCounts = {};
+        reports.forEach(report => {
+          vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
+        });
+
+        const totalReports = reports.length;
+        const dangerousCount = vibeCounts.dangerous || 0;
+        const suspiciousCount = vibeCounts.suspicious || 0;
+        const calmCount = vibeCounts.calm || 0;
+        const festiveCount = vibeCounts.festive || 0;
+
+        // Determine zone type based on dominant vibes
+        const dangerRatio = (dangerousCount + suspiciousCount * 0.5) / totalReports;
+        const safetyRatio = (calmCount + festiveCount * 0.7) / totalReports;
+
+        if (dangerRatio >= 0.4) {
+          return 'risk'; // High danger reports
+        } else if (safetyRatio >= 0.5) {
+          return 'safe'; // High safety reports
+        }
+
+        return null; // Neutral zone, don't create geofence
+      }
+
+      async startGeofenceMonitoring() {
+        if (!this.isAuthenticated || !this.userLocation) {
+          this.showNotification("Location required for geofence monitoring", "warning");
+          return;
+        }
+
+        try {
+          // Load geofence zones
+          await this.classifyGeofenceZones();
+
+          // Start location monitoring
+          if (navigator.geolocation) {
+            this.geofenceWatchId = navigator.geolocation.watchPosition(
+              (position) => {
+                const newLocation = {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                  accuracy: position.coords.accuracy,
+                  timestamp: Date.now()
+                };
+
+                this.checkGeofenceStatus(newLocation);
+                this.userLocation = newLocation;
+              },
+              (error) => {
+                console.error('Geofence location error:', error);
+                this.showNotification("Geofence monitoring failed - location unavailable", "error");
+                this.stopGeofenceMonitoring();
+              },
+              {
+                enableHighAccuracy: true,
+                timeout: 30000,
+                maximumAge: 60000
+              }
+            );
+
+            // Initial check
+            this.checkGeofenceStatus(this.userLocation);
+          } else {
+            this.showNotification("Geolocation not supported", "error");
+          }
+        } catch (error) {
+          console.error('Error starting geofence monitoring:', error);
+          this.showNotification("Failed to start geofence monitoring", "error");
+        }
+      }
+
+      stopGeofenceMonitoring() {
+        if (this.geofenceWatchId) {
+          navigator.geolocation.clearWatch(this.geofenceWatchId);
+          this.geofenceWatchId = null;
+        }
+        this.geofenceEnabled = false;
+        this.currentGeofenceZones.clear();
+      }
+
+      checkGeofenceStatus(userLocation) {
+        if (!userLocation || !this.geofences || this.geofences.length === 0) return;
+
+        const currentZones = new Set();
+
+        for (const zone of this.geofences) {
+          const distance = this.calculateDistance(
+            userLocation.latitude, userLocation.longitude,
+            zone.latitude, zone.longitude
+          );
+
+          const distanceMeters = distance * 1000; // Convert to meters
+
+          if (distanceMeters <= zone.radius_meters) {
+            currentZones.add(zone.id);
+
+            // Check if this is a new zone entry
+            if (!this.currentGeofenceZones.has(zone.id)) {
+              this.handleGeofenceEvent('enter', zone, userLocation);
+            }
+          }
+        }
+
+        // Check for zone exits
+        for (const zoneId of this.currentGeofenceZones) {
+          if (!currentZones.has(zoneId)) {
+            const zone = this.geofences.find(z => z.id === zoneId);
+            if (zone) {
+              this.handleGeofenceEvent('exit', zone, userLocation);
+            }
+          }
+        }
+
+        this.currentGeofenceZones = currentZones;
+      }
+
+      async handleGeofenceEvent(eventType, zone, location) {
+        try {
+          // Record the event in database
+          if (this.isAuthenticated) {
+            await this.supabase
+              .from('geofence_events')
+              .insert([{
+                user_id: this.userData.id,
+                geofence_id: zone.id,
+                event_type: eventType,
+                latitude: location.latitude,
+                longitude: location.longitude,
+                accuracy_meters: location.accuracy
+              }]);
+          }
+
+          // Send notification based on zone type and user preferences
+          const shouldNotify = (zone.zone_type === 'safe' && this.geofenceSettings?.notify_safe_zones) ||
+                              (zone.zone_type === 'risk' && this.geofenceSettings?.notify_risk_zones);
+
+          if (shouldNotify) {
+            const priority = this.getGeofenceNotificationPriority(zone.zone_type, eventType);
+            const message = this.getGeofenceNotificationMessage(zone, eventType);
+
+            this.sendGeofenceNotification(message, priority);
+          }
+        } catch (error) {
+          console.error('Error handling geofence event:', error);
+        }
+      }
+
+      getGeofenceNotificationPriority(zoneType, eventType) {
+        // Define notification priority based on zone type and event
+        if (zoneType === 'risk' && eventType === 'enter') {
+          return 'high'; // Urgent: entering risk zone
+        } else if (zoneType === 'risk' && eventType === 'exit') {
+          return 'medium'; // Important: exiting risk zone
+        } else if (zoneType === 'safe' && eventType === 'enter') {
+          return 'low'; // Info: entering safe zone
+        } else if (zoneType === 'safe' && eventType === 'exit') {
+          return 'low'; // Info: exiting safe zone
+        }
+        return 'medium';
+      }
+
+      getGeofenceNotificationMessage(zone, eventType) {
+        const zoneName = zone.name || `${this.capitalizeFirstLetter(zone.zone_type)} Zone`;
+        const action = eventType === 'enter' ? 'entered' : 'left';
+
+        if (zone.zone_type === 'safe') {
+          if (eventType === 'enter') {
+            return `You've entered a Safe Zone: ${zoneName}`;
+          } else {
+            return `You've left the Safe Zone: ${zoneName}`;
+          }
+        } else if (zone.zone_type === 'risk') {
+          if (eventType === 'enter') {
+            return `Caution: You've entered a Risk Zone with multiple safety reports: ${zoneName}`;
+          } else {
+            return `You've exited the Risk Zone: ${zoneName}`;
+          }
+        }
+
+        return `Geofence alert: ${action} ${zoneName}`;
+      }
+
+      sendGeofenceNotification(message, priority) {
+        let notificationType = 'info';
+        let duration = 4000;
+
+        switch (priority) {
+          case 'high':
+            notificationType = 'warning';
+            duration = 6000;
+            // High priority: add vibration/sound if supported
+            if ('vibrate' in navigator) {
+              navigator.vibrate([200, 100, 200]);
+            }
+            break;
+          case 'medium':
+            notificationType = 'info';
+            duration = 5000;
+            break;
+          case 'low':
+            notificationType = 'success';
+            duration = 3000;
+            break;
+        }
+
+        this.showNotification(message, notificationType, duration);
       }
     }
 
