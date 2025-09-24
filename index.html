@@ -5048,16 +5048,23 @@
         try {
           const position = await new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, {
-              timeout: 10000, // 10 seconds timeout
+              timeout: 20000, // Increased timeout for better accuracy
               enableHighAccuracy: true,
-              maximumAge: 300000 // Accept cached position up to 5 minutes old
+              maximumAge: 60000 // Accept cached position up to 1 minute old for better accuracy
             });
           });
 
-          const { latitude, longitude } = position.coords;
+          const { latitude, longitude, accuracy } = position.coords;
+
+          // Only accept positions with reasonable accuracy (within 100 meters)
+          if (accuracy > 100) {
+            this.showNotification("Location accuracy is low. Please ensure GPS is enabled and try again.", "warning");
+          }
+
           this.userLocation = {
             latitude,
             longitude,
+            accuracy,
             timestamp: Date.now()
           };
 
