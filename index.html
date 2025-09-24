@@ -6742,7 +6742,7 @@
         const localVibeIcon = document.querySelector('.local-vibe-icon');
         const localVibeName = document.querySelector('.local-vibe-name');
         const localVibePercentage = document.querySelector('.local-vibe-percentage');
-        const localVibeCount = document.querySelector('.local-vibe-count');
+        const localAreaAddress = document.querySelector('.local-area-address');
 
         if (localVibeIcon && localStats.dominantVibe) {
           localVibeIcon.style.background = this.getVibeColor(localStats.dominantVibe);
@@ -6757,9 +6757,16 @@
           localVibePercentage.textContent = localStats.dominantVibe ? localStats.percentage + '%' : '';
         }
 
-        if (localVibeCount) {
-          const addressText = localStats.address && localStats.address !== 'Unknown Location' ? localStats.address : 'Your Area';
-          localVibeCount.textContent = addressText;
+        if (localAreaAddress) {
+          const addressText = localStats.address && localStats.address !== 'Unknown Location' ? localStats.address : 'Adres';
+          // Update only the text content, keep the icon
+          const iconElement = localAreaAddress.querySelector('i');
+          const textNode = localAreaAddress.lastChild;
+          if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+            textNode.textContent = ' ' + addressText;
+          } else {
+            localAreaAddress.innerHTML = `<i class="fas fa-map-pin"></i> ${addressText}`;
+          }
         }
 
         // Force update the local area stats display
