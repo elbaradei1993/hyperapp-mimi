@@ -2785,38 +2785,7 @@
     <main class="content-area">
       <!-- Main View -->
       <div id="mainView" class="view active">
-        <!-- Community Stats with Color-coded Sidebar -->
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-chart-bar"></i>
-            <span data-en="Community Stats" data-ar="إحصائيات المجتمع">Community Stats</span>
-          </div>
-          <div class="stats-grid" id="statsGrid">
-            <div class="stat-card">
-              <div class="stat-number" id="totalReports">0</div>
-              <div class="stat-label">Reports</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" id="activeUsers">0</div>
-              <div class="stat-label">Active Users</div>
-            </div>
-          </div>
 
-          <!-- Color-coded Community Vibe Sidebar -->
-          <div class="community-vibe-sidebar" id="communityVibeSidebar">
-            <div class="sidebar-header">
-              <span data-en="Community Vibe" data-ar="حالة المجتمع">Community Vibe</span>
-              <div class="dominant-vibe" id="dominantVibe">
-                <i class="fas fa-peace"></i>
-                <span data-en="Calm" data-ar="هادئ">Calm</span>
-                <span class="vibe-percentage" id="dominantVibePercentage">0%</span>
-              </div>
-            </div>
-            <div class="vibe-sidebars-chart" id="vibeSidebarsChart">
-              <!-- Color-coded sidebar bars will be populated by JavaScript -->
-            </div>
-          </div>
-        </div>
 
         <!-- Safety Hub -->
         <div class="card">
@@ -2912,9 +2881,6 @@
             </div>
           </div>
         </div>
-
-
-      </div>
 
       <!-- Map View -->
       <div id="mapView" class="view">
@@ -5542,12 +5508,6 @@
 
         // Update all components with the same data
         this.updateVibeCategories(vibeCounts);
-        this.updateCommunityVibeSidebar(vibeCounts);
-
-        // Only update enhanced vibe stats if the UI has been rendered
-        if (document.querySelector('.vibe-bar')) {
-          this.updateEnhancedVibeStats(vibeCounts);
-        }
 
         // Force update for mobile views
         this.forceMobileStatsUpdate();
@@ -5605,105 +5565,13 @@
           }
         });
 
-        // Update the community vibe sidebar
-        this.updateCommunityVibeSidebar(vibeCounts);
-
         // Also update the enhanced stats if available
         this.updateEnhancedVibeStats(vibeCounts);
       }
 
-      updateCommunityVibeSidebar(vibeCounts) {
-        // Calculate dominant vibe and percentage
-        let dominantVibe = 'calm';
-        let maxCount = 0;
-        let totalReports = this.nearbyReports.length;
 
-        // Ensure vibeCounts is defined and is an object
-        if (!vibeCounts || typeof vibeCounts !== 'object') {
-          vibeCounts = this.getVibeCounts(); // Fallback to calculate counts
-        }
 
-        Object.entries(vibeCounts).forEach(([vibe, count]) => {
-          if (count > maxCount) {
-            maxCount = count;
-            dominantVibe = vibe;
-          }
-        });
 
-        const dominantPercentage = totalReports > 0 ? Math.round((maxCount / totalReports) * 100) : 0;
-
-        // Update dominant vibe display
-        const dominantVibeElement = document.getElementById('dominantVibe');
-        if (dominantVibeElement) {
-          const iconElement = dominantVibeElement.querySelector('i');
-          const nameElement = dominantVibeElement.querySelector('span:first-of-type');
-          const percentageElement = dominantVibeElement.querySelector('.vibe-percentage');
-
-          if (iconElement) iconElement.className = `${this.getVibeIcon(dominantVibe)}`;
-          if (nameElement) nameElement.textContent = this.capitalizeFirstLetter(dominantVibe);
-          if (percentageElement) percentageElement.textContent = `${dominantPercentage}%`;
-        }
-
-        // Update sidebar bars
-        const sidebarChart = document.getElementById('vibeSidebarsChart');
-        if (sidebarChart && totalReports > 0) {
-          const sortedVibes = Object.entries(vibeCounts)
-            .sort(([,a], [,b]) => b - a) // Sort by count descending
-            .filter(([, count]) => count > 0); // Only show vibes with reports
-
-          const sidebarHtml = sortedVibes.map(([vibe, count]) => {
-            const percentage = (count / totalReports) * 100;
-            return `
-              <div class="vibe-sidebar-item">
-                <div class="vibe-sidebar-label">
-                  <i class="${this.getVibeIcon(vibe)}"></i>
-                  <span>${this.capitalizeFirstLetter(vibe)}</span>
-                </div>
-                <div class="vibe-sidebar-bar">
-                  <div class="vibe-sidebar-fill" style="width: ${percentage}%; background: ${this.getVibeColor(vibe)}"></div>
-                </div>
-                <div class="vibe-sidebar-count">${count}</div>
-                <div class="vibe-sidebar-percentage">${percentage.toFixed(1)}%</div>
-              </div>
-            `;
-          }).join('');
-
-          sidebarChart.innerHTML = sidebarHtml;
-        } else if (sidebarChart) {
-          // No reports yet
-          sidebarChart.innerHTML = `
-            <div class="no-data" style="text-align: center; padding: 20px; color: var(--text-muted);">
-              <i class="fas fa-chart-bar" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-              <span>No reports yet. Be the first to share your community's vibe!</span>
-            </div>
-          `;
-        }
-      }
-
-      updateEnhancedVibeStats(vibeCounts) {
-        // Update vibe distribution in enhanced stats if they exist
-        const vibeBars = document.querySelectorAll('.vibe-bar');
-        vibeBars.forEach(bar => {
-          const vibeLabel = bar.querySelector('.vibe-label');
-          if (vibeLabel) {
-            const vibeType = vibeLabel.textContent.toLowerCase();
-            const vibeCount = vibeCounts[vibeType];
-            const countElement = bar.querySelector('.vibe-count');
-            if (countElement) {
-              countElement.textContent = vibeCount;
-            }
-
-            // Update progress bar width
-            const progressElement = bar.querySelector('.vibe-progress');
-            const fillElement = bar.querySelector('.vibe-fill');
-            if (progressElement && fillElement) {
-              const totalReports = this.nearbyReports.length;
-              const percentage = totalReports > 0 ? (vibeCount / totalReports) * 100 : 0;
-              fillElement.style.width = `${percentage}%`;
-            }
-          }
-        });
-      }
 
       showVibeCategoryReports(vibeType) {
         // Filter reports by vibe type
@@ -6419,13 +6287,10 @@
             return;
           }
 
-          // Process stats data
+          // Process stats data (keep data calculations for other functions)
           const stats = this.processStatsData(reports);
 
-          // Update the stats display only if we have valid data
-          if (stats && stats.totalReports >= 0) {
-            this.renderStatsCharts(stats);
-          }
+          // Community Stats section removed - data calculations preserved for core functions
 
         } catch (error) {
           console.error("Error loading enhanced stats:", error);
@@ -6479,135 +6344,7 @@
         return stats;
       }
 
-      renderStatsCharts(stats) {
-        // Update existing stats
-        document.getElementById('totalReports').textContent = stats.totalReports;
 
-        // Calculate local area stats (within 1km of user location)
-        const localStats = this.calculateLocalAreaStats(stats);
-
-        // Always show enhanced stats display (responsive for mobile)
-        const isMobile = window.innerWidth <= 768;
-
-        const enhancedStatsHtml = `
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-number">${stats.totalReports}</div>
-              <div class="stat-label">Total Reports</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number">${stats.averageUpvotes}</div>
-              <div class="stat-label">Avg. Upvotes</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number">${stats.safetyScore}%</div>
-              <div class="stat-label">Safety Score</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number">${Object.keys(stats.dailyActivity).length}</div>
-              <div class="stat-label">Active Days</div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="local-area-stats">
-              <div class="local-vibe-display">
-                <div class="local-vibe-icon" style="background: ${localStats.dominantVibe ? this.getVibeColor(localStats.dominantVibe) : '#ccc'}; box-shadow: 0 0 20px ${localStats.dominantVibe ? this.getVibeColor(localStats.dominantVibe) + '40' : '#ccc40'};">
-                  <i class="${localStats.dominantVibe ? this.getVibeIcon(localStats.dominantVibe) : 'fas fa-question-circle'}"></i>
-                </div>
-                <div class="local-vibe-info">
-                  <div class="local-vibe-name" style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${localStats.dominantVibe ? this.capitalizeFirstLetter(localStats.dominantVibe) : 'No Data'}</div>
-                  <div class="local-vibe-percentage" style="font-size: 32px; font-weight: bold; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;">${localStats.dominantVibe && localStats.percentage > 0 ? localStats.percentage + '%' : ''}</div>
-                  <div class="local-area-address" style="font-size: 14px; color: var(--text-light); display: flex; align-items: center; gap: 6px; margin-top: 8px;"><i class="fas fa-map-pin"></i> ${localStats.address || 'Your Area'}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">
-              <i class="fas fa-chart-bar"></i>
-              <span data-en="Community Vibe" data-ar="حالة المجتمع">Community Vibe</span>
-            </div>
-            <div class="vibe-sidebars-chart">
-              ${Object.entries(stats.vibeDistribution)
-                .sort(([,a], [,b]) => b - a) // Sort by count descending
-                .map(([vibe, count]) => {
-                  const percentage = stats.totalReports > 0 ? (count / stats.totalReports) * 100 : 0;
-                  return `
-                    <div class="vibe-sidebar-item">
-                      <div class="vibe-sidebar-label">
-                        <i class="${this.getVibeIcon(vibe)}"></i>
-                        <span>${this.capitalizeFirstLetter(vibe)}</span>
-                      </div>
-                      <div class="vibe-sidebar-bar">
-                        <div class="vibe-sidebar-fill" style="width: ${percentage}%; background: ${this.getVibeColor(vibe)}"></div>
-                      </div>
-                      <div class="vibe-sidebar-count">${count}</div>
-                      <div class="vibe-sidebar-percentage">${percentage.toFixed(1)}%</div>
-                    </div>
-                  `;
-                }).join('')}
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">
-              <i class="fas fa-chart-line"></i>
-              <span data-en="Safety Trend Analysis" data-ar="تحليل اتجاهات السلامة">Safety Trend Analysis</span>
-            </div>
-            <div class="safety-trend-chart">
-              <div class="trend-metrics">
-                <div class="trend-metric">
-                  <div class="trend-label" data-en="Safety Score Trend" data-ar="اتجاه درجة السلامة">Safety Score Trend</div>
-                  <div class="trend-value ${stats.safetyScore >= 70 ? 'safe' : stats.safetyScore >= 40 ? 'moderate' : 'dangerous'}">
-                    ${stats.safetyScore}%
-                  </div>
-                </div>
-                <div class="trend-metric">
-                  <div class="trend-label" data-en="Danger Reports" data-ar="تقارير الخطر">Danger Reports</div>
-                  <div class="trend-value dangerous">
-                    ${stats.vibeDistribution.dangerous || 0}
-                  </div>
-                </div>
-                <div class="trend-metric">
-                  <div class="trend-label" data-en="Community Response" data-ar="استجابة المجتمع">Community Response</div>
-                  <div class="trend-value ${stats.averageUpvotes >= 2 ? 'good' : 'moderate'}">
-                    ${stats.averageUpvotes} avg upvotes
-                  </div>
-                </div>
-              </div>
-              <div class="safety-indicators">
-                <div class="safety-indicator">
-                  <div class="indicator-bar">
-                    <div class="indicator-fill ${stats.safetyScore >= 70 ? 'safe' : stats.safetyScore >= 40 ? 'moderate' : 'dangerous'}"
-                         style="width: ${100 - stats.safetyScore}%"></div>
-                  </div>
-                  <div class="indicator-labels">
-                    <span data-en="Low Risk" data-ar="خطر منخفض">Low Risk</span>
-                    <span data-en="Moderate" data-ar="متوسط">Moderate</span>
-                    <span data-en="High Risk" data-ar="خطر عالي">High Risk</span>
-                  </div>
-                </div>
-              </div>
-              <div class="trend-insights">
-                <div class="insight-item">
-                  <i class="fas ${stats.safetyScore >= 70 ? 'fa-shield-alt' : stats.safetyScore >= 40 ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
-                  <span data-en="${stats.safetyScore >= 70 ? 'Area appears generally safe' : stats.safetyScore >= 40 ? 'Exercise caution in this area' : 'High danger reports - take precautions'}" data-ar="${stats.safetyScore >= 70 ? 'المنطقة تبدو آمنة بشكل عام' : stats.safetyScore >= 40 ? 'تحلى بالحذر في هذه المنطقة' : 'تقارير خطر عالية - اتخذ احتياطاتك'}">
-                    ${stats.safetyScore >= 70 ? 'Area appears generally safe' : stats.safetyScore >= 40 ? 'Exercise caution in this area' : 'High danger reports - take precautions'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-
-        // Replace the stats grid with enhanced version
-        const statsContainer = document.getElementById('statsGrid').parentElement;
-        statsContainer.innerHTML = enhancedStatsHtml;
-
-        this.updateTextDirection();
-      }
 
       calculateLocalAreaStats(stats) {
         // Calculate stats for reports within expanding radius of user location
@@ -7357,8 +7094,7 @@
           locationVibeCounts[vibe] = data.recent; // Use recent reports count
         });
 
-        // Update the community vibe sidebar with location-specific data
-        this.updateCommunityVibeSidebar(locationVibeCounts);
+
 
         // Update the dominant vibe display with location data
         this.updateDominantVibeWithLocation(trendData);
@@ -7536,8 +7272,6 @@
           // Update all components in sequence to ensure consistency
           this.updateStats();
           this.updateVibeCategories(vibeCounts);
-          this.updateCommunityVibeSidebar(vibeCounts);
-          this.updateEnhancedVibeStats(vibeCounts);
           this.updateSafetyHub();
 
           // Update user data if authenticated (independently)
