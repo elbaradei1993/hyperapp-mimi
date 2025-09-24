@@ -4432,6 +4432,13 @@
           card.style.pointerEvents = 'auto';
           card.style.opacity = '1';
         });
+
+        // Ensure mood voting status is always visible by adding a minimum display time
+        if (moodVotingStatus) {
+          moodVotingStatus.style.display = 'block';
+          // Add a class to prevent flickering
+          moodVotingStatus.classList.add('always-visible');
+        }
       }
 
       async updateMoodCounts() {
@@ -4464,11 +4471,11 @@
             }
           });
 
-          // Always update mood voting status with dominant mood and percentage
+          // Always show mood voting status with dominant mood and percentage
           const totalVotes = Object.values(moodCounts).reduce((sum, count) => sum + count, 0);
           const moodVotingStatus = document.getElementById('moodVotingStatus');
 
-          if (moodVotingStatus && totalVotes > 0) {
+          if (moodVotingStatus) {
             // Find dominant mood
             let dominantMood = null;
             let maxCount = 0;
@@ -4479,7 +4486,7 @@
               }
             });
 
-            if (dominantMood) {
+            if (dominantMood && totalVotes > 0) {
               const percentage = Math.round((maxCount / totalVotes) * 100);
               const populationMoodDisplay = document.getElementById('populationMoodDisplay');
 
@@ -4491,7 +4498,19 @@
                   </span>
                 `;
               }
+            } else if (totalVotes === 0) {
+              // Show default message when no votes
+              const populationMoodDisplay = document.getElementById('populationMoodDisplay');
+              if (populationMoodDisplay) {
+                populationMoodDisplay.innerHTML = `
+                  <i class="fas fa-question-circle"></i>
+                  <span data-en="Collecting votes..." data-ar="جمع التصويتات...">Collecting votes...</span>
+                `;
+              }
             }
+
+            // Always show the mood voting status
+            moodVotingStatus.style.display = 'block';
           }
 
         } catch (error) {
@@ -4500,8 +4519,10 @@
       }
 
       async checkPopulationMoodThreshold() {
+        // Mood voting status is now always visible - no threshold checking needed
+        // This function is kept for backward compatibility but no longer hides the status
         try {
-          // Count total mood votes in the last 24 hours
+          // Count total mood votes in the last 24 hours for potential future features
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
 
@@ -4515,19 +4536,10 @@
             return;
           }
 
-          const totalVotes = moodVotes.length;
+          // Mood voting status is always visible now
           const moodVotingStatus = document.getElementById('moodVotingStatus');
-
-          if (totalVotes >= 50) {
-            // Show population mood display
-            if (moodVotingStatus) {
-              moodVotingStatus.style.display = 'block';
-            }
-          } else {
-            // Hide population mood display
-            if (moodVotingStatus) {
-              moodVotingStatus.style.display = 'none';
-            }
+          if (moodVotingStatus) {
+            moodVotingStatus.style.display = 'block';
           }
 
         } catch (error) {
