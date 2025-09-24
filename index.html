@@ -4316,6 +4316,9 @@
         const selectedCard = document.querySelector(`.mood-vote-card[data-mood="${moodType}"]`);
         const isCurrentlySelected = selectedCard && selectedCard.classList.contains('selected');
 
+        // Check if any mood is currently selected (not the one being clicked)
+        const hasOtherMoodSelected = document.querySelector('.mood-vote-card.selected') !== null && !isCurrentlySelected;
+
         try {
           if (isCurrentlySelected) {
             // Deselect the current mood - remove the vote from database
@@ -4333,21 +4336,16 @@
 
             // Remove selection from UI
             selectedCard.classList.remove('selected');
-            this.showNotification("Mood vote removed - you can now select a different mood", "info");
+            this.showNotification("Mood vote removed - you can now select a different mood or see community votes", "info");
+
+          } else if (hasOtherMoodSelected) {
+            // User is trying to select a different mood while one is already selected
+            // Require them to unselect first
+            this.showNotification("Please unselect your current mood first before choosing a different one", "warning");
+            return;
 
           } else {
-            // Select a new mood - first remove any existing vote, then add new one
-            // Remove existing vote if any
-            await this.supabase
-              .from('mood_votes')
-              .delete()
-              .eq('user_id', this.userData.id);
-
-            // Clear any existing selection in UI
-            document.querySelectorAll('.mood-vote-card').forEach(card => {
-              card.classList.remove('selected');
-            });
-
+            // No mood is currently selected, so select this one
             // Add new vote to database
             const { data, error } = await this.supabase
               .from('mood_votes')
@@ -4369,11 +4367,12 @@
               selectedCard.classList.add('selected');
             }
 
-            this.showNotification(`Mood set to ${this.capitalizeFirstLetter(moodType)}`, "success");
+            this.showNotification(`Your mood set to ${this.capitalizeFirstLetter(moodType)}`, "success");
           }
 
-          // Update mood counts immediately
+          // Update mood counts and UI display mode
           await this.updateMoodCounts();
+          this.updateMoodVotingDisplayMode();
 
           // Check if we should show population mood (50+ votes)
           await this.checkPopulationMoodThreshold();
@@ -4381,6 +4380,33 @@
         } catch (error) {
           console.error("Error selecting mood:", error);
           this.showNotification("Failed to update mood", "error");
+        }
+      }
+
+      updateMoodVotingDisplayMode() {
+        // Check if user has a mood selected
+        const hasSelectedMood = document.querySelector('.mood-vote-card.selected') !== null;
+
+        if (hasSelectedMood) {
+          // Hide vote counts when user has selected a mood - show only the selected mood
+          document.querySelectorAll('.mood-count').forEach(count => {
+            count.style.display = 'none';
+          });
+          // Hide mood voting status when user has selected a mood
+          const moodVotingStatus = document.getElementById('moodVotingStatus');
+          if (moodVotingStatus) {
+            moodVotingStatus.style.display = 'none';
+          }
+        } else {
+          // Show vote counts when no mood is selected - show community votes
+          document.querySelectorAll('.mood-count').forEach(count => {
+            count.style.display = 'block';
+          });
+          // Show mood voting status when no personal mood is selected
+          const moodVotingStatus = document.getElementById('moodVotingStatus');
+          if (moodVotingStatus) {
+            moodVotingStatus.style.display = 'block';
+          }
         }
       }
 
