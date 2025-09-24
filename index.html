@@ -2785,7 +2785,38 @@
     <main class="content-area">
       <!-- Main View -->
       <div id="mainView" class="view active">
+        <!-- Community Stats with Color-coded Sidebar -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-chart-bar"></i>
+            <span data-en="Community Stats" data-ar="إحصائيات المجتمع">Community Stats</span>
+          </div>
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+              <div class="stat-number" id="totalReports">0</div>
+              <div class="stat-label">Reports</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="activeUsers">0</div>
+              <div class="stat-label">Active Users</div>
+            </div>
+          </div>
 
+          <!-- Color-coded Community Vibe Sidebar -->
+          <div class="community-vibe-sidebar" id="communityVibeSidebar">
+            <div class="sidebar-header">
+              <span data-en="Community Vibe" data-ar="حالة المجتمع">Community Vibe</span>
+              <div class="dominant-vibe" id="dominantVibe">
+                <i class="fas fa-peace"></i>
+                <span data-en="Calm" data-ar="هادئ">Calm</span>
+                <span class="vibe-percentage" id="dominantVibePercentage">0%</span>
+              </div>
+            </div>
+            <div class="vibe-sidebars-chart" id="vibeSidebarsChart">
+              <!-- Color-coded sidebar bars will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
 
         <!-- Safety Hub -->
         <div class="card">
@@ -2881,6 +2912,9 @@
             </div>
           </div>
         </div>
+
+
+      </div>
 
       <!-- Map View -->
       <div id="mapView" class="view">
@@ -5579,15 +5613,6 @@
       }
 
       updateCommunityVibeSidebar(vibeCounts) {
-        // Check if Community Stats section exists before trying to update it
-        const dominantVibeElement = document.getElementById('dominantVibe');
-        const sidebarChart = document.getElementById('vibeSidebarsChart');
-
-        if (!dominantVibeElement && !sidebarChart) {
-          // Community Stats section has been removed, skip updating
-          return;
-        }
-
         // Calculate dominant vibe and percentage
         let dominantVibe = 'calm';
         let maxCount = 0;
@@ -5608,6 +5633,7 @@
         const dominantPercentage = totalReports > 0 ? Math.round((maxCount / totalReports) * 100) : 0;
 
         // Update dominant vibe display
+        const dominantVibeElement = document.getElementById('dominantVibe');
         if (dominantVibeElement) {
           const iconElement = dominantVibeElement.querySelector('i');
           const nameElement = dominantVibeElement.querySelector('span:first-of-type');
@@ -5619,6 +5645,7 @@
         }
 
         // Update sidebar bars
+        const sidebarChart = document.getElementById('vibeSidebarsChart');
         if (sidebarChart && totalReports > 0) {
           const sortedVibes = Object.entries(vibeCounts)
             .sort(([,a], [,b]) => b - a) // Sort by count descending
@@ -5654,14 +5681,8 @@
       }
 
       updateEnhancedVibeStats(vibeCounts) {
-        // Check if enhanced stats section exists before trying to update it
-        const vibeBars = document.querySelectorAll('.vibe-bar');
-        if (vibeBars.length === 0) {
-          // Enhanced stats section has been removed, skip updating
-          return;
-        }
-
         // Update vibe distribution in enhanced stats if they exist
+        const vibeBars = document.querySelectorAll('.vibe-bar');
         vibeBars.forEach(bar => {
           const vibeLabel = bar.querySelector('.vibe-label');
           if (vibeLabel) {
@@ -6459,13 +6480,6 @@
       }
 
       renderStatsCharts(stats) {
-        // Check if Community Stats section exists before trying to update it
-        const statsGrid = document.getElementById('statsGrid');
-        if (!statsGrid) {
-          // Community Stats section has been removed, skip rendering
-          return;
-        }
-
         // Update existing stats
         document.getElementById('totalReports').textContent = stats.totalReports;
 
@@ -6476,6 +6490,25 @@
         const isMobile = window.innerWidth <= 768;
 
         const enhancedStatsHtml = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">${stats.totalReports}</div>
+              <div class="stat-label">Total Reports</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${stats.averageUpvotes}</div>
+              <div class="stat-label">Avg. Upvotes</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${stats.safetyScore}%</div>
+              <div class="stat-label">Safety Score</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">${Object.keys(stats.dailyActivity).length}</div>
+              <div class="stat-label">Active Days</div>
+            </div>
+          </div>
+
           <div class="card">
             <div class="local-area-stats">
               <div class="local-vibe-display">
@@ -6561,10 +6594,16 @@
                 <div class="insight-item">
                   <i class="fas ${stats.safetyScore >= 70 ? 'fa-shield-alt' : stats.safetyScore >= 40 ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
                   <span data-en="${stats.safetyScore >= 70 ? 'Area appears generally safe' : stats.safetyScore >= 40 ? 'Exercise caution in this area' : 'High danger reports - take precautions'}" data-ar="${stats.safetyScore >= 70 ? 'المنطقة تبدو آمنة بشكل عام' : stats.safetyScore >= 40 ? 'تحلى بالحذر في هذه المنطقة' : 'تقارير خطر عالية - اتخذ احتياطاتك'}">
-                    ${
+                    ${stats.safetyScore >= 70 ? 'Area appears generally safe' : stats.safetyScore >= 40 ? 'Exercise caution in this area' : 'High danger reports - take precautions'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
 
         // Replace the stats grid with enhanced version
-        const statsContainer = statsGrid.parentElement;
+        const statsContainer = document.getElementById('statsGrid').parentElement;
         statsContainer.innerHTML = enhancedStatsHtml;
 
         this.updateTextDirection();
