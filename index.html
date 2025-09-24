@@ -6912,6 +6912,461 @@
             this.handleNewVote(payload.new);
           })
           .subscribe();
+
+        // Set up periodic location-based trend updates
+        this.setupPeriodicTrendUpdates();
+      }
+
+      setupPeriodicTrendUpdates() {
+        // Update trend analysis data every 2 minutes when location is available
+        this.trendUpdateInterval = setInterval(() => {
+          if (this.userLocation) {
+            this.updateLocationBasedTrends();
+          }
+        }, 120000); // 2 minutes
+
+        // Set up location change detection for more frequent updates
+        this.setupLocationChangeDetection();
+      }
+
+      setupLocationChangeDetection() {
+        // Monitor significant location changes (more than 500 meters)
+        this.lastTrendUpdateLocation = null;
+        this.locationWatchId = null;
+
+        if (navigator.geolocation) {
+          this.locationWatchId = navigator.geolocation.watchPosition(
+            (position) => {
+              const newLocation = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                timestamp: Date.now()
+              };
+
+              // Check if location changed significantly (more than 500 meters)
+              if (this.lastTrendUpdateLocation) {
+                const distance = this.calculateDistance(
+                  this.lastTrendUpdateLocation.latitude,
+                  this.lastTrendUpdateLocation.longitude,
+                  newLocation.latitude,
+                  newLocation.longitude
+                );
+
+                if (distance > 0.5) { // 500 meters
+                  console.log(`Location changed by ${distance.toFixed(2)}km, updating trends`);
+                  this.updateLocationBasedTrends();
+                  this.lastTrendUpdateLocation = newLocation;
+                }
+              } else {
+                // First location update
+                this.lastTrendUpdateLocation = newLocation;
+                this.updateLocationBasedTrends();
+              }
+
+              // Update user location
+              this.userLocation = newLocation;
+            },
+            (error) => {
+              console.log('Location watch error:', error);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 30000,
+              maximumAge: 60000 // Accept cached position up to 1 minute old
+            }
+          );
+        }
+      }
+
+      async updateLocationBasedTrends() {
+        if (!this.userLocation) return;
+
+        try {
+          console.log('Updating location-based trend analysis data');
+
+          // Get fresh trend data for current location
+          const trendData = await this.getLocationTrendData();
+
+          // Cache location-specific trend data
+          this.cacheLocationTrendData(trendData);
+
+          // Update UI with fresh trend data
+          this.updateTrendAnalysisUI(trendData);
+
+          // Update safety hub with location-specific insights
+          this.updateLocationSafetyInsights(trendData);
+
+          // Show subtle notification if trends changed significantly
+          this.checkTrendChanges(trendData);
+
+        } catch (error) {
+          console.error('Error updating location-based trends:', error);
+        }
+      }
+
+      async getLocationTrendData() {
+        const userLat = this.userLocation.latitude;
+        const userLng = this.userLocation.longitude;
+
+        // Get reports within 5km radius for trend analysis
+        const { data: nearbyReports, error } = await this.supabase
+          .from('reports')
+          .select('vibe_type, created_at, upvotes, downvotes, latitude, longitude')
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(200);
+
+        if (error) {
+          console.error('Error fetching trend data:', error);
+          return null;
+        }
+
+        // Filter reports within 5km and analyze trends
+        const relevantReports = nearbyReports.filter(report => {
+          const distance = this.calculateDistance(userLat, userLng, report.latitude, report.longitude);
+          return distance <= 5; // 5km radius
+        });
+
+        // Analyze trends over time (last 24 hours vs previous 24 hours)
+        const now = new Date();
+        const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const previous24Hours = new Date(last24Hours.getTime() - 24 * 60 * 60 * 1000);
+
+        const recentReports = relevantReports.filter(r => new Date(r.created_at) > last24Hours);
+        const previousReports = relevantReports.filter(r => {
+          const reportDate = new Date(r.created_at);
+          return reportDate > previous24Hours && reportDate <= last24Hours;
+        });
+
+        // Calculate trend metrics
+        const trendData = {
+          location: { latitude: userLat, longitude: userLng },
+          timestamp: Date.now(),
+          totalReports: relevantReports.length,
+          recentReports: recentReports.length,
+          previousReports: previousReports.length,
+          vibeTrends: this.calculateVibeTrends(recentReports, previousReports),
+          safetyScore: this.calculateSafetyScore(recentReports),
+          activityLevel: this.calculateActivityLevel(recentReports),
+          dominantVibe: this.getDominantVibe(recentReports),
+          trendDirection: this.calculateTrendDirection(recentReports, previousReports)
+        };
+
+        return trendData;
+      }
+
+      calculateVibeTrends(recentReports, previousReports) {
+        const trends = {};
+
+        // Calculate percentage change for each vibe type
+        const allVibes = ['crowded', 'noisy', 'festive', 'calm', 'suspicious', 'dangerous'];
+
+        allVibes.forEach(vibe => {
+          const recentCount = recentReports.filter(r => r.vibe_type === vibe).length;
+          const previousCount = previousReports.filter(r => r.vibe_type === vibe).length;
+
+          let changePercent = 0;
+          if (previousCount > 0) {
+            changePercent = ((recentCount - previousCount) / previousCount) * 100;
+          } else if (recentCount > 0) {
+            changePercent = 100; // New vibe type appeared
+          }
+
+          trends[vibe] = {
+            recent: recentCount,
+            previous: previousCount,
+            changePercent: Math.round(changePercent),
+            trend: changePercent > 10 ? 'increasing' : changePercent < -10 ? 'decreasing' : 'stable'
+          };
+        });
+
+        return trends;
+      }
+
+      calculateSafetyScore(reports) {
+        if (reports.length === 0) return 100;
+
+        const dangerousCount = reports.filter(r => r.vibe_type === 'dangerous').length;
+        const suspiciousCount = reports.filter(r => r.vibe_type === 'suspicious').length;
+
+        // Safety score: higher is safer (0-100)
+        const dangerRatio = (dangerousCount + suspiciousCount * 0.5) / reports.length;
+        return Math.max(0, Math.round((1 - dangerRatio) * 100));
+      }
+
+      calculateActivityLevel(reports) {
+        const totalReports = reports.length;
+
+        if (totalReports >= 20) return 'high';
+        if (totalReports >= 10) return 'moderate';
+        if (totalReports >= 5) return 'low';
+        return 'very_low';
+      }
+
+      getDominantVibe(reports) {
+        if (reports.length === 0) return null;
+
+        const vibeCounts = {};
+        reports.forEach(report => {
+          vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
+        });
+
+        let dominant = null;
+        let maxCount = 0;
+
+        Object.entries(vibeCounts).forEach(([vibe, count]) => {
+          if (count > maxCount) {
+            maxCount = count;
+            dominant = vibe;
+          }
+        });
+
+        return dominant;
+      }
+
+      calculateTrendDirection(recentReports, previousReports) {
+        const recentDangerous = recentReports.filter(r => r.vibe_type === 'dangerous').length;
+        const previousDangerous = previousReports.filter(r => r.vibe_type === 'dangerous').length;
+
+        if (recentDangerous > previousDangerous) return 'worsening';
+        if (recentDangerous < previousDangerous) return 'improving';
+        return 'stable';
+      }
+
+      cacheLocationTrendData(trendData) {
+        // Cache trend data by location (rounded to ~1km precision)
+        const cacheKey = `trend_${Math.round(trendData.location.latitude * 10) / 10}_${Math.round(trendData.location.longitude * 10) / 10}`;
+
+        const cacheData = {
+          ...trendData,
+          cachedAt: Date.now()
+        };
+
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+
+        // Keep only last 10 location caches to prevent storage bloat
+        this.cleanupOldTrendCaches();
+      }
+
+      cleanupOldTrendCaches() {
+        const cacheKeys = Object.keys(localStorage).filter(key => key.startsWith('trend_'));
+
+        if (cacheKeys.length > 10) {
+          // Sort by cache time and remove oldest
+          const caches = cacheKeys.map(key => ({
+            key,
+            time: JSON.parse(localStorage.getItem(key)).cachedAt
+          })).sort((a, b) => a.time - b.time);
+
+          // Remove oldest caches
+          caches.slice(0, cacheKeys.length - 10).forEach(cache => {
+            localStorage.removeItem(cache.key);
+          });
+        }
+      }
+
+      updateTrendAnalysisUI(trendData) {
+        if (!trendData) return;
+
+        // Update safety trend analysis section
+        const trendMetrics = document.querySelectorAll('.trend-metric');
+
+        trendMetrics.forEach(metric => {
+          const label = metric.querySelector('.trend-label');
+          const value = metric.querySelector('.trend-value');
+
+          if (label && value) {
+            const labelText = label.textContent.toLowerCase();
+
+            if (labelText.includes('safety score')) {
+              value.textContent = trendData.safetyScore + '%';
+              value.className = 'trend-value ' +
+                (trendData.safetyScore >= 70 ? 'safe' :
+                 trendData.safetyScore >= 40 ? 'moderate' : 'dangerous');
+            } else if (labelText.includes('danger reports')) {
+              value.textContent = trendData.vibeTrends.dangerous.recent;
+              value.className = 'trend-value dangerous';
+            } else if (labelText.includes('community response')) {
+              // Calculate average upvotes from recent reports
+              const avgUpvotes = trendData.recentReports > 0 ?
+                Math.round(recentReports.reduce((sum, r) => sum + (r.upvotes || 0), 0) / trendData.recentReports) : 0;
+              value.textContent = avgUpvotes + ' avg upvotes';
+              value.className = 'trend-value ' + (avgUpvotes >= 2 ? 'good' : 'moderate');
+            }
+          }
+        });
+
+        // Update trend insights
+        this.updateTrendInsights(trendData);
+      }
+
+      updateTrendInsights(trendData) {
+        const insightsContainer = document.querySelector('.trend-insights');
+
+        if (!insightsContainer || !trendData) return;
+
+        const insights = [];
+
+        // Generate insights based on trend data
+        if (trendData.trendDirection === 'worsening') {
+          insights.push({
+            icon: 'fas fa-exclamation-triangle',
+            text: 'Safety conditions are worsening in your area. Stay vigilant and report suspicious activity.'
+          });
+        } else if (trendData.trendDirection === 'improving') {
+          insights.push({
+            icon: 'fas fa-shield-alt',
+            text: 'Safety conditions are improving in your area. Community reports show positive trends.'
+          });
+        }
+
+        // Activity level insights
+        if (trendData.activityLevel === 'high') {
+          insights.push({
+            icon: 'fas fa-users',
+            text: 'High community activity detected. More reports mean better awareness of local conditions.'
+          });
+        } else if (trendData.activityLevel === 'very_low') {
+          insights.push({
+            icon: 'fas fa-info-circle',
+            text: 'Low reporting activity. Consider submitting reports to help build community safety data.'
+          });
+        }
+
+        // Vibe trend insights
+        const significantTrends = Object.entries(trendData.vibeTrends)
+          .filter(([vibe, data]) => Math.abs(data.changePercent) > 20)
+          .sort((a, b) => Math.abs(b[1].changePercent) - Math.abs(a[1].changePercent));
+
+        if (significantTrends.length > 0) {
+          const [vibe, data] = significantTrends[0];
+          const direction = data.changePercent > 0 ? 'increase' : 'decrease';
+          insights.push({
+            icon: this.getVibeIcon(vibe),
+            text: `${this.capitalizeFirstLetter(vibe)} reports ${direction}d by ${Math.abs(data.changePercent)}% in the last 24 hours.`
+          });
+        }
+
+        // Update UI
+        if (insights.length > 0) {
+          insightsContainer.innerHTML = insights.slice(0, 3).map(insight => `
+            <div class="insight-item">
+              <i class="${insight.icon}"></i>
+              <span>${insight.text}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      updateLocationSafetyInsights(trendData) {
+        // Update safety hub with location-specific tips
+        const safetyTips = document.getElementById('safetyTips');
+
+        if (!safetyTips || !trendData) return;
+
+        const tips = [];
+
+        // Generate location-specific safety tips based on trends
+        if (trendData.dominantVibe) {
+          switch (trendData.dominantVibe) {
+            case 'dangerous':
+              tips.push({
+                icon: 'fas fa-exclamation-triangle',
+                text: 'High danger reports in your area. Avoid isolated areas and travel with others.'
+              });
+              break;
+            case 'suspicious':
+              tips.push({
+                icon: 'fas fa-eye-slash',
+                text: 'Suspicious activity reported nearby. Stay alert and report any concerning behavior.'
+              });
+              break;
+            case 'crowded':
+              tips.push({
+                icon: 'fas fa-users',
+                text: 'Area appears crowded. Be mindful of personal belongings and surroundings.'
+              });
+              break;
+            case 'noisy':
+              tips.push({
+                icon: 'fas fa-volume-up',
+                text: 'Noisy environment detected. Consider quieter routes if possible.'
+              });
+              break;
+            case 'festive':
+              tips.push({
+                icon: 'fas fa-glass-cheers',
+                text: 'Festive atmosphere in the area. Enjoy responsibly and stay safe.'
+              });
+              break;
+            case 'calm':
+              tips.push({
+                icon: 'fas fa-peace',
+                text: 'Area appears calm and safe. Good time for outdoor activities.'
+              });
+              break;
+          }
+        }
+
+        // Add trend-based tips
+        if (trendData.trendDirection === 'worsening') {
+          tips.push({
+            icon: 'fas fa-chart-line',
+            text: 'Safety trends are declining. Consider alternative routes or times.'
+          });
+        }
+
+        // Add activity-based tips
+        if (trendData.activityLevel === 'high') {
+          tips.push({
+            icon: 'fas fa-users-cog',
+            text: 'High community engagement. Many people are actively monitoring safety.'
+          });
+        }
+
+        // Update UI if we have location-specific tips
+        if (tips.length > 0) {
+          safetyTips.innerHTML = tips.slice(0, 3).map(tip => `
+            <div class="guideline-item">
+              <i class="${tip.icon}"></i>
+              <span>${tip.text}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      checkTrendChanges(newTrendData) {
+        // Check if trends changed significantly compared to cached data
+        const cacheKey = `trend_${Math.round(newTrendData.location.latitude * 10) / 10}_${Math.round(newTrendData.location.longitude * 10) / 10}`;
+        const cachedData = localStorage.getItem(cacheKey);
+
+        if (!cachedData) return;
+
+        try {
+          const oldTrendData = JSON.parse(cachedData);
+
+          // Check for significant changes
+          const safetyScoreChange = Math.abs(newTrendData.safetyScore - oldTrendData.safetyScore);
+          const dominantVibeChanged = newTrendData.dominantVibe !== oldTrendData.dominantVibe;
+          const trendDirectionChanged = newTrendData.trendDirection !== oldTrendData.trendDirection;
+
+          if (safetyScoreChange >= 10 || dominantVibeChanged || trendDirectionChanged) {
+            // Show notification about trend changes
+            let message = 'Safety trends updated for your location';
+
+            if (safetyScoreChange >= 10) {
+              const direction = newTrendData.safetyScore > oldTrendData.safetyScore ? 'improved' : 'declined';
+              message = `Safety score ${direction} by ${safetyScoreChange} points in your area`;
+            } else if (dominantVibeChanged) {
+              message = `Area vibe changed from ${oldTrendData.dominantVibe || 'unknown'} to ${newTrendData.dominantVibe}`;
+            }
+
+            this.showNotification(message, 'info', 4000);
+          }
+        } catch (error) {
+          console.error('Error checking trend changes:', error);
+        }
       }
 
       handleNewReport(newReport) {
