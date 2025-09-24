@@ -4499,12 +4499,12 @@
                 `;
               }
             } else if (totalVotes === 0) {
-              // Show default message when no votes
+              // Show message when no votes in the area
               const populationMoodDisplay = document.getElementById('populationMoodDisplay');
               if (populationMoodDisplay) {
                 populationMoodDisplay.innerHTML = `
-                  <i class="fas fa-question-circle"></i>
-                  <span data-en="Collecting votes..." data-ar="جمع التصويتات...">Collecting votes...</span>
+                  <i class="fas fa-info-circle"></i>
+                  <span data-en="No Votes in The Area" data-ar="لا توجد تصويتات في المنطقة">No Votes in The Area</span>
                 `;
               }
             }
