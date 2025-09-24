@@ -1519,6 +1519,124 @@
       gap: 12px;
     }
 
+    /* Geofence Control Styles */
+    .geofence-control {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+
+    .geofence-control:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .geofence-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .geofence-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .geofence-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .geofence-title {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 2px;
+    }
+
+    .geofence-status {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+
+    .geofence-control.active .geofence-status {
+      color: var(--success);
+    }
+
+    .geofence-toggle {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 28px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.2);
+      position: relative;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .geofence-toggle:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .geofence-toggle.active {
+      background: var(--success);
+    }
+
+    .geofence-toggle.active:hover {
+      background: #28a745;
+    }
+
+    .toggle-slider {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .geofence-toggle.active .toggle-knob {
+      transform: translateX(22px);
+    }
+
+    .geofence-description {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
     .weather-alert {
       display: flex;
       align-items: center;
@@ -1580,7 +1698,95 @@
       color: var(--text-light);
     }
 
-    /* Vibe Categories Styles */
+    /* Area Mood Voting Styles */
+    .mood-voting-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .mood-vote-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px 12px;
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mood-vote-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+
+    .mood-vote-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .mood-vote-card.selected {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: var(--primary);
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.4), 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .mood-vote-card.selected::before {
+      opacity: 1;
+    }
+
+    .mood-emoji {
+      font-size: 32px;
+      line-height: 1;
+      margin-bottom: 4px;
+      transition: transform 0.3s ease;
+    }
+
+    .mood-vote-card.selected .mood-emoji {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6));
+    }
+
+    .mood-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-align: center;
+    }
+
+    .mood-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-light);
+      margin: 0;
+    }
+
+    .mood-count {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 0;
+      opacity: 0.8;
+    }
+
+    /* Vibe Categories Styles (keeping for backward compatibility) */
     .vibe-categories {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -2825,6 +3031,27 @@
             <span data-en="Safety Hub" data-ar="مركز السلامة">Safety Hub</span>
           </div>
           <div class="safety-hub">
+            <!-- Geofence Control -->
+            <div class="geofence-control" id="geofenceControl">
+              <div class="geofence-header">
+                <div class="geofence-icon">
+                  <i class="fas fa-draw-polygon"></i>
+                </div>
+                <div class="geofence-info">
+                  <span class="geofence-title" data-en="Geofence Monitoring" data-ar="مراقبة المناطق الجغرافية">Geofence Monitoring</span>
+                  <span class="geofence-status" id="geofenceStatusText" data-en="Disabled - Click to enable" data-ar="معطل - اضغط للتفعيل">Disabled - Click to enable</span>
+                </div>
+                <button class="geofence-toggle" id="geofenceToggleBtn">
+                  <div class="toggle-slider">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </button>
+              </div>
+              <div class="geofence-description">
+                <span data-en="Get notified when entering safe or risk zones" data-ar="احصل على إشعارات عند دخول مناطق آمنة أو خطرة">Get notified when entering safe or risk zones</span>
+              </div>
+            </div>
+
             <div class="weather-alert" id="weatherAlert">
               <i class="fas fa-cloud-sun"></i>
               <div class="alert-content">
@@ -2849,66 +3076,78 @@
           </div>
         </div>
 
-        <!-- Vibe Categories -->
+        <!-- Area Mood Voting -->
         <div class="card">
           <div class="card-title">
             <i class="fas fa-chart-pie"></i>
-            <span data-en="Vibe Categories" data-ar="فئات الحالات">Vibe Categories</span>
+            <span data-en="Area Mood Voting" data-ar="تصويت المزاج المنطقة">Area Mood Voting</span>
           </div>
-          <div class="vibe-categories" id="vibeCategories">
-            <div class="vibe-category-card" data-vibe="crowded">
-              <div class="category-icon">
-                <i class="fas fa-users"></i>
-              </div>
-              <div class="category-info">
-                <span class="category-name" data-en="Crowded" data-ar="مزدحم">Crowded</span>
-                <span class="category-count" id="crowdedCount">0</span>
+          <div class="mood-voting-grid" id="moodVotingGrid">
+            <div class="mood-vote-card" data-mood="chill">
+              <div class="mood-emoji">😎</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Chill" data-ar="هادئ">Chill</span>
+                <span class="mood-count" id="chillCount">0</span>
               </div>
             </div>
-            <div class="vibe-category-card" data-vibe="noisy">
-              <div class="category-icon">
-                <i class="fas fa-volume-up"></i>
-              </div>
-              <div class="category-info">
-                <span class="category-name" data-en="Noisy" data-ar="صاخب">Noisy</span>
-                <span class="category-count" id="noisyCount">0</span>
+            <div class="mood-vote-card" data-mood="excited">
+              <div class="mood-emoji">🤩</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Excited" data-ar="مثير">Excited</span>
+                <span class="mood-count" id="excitedCount">0</span>
               </div>
             </div>
-            <div class="vibe-category-card" data-vibe="festive">
-              <div class="category-icon">
-                <i class="fas fa-glass-cheers"></i>
-              </div>
-              <div class="category-info">
-                <span class="category-name" data-en="Festive" data-ar="احتفالي">Festive</span>
-                <span class="category-count" id="festiveCount">0</span>
+            <div class="mood-vote-card" data-mood="anxious">
+              <div class="mood-emoji">😰</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Anxious" data-ar="قلق">Anxious</span>
+                <span class="mood-count" id="anxiousCount">0</span>
               </div>
             </div>
-            <div class="vibe-category-card" data-vibe="calm">
-              <div class="category-icon">
-                <i class="fas fa-peace"></i>
-              </div>
-              <div class="category-info">
-                <span class="category-name" data-en="Calm" data-ar="هادئ">Calm</span>
-                <span class="category-count" id="calmCount">0</span>
+            <div class="mood-vote-card" data-mood="sad">
+              <div class="mood-emoji">😢</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Sad" data-ar="حزين">Sad</span>
+                <span class="mood-count" id="sadCount">0</span>
               </div>
             </div>
-            <div class="vibe-category-card" data-vibe="suspicious">
-              <div class="category-icon">
-                <i class="fas fa-eye-slash"></i>
-              </div>
-              <div class="category-info">
-                <span class="category-name" data-en="Suspicious" data-ar="مشبوه">Suspicious</span>
-                <span class="category-count" id="suspiciousCount">0</span>
+            <div class="mood-vote-card" data-mood="angry">
+              <div class="mood-emoji">😠</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Angry" data-ar="غاضب">Angry</span>
+                <span class="mood-count" id="angryCount">0</span>
               </div>
             </div>
-            <div class="vibe-category-card" data-vibe="dangerous">
-              <div class="category-icon">
-                <i class="fas fa-exclamation-triangle"></i>
+            <div class="mood-vote-card" data-mood="happy">
+              <div class="mood-emoji">😀</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Happy" data-ar="سعيد">Happy</span>
+                <span class="mood-count" id="happyCount">0</span>
               </div>
-              <div class="category-info">
-                <span class="category-name" data-en="Dangerous" data-ar="خطير">Dangerous</span>
-                <span class="category-count" id="dangerousCount">0</span>
+            </div>
+            <div class="mood-vote-card" data-mood="tired">
+              <div class="mood-emoji">😴</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Tired" data-ar="متعب">Tired</span>
+                <span class="mood-count" id="tiredCount">0</span>
               </div>
+            </div>
+            <div class="mood-vote-card" data-mood="confused">
+              <div class="mood-emoji">🤔</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Confused" data-ar="مشوش">Confused</span>
+                <span class="mood-count" id="confusedCount">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="mood-voting-status" id="moodVotingStatus" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
+            <div style="font-size: 14px; color: var(--text-light); margin-bottom: 5px;">
+              <i class="fas fa-users"></i>
+              <span data-en="Population Mood" data-ar="مزاج السكان">Population Mood</span>
+            </div>
+            <div style="font-size: 18px; font-weight: bold; color: var(--primary);" id="populationMoodDisplay">
+              <i class="fas fa-question-circle"></i>
+              <span data-en="Collecting votes..." data-ar="جمع التصويتات...">Collecting votes...</span>
             </div>
           </div>
         </div>
@@ -3988,6 +4227,184 @@
           option.classList.remove('selected');
         });
         document.querySelector(`.vibe-option[data-vibe="${vibe}"]`).classList.add('selected');
+      }
+
+      async selectMood(moodType) {
+        if (!this.isAuthenticated) {
+          this.showAuthModal();
+          this.showNotification("Please login to vote on mood", "error");
+          return;
+        }
+
+        // Clear any existing selection
+        document.querySelectorAll('.mood-vote-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+
+        // Select the clicked mood
+        const selectedCard = document.querySelector(`.mood-vote-card[data-mood="${moodType}"]`);
+        if (selectedCard) {
+          selectedCard.classList.add('selected');
+        }
+
+        try {
+          // Submit mood vote to database
+          const { data, error } = await this.supabase
+            .from('mood_votes')
+            .insert([{
+              user_id: this.userData.id,
+              mood_type: moodType,
+              latitude: this.userLocation?.latitude,
+              longitude: this.userLocation?.longitude
+            }]);
+
+          if (error) {
+            console.error("Error submitting mood vote:", error);
+            this.showNotification("Failed to submit mood vote", "error");
+            return;
+          }
+
+          this.showNotification(`Mood set to ${this.capitalizeFirstLetter(moodType)}`, "success");
+
+          // Update mood counts immediately
+          await this.updateMoodCounts();
+
+          // Check if we should show population mood (50+ votes)
+          await this.checkPopulationMoodThreshold();
+
+        } catch (error) {
+          console.error("Error selecting mood:", error);
+          this.showNotification("Failed to update mood", "error");
+        }
+      }
+
+      async updateMoodCounts() {
+        try {
+          // Get mood vote counts from the last 24 hours
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const { data: moodVotes, error } = await this.supabase
+            .from('mood_votes')
+            .select('mood_type')
+            .gte('created_at', yesterday.toISOString());
+
+          if (error) {
+            console.error("Error fetching mood votes:", error);
+            return;
+          }
+
+          // Count votes by mood type
+          const moodCounts = {};
+          moodVotes.forEach(vote => {
+            moodCounts[vote.mood_type] = (moodCounts[vote.mood_type] || 0) + 1;
+          });
+
+          // Update UI with counts
+          Object.keys(moodCounts).forEach(moodType => {
+            const countElement = document.getElementById(`${moodType}Count`);
+            if (countElement) {
+              countElement.textContent = moodCounts[moodType];
+            }
+          });
+
+          // Update mood voting status if visible
+          const totalVotes = Object.values(moodCounts).reduce((sum, count) => sum + count, 0);
+          const moodVotingStatus = document.getElementById('moodVotingStatus');
+
+          if (moodVotingStatus && totalVotes >= 50) {
+            // Find dominant mood
+            let dominantMood = null;
+            let maxCount = 0;
+            Object.entries(moodCounts).forEach(([mood, count]) => {
+              if (count > maxCount) {
+                maxCount = count;
+                dominantMood = mood;
+              }
+            });
+
+            if (dominantMood) {
+              const percentage = Math.round((maxCount / totalVotes) * 100);
+              const populationMoodDisplay = document.getElementById('populationMoodDisplay');
+
+              if (populationMoodDisplay) {
+                populationMoodDisplay.innerHTML = `
+                  <i class="${this.getMoodEmoji(dominantMood)}"></i>
+                  <span data-en="${this.capitalizeFirstLetter(dominantMood)} (${percentage}%)" data-ar="${this.getMoodArabicName(dominantMood)} (${percentage}%)">
+                    ${this.capitalizeFirstLetter(dominantMood)} (${percentage}%)
+                  </span>
+                `;
+              }
+            }
+          }
+
+        } catch (error) {
+          console.error("Error updating mood counts:", error);
+        }
+      }
+
+      async checkPopulationMoodThreshold() {
+        try {
+          // Count total mood votes in the last 24 hours
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const { data: moodVotes, error } = await this.supabase
+            .from('mood_votes')
+            .select('mood_type')
+            .gte('created_at', yesterday.toISOString());
+
+          if (error) {
+            console.error("Error checking population mood threshold:", error);
+            return;
+          }
+
+          const totalVotes = moodVotes.length;
+          const moodVotingStatus = document.getElementById('moodVotingStatus');
+
+          if (totalVotes >= 50) {
+            // Show population mood display
+            if (moodVotingStatus) {
+              moodVotingStatus.style.display = 'block';
+            }
+          } else {
+            // Hide population mood display
+            if (moodVotingStatus) {
+              moodVotingStatus.style.display = 'none';
+            }
+          }
+
+        } catch (error) {
+          console.error("Error checking population mood threshold:", error);
+        }
+      }
+
+      getMoodEmoji(moodType) {
+        const emojis = {
+          chill: '😎',
+          excited: '🤩',
+          anxious: '😰',
+          sad: '😢',
+          angry: '😠',
+          happy: '😀',
+          tired: '😴',
+          confused: '🤔'
+        };
+        return emojis[moodType] || '😐';
+      }
+
+      getMoodArabicName(moodType) {
+        const names = {
+          chill: 'هادئ',
+          excited: 'مثير',
+          anxious: 'قلق',
+          sad: 'حزين',
+          angry: 'غاضب',
+          happy: 'سعيد',
+          tired: 'متعب',
+          confused: 'مشوش'
+        };
+        return names[moodType] || moodType;
       }
       
       async submitReport() {
@@ -5443,6 +5860,22 @@
           if (vibeCard) {
             const vibeType = vibeCard.dataset.vibe;
             this.showVibeCategoryReports(vibeType);
+          }
+        });
+
+        // Mood vote cards click handler
+        document.addEventListener('click', (e) => {
+          const moodCard = e.target.closest('.mood-vote-card');
+          if (moodCard) {
+            const moodType = moodCard.dataset.mood;
+            this.selectMood(moodType);
+          }
+        });
+
+        // Geofence toggle button handler
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('#geofenceToggleBtn')) {
+            this.toggleGeofenceMonitoring();
           }
         });
 
@@ -7703,45 +8136,30 @@
       }
 
       updateGeofenceToggleUI() {
-        // Update the geofence toggle in the status bar
-        const statusBar = document.querySelector('.status-bar');
-        if (!statusBar) return;
+        // Update the geofence toggle in the safety hub
+        const geofenceControl = document.getElementById('geofenceControl');
+        const geofenceToggleBtn = document.getElementById('geofenceToggleBtn');
+        const geofenceStatusText = document.getElementById('geofenceStatusText');
 
-        // Remove existing geofence status if present
-        const existingGeofenceStatus = statusBar.querySelector('.geofence-status');
-        if (existingGeofenceStatus) {
-          existingGeofenceStatus.remove();
-        }
+        if (!geofenceControl || !geofenceToggleBtn || !geofenceStatusText) return;
 
-        // Add geofence toggle/status
-        const geofenceStatus = document.createElement('div');
-        geofenceStatus.className = 'status-item geofence-status';
-
+        // Update toggle button state
         if (this.geofenceEnabled) {
-          geofenceStatus.innerHTML = `
-            <button id="geofenceToggle" class="geofence-toggle-btn active" title="Geofence monitoring active - click to disable">
-              <i class="fas fa-map-marker-alt" style="color: var(--success);"></i>
-            </button>
-          `;
+          geofenceToggleBtn.classList.add('active');
+          geofenceStatusText.textContent = 'Active - Monitoring zones';
+          geofenceStatusText.setAttribute('data-en', 'Active - Monitoring zones');
+          geofenceStatusText.setAttribute('data-ar', 'نشط - مراقبة المناطق');
+          geofenceControl.classList.add('active');
         } else {
-          geofenceStatus.innerHTML = `
-            <button id="geofenceToggle" class="geofence-toggle-btn inactive" title="Geofence monitoring disabled - click to enable">
-              <i class="fas fa-map-marker-alt" style="color: var(--text-muted);"></i>
-            </button>
-          `;
+          geofenceToggleBtn.classList.remove('active');
+          geofenceStatusText.textContent = 'Disabled - Click to enable';
+          geofenceStatusText.setAttribute('data-en', 'Disabled - Click to enable');
+          geofenceStatusText.setAttribute('data-ar', 'معطل - اضغط للتفعيل');
+          geofenceControl.classList.remove('active');
         }
 
-        // Insert before the refresh button
-        const refreshBtn = statusBar.querySelector('.refresh-btn');
-        if (refreshBtn) {
-          statusBar.insertBefore(geofenceStatus, refreshBtn.parentElement);
-        }
-
-        // Add event listener
-        const toggleBtn = geofenceStatus.querySelector('#geofenceToggle');
-        if (toggleBtn) {
-          toggleBtn.addEventListener('click', () => this.toggleGeofenceMonitoring());
-        }
+        // Update text direction for the status text
+        this.updateTextDirection();
       }
 
       async classifyGeofenceZones() {
