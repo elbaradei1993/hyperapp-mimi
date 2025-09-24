@@ -1,5 +1,5 @@
 create table if not exists public.users (
-  user_id uuid primary key references auth.users(id) on delete cascade,
+  user_id text primary key references auth.users(id) on delete cascade,
   username text,
   reputation int not null default 0,
   language text not null default 'en',
@@ -8,7 +8,7 @@ create table if not exists public.users (
 
 create table if not exists public.reports (
   id bigint generated always as identity primary key,
-  user_id uuid references public.users(user_id) on delete cascade,
+  user_id text references public.users(user_id) on delete cascade,
   vibe_type text not null check (vibe_type in ('crowded','noisy','festive','calm','suspicious','dangerous')),
   location text,
   notes text,
@@ -26,7 +26,7 @@ alter table public.reports add column if not exists longitude double precision;
 
 create table if not exists public.votes (
   id bigint generated always as identity primary key,
-  user_id uuid not null references public.users(user_id) on delete cascade,
+  user_id text not null references public.users(user_id) on delete cascade,
   report_id bigint not null references public.reports(id) on delete cascade,
   vote_type text not null check (vote_type in ('upvote','downvote')),
   created_at timestamptz not null default now(),
@@ -157,6 +157,100 @@ begin
   return null;
 end;
 $$;
+
+-- Geofence Feature Tables
+create table if not exists public.geofences (
+  id bigint generated always as identity primary key,
+  name text not null,
+  zone_type text not null check (zone_type in ('safe','risk')),
+  latitude double precision not null,
+  longitude double precision not null,
+  radius_meters int not null default 500,
+  description text,
+  created_by text,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.user_geofence_settings (
+  id bigint generated always as identity primary key,
+  user_id text not null references public.users(user_id) on delete cascade,
+  geofence_enabled boolean not null default false,
+  notify_safe_zones boolean not null default true,
+  notify_risk_zones boolean not null default true,
+  notification_radius int not null default 100, -- meters
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id)
+);
+
+create table if not exists public.geofence_events (
+  id bigint generated always as identity primary key,
+  user_id text not null references public.users(user_id) on delete cascade,
+  geofence_id bigint not null references public.geofences(id) on delete cascade,
+  event_type text not null check (event_type in ('enter','exit')),
+  latitude double precision not null,
+  longitude double precision not null,
+  accuracy_meters double precision,
+  created_at timestamptz not null default now()
+);
+
+-- Indexes for performance
+create index if not exists geofences_zone_type_idx on public.geofences(zone_type);
+create index if not exists geofences_active_idx on public.geofences(is_active);
+create index if not exists geofence_events_user_id_idx on public.geofence_events(user_id);
+create index if not exists geofence_events_created_at_idx on public.geofence_events(created_at);
+
+-- Row Level Security for geofence tables
+alter table public.geofences enable row level security;
+alter table public.user_geofence_settings enable row level security;
+alter table public.geofence_events enable row level security;
+
+-- Geofences policies (public read, authenticated create/update)
+drop policy if exists geofences_select_all on public.geofences;
+create policy geofences_select_all on public.geofences
+  for select to anon, authenticated
+  using (is_active = true);
+
+drop policy if exists geofences_insert_authenticated on public.geofences;
+create policy geofences_insert_authenticated on public.geofences
+  for insert to authenticated
+  with check (true);
+
+drop policy if exists geofences_update_creator on public.geofences;
+create policy geofences_update_creator on public.geofences
+  for update to authenticated
+  using (created_by = auth.uid()::text)
+  with check (created_by = auth.uid()::text);
+
+-- User geofence settings policies
+drop policy if exists user_geofence_settings_select_own on public.user_geofence_settings;
+create policy user_geofence_settings_select_own on public.user_geofence_settings
+  for select to authenticated
+  using (user_id = auth.uid()::text);
+
+drop policy if exists user_geofence_settings_insert_own on public.user_geofence_settings;
+create policy user_geofence_settings_insert_own on public.user_geofence_settings
+  for insert to authenticated
+  with check (user_id = auth.uid()::text);
+
+drop policy if exists user_geofence_settings_update_own on public.user_geofence_settings;
+create policy user_geofence_settings_update_own on public.user_geofence_settings
+  for update to authenticated
+  using (user_id = auth.uid()::text)
+  with check (user_id = auth.uid()::text);
+
+-- Geofence events policies
+drop policy if exists geofence_events_select_own on public.geofence_events;
+create policy geofence_events_select_own on public.geofence_events
+  for select to authenticated
+  using (user_id = auth.uid()::text);
+
+drop policy if exists geofence_events_insert_own on public.geofence_events;
+create policy geofence_events_insert_own on public.geofence_events
+  for insert to authenticated
+  with check (user_id = auth.uid()::text);
 
 drop trigger if exists votes_after_insert on public.votes;
 create trigger votes_after_insert
