@@ -7049,6 +7049,7 @@
           totalReports: relevantReports.length,
           recentReports: recentReports.length,
           previousReports: previousReports.length,
+          recentReportsData: recentReports, // Include actual report data for calculations
           vibeTrends: this.calculateVibeTrends(recentReports, previousReports),
           safetyScore: this.calculateSafetyScore(recentReports),
           activityLevel: this.calculateActivityLevel(recentReports),
@@ -7193,7 +7194,7 @@
             } else if (labelText.includes('community response')) {
               // Calculate average upvotes from recent reports
               const avgUpvotes = trendData.recentReports > 0 ?
-                Math.round(recentReports.reduce((sum, r) => sum + (r.upvotes || 0), 0) / trendData.recentReports) : 0;
+                Math.round(trendData.recentReportsData.reduce((sum, r) => sum + (r.upvotes || 0), 0) / trendData.recentReports) : 0;
               value.textContent = avgUpvotes + ' avg upvotes';
               value.className = 'trend-value ' + (avgUpvotes >= 2 ? 'good' : 'moderate');
             }
