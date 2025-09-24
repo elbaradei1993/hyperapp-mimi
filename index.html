@@ -3636,6 +3636,35 @@
         }, 300000); // Update every 5 minutes instead of 1 minute
       }
       
+      async loadUserMoodVote() {
+        if (!this.isAuthenticated || !this.userData) return;
+
+        try {
+          const { data: moodVote, error } = await this.supabase
+            .from('mood_votes')
+            .select('mood_type')
+            .eq('user_id', this.userData.id)
+            .maybeSingle();
+
+          if (error && error.code !== 'PGRST116') {
+            console.error("Error loading user mood vote:", error);
+            return;
+          }
+
+          if (moodVote) {
+            // Update UI to show the selected mood
+            const selectedCard = document.querySelector(`.mood-vote-card[data-mood="${moodVote.mood_type}"]`);
+            if (selectedCard) {
+              selectedCard.classList.add('selected');
+            }
+            // Update display mode to show disabled state for other cards
+            this.updateMoodVotingDisplayMode();
+          }
+        } catch (error) {
+          console.error("Error in loadUserMoodVote:", error);
+        }
+      }
+
       async checkAuthState() {
         // Check if we have a Telegram user first
         if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
