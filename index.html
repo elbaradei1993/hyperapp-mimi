@@ -3644,9 +3644,10 @@
           this.isAuthenticated = true;
           await this.syncUserWithSupabase();
           this.updateUserInfo();
+          await this.loadUserMoodVote(); // Load existing mood vote
           return;
         }
-        
+
         // Check Supabase authentication as fallback
         const { data: { session }, error } = await this.supabase.auth.getSession();
         if (session && session.user) {
@@ -3658,6 +3659,7 @@
           };
           await this.syncUserWithSupabase();
           this.updateUserInfo();
+          await this.loadUserMoodVote(); // Load existing mood vote
         } else {
           // Show auth modal if no authentication found
           this.showAuthModal();
@@ -4397,6 +4399,12 @@
           if (moodVotingStatus) {
             moodVotingStatus.style.display = 'none';
           }
+          // Disable all unselected mood cards
+          document.querySelectorAll('.mood-vote-card:not(.selected)').forEach(card => {
+            card.classList.add('disabled');
+            card.style.pointerEvents = 'none';
+            card.style.opacity = '0.5';
+          });
         } else {
           // Show vote counts when no mood is selected - show community votes
           document.querySelectorAll('.mood-count').forEach(count => {
@@ -4407,6 +4415,12 @@
           if (moodVotingStatus) {
             moodVotingStatus.style.display = 'block';
           }
+          // Enable all mood cards
+          document.querySelectorAll('.mood-vote-card').forEach(card => {
+            card.classList.remove('disabled');
+            card.style.pointerEvents = 'auto';
+            card.style.opacity = '1';
+          });
         }
       }
 
