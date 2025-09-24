@@ -5585,6 +5585,13 @@
           }
         });
 
+        // Geofence toggle button handler
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('#geofenceToggleBtn')) {
+            this.toggleGeofenceMonitoring();
+          }
+        });
+
         // Privacy policy button handler
         document.addEventListener('click', (e) => {
           if (e.target.closest('[data-action="privacy-policy"]')) {
