@@ -7731,10 +7731,11 @@
           `;
         }
 
-        // Insert before the refresh button
-        const refreshBtn = statusBar.querySelector('.refresh-btn');
-        if (refreshBtn) {
-          statusBar.insertBefore(geofenceStatus, refreshBtn.parentElement);
+        // Insert before the last status item (which contains the buttons)
+        const statusItems = statusBar.querySelectorAll('.status-item');
+        const lastStatusItem = statusItems[statusItems.length - 1];
+        if (lastStatusItem) {
+          statusBar.insertBefore(geofenceStatus, lastStatusItem);
         }
 
         // Add event listener
