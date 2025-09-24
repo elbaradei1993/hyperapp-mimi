@@ -4415,42 +4415,23 @@
       }
 
       updateMoodVotingDisplayMode() {
-        // Check if user has a mood selected
-        const hasSelectedMood = document.querySelector('.mood-vote-card.selected') !== null;
+        // Always show community mood counts and status - never hide them
+        document.querySelectorAll('.mood-count').forEach(count => {
+          count.style.display = 'block';
+        });
 
-        if (hasSelectedMood) {
-          // Hide vote counts when user has selected a mood - show only the selected mood
-          document.querySelectorAll('.mood-count').forEach(count => {
-            count.style.display = 'none';
-          });
-          // Hide mood voting status when user has selected a mood
-          const moodVotingStatus = document.getElementById('moodVotingStatus');
-          if (moodVotingStatus) {
-            moodVotingStatus.style.display = 'none';
-          }
-          // Disable all unselected mood cards
-          document.querySelectorAll('.mood-vote-card:not(.selected)').forEach(card => {
-            card.classList.add('disabled');
-            card.style.pointerEvents = 'none';
-            card.style.opacity = '0.5';
-          });
-        } else {
-          // Show vote counts when no mood is selected - show community votes
-          document.querySelectorAll('.mood-count').forEach(count => {
-            count.style.display = 'block';
-          });
-          // Show mood voting status when no personal mood is selected
-          const moodVotingStatus = document.getElementById('moodVotingStatus');
-          if (moodVotingStatus) {
-            moodVotingStatus.style.display = 'block';
-          }
-          // Enable all mood cards
-          document.querySelectorAll('.mood-vote-card').forEach(card => {
-            card.classList.remove('disabled');
-            card.style.pointerEvents = 'auto';
-            card.style.opacity = '1';
-          });
+        // Always show mood voting status with dominant mood and percentage
+        const moodVotingStatus = document.getElementById('moodVotingStatus');
+        if (moodVotingStatus) {
+          moodVotingStatus.style.display = 'block';
         }
+
+        // Enable all mood cards for voting
+        document.querySelectorAll('.mood-vote-card').forEach(card => {
+          card.classList.remove('disabled');
+          card.style.pointerEvents = 'auto';
+          card.style.opacity = '1';
+        });
       }
 
       async updateMoodCounts() {
@@ -4483,11 +4464,11 @@
             }
           });
 
-          // Update mood voting status if visible
+          // Always update mood voting status with dominant mood and percentage
           const totalVotes = Object.values(moodCounts).reduce((sum, count) => sum + count, 0);
           const moodVotingStatus = document.getElementById('moodVotingStatus');
 
-          if (moodVotingStatus && totalVotes >= 50) {
+          if (moodVotingStatus && totalVotes > 0) {
             // Find dominant mood
             let dominantMood = null;
             let maxCount = 0;
