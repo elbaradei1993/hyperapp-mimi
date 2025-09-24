@@ -6996,6 +6996,9 @@
           // Update safety hub with location-specific insights
           this.updateLocationSafetyInsights(trendData);
 
+          // Update community vibe sidebar with location-specific data
+          this.updateCommunityVibeWithLocationData(trendData);
+
           // Show subtle notification if trends changed significantly
           this.checkTrendChanges(trendData);
 
@@ -7333,6 +7336,44 @@
               <span>${tip.text}</span>
             </div>
           `).join('');
+        }
+      }
+
+      updateCommunityVibeWithLocationData(trendData) {
+        // Update the community vibe sidebar with location-specific trend data
+        if (!trendData || !trendData.vibeTrends) return;
+
+        // Convert trend data to vibe counts format expected by the sidebar
+        const locationVibeCounts = {};
+        Object.entries(trendData.vibeTrends).forEach(([vibe, data]) => {
+          locationVibeCounts[vibe] = data.recent; // Use recent reports count
+        });
+
+        // Update the community vibe sidebar with location-specific data
+        this.updateCommunityVibeSidebar(locationVibeCounts);
+
+        // Update the dominant vibe display with location data
+        this.updateDominantVibeWithLocation(trendData);
+      }
+
+      updateDominantVibeWithLocation(trendData) {
+        // Update the dominant vibe display in the sidebar header
+        const dominantVibeElement = document.getElementById('dominantVibe');
+        if (!dominantVibeElement || !trendData.dominantVibe) return;
+
+        const iconElement = dominantVibeElement.querySelector('i');
+        const nameElement = dominantVibeElement.querySelector('span:first-of-type');
+        const percentageElement = dominantVibeElement.querySelector('.vibe-percentage');
+
+        if (iconElement) iconElement.className = `${this.getVibeIcon(trendData.dominantVibe)}`;
+        if (nameElement) nameElement.textContent = this.capitalizeFirstLetter(trendData.dominantVibe);
+
+        // Calculate percentage from recent reports
+        const totalRecent = trendData.recentReports;
+        if (percentageElement && totalRecent > 0) {
+          const dominantCount = trendData.vibeTrends[trendData.dominantVibe]?.recent || 0;
+          const percentage = Math.round((dominantCount / totalRecent) * 100);
+          percentageElement.textContent = `${percentage}%`;
         }
       }
 
