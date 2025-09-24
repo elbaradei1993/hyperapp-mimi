@@ -6412,17 +6412,21 @@
 
           if (error) {
             console.error("Error loading enhanced stats:", error);
+            // Don't render with incomplete data - just return
             return;
           }
 
           // Process stats data
           const stats = this.processStatsData(reports);
 
-          // Update the stats display
-          this.renderStatsCharts(stats);
+          // Update the stats display only if we have valid data
+          if (stats && stats.totalReports >= 0) {
+            this.renderStatsCharts(stats);
+          }
 
         } catch (error) {
           console.error("Error loading enhanced stats:", error);
+          // Don't render on error - keep existing data or show loading state
         }
       }
 
