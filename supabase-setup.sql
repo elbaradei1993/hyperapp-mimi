@@ -293,6 +293,9 @@ create index if not exists mood_votes_user_id_idx on public.mood_votes(user_id);
 create index if not exists mood_votes_mood_type_idx on public.mood_votes(mood_type);
 create index if not exists mood_votes_created_at_idx on public.mood_votes(created_at);
 
+-- Ensure only one mood vote per user
+alter table public.mood_votes add constraint mood_votes_user_id_unique unique (user_id);
+
 -- Row Level Security for mood votes
 alter table public.mood_votes enable row level security;
 
@@ -329,3 +332,56 @@ drop policy if exists activity_suggestions_insert_authenticated on public.activi
 create policy activity_suggestions_insert_authenticated on public.activity_suggestions
   for insert to authenticated
   with check (true);
+
+-- Insert sample activity suggestions for different moods
+-- These are example places in Cairo, Egypt area
+insert into public.activity_suggestions (mood_type, place_name, place_type, latitude, longitude, osm_id) values
+-- Chill mood suggestions
+('chill', 'Zamalek Rooftop Cafe', 'cafe', 30.0631, 31.2178, 'zamalek_cafe_1'),
+('chill', 'Nile River Walk', 'park', 30.0444, 31.2357, 'nile_walk_1'),
+('chill', 'Khan el-Khalili Tea House', 'cafe', 30.0478, 31.2625, 'khan_tea_1'),
+('chill', 'Al-Azhar Park', 'park', 30.0444, 31.2657, 'azhar_park_1'),
+
+-- Excited mood suggestions
+('excited', 'Cairo Festival City Mall', 'shopping', 30.0289, 31.4069, 'festival_city_1'),
+('excited', 'Pyramids of Giza', 'attraction', 29.9792, 31.1342, 'pyramids_1'),
+('excited', 'Nile Cruise Dinner', 'restaurant', 30.0444, 31.2357, 'nile_cruise_1'),
+('excited', 'Zamalek Night Market', 'market', 30.0631, 31.2178, 'zamalek_market_1'),
+
+-- Anxious mood suggestions (calming places)
+('anxious', 'Al-Azhar Mosque Gardens', 'religious', 30.0444, 31.2657, 'azhar_mosque_1'),
+('anxious', 'Manial Palace Gardens', 'park', 30.0204, 31.2272, 'manial_palace_1'),
+('anxious', 'Coptic Cairo Churches', 'religious', 30.0069, 31.2302, 'coptic_cairo_1'),
+('anxious', 'Zamalek Art Gallery', 'gallery', 30.0631, 31.2178, 'zamalek_gallery_1'),
+
+-- Sad mood suggestions (uplifting places)
+('sad', 'Tahrir Square Fountain', 'park', 30.0444, 31.2357, 'tahrir_fountain_1'),
+('sad', 'Egyptian Museum', 'museum', 30.0478, 31.2336, 'egyptian_museum_1'),
+('sad', 'Khan el-Khalili Bazaar', 'market', 30.0478, 31.2625, 'khan_bazaar_1'),
+('sad', 'Nile View Restaurant', 'restaurant', 30.0444, 31.2357, 'nile_view_1'),
+
+-- Angry mood suggestions (relaxing places)
+('angry', 'Zamalek Gardens', 'park', 30.0631, 31.2178, 'zamalek_gardens_1'),
+('angry', 'Islamic Cairo Walking Tour', 'historical', 30.0444, 31.2657, 'islamic_cairo_1'),
+('angry', 'Nile River Boat Ride', 'activity', 30.0444, 31.2357, 'nile_boat_1'),
+('angry', 'Al-Azhar University Library', 'library', 30.0444, 31.2657, 'azhar_library_1'),
+
+-- Happy mood suggestions (fun places)
+('happy', 'Cairo Tower', 'attraction', 30.0444, 31.2357, 'cairo_tower_1'),
+('happy', 'Zamalek Sports Club', 'sports', 30.0631, 31.2178, 'zamalek_sports_1'),
+('happy', 'Khan el-Khalili Food Court', 'restaurant', 30.0478, 31.2625, 'khan_food_1'),
+('happy', 'Nile Corniche Walk', 'park', 30.0444, 31.2357, 'nile_corniche_1'),
+
+-- Tired mood suggestions (resting places)
+('tired', 'Zamalek Coffee Shops', 'cafe', 30.0631, 31.2178, 'zamalek_coffee_1'),
+('tired', 'Tahrir Square Benches', 'park', 30.0444, 31.2357, 'tahrir_benches_1'),
+('tired', 'Al-Azhar Park Picnic Area', 'park', 30.0444, 31.2657, 'azhar_picnic_1'),
+('tired', 'Nile View Hotels', 'hotel', 30.0444, 31.2357, 'nile_hotels_1'),
+
+-- Confused mood suggestions (orienting places)
+('confused', 'Egyptian Museum', 'museum', 30.0478, 31.2336, 'museum_confused_1'),
+('confused', 'Tahrir Square Information', 'landmark', 30.0444, 31.2357, 'tahrir_info_1'),
+('confused', 'Khan el-Khalili Maps', 'market', 30.0478, 31.2625, 'khan_maps_1'),
+('confused', 'Zamalek Tourist Office', 'information', 30.0631, 31.2178, 'zamalek_info_1')
+
+on conflict do nothing;
