@@ -5072,6 +5072,8 @@
 
         // Wait for map to be fully loaded before adding markers
         this.map.whenReady(() => {
+          console.log('Map ready, initializing layers...');
+
           // Add heat map layer first (behind markers)
           this.addHeatMapLayer();
 
@@ -5251,7 +5253,12 @@
       }
 
       addHeatMapLayer() {
-        if (!this.map || !this.nearbyReports) return;
+        if (!this.map || !this.nearbyReports) {
+          console.log('Heat map: No map or reports available');
+          return;
+        }
+
+        console.log('Adding heat map layer with', this.nearbyReports.length, 'reports');
 
         // Remove existing heat map layer
         this.map.eachLayer((layer) => {
@@ -5264,12 +5271,13 @@
         const heatData = [];
         const maxIntensity = 1.0; // Maximum intensity for heat map
 
-        this.nearbyReports.forEach(report => {
+        this.nearbyReports.forEach((report, index) => {
           // Use actual coordinates if available, otherwise use clustered positions
           let lat, lng;
           if (report.latitude && report.longitude) {
-            lat = report.latitude;
-            lng = report.longitude;
+            lat = parseFloat(report.latitude);
+            lng = parseFloat(report.longitude);
+            console.log(`Report ${index}: Using real coordinates ${lat}, ${lng} for ${report.vibe_type}`);
           } else {
             // For reports without coordinates, use clustered positions around user location
             let baseLat, baseLng;
@@ -5287,6 +5295,7 @@
 
             lat = baseLat + Math.sin(angle) * radius;
             lng = baseLng + Math.cos(angle) * radius;
+            console.log(`Report ${index}: Using clustered coordinates ${lat}, ${lng} for ${report.vibe_type}`);
           }
 
           // Calculate intensity based on report type and votes
@@ -5294,15 +5303,15 @@
 
           // Higher intensity for dangerous reports
           if (report.vibe_type === 'dangerous') {
-            intensity = 0.8;
+            intensity = 0.9;
           } else if (report.vibe_type === 'suspicious') {
-            intensity = 0.6;
+            intensity = 0.7;
           } else if (report.vibe_type === 'crowded') {
             intensity = 0.5;
           } else if (report.vibe_type === 'noisy') {
             intensity = 0.4;
           } else {
-            intensity = 0.3; // calm, festive
+            intensity = 0.2; // calm, festive
           }
 
           // Boost intensity based on upvotes (community validation)
@@ -5325,32 +5334,58 @@
           heatData.push([lat, lng, intensity]);
         });
 
+        console.log('Heat map data prepared:', heatData.length, 'points');
+        console.log('Sample heat data points:', heatData.slice(0, 3));
+
         // Create heat map layer if we have data
         if (heatData.length > 0) {
-          this.heatLayer = L.heatLayer(heatData, {
-            radius: 25, // Radius of each heat point
-            blur: 15,   // Blur amount
-            maxZoom: 18,
-            max: maxIntensity,
-            gradient: {
-              0.1: '#00ff00', // Green for low intensity (safe areas)
-              0.3: '#ffff00', // Yellow for moderate
-              0.5: '#ff9900', // Orange for higher
-              0.7: '#ff6600', // Red-orange
-              0.9: '#ff0000'  // Red for high danger
-            },
-            isHeatMap: true // Custom property to identify heat map layer
-          }).addTo(this.map);
+          try {
+            this.heatLayer = L.heatLayer(heatData, {
+              radius: 30, // Increased radius for better visibility
+              blur: 20,   // Increased blur for smoother appearance
+              maxZoom: 18,
+              max: maxIntensity,
+              gradient: {
+                0.1: '#00ff00', // Green for low intensity (safe areas)
+                0.3: '#80ff00', // Light green
+                0.5: '#ffff00', // Yellow for moderate
+                0.7: '#ff8000', // Orange for higher
+                0.9: '#ff0000'  // Red for high danger
+              },
+              isHeatMap: true // Custom property to identify heat map layer
+            }).addTo(this.map);
 
-          // Add heat map to layer control if it exists
-          if (this.layerControl) {
-            this.layerControl.addOverlay(this.heatLayer, 'Safety Heat Map');
+            console.log('Heat map layer added successfully');
+            console.log('Heat layer object:', this.heatLayer);
+
+            // Add heat map to layer control if it exists
+            if (this.layerControl) {
+              this.layerControl.addOverlay(this.heatLayer, 'Safety Heat Map');
+            }
+
+            // Force a map refresh to ensure the layer is visible
+            setTimeout(() => {
+              if (this.map) {
+                this.map.invalidateSize();
+                console.log('Map invalidated to refresh heat layer');
+              }
+            }, 100);
+
+          } catch (error) {
+            console.error('Error creating heat map layer:', error);
           }
+        } else {
+          console.log('No heat map data available');
         }
       }
 
       addUserLocationMarker() {
-        if (!this.map || !this.userLocation) return;
+        if (!this.map || !this.userLocation) {
+          console.log('Cannot add user location marker: map or userLocation not available');
+          return;
+        }
+
+        console.log('Adding user location marker at:', this.userLocation.latitude, this.userLocation.longitude);
 
         // Remove existing user location marker
         this.map.eachLayer((layer) => {
@@ -5407,6 +5442,14 @@
         `;
 
         userMarker.bindPopup(popupContent);
+
+        // Center map on user location if this is the first time adding the marker
+        if (!this.userLocationMarkerAdded) {
+          this.map.setView([this.userLocation.latitude, this.userLocation.longitude], 15);
+          this.userLocationMarkerAdded = true;
+        }
+
+        console.log('User location marker added successfully');
       }
 
       getVibeColor(vibeType) {
