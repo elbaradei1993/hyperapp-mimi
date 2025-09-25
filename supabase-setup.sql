@@ -9,7 +9,7 @@ create table if not exists public.users (
 create table if not exists public.reports (
   id bigint generated always as identity primary key,
   user_id text references public.users(user_id) on delete cascade,
-  vibe_type text not null check (vibe_type in ('chill','excited','anxious','sad','angry','happy','tired','confused')),
+  vibe_type text not null check (vibe_type in ('calm','noisy','crowded','suspicious','dangerous')),
   location text,
   notes text,
   upvotes int not null default 0,
@@ -293,17 +293,15 @@ create index if not exists mood_votes_user_id_idx on public.mood_votes(user_id);
 create index if not exists mood_votes_mood_type_idx on public.mood_votes(mood_type);
 create index if not exists mood_votes_created_at_idx on public.mood_votes(created_at);
 
--- Ensure only one mood vote per user
-alter table public.mood_votes add constraint mood_votes_user_id_unique unique (user_id);
-
 -- Row Level Security for mood votes
 alter table public.mood_votes enable row level security;
 
 -- Mood votes policies (authenticated users only)
-drop policy if exists mood_votes_select_own on public.mood_votes;
-create policy mood_votes_select_own on public.mood_votes
+-- Allow all authenticated users to read all mood votes for population display
+drop policy if exists mood_votes_select_all on public.mood_votes;
+create policy mood_votes_select_all on public.mood_votes
   for select to authenticated
-  using (user_id = auth.uid()::text);
+  using (true);
 
 drop policy if exists mood_votes_insert_own on public.mood_votes;
 create policy mood_votes_insert_own on public.mood_votes
