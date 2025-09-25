@@ -1955,6 +1955,21 @@
       }
     }
 
+    @keyframes pulse-user {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.9;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.9;
+      }
+    }
+
     .map-point {
       animation: pulse-map 2s infinite ease-in-out;
     }
@@ -5135,9 +5150,9 @@
       addReportMarkers() {
         if (!this.map || !this.nearbyReports) return;
 
-        // Clear existing markers
+        // Clear existing markers (but keep user location marker)
         this.map.eachLayer((layer) => {
-          if (layer instanceof L.Marker) {
+          if (layer instanceof L.Marker && !layer.options.isUserLocation) {
             this.map.removeLayer(layer);
           }
         });
@@ -5176,22 +5191,23 @@
             background: ${this.getVibeColor(report.vibe_type)};
             border: 2px solid white;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
             ${!report.latitude || !report.longitude ? 'opacity: 0.7;' : ''}
+            animation: pulse 2s infinite ease-in-out;
           ">
-            <i class="${this.getVibeIcon(report.vibe_type)}" style="color: white; font-size: 12px;"></i>
+            <i class="${this.getVibeIcon(report.vibe_type)}" style="color: white; font-size: 14px;"></i>
           </div>`;
 
           const customIcon = L.divIcon({
             html: iconHtml,
             className: 'custom-marker',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
           });
 
           // Create marker
@@ -5221,10 +5237,73 @@
           marker.bindPopup(popupContent);
         });
 
+        // Add user location marker if available
+        this.addUserLocationMarker();
+
         // Ensure markers are visible by refreshing the map
         if (this.map) {
           this.map.invalidateSize();
         }
+      }
+
+      addUserLocationMarker() {
+        if (!this.map || !this.userLocation) return;
+
+        // Remove existing user location marker
+        this.map.eachLayer((layer) => {
+          if (layer instanceof L.Marker && layer.options.isUserLocation) {
+            this.map.removeLayer(layer);
+          }
+        });
+
+        // Create user location marker with distinct icon
+        const userIconHtml = `
+          <div style="
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            animation: pulse-user 2s infinite ease-in-out;
+          ">
+            <i class="fas fa-user" style="color: white; font-size: 16px;"></i>
+          </div>
+        `;
+
+        const userIcon = L.divIcon({
+          html: userIconHtml,
+          className: 'user-location-marker',
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
+        });
+
+        // Create marker
+        const userMarker = L.marker([this.userLocation.latitude, this.userLocation.longitude], {
+          icon: userIcon,
+          isUserLocation: true
+        }).addTo(this.map);
+
+        // Add popup with user location info
+        const popupContent = `
+          <div style="font-family: 'Segoe UI', sans-serif; max-width: 200px; text-align: center;">
+            <h4 style="margin: 0 0 8px 0; color: #3B82F6;">
+              <i class="fas fa-user-circle"></i> Your Location
+            </h4>
+            <p style="margin: 4px 0;">
+              <strong>Coordinates:</strong><br>
+              ${this.userLocation.latitude.toFixed(6)}, ${this.userLocation.longitude.toFixed(6)}
+            </p>
+            <p style="margin: 4px 0; font-size: 12px; color: #666;">
+              Last updated: ${new Date(this.userLocation.timestamp || Date.now()).toLocaleTimeString()}
+            </p>
+          </div>
+        `;
+
+        userMarker.bindPopup(popupContent);
       }
 
       getVibeColor(vibeType) {
