@@ -4460,19 +4460,11 @@
             return;
           }
 
-          // Count votes by mood type
-          const moodCounts = {};
-          moodVotes.forEach(vote => {
-            moodCounts[vote.mood_type] = (moodCounts[vote.mood_type] || 0) + 1;
-          });
-
-          // Update UI with counts
-          Object.keys(moodCounts).forEach(moodType => {
-            const countElement = document.getElementById(`${moodType}Count`);
-            if (countElement) {
-              countElement.textContent = moodCounts[moodType];
-            }
-          });
+    // Count votes by mood type
+    const moodCounts = {};
+    moodVotes.forEach(vote => {
+      moodCounts[vote.mood_type] = (moodCounts[vote.mood_type] || 0) + 1;
+    });
 
           // Always show mood voting status with dominant mood and percentage
           const totalVotes = Object.values(moodCounts).reduce((sum, count) => sum + count, 0);
