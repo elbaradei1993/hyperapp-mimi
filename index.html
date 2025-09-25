@@ -3192,21 +3192,76 @@
             <i class="fas fa-chart-pie"></i>
             <span data-en="Area Mood Voting" data-ar="تصويت المزاج المنطقة">Area Mood Voting</span>
           </div>
-          <div class="mood-voting-dropdown-container">
-            <select id="moodVotingSelect" class="mood-voting-dropdown">
-              <option value="" data-en="Select your current mood..." data-ar="اختر مزاجك الحالي...">Select your current mood...</option>
-              <option value="chill" data-en="😎 Chill" data-ar="😎 هادئ">😎 Chill</option>
-              <option value="excited" data-en="🤩 Excited" data-ar="🤩 مثير">🤩 Excited</option>
-              <option value="anxious" data-en="😰 Anxious" data-ar="😰 قلق">😰 Anxious</option>
-              <option value="sad" data-en="😢 Sad" data-ar="😢 حزين">😢 Sad</option>
-              <option value="angry" data-en="😠 Angry" data-ar="😠 غاضب">😠 Angry</option>
-              <option value="happy" data-en="😀 Happy" data-ar="😀 سعيد">😀 Happy</option>
-              <option value="tired" data-en="😴 Tired" data-ar="😴 متعب">😴 Tired</option>
-              <option value="confused" data-en="🤔 Confused" data-ar="🤔 مشوش">🤔 Confused</option>
-            </select>
-            <button id="submitMoodVote" class="btn btn-primary mood-submit-btn" data-en="Vote" data-ar="تصويت">Vote</button>
+          <div class="mood-voting-grid" id="moodVotingGrid">
+            <div class="mood-vote-card" data-mood="chill">
+              <input type="radio" name="mood" value="chill" style="display: none;">
+              <div class="mood-info">
+                <div class="mood-emoji">😎</div>
+                <div class="mood-name">Chill</div>
+                <div class="mood-count" id="chillCount">0</div>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="excited">
+              <input type="radio" name="mood" value="excited" style="display: none;">
+              <div class="mood-info">
+                <div class="mood-emoji">🤩</div>
+                <div class="mood-name">Excited</div>
+                <div class="mood-count" id="excitedCount">0</div>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="anxious">
+              <input type="radio" name="mood" value="anxious" style="display: none;">
+              <div class="mood-info">
+                <div class="mood-emoji">😰</div>
+                <div class="mood-name">Anxious</div>
+                <div class="mood-count" id="anxiousCount">0</div>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="sad">
+              <input type="radio" name="mood" value="sad" style="display: none;">
+              <div class="mood-info">
+                <div class="mood-emoji">😢</div>
+                <div class="mood-name">Sad</div>
+                <div class="mood-count" id="sadCount">0</div>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="angry">
+              <input type="radio" name="mood" value="angry" style="display: none;">
+              <div class="mood-info">
+                <div class="mood-emoji">😠</div>
+                <div class="mood-name">Angry</div>
+                <div class="mood-count" id="angryCount">0</div>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="happy">
+              <input type="radio" name="mood" value="happy" style="display: none;">
+              <div class="mood-info">
+                <div class="mood-emoji">😀</div>
+                <div class="mood-name">Happy</div>
+                <div class="mood-count" id="happyCount">0</div>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="tired">
+              <input type="radio" name="mood" value="tired" style="display: none;">
+              <div class="mood-info">
+                <div class="mood-emoji">😴</div>
+                <div class="mood-name">Tired</div>
+                <div class="mood-count" id="tiredCount">0</div>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="confused">
+              <input type="radio" name="mood" value="confused" style="display: none;">
+              <div class="mood-info">
+                <div class="mood-emoji">🤔</div>
+                <div class="mood-name">Confused</div>
+                <div class="mood-count" id="confusedCount">0</div>
+              </div>
+            </div>
           </div>
-          <div class="mood-voting-status" id="moodVotingStatus" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
+          <div style="text-align: center; margin-top: 15px;">
+            <button id="submitMoodVote" class="btn btn-primary mood-submit-btn" data-en="Submit Vote" data-ar="إرسال التصويت">Submit Vote</button>
+          </div>
+          <div class="mood-voting-status" id="moodVotingStatus" style="text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
             <div style="font-size: 14px; color: var(--text-light); margin-bottom: 5px;">
               <i class="fas fa-users"></i>
               <span data-en="Population Mood" data-ar="مزاج السكان">Population Mood</span>
@@ -3586,9 +3641,10 @@
         // Initialize geofence functionality
         if (this.isAuthenticated) {
           await this.loadGeofenceSettings();
-          // Load initial mood counts for authenticated users
-          await this.updateMoodCounts();
         }
+
+        // Always load initial mood counts (not just for authenticated users)
+        await this.updateMoodCounts();
 
         // Make app instance globally available
         window.hyperApp = this;
@@ -4406,9 +4462,11 @@
             this.showNotification(`Your mood set to ${this.capitalizeFirstLetter(moodType)}`, "success");
           }
 
-          // Update mood counts and UI display mode
-          await this.updateMoodCounts();
-          this.updateMoodVotingDisplayMode();
+          // Update mood counts and UI display mode with a small delay to ensure database consistency
+          setTimeout(async () => {
+            await this.updateMoodCounts();
+            this.updateMoodVotingDisplayMode();
+          }, 500);
 
           // Check if we should show population mood (50+ votes)
           await this.checkPopulationMoodThreshold();
@@ -4462,11 +4520,19 @@
             return;
           }
 
-    // Count votes by mood type
-    const moodCounts = {};
-    moodVotes.forEach(vote => {
-      moodCounts[vote.mood_type] = (moodCounts[vote.mood_type] || 0) + 1;
-    });
+          // Count votes by mood type
+          const moodCounts = {};
+          moodVotes.forEach(vote => {
+            moodCounts[vote.mood_type] = (moodCounts[vote.mood_type] || 0) + 1;
+          });
+
+          // Update individual mood card counts
+          Object.entries(moodCounts).forEach(([mood, count]) => {
+            const countElement = document.getElementById(`${mood}Count`);
+            if (countElement) {
+              countElement.textContent = count;
+            }
+          });
 
           // Always show mood voting status with dominant mood and percentage
           const totalVotes = Object.values(moodCounts).reduce((sum, count) => sum + count, 0);
@@ -4483,9 +4549,10 @@
               }
             });
 
+            const populationMoodDisplay = document.getElementById('populationMoodDisplay');
+
             if (dominantMood && totalVotes > 0) {
               const percentage = Math.round((maxCount / totalVotes) * 100);
-              const populationMoodDisplay = document.getElementById('populationMoodDisplay');
 
               if (populationMoodDisplay) {
                 populationMoodDisplay.innerHTML = `
@@ -4495,13 +4562,12 @@
                   </span>
                 `;
               }
-            } else if (totalVotes === 0) {
-              // Show message when no votes in the area
-              const populationMoodDisplay = document.getElementById('populationMoodDisplay');
+            } else {
+              // Show collecting votes message when no votes or initializing
               if (populationMoodDisplay) {
                 populationMoodDisplay.innerHTML = `
-                  <i class="fas fa-info-circle"></i>
-                  <span data-en="No Votes in The Area" data-ar="لا توجد تصويتات في المنطقة">No Votes in The Area</span>
+                  <i class="fas fa-question-circle"></i>
+                  <span data-en="Collecting votes..." data-ar="جمع التصويتات...">Collecting votes...</span>
                 `;
               }
             }
@@ -4509,6 +4575,9 @@
             // Always show the mood voting status
             moodVotingStatus.style.display = 'block';
           }
+
+          // Force update text direction for any new content
+          this.updateTextDirection();
 
         } catch (error) {
           console.error("Error updating mood counts:", error);
@@ -6028,22 +6097,50 @@
           }
         });
 
-        // Mood voting dropdown and submit button handlers
-        const moodVotingSelect = document.getElementById('moodVotingSelect');
+        // Mood voting cards and submit button handlers
+        const moodVotingGrid = document.getElementById('moodVotingGrid');
         const submitMoodVoteBtn = document.getElementById('submitMoodVote');
 
-        if (moodVotingSelect) {
-          moodVotingSelect.addEventListener('change', (e) => {
-            // Optional: could show preview or something when selection changes
-            // For now, just let the user click submit
+        if (moodVotingGrid) {
+          moodVotingGrid.addEventListener('click', (e) => {
+            const moodCard = e.target.closest('.mood-vote-card');
+            if (moodCard) {
+              // Remove selected class from all cards
+              document.querySelectorAll('.mood-vote-card').forEach(card => {
+                card.classList.remove('selected');
+              });
+              // Add selected class to clicked card
+              moodCard.classList.add('selected');
+
+              // Also update the hidden radio button
+              const radioInput = moodCard.querySelector('input[type="radio"]');
+              if (radioInput) {
+                radioInput.checked = true;
+              }
+            }
           });
         }
 
         if (submitMoodVoteBtn) {
-          submitMoodVoteBtn.addEventListener('click', () => {
-            const selectedMood = moodVotingSelect.value;
-            if (selectedMood && selectedMood !== '') {
-              this.selectMood(selectedMood);
+          submitMoodVoteBtn.addEventListener('click', async () => {
+            const selectedCard = document.querySelector('.mood-vote-card.selected');
+            if (selectedCard) {
+              const selectedMood = selectedCard.getAttribute('data-mood');
+
+              // Show loading state
+              submitMoodVoteBtn.textContent = 'Submitting...';
+              submitMoodVoteBtn.disabled = true;
+
+              try {
+                await this.selectMood(selectedMood);
+              } catch (error) {
+                console.error('Error submitting mood vote:', error);
+                this.showNotification("Failed to submit mood vote", "error");
+              } finally {
+                // Reset button state
+                submitMoodVoteBtn.textContent = 'Submit Vote';
+                submitMoodVoteBtn.disabled = false;
+              }
             } else {
               this.showNotification("Please select a mood first", "warning");
             }
