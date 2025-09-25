@@ -745,9 +745,9 @@
       border-radius: 8px;
       padding: 8px;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 6px;
-      z-index: 10;
+      z-index: 1000;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       max-height: none;
@@ -5054,22 +5054,25 @@
           maxZoom: 19,
         }).addTo(this.map);
 
-        // Add markers for reports
-        this.addReportMarkers();
+        // Wait for map to be fully loaded before adding markers
+        this.map.whenReady(() => {
+          // Add markers for reports
+          this.addReportMarkers();
 
-        // Try to get user's location for better centering if not already available
-        if (navigator.geolocation && !this.userLocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              this.userLocation = { latitude, longitude };
-              this.map.setView([latitude, longitude], 13);
-            },
-            (error) => {
-            },
-            { timeout: 10000, enableHighAccuracy: true }
-          );
-        }
+          // Try to get user's location for better centering if not already available
+          if (navigator.geolocation && !this.userLocation) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const { latitude, longitude } = position.coords;
+                this.userLocation = { latitude, longitude };
+                this.map.setView([latitude, longitude], 13);
+              },
+              (error) => {
+              },
+              { timeout: 10000, enableHighAccuracy: true }
+            );
+          }
+        });
 
         // Add event listener for My Location button
         const myLocationBtn = document.getElementById('myLocationBtn');
