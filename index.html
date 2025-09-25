@@ -4344,41 +4344,49 @@
           return;
         }
 
-        const selectedCard = document.querySelector(`.mood-vote-card[data-mood="${moodType}"]`);
-        const isCurrentlySelected = selectedCard && selectedCard.classList.contains('selected');
-
-        // Check if any mood is currently selected (not the one being clicked)
-        const hasOtherMoodSelected = document.querySelector('.mood-vote-card.selected') !== null && !isCurrentlySelected;
-
         try {
-          if (isCurrentlySelected) {
-            // Deselect the current mood - remove the vote from database
-            const { error: deleteError } = await this.supabase
-              .from('mood_votes')
-              .delete()
-              .eq('user_id', this.userData.id)
-              .eq('mood_type', moodType);
+          // Check if user already has a mood vote
+          const { data: existingVotes, error: checkError } = await this.supabase
+            .from('mood_votes')
+            .select('mood_type, id')
+            .eq('user_id', this.userData.id);
 
-            if (deleteError) {
-              console.error("Error removing mood vote:", deleteError);
-              this.showNotification("Failed to update mood vote", "error");
-              return;
-            }
-
-            // Remove selection from UI
-            selectedCard.classList.remove('selected');
-            this.showNotification("Mood vote removed - you can now select a different mood or see community votes", "info");
-
-          } else if (hasOtherMoodSelected) {
-            // User is trying to select a different mood while one is already selected
-            // Require them to unselect first
-            this.showNotification("Please unselect your current mood first before choosing a different one", "warning");
+          if (checkError) {
+            console.error("Error checking existing mood vote:", checkError);
+            this.showNotification("Failed to check existing vote", "error");
             return;
+          }
 
+          const existingVote = existingVotes && existingVotes.length > 0 ? existingVotes[0] : null;
+
+          if (existingVote) {
+            if (existingVote.mood_type === moodType) {
+              // User is trying to vote for the same mood they already have
+              this.showNotification(`You already voted for ${this.capitalizeFirstLetter(moodType)}`, "info");
+              return;
+            } else {
+              // User has a different mood selected, update their vote
+              const { error: updateError } = await this.supabase
+                .from('mood_votes')
+                .update({
+                  mood_type: moodType,
+                  latitude: this.userLocation?.latitude,
+                  longitude: this.userLocation?.longitude,
+                  created_at: new Date().toISOString() // Update timestamp
+                })
+                .eq('user_id', this.userData.id);
+
+              if (updateError) {
+                console.error("Error updating mood vote:", updateError);
+                this.showNotification("Failed to update mood vote", "error");
+                return;
+              }
+
+              this.showNotification(`Your mood updated to ${this.capitalizeFirstLetter(moodType)}`, "success");
+            }
           } else {
-            // No mood is currently selected, so select this one
-            // Add new vote to database
-            const { data, error } = await this.supabase
+            // User doesn't have any mood vote yet, insert new one
+            const { error: insertError } = await this.supabase
               .from('mood_votes')
               .insert([{
                 user_id: this.userData.id,
@@ -4387,15 +4395,10 @@
                 longitude: this.userLocation?.longitude
               }]);
 
-            if (error) {
-              console.error("Error submitting mood vote:", error);
+            if (insertError) {
+              console.error("Error submitting mood vote:", insertError);
               this.showNotification("Failed to submit mood vote", "error");
               return;
-            }
-
-            // Select the new mood in UI
-            if (selectedCard) {
-              selectedCard.classList.add('selected');
             }
 
             this.showNotification(`Your mood set to ${this.capitalizeFirstLetter(moodType)}`, "success");
