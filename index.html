@@ -6301,6 +6301,39 @@
         }
       }
 
+      updateEnhancedStatsFromLocalData(newReport) {
+        // Update enhanced stats UI directly from local data without database queries
+        // This is called when we receive real-time updates to ensure immediate UI updates
+
+        // Update vibe counts in mood voting grid
+        const vibeCounts = this.getVibeCounts();
+        Object.keys(vibeCounts).forEach(vibe => {
+          const countElement = document.getElementById(vibe + 'Count');
+          if (countElement) {
+            countElement.textContent = vibeCounts[vibe];
+          }
+        });
+
+        // Update community vibe sidebar with new data
+        this.updateCommunityVibeSidebar(vibeCounts);
+
+        // Update enhanced vibe stats bars
+        this.updateEnhancedVibeStats(vibeCounts);
+
+        // Update local area stats if user has location
+        if (this.userLocation) {
+          const stats = {
+            reports: this.nearbyReports,
+            totalReports: this.nearbyReports.length
+          };
+          const localStats = this.calculateLocalAreaStats(stats);
+          this.updateLocalAreaDisplay(localStats);
+        }
+
+        // Update safety trend analysis with new data
+        this.updateSafetyTrendAnalysisFromLocalData(newReport);
+      }
+
       updateEnhancedVibeStats(vibeCounts) {
         // Update vibe distribution in enhanced stats if they exist
         const vibeBars = document.querySelectorAll('.vibe-bar');
@@ -6324,6 +6357,71 @@
             }
           }
         });
+      }
+
+      updateSafetyTrendAnalysisFromLocalData(newReport) {
+        // Update safety trend analysis UI directly from local data
+        const trendMetrics = document.querySelectorAll('.trend-metric');
+
+        trendMetrics.forEach(metric => {
+          const label = metric.querySelector('.trend-label');
+          const value = metric.querySelector('.trend-value');
+
+          if (label && value) {
+            const labelText = label.textContent.toLowerCase();
+
+            if (labelText.includes('danger reports')) {
+              // Count dangerous reports from local data
+              const dangerousCount = this.nearbyReports.filter(r => r.vibe_type === 'dangerous').length;
+              value.textContent = dangerousCount;
+              value.className = 'trend-value dangerous';
+            } else if (labelText.includes('community response')) {
+              // Calculate average upvotes from local data
+              const totalUpvotes = this.nearbyReports.reduce((sum, r) => sum + (r.upvotes || 0), 0);
+              const avgUpvotes = this.nearbyReports.length > 0 ? Math.round(totalUpvotes / this.nearbyReports.length) : 0;
+              value.textContent = avgUpvotes + ' avg upvotes';
+              value.className = 'trend-value ' + (avgUpvotes >= 2 ? 'good' : 'moderate');
+            }
+          }
+        });
+
+        // Update safety score based on local data
+        const dangerousCount = this.nearbyReports.filter(r => r.vibe_type === 'dangerous').length;
+        const suspiciousCount = this.nearbyReports.filter(r => r.vibe_type === 'suspicious').length;
+        const totalReports = this.nearbyReports.length;
+
+        if (totalReports > 0) {
+          const dangerRatio = (dangerousCount + suspiciousCount * 0.5) / totalReports;
+          const safetyScore = Math.max(0, Math.round((1 - dangerRatio) * 100));
+
+          // Update safety score display
+          const safetyScoreMetric = Array.from(trendMetrics).find(metric => {
+            const label = metric.querySelector('.trend-label');
+            return label && label.textContent.toLowerCase().includes('safety score');
+          });
+
+          if (safetyScoreMetric) {
+            const value = safetyScoreMetric.querySelector('.trend-value');
+            if (value) {
+              value.textContent = safetyScore + '%';
+              value.className = 'trend-value ' +
+                (safetyScore >= 70 ? 'safe' :
+                 safetyScore >= 40 ? 'moderate' : 'dangerous');
+            }
+          }
+
+          // Update safety indicator bar
+          const indicatorFill = document.querySelector('.indicator-fill');
+          if (indicatorFill) {
+            const safePercentage = 100 - safetyScore;
+            indicatorFill.style.width = `${safePercentage}%`;
+
+            // Update indicator color based on safety score
+            indicatorFill.className = 'indicator-fill ' +
+              (safetyScore >= 70 ? 'safe' :
+               safetyScore >= 40 ? 'moderate' : 'dangerous');
+          }
+        }
       }
 
       showVibeCategoryReports(vibeType) {
@@ -8025,7 +8123,7 @@
       }
 
       handleNewReport(newReport) {
-        // Add the new report to our local data
+        // Add the new report to our local data immediately
         const reportWithVote = {
           ...newReport,
           user_vote: null // New reports don't have user votes yet
@@ -8034,26 +8132,34 @@
         // Add to the beginning of the array (most recent first)
         this.nearbyReports.unshift(reportWithVote);
 
-        // Keep only the most recent 20 reports
+        // Keep only the most recent 20 reports to prevent memory bloat
         if (this.nearbyReports.length > 20) {
           this.nearbyReports = this.nearbyReports.slice(0, 20);
         }
 
-        // Update all UI components that depend on report data
+        // Update all dependent UI components immediately without database queries
         this.displayNearbyReports();
-        this.updateStats();
-        this.updateVibeCategories();
-        this.updateSafetyHub(); // Update safety tips based on new reports
 
-        // Update location-based data when new reports are added
-        this.updateLocationBasedData();
+        // Update enhanced stats UI directly (includes all stat updates)
+        this.updateEnhancedStatsFromLocalData(newReport);
 
-        // Update map if it's currently visible
+        // Update safety hub with new data
+        this.updateSafetyHub();
+
+        // Update location-based data if user has location
+        if (this.userLocation) {
+          this.updateLocationBasedData();
+        }
+
+        // Update map markers immediately if map is visible
         if (document.getElementById('mapView').classList.contains('active')) {
           this.addReportMarkers();
         }
 
-        // Show a subtle notification for new reports
+        // Update mood vote counts
+        this.updateMoodCounts();
+
+        // Show notification for new reports
         this.showNotification("New safety report added nearby", "info", 2000);
       }
 
