@@ -1699,6 +1699,50 @@
     }
 
     /* Area Mood Voting Styles */
+    .mood-voting-card {
+      padding: 12px !important;
+      margin-bottom: 12px !important;
+    }
+
+    .mood-voting-dropdown-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .mood-voting-dropdown {
+      width: 100%;
+      max-width: 280px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text-light);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .mood-voting-dropdown:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .mood-voting-dropdown option {
+      background: var(--dark-bg);
+      color: var(--text-light);
+      padding: 8px;
+    }
+
+    .mood-submit-btn {
+      min-width: 100px;
+      padding: 10px 20px;
+      font-size: 13px;
+    }
+
     .mood-voting-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -3143,60 +3187,24 @@
         </div>
 
         <!-- Area Mood Voting -->
-        <div class="card">
+        <div class="card mood-voting-card">
           <div class="card-title">
             <i class="fas fa-chart-pie"></i>
             <span data-en="Area Mood Voting" data-ar="تصويت المزاج المنطقة">Area Mood Voting</span>
           </div>
-          <div class="mood-voting-grid" id="moodVotingGrid">
-            <div class="mood-vote-card" data-mood="chill">
-              <div class="mood-emoji">😎</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Chill" data-ar="هادئ">Chill</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="excited">
-              <div class="mood-emoji">🤩</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Excited" data-ar="مثير">Excited</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="anxious">
-              <div class="mood-emoji">😰</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Anxious" data-ar="قلق">Anxious</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="sad">
-              <div class="mood-emoji">😢</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Sad" data-ar="حزين">Sad</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="angry">
-              <div class="mood-emoji">😠</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Angry" data-ar="غاضب">Angry</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="happy">
-              <div class="mood-emoji">😀</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Happy" data-ar="سعيد">Happy</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="tired">
-              <div class="mood-emoji">😴</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Tired" data-ar="متعب">Tired</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="confused">
-              <div class="mood-emoji">🤔</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Confused" data-ar="مشوش">Confused</span>
-              </div>
-            </div>
+          <div class="mood-voting-dropdown-container">
+            <select id="moodVotingSelect" class="mood-voting-dropdown">
+              <option value="" data-en="Select your current mood..." data-ar="اختر مزاجك الحالي...">Select your current mood...</option>
+              <option value="chill" data-en="😎 Chill" data-ar="😎 هادئ">😎 Chill</option>
+              <option value="excited" data-en="🤩 Excited" data-ar="🤩 مثير">🤩 Excited</option>
+              <option value="anxious" data-en="😰 Anxious" data-ar="😰 قلق">😰 Anxious</option>
+              <option value="sad" data-en="😢 Sad" data-ar="😢 حزين">😢 Sad</option>
+              <option value="angry" data-en="😠 Angry" data-ar="😠 غاضب">😠 Angry</option>
+              <option value="happy" data-en="😀 Happy" data-ar="😀 سعيد">😀 Happy</option>
+              <option value="tired" data-en="😴 Tired" data-ar="😴 متعب">😴 Tired</option>
+              <option value="confused" data-en="🤔 Confused" data-ar="🤔 مشوش">🤔 Confused</option>
+            </select>
+            <button id="submitMoodVote" class="btn btn-primary mood-submit-btn" data-en="Vote" data-ar="تصويت">Vote</button>
           </div>
           <div class="mood-voting-status" id="moodVotingStatus" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
             <div style="font-size: 14px; color: var(--text-light); margin-bottom: 5px;">
@@ -6023,14 +6031,27 @@
           }
         });
 
-        // Mood vote cards click handler
-        document.addEventListener('click', (e) => {
-          const moodCard = e.target.closest('.mood-vote-card');
-          if (moodCard) {
-            const moodType = moodCard.dataset.mood;
-            this.selectMood(moodType);
-          }
-        });
+        // Mood voting dropdown and submit button handlers
+        const moodVotingSelect = document.getElementById('moodVotingSelect');
+        const submitMoodVoteBtn = document.getElementById('submitMoodVote');
+
+        if (moodVotingSelect) {
+          moodVotingSelect.addEventListener('change', (e) => {
+            // Optional: could show preview or something when selection changes
+            // For now, just let the user click submit
+          });
+        }
+
+        if (submitMoodVoteBtn) {
+          submitMoodVoteBtn.addEventListener('click', () => {
+            const selectedMood = moodVotingSelect.value;
+            if (selectedMood && selectedMood !== '') {
+              this.selectMood(selectedMood);
+            } else {
+              this.showNotification("Please select a mood first", "warning");
+            }
+          });
+        }
 
         // Geofence toggle button handler
         document.addEventListener('click', (e) => {
