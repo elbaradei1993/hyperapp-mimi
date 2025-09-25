@@ -3586,6 +3586,8 @@
         // Initialize geofence functionality
         if (this.isAuthenticated) {
           await this.loadGeofenceSettings();
+          // Load initial mood counts for authenticated users
+          await this.updateMoodCounts();
         }
 
         // Make app instance globally available
