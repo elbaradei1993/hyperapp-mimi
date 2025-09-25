@@ -1698,7 +1698,159 @@
       color: var(--text-light);
     }
 
+    /* Area Mood Voting Styles */
+    .mood-voting-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
 
+    .mood-vote-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.08));
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 14px 10px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .mood-vote-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08));
+      opacity: 0;
+      transition: all 0.4s ease;
+      z-index: -1;
+      border-radius: 18px;
+    }
+
+    .mood-vote-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: -1;
+    }
+
+    .mood-vote-card:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12));
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2), 0 0 20px rgba(99, 102, 241, 0.1);
+    }
+
+    .mood-vote-card:hover::after {
+      opacity: 1;
+    }
+
+    .mood-vote-card.selected {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.12));
+      border-color: var(--primary);
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 0 40px rgba(99, 102, 241, 0.5), 0 12px 32px rgba(0, 0, 0, 0.2);
+      animation: moodPulse 2s ease-in-out infinite;
+    }
+
+    .mood-vote-card.selected::before {
+      opacity: 1;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.15));
+    }
+
+    @keyframes moodPulse {
+      0%, 100% {
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.5), 0 12px 32px rgba(0, 0, 0, 0.2);
+      }
+      50% {
+        box-shadow: 0 0 50px rgba(99, 102, 241, 0.7), 0 12px 32px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    .mood-emoji {
+      font-size: 20px;
+      line-height: 1;
+      margin-bottom: 2px;
+      transition: all 0.3s ease;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+
+    .mood-vote-card:hover .mood-emoji {
+      transform: scale(1.1);
+    }
+
+    .mood-vote-card.selected .mood-emoji {
+      transform: scale(1.2);
+      filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      animation: emojiGlow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes emojiGlow {
+      0% {
+        filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+      100% {
+        filter: drop-shadow(0 0 16px rgba(99, 102, 241, 1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+    }
+
+    .mood-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .mood-name {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-light);
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+    }
+
+    .mood-vote-card.selected .mood-name {
+      color: var(--primary);
+      opacity: 1;
+    }
+
+    .mood-count {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 0;
+      opacity: 0.7;
+      transition: all 0.3s ease;
+    }
+
+    .mood-vote-card.selected .mood-count {
+      opacity: 1;
+      transform: scale(1.1);
+      color: var(--primary);
+    }
+
+    .mood-vote-card:hover .mood-count {
+      opacity: 0.9;
+    }
 
     /* Vibe Categories Styles (keeping for backward compatibility) */
     .vibe-categories {
@@ -2922,7 +3074,20 @@
             </div>
           </div>
 
-
+          <!-- Color-coded Community Vibe Sidebar -->
+          <div class="community-vibe-sidebar" id="communityVibeSidebar">
+            <div class="sidebar-header">
+              <span data-en="Community Vibe" data-ar="حالة المجتمع">Community Vibe</span>
+              <div class="dominant-vibe" id="dominantVibe">
+                <i class="fas fa-peace"></i>
+                <span data-en="Calm" data-ar="هادئ">Calm</span>
+                <span class="vibe-percentage" id="dominantVibePercentage">0%</span>
+              </div>
+            </div>
+            <div class="vibe-sidebars-chart" id="vibeSidebarsChart">
+              <!-- Color-coded sidebar bars will be populated by JavaScript -->
+            </div>
+          </div>
         </div>
 
         <!-- Safety Hub -->
@@ -2977,7 +3142,92 @@
           </div>
         </div>
 
+        <!-- Area Mood Voting -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-chart-pie"></i>
+            <span data-en="Area Mood Voting" data-ar="تصويت المزاج المنطقة">Area Mood Voting</span>
+          </div>
+          <div class="mood-voting-grid" id="moodVotingGrid">
+            <div class="mood-vote-card" data-mood="chill">
+              <div class="mood-emoji">😎</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Chill" data-ar="هادئ">Chill</span>
+                <span class="mood-count" id="chillCount">0</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="excited">
+              <div class="mood-emoji">🤩</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Excited" data-ar="مثير">Excited</span>
+                <span class="mood-count" id="excitedCount">0</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="anxious">
+              <div class="mood-emoji">😰</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Anxious" data-ar="قلق">Anxious</span>
+                <span class="mood-count" id="anxiousCount">0</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="sad">
+              <div class="mood-emoji">😢</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Sad" data-ar="حزين">Sad</span>
+                <span class="mood-count" id="sadCount">0</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="angry">
+              <div class="mood-emoji">😠</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Angry" data-ar="غاضب">Angry</span>
+                <span class="mood-count" id="angryCount">0</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="happy">
+              <div class="mood-emoji">😀</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Happy" data-ar="سعيد">Happy</span>
+                <span class="mood-count" id="happyCount">0</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="tired">
+              <div class="mood-emoji">😴</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Tired" data-ar="متعب">Tired</span>
+                <span class="mood-count" id="tiredCount">0</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="confused">
+              <div class="mood-emoji">🤔</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Confused" data-ar="مشوش">Confused</span>
+                <span class="mood-count" id="confusedCount">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="mood-voting-status" id="moodVotingStatus" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
+            <div style="font-size: 14px; color: var(--text-light); margin-bottom: 5px;">
+              <i class="fas fa-users"></i>
+              <span data-en="Population Mood" data-ar="مزاج السكان">Population Mood</span>
+            </div>
+            <div style="font-size: 18px; font-weight: bold; color: var(--primary);" id="populationMoodDisplay">
+              <i class="fas fa-question-circle"></i>
+              <span data-en="Collecting votes..." data-ar="جمع التصويتات...">Collecting votes...</span>
+            </div>
+          </div>
 
+          <!-- Mood-Based Activity Suggestions -->
+          <div class="mood-activity-suggestions" id="moodActivitySuggestions" style="display: none; margin-top: 20px;">
+            <div class="card-title" style="margin-bottom: 12px; font-size: 16px;">
+              <i class="fas fa-map-marker-alt"></i>
+              <span data-en="Suggested Places for Your Mood" data-ar="أماكن مقترحة لمزاجك">Suggested Places for Your Mood</span>
+            </div>
+            <div class="activity-suggestions-list" id="activitySuggestionsList">
+              <!-- Activity suggestions will be populated here -->
+            </div>
+          </div>
+        </div>
 
 
       </div>
@@ -3386,7 +3636,34 @@
         }, 300000); // Update every 5 minutes instead of 1 minute
       }
       
+      async loadUserMoodVote() {
+        if (!this.isAuthenticated || !this.userData) return;
 
+        try {
+          const { data: moodVote, error } = await this.supabase
+            .from('mood_votes')
+            .select('mood_type')
+            .eq('user_id', this.userData.id)
+            .maybeSingle();
+
+          if (error && error.code !== 'PGRST116') {
+            console.error("Error loading user mood vote:", error);
+            return;
+          }
+
+          if (moodVote) {
+            // Update UI to show the selected mood
+            const selectedCard = document.querySelector(`.mood-vote-card[data-mood="${moodVote.mood_type}"]`);
+            if (selectedCard) {
+              selectedCard.classList.add('selected');
+            }
+            // Update display mode to show disabled state for other cards
+            this.updateMoodVotingDisplayMode();
+          }
+        } catch (error) {
+          console.error("Error in loadUserMoodVote:", error);
+        }
+      }
 
       async checkAuthState() {
         // Check if we have a Telegram user first
@@ -3396,6 +3673,7 @@
           this.isAuthenticated = true;
           await this.syncUserWithSupabase();
           this.updateUserInfo();
+          await this.loadUserMoodVote(); // Load existing mood vote
           return;
         }
 
@@ -3410,6 +3688,7 @@
           };
           await this.syncUserWithSupabase();
           this.updateUserInfo();
+          await this.loadUserMoodVote(); // Load existing mood vote
         } else {
           // Show auth modal if no authentication found
           this.showAuthModal();
@@ -4058,9 +4337,243 @@
         document.querySelector(`.vibe-option[data-vibe="${vibe}"]`).classList.add('selected');
       }
 
+      async selectMood(moodType) {
+        if (!this.isAuthenticated) {
+          this.showAuthModal();
+          this.showNotification("Please login to vote on mood", "error");
+          return;
+        }
 
+        const selectedCard = document.querySelector(`.mood-vote-card[data-mood="${moodType}"]`);
+        const isCurrentlySelected = selectedCard && selectedCard.classList.contains('selected');
 
+        // Check if any mood is currently selected (not the one being clicked)
+        const hasOtherMoodSelected = document.querySelector('.mood-vote-card.selected') !== null && !isCurrentlySelected;
 
+        try {
+          if (isCurrentlySelected) {
+            // Deselect the current mood - remove the vote from database
+            const { error: deleteError } = await this.supabase
+              .from('mood_votes')
+              .delete()
+              .eq('user_id', this.userData.id)
+              .eq('mood_type', moodType);
+
+            if (deleteError) {
+              console.error("Error removing mood vote:", deleteError);
+              this.showNotification("Failed to update mood vote", "error");
+              return;
+            }
+
+            // Remove selection from UI
+            selectedCard.classList.remove('selected');
+            this.showNotification("Mood vote removed - you can now select a different mood or see community votes", "info");
+
+          } else if (hasOtherMoodSelected) {
+            // User is trying to select a different mood while one is already selected
+            // Require them to unselect first
+            this.showNotification("Please unselect your current mood first before choosing a different one", "warning");
+            return;
+
+          } else {
+            // No mood is currently selected, so select this one
+            // Add new vote to database
+            const { data, error } = await this.supabase
+              .from('mood_votes')
+              .insert([{
+                user_id: this.userData.id,
+                mood_type: moodType,
+                latitude: this.userLocation?.latitude,
+                longitude: this.userLocation?.longitude
+              }]);
+
+            if (error) {
+              console.error("Error submitting mood vote:", error);
+              this.showNotification("Failed to submit mood vote", "error");
+              return;
+            }
+
+            // Select the new mood in UI
+            if (selectedCard) {
+              selectedCard.classList.add('selected');
+            }
+
+            this.showNotification(`Your mood set to ${this.capitalizeFirstLetter(moodType)}`, "success");
+          }
+
+          // Update mood counts and UI display mode
+          await this.updateMoodCounts();
+          this.updateMoodVotingDisplayMode();
+
+          // Check if we should show population mood (50+ votes)
+          await this.checkPopulationMoodThreshold();
+
+        } catch (error) {
+          console.error("Error selecting mood:", error);
+          this.showNotification("Failed to update mood", "error");
+        }
+      }
+
+      updateMoodVotingDisplayMode() {
+        // Always show community mood counts and status - never hide them
+        document.querySelectorAll('.mood-count').forEach(count => {
+          count.style.display = 'block';
+        });
+
+        // Always show mood voting status with dominant mood and percentage
+        const moodVotingStatus = document.getElementById('moodVotingStatus');
+        if (moodVotingStatus) {
+          moodVotingStatus.style.display = 'block';
+        }
+
+        // Enable all mood cards for voting
+        document.querySelectorAll('.mood-vote-card').forEach(card => {
+          card.classList.remove('disabled');
+          card.style.pointerEvents = 'auto';
+          card.style.opacity = '1';
+        });
+
+        // Ensure mood voting status is always visible by adding a minimum display time
+        if (moodVotingStatus) {
+          moodVotingStatus.style.display = 'block';
+          // Add a class to prevent flickering
+          moodVotingStatus.classList.add('always-visible');
+        }
+      }
+
+      async updateMoodCounts() {
+        try {
+          // Get mood vote counts from the last 24 hours
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const { data: moodVotes, error } = await this.supabase
+            .from('mood_votes')
+            .select('mood_type')
+            .gte('created_at', yesterday.toISOString());
+
+          if (error) {
+            console.error("Error fetching mood votes:", error);
+            return;
+          }
+
+          // Count votes by mood type
+          const moodCounts = {};
+          moodVotes.forEach(vote => {
+            moodCounts[vote.mood_type] = (moodCounts[vote.mood_type] || 0) + 1;
+          });
+
+          // Update UI with counts
+          Object.keys(moodCounts).forEach(moodType => {
+            const countElement = document.getElementById(`${moodType}Count`);
+            if (countElement) {
+              countElement.textContent = moodCounts[moodType];
+            }
+          });
+
+          // Always show mood voting status with dominant mood and percentage
+          const totalVotes = Object.values(moodCounts).reduce((sum, count) => sum + count, 0);
+          const moodVotingStatus = document.getElementById('moodVotingStatus');
+
+          if (moodVotingStatus) {
+            // Find dominant mood
+            let dominantMood = null;
+            let maxCount = 0;
+            Object.entries(moodCounts).forEach(([mood, count]) => {
+              if (count > maxCount) {
+                maxCount = count;
+                dominantMood = mood;
+              }
+            });
+
+            if (dominantMood && totalVotes > 0) {
+              const percentage = Math.round((maxCount / totalVotes) * 100);
+              const populationMoodDisplay = document.getElementById('populationMoodDisplay');
+
+              if (populationMoodDisplay) {
+                populationMoodDisplay.innerHTML = `
+                  <i class="${this.getMoodEmoji(dominantMood)}"></i>
+                  <span data-en="${this.capitalizeFirstLetter(dominantMood)} (${percentage}%)" data-ar="${this.getMoodArabicName(dominantMood)} (${percentage}%)">
+                    ${this.capitalizeFirstLetter(dominantMood)} (${percentage}%)
+                  </span>
+                `;
+              }
+            } else if (totalVotes === 0) {
+              // Show message when no votes in the area
+              const populationMoodDisplay = document.getElementById('populationMoodDisplay');
+              if (populationMoodDisplay) {
+                populationMoodDisplay.innerHTML = `
+                  <i class="fas fa-info-circle"></i>
+                  <span data-en="No Votes in The Area" data-ar="لا توجد تصويتات في المنطقة">No Votes in The Area</span>
+                `;
+              }
+            }
+
+            // Always show the mood voting status
+            moodVotingStatus.style.display = 'block';
+          }
+
+        } catch (error) {
+          console.error("Error updating mood counts:", error);
+        }
+      }
+
+      async checkPopulationMoodThreshold() {
+        // Mood voting status is now always visible - no threshold checking needed
+        // This function is kept for backward compatibility but no longer hides the status
+        try {
+          // Count total mood votes in the last 24 hours for potential future features
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const { data: moodVotes, error } = await this.supabase
+            .from('mood_votes')
+            .select('mood_type')
+            .gte('created_at', yesterday.toISOString());
+
+          if (error) {
+            console.error("Error checking population mood threshold:", error);
+            return;
+          }
+
+          // Mood voting status is always visible now
+          const moodVotingStatus = document.getElementById('moodVotingStatus');
+          if (moodVotingStatus) {
+            moodVotingStatus.style.display = 'block';
+          }
+
+        } catch (error) {
+          console.error("Error checking population mood threshold:", error);
+        }
+      }
+
+      getMoodEmoji(moodType) {
+        const emojis = {
+          chill: '😎',
+          excited: '🤩',
+          anxious: '😰',
+          sad: '😢',
+          angry: '😠',
+          happy: '😀',
+          tired: '😴',
+          confused: '🤔'
+        };
+        return emojis[moodType] || '😐';
+      }
+
+      getMoodArabicName(moodType) {
+        const names = {
+          chill: 'هادئ',
+          excited: 'مثير',
+          anxious: 'قلق',
+          sad: 'حزين',
+          angry: 'غاضب',
+          happy: 'سعيد',
+          tired: 'متعب',
+          confused: 'مشوش'
+        };
+        return names[moodType] || moodType;
+      }
       
       async submitReport() {
         if (!this.selectedVibe) {
@@ -5518,7 +6031,14 @@
           }
         });
 
-
+        // Mood vote cards click handler
+        document.addEventListener('click', (e) => {
+          const moodCard = e.target.closest('.mood-vote-card');
+          if (moodCard) {
+            const moodType = moodCard.dataset.mood;
+            this.selectMood(moodType);
+          }
+        });
 
         // Geofence toggle button handler
         document.addEventListener('click', (e) => {
@@ -5624,6 +6144,7 @@
 
         // Update all components with the same data
         this.updateVibeCategories(vibeCounts);
+        this.updateCommunityVibeSidebar(vibeCounts);
 
         // Only update enhanced vibe stats if the UI has been rendered
         if (document.querySelector('.vibe-bar')) {
@@ -7602,6 +8123,7 @@
           // Update all components in sequence to ensure consistency
           this.updateStats();
           this.updateVibeCategories(vibeCounts);
+          this.updateCommunityVibeSidebar(vibeCounts);
           this.updateEnhancedVibeStats(vibeCounts);
           this.updateSafetyHub();
 
