@@ -9,6 +9,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <style>
     :root {
       --primary: #6366f1;
@@ -5071,6 +5072,9 @@
 
         // Wait for map to be fully loaded before adding markers
         this.map.whenReady(() => {
+          // Add heat map layer first (behind markers)
+          this.addHeatMapLayer();
+
           // Add markers for reports
           this.addReportMarkers();
 
@@ -5243,6 +5247,105 @@
         // Ensure markers are visible by refreshing the map
         if (this.map) {
           this.map.invalidateSize();
+        }
+      }
+
+      addHeatMapLayer() {
+        if (!this.map || !this.nearbyReports) return;
+
+        // Remove existing heat map layer
+        this.map.eachLayer((layer) => {
+          if (layer.options && layer.options.isHeatMap) {
+            this.map.removeLayer(layer);
+          }
+        });
+
+        // Prepare heat map data from reports
+        const heatData = [];
+        const maxIntensity = 1.0; // Maximum intensity for heat map
+
+        this.nearbyReports.forEach(report => {
+          // Use actual coordinates if available, otherwise use clustered positions
+          let lat, lng;
+          if (report.latitude && report.longitude) {
+            lat = report.latitude;
+            lng = report.longitude;
+          } else {
+            // For reports without coordinates, use clustered positions around user location
+            let baseLat, baseLng;
+            if (this.userLocation) {
+              baseLat = this.userLocation.latitude;
+              baseLng = this.userLocation.longitude;
+            } else {
+              baseLat = 30.0444; // Cairo, Egypt
+              baseLng = 31.2357;
+            }
+
+            const hash = report.id % 100;
+            const angle = (hash / 100) * 2 * Math.PI;
+            const radius = 0.005 + (hash % 3) * 0.002;
+
+            lat = baseLat + Math.sin(angle) * radius;
+            lng = baseLng + Math.cos(angle) * radius;
+          }
+
+          // Calculate intensity based on report type and votes
+          let intensity = 0.3; // Base intensity
+
+          // Higher intensity for dangerous reports
+          if (report.vibe_type === 'dangerous') {
+            intensity = 0.8;
+          } else if (report.vibe_type === 'suspicious') {
+            intensity = 0.6;
+          } else if (report.vibe_type === 'crowded') {
+            intensity = 0.5;
+          } else if (report.vibe_type === 'noisy') {
+            intensity = 0.4;
+          } else {
+            intensity = 0.3; // calm, festive
+          }
+
+          // Boost intensity based on upvotes (community validation)
+          const upvotes = report.upvotes || 0;
+          const downvotes = report.downvotes || 0;
+          const netVotes = upvotes - downvotes;
+
+          if (netVotes > 5) {
+            intensity += 0.2; // Highly validated reports
+          } else if (netVotes > 2) {
+            intensity += 0.1; // Moderately validated
+          } else if (netVotes < -2) {
+            intensity -= 0.1; // Controversial reports
+          }
+
+          // Ensure intensity stays within bounds
+          intensity = Math.max(0.1, Math.min(maxIntensity, intensity));
+
+          // Add to heat data: [lat, lng, intensity]
+          heatData.push([lat, lng, intensity]);
+        });
+
+        // Create heat map layer if we have data
+        if (heatData.length > 0) {
+          this.heatLayer = L.heatLayer(heatData, {
+            radius: 25, // Radius of each heat point
+            blur: 15,   // Blur amount
+            maxZoom: 18,
+            max: maxIntensity,
+            gradient: {
+              0.1: '#00ff00', // Green for low intensity (safe areas)
+              0.3: '#ffff00', // Yellow for moderate
+              0.5: '#ff9900', // Orange for higher
+              0.7: '#ff6600', // Red-orange
+              0.9: '#ff0000'  // Red for high danger
+            },
+            isHeatMap: true // Custom property to identify heat map layer
+          }).addTo(this.map);
+
+          // Add heat map to layer control if it exists
+          if (this.layerControl) {
+            this.layerControl.addOverlay(this.heatLayer, 'Safety Heat Map');
+          }
         }
       }
 
