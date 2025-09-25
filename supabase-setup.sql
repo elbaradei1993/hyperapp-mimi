@@ -271,7 +271,7 @@ for each row execute function public._votes_au_update_report_counts();
 create table if not exists public.mood_votes (
   id bigint generated always as identity primary key,
   user_id text not null references public.users(user_id) on delete cascade,
-  mood_type text not null check (mood_type in ('chill','excited','anxious','sad','angry','happy','tired','confused')),
+  mood_type text not null check (mood_type in ('chill','excited','anxious','sad','angry','happy','tired','confused','bored')),
   latitude double precision,
   longitude double precision,
   created_at timestamptz not null default now()
@@ -279,7 +279,7 @@ create table if not exists public.mood_votes (
 
 create table if not exists public.activity_suggestions (
   id bigint generated always as identity primary key,
-  mood_type text not null check (mood_type in ('chill','excited','anxious','sad','angry','happy','tired','confused')),
+  mood_type text not null check (mood_type in ('chill','excited','anxious','sad','angry','happy','tired','confused','bored')),
   place_name text not null,
   place_type text not null, -- e.g., 'cafe', 'park', 'restaurant'
   latitude double precision not null,
@@ -380,6 +380,12 @@ insert into public.activity_suggestions (mood_type, place_name, place_type, lati
 ('confused', 'Egyptian Museum', 'museum', 30.0478, 31.2336, 'museum_confused_1'),
 ('confused', 'Tahrir Square Information', 'landmark', 30.0444, 31.2357, 'tahrir_info_1'),
 ('confused', 'Khan el-Khalili Maps', 'market', 30.0478, 31.2625, 'khan_maps_1'),
-('confused', 'Zamalek Tourist Office', 'information', 30.0631, 31.2178, 'zamalek_info_1')
+('confused', 'Zamalek Tourist Office', 'information', 30.0631, 31.2178, 'zamalek_info_1'),
+
+-- Bored mood suggestions (entertaining places)
+('bored', 'Cairo Opera House', 'theater', 30.0419, 31.2243, 'opera_house_1'),
+('bored', 'Zamalek Cinema', 'cinema', 30.0631, 31.2178, 'zamalek_cinema_1'),
+('bored', 'Khan el-Khalili Street Performers', 'entertainment', 30.0478, 31.2625, 'khan_performers_1'),
+('bored', 'Nile River Felucca Ride', 'activity', 30.0444, 31.2357, 'felucca_ride_1')
 
 on conflict do nothing;
