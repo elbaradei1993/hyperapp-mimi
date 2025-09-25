@@ -3538,24 +3538,17 @@
           themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
         }
 
-        // Force fresh data load on page refresh (not just navigation)
-        const navigationType = performance.getEntriesByType('navigation')[0]?.type;
-        if (navigationType === 'reload') {
-          // Clear any cached data that might interfere
-          this.forceFreshDataLoad = true;
-          // Clear local data to ensure fresh load
-          this.nearbyReports = [];
-          this.userReports = [];
-          // Clear any cached weather data
-          localStorage.removeItem('hyperapp_weather_data');
-          localStorage.removeItem('hyperapp_weather_time');
-          console.log('Page refresh detected - cleared cached data and forcing fresh load');
-        }
+        // Always force fresh data load on app initialization
+        this.forceFreshDataLoad = true;
+        // Clear local data to ensure fresh load
+        this.nearbyReports = [];
+        this.userReports = [];
+        // Clear any cached weather data
+        localStorage.removeItem('hyperapp_weather_data');
+        localStorage.removeItem('hyperapp_weather_time');
+        console.log('App initialization - forcing fresh data load');
 
-        // Load weather data immediately (don't wait for location)
-        this.loadWeatherData();
-
-        // Set up auth listeners
+        // Set up auth listeners first
         this.setupAuthListeners();
 
         // Initialize Telegram WebApp
@@ -3572,17 +3565,6 @@
             this.updateUserInfo();
           }
 
-          // Try to get user location
-          this.requestUserLocation();
-
-          // Also try to get location using standard browser API if not in Telegram
-          if (!this.tg) {
-            this.requestBrowserLocationSilently();
-          }
-
-          // Set up event listeners
-          this.setupEventListeners();
-
           // Update connection status
           this.updateConnectionStatus(true);
         } else {
@@ -3593,13 +3575,16 @@
           this.showAuthModal();
         }
 
-        // Fast initial load - only critical data
-        await this.fastInitialLoad();
+        // Set up event listeners early
+        this.setupEventListeners();
 
-        // Lazy load additional features
-        setTimeout(() => this.loadAdvancedFeatures(), 100);
+        // Critical: Request location immediately and wait for it before loading data
+        await this.requestLocationImmediately();
 
-        // Set up real-time subscriptions
+        // Load all data synchronously after location is available
+        await this.loadAllDataImmediately();
+
+        // Set up real-time subscriptions after initial data load
         this.setupRealtimeSubscriptions();
 
         // Initialize geofence functionality
@@ -5656,6 +5641,92 @@
           } catch (e) {
             // Location request not available in this Telegram version
           }
+        }
+      }
+
+      async requestLocationImmediately() {
+        // Critical: Request location immediately and wait for it before loading any data
+        if (!navigator.geolocation) {
+          console.log('Geolocation not supported - proceeding without location');
+          return false;
+        }
+
+        try {
+          console.log('Requesting location immediately on app start...');
+
+          const position = await new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+              reject(new Error('Location timeout'));
+            }, 10000); // 10 second timeout for immediate load
+
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                clearTimeout(timeoutId);
+                resolve(pos);
+              },
+              (err) => {
+                clearTimeout(timeoutId);
+                reject(err);
+              },
+              {
+                timeout: 8000,
+                enableHighAccuracy: true,
+                maximumAge: 120000 // Accept cached position up to 2 minutes old
+              }
+            );
+          });
+
+          const { latitude, longitude, accuracy } = position.coords;
+
+          this.userLocation = {
+            latitude,
+            longitude,
+            accuracy,
+            timestamp: Date.now()
+          };
+
+          console.log('Location obtained immediately:', latitude, longitude);
+          return true;
+
+        } catch (error) {
+          console.log('Location not available immediately, proceeding without location:', error.message);
+          // Don't show error notification on startup - user can enable location manually later
+          return false;
+        }
+      }
+
+      async loadAllDataImmediately() {
+        // Load all critical data synchronously after location is available
+        console.log('Loading all data immediately...');
+
+        try {
+          // Load reports first (most critical)
+          await this.loadNearbyReports(0, true);
+
+          // Load enhanced stats (includes UI rendering)
+          await this.loadEnhancedStats();
+
+          // Update stats UI
+          this.updateStats();
+
+          // Load map data (lightweight)
+          this.loadMap();
+
+          // Load weather data
+          this.loadWeatherData();
+
+          // Load user-specific data if authenticated
+          if (this.isAuthenticated) {
+            await this.loadUserReports();
+            await this.updateUserReputation();
+          }
+
+          console.log('All data loaded immediately');
+
+        } catch (error) {
+          console.error('Error loading data immediately:', error);
+          // Still show the app even if some data fails to load
+          this.updateStats();
         }
       }
 
