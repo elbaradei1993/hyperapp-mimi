@@ -5156,6 +5156,8 @@
       addReportMarkers() {
         if (!this.map || !this.nearbyReports) return;
 
+        console.log('Adding report markers for', this.nearbyReports.length, 'reports');
+
         // Clear existing markers (but keep user location marker)
         this.map.eachLayer((layer) => {
           if (layer instanceof L.Marker && !layer.options.isUserLocation) {
@@ -5192,28 +5194,32 @@
             lng = baseLng + Math.cos(angle) * radius;
           }
 
-          // Create custom icon based on vibe type
+          // Create custom icon based on vibe type - use Unicode symbols instead of FontAwesome for better compatibility
+          const iconSymbol = this.getVibeSymbol(report.vibe_type);
           const iconHtml = `<div style="
             background: ${this.getVibeColor(report.vibe_type)};
             border: 2px solid white;
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 3px 6px rgba(0,0,0,0.4);
             ${!report.latitude || !report.longitude ? 'opacity: 0.7;' : ''}
             animation: pulse 2s infinite ease-in-out;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
           ">
-            <i class="${this.getVibeIcon(report.vibe_type)}" style="color: white; font-size: 14px;"></i>
+            ${iconSymbol}
           </div>`;
 
           const customIcon = L.divIcon({
             html: iconHtml,
             className: 'custom-marker',
-            iconSize: [28, 28],
-            iconAnchor: [14, 14]
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
           });
 
           // Create marker
@@ -5250,6 +5256,8 @@
         if (this.map) {
           this.map.invalidateSize();
         }
+
+        console.log('Report markers added successfully');
       }
 
       addHeatMapLayer() {
@@ -5737,8 +5745,21 @@
           suspicious: 'fas fa-eye-slash',
           dangerous: 'fas fa-exclamation-triangle'
         };
-        
+
         return icons[vibeType] || 'fas fa-question-circle';
+      }
+
+      getVibeSymbol(vibeType) {
+        const symbols = {
+          crowded: '👥',
+          noisy: '🔊',
+          festive: '🎉',
+          calm: '😌',
+          suspicious: '👀',
+          dangerous: '⚠️'
+        };
+
+        return symbols[vibeType] || '❓';
       }
       
       getVibeArabicName(vibeType) {
