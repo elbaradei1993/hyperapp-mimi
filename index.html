@@ -1554,11 +1554,21 @@
     }
 
     .area-item {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.8);
       border-radius: 10px;
       padding: 15px;
       margin-bottom: 10px;
       border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-light);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Light theme overrides for area items */
+    [data-theme="light"] .area-item {
+      background: rgba(248, 250, 252, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      color: #1e293b;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .area-header {
