@@ -1530,12 +1530,23 @@ class HyperApp {
         };
         this.nearbyReports.unshift(newReport);
 
+        // Also add to mapReports if it has coordinates (for immediate map display)
+        if (newReport.latitude && newReport.longitude) {
+          if (!this.mapReports) {
+            this.mapReports = [];
+          }
+          this.mapReports.unshift(newReport);
+        }
+
         this.showNotification("Report submitted successfully", "success");
         this.closeModal('reportModal');
         // Update UI immediately
         this.displayNearbyReports();
-        // Refresh map to show new report
-        this.loadMap();
+        // Refresh map markers immediately if map is loaded
+        if (this.map) {
+          this.addReportMarkers();
+          this.addHeatMapLayer();
+        }
         // Reload data in background to ensure consistency
         this.loadNearbyReports();
       }
@@ -2920,9 +2931,18 @@ class HyperApp {
         this.nearbyReports.unshift(newReport); // Add to beginning
         this.displayNearbyReports();
 
-        // Refresh map if visible
-        if (document.getElementById('mapView').classList.contains('active')) {
-          this.loadMap();
+        // Also add to mapReports if it has coordinates
+        if (newReport.latitude && newReport.longitude) {
+          if (!this.mapReports) {
+            this.mapReports = [];
+          }
+          this.mapReports.unshift(newReport);
+
+          // Refresh map markers immediately if map is loaded
+          if (this.map) {
+            this.addReportMarkers();
+            this.addHeatMapLayer();
+          }
         }
 
         this.showNotification('New report added nearby', 'info');
@@ -2937,6 +2957,19 @@ class HyperApp {
         const userVote = this.nearbyReports[existingIndex].user_vote;
         this.nearbyReports[existingIndex] = { ...updatedReport, user_vote: userVote };
         this.displayNearbyReports();
+
+        // Also update in mapReports if it exists there
+        if (this.mapReports) {
+          const mapIndex = this.mapReports.findIndex(r => r.id === updatedReport.id);
+          if (mapIndex !== -1) {
+            this.mapReports[mapIndex] = { ...updatedReport, user_vote: userVote };
+            // Refresh map markers if map is loaded
+            if (this.map) {
+              this.addReportMarkers();
+              this.addHeatMapLayer();
+            }
+          }
+        }
       }
     } else if (payload.eventType === 'DELETE') {
       // Report deleted
@@ -2944,9 +2977,14 @@ class HyperApp {
       this.nearbyReports = this.nearbyReports.filter(r => r.id !== deletedId);
       this.displayNearbyReports();
 
-      // Refresh map if visible
-      if (document.getElementById('mapView').classList.contains('active')) {
-        this.loadMap();
+      // Also remove from mapReports if it exists there
+      if (this.mapReports) {
+        this.mapReports = this.mapReports.filter(r => r.id !== deletedId);
+        // Refresh map markers if map is loaded
+        if (this.map) {
+          this.addReportMarkers();
+          this.addHeatMapLayer();
+        }
       }
     }
   }
