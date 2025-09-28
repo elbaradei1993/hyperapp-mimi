@@ -561,20 +561,7 @@
       box-shadow: var(--shadow);
     }
 
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s;
-    }
-
-    .btn:hover::before {
-      left: 100%;
-    }
+    /* Shimmer effect removed */
 
     .btn:hover {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
@@ -1199,17 +1186,7 @@
       margin-top: 10px;
     }
 
-    .loading-skeleton {
-      background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 75%);
-      background-size: 200% 100%;
-      animation: loading-shimmer 1.5s infinite;
-      border-radius: 8px;
-    }
-
-    @keyframes loading-shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
+    /* Loading skeleton shimmer effect removed */
 
     .skeleton-text {
       height: 16px;
@@ -1470,20 +1447,7 @@
       overflow: hidden;
     }
 
-    .action-buttons-section .action-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s;
-    }
-
-    .action-buttons-section .action-btn:hover::before {
-      left: 100%;
-    }
+    /* Action button shimmer effect removed */
 
     .action-buttons-section .action-btn:hover {
       transform: translateY(-3px);
@@ -2123,10 +2087,7 @@
         transition-duration: 0.3s !important;
       }
 
-      /* Override mobile animation speed reduction for sidebar shimmer */
-      .vibe-sidebar-fill::after {
-        animation-duration: 8s !important;
-      }
+
 
       .mood-vote-card.selected {
         animation: moodPulse 3s ease-in-out infinite;
@@ -3065,22 +3026,6 @@
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
 
-    .vibe-sidebar-fill::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-      animation: sidebar-shimmer 6s infinite;
-    }
-
-    @keyframes sidebar-shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-
     .vibe-sidebar-count {
       min-width: 40px;
       text-align: right;
@@ -3184,22 +3129,6 @@
 
     .indicator-fill.dangerous {
       background: linear-gradient(90deg, var(--danger), #DC3545);
-    }
-
-    .indicator-fill::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-      animation: safety-shimmer 4s infinite;
-    }
-
-    @keyframes safety-shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
     }
 
     .indicator-labels {
