@@ -13,37 +13,133 @@
   <script src="db-validation.js"></script>
   <style>
     :root {
-      /* Primary Colors */
-      --primary: #1976d2;
-      --primary-hover: #1565c0;
-      --primary-light: #e3f2fd;
+      /* Material Design 3 Primary Colors - Vibrant and Dynamic */
+      --primary-10: #ffffff;
+      --primary-50: #e7f0fe;
+      --primary-100: #bbe6ff;
+      --primary-200: #8fd0fd;
+      --primary-300: #1a73e8;
+      --primary-400: #1557b8;
+      --primary-500: #0b57d0;
+      --primary-600: #0842a0;
+      --primary-700: #063284;
+      --primary-800: #041e49;
+      --primary-900: #022140;
 
-      /* Semantic Colors */
-      --secondary: #424242;
-      --success: #4caf50;
-      --danger: #f44336;
-      --warning: #ff9800;
-      --info: #2196f3;
+      /* Updated Primary Colors (using primary-300 as main) */
+      --primary: #1a73e8;
+      --primary-hover: #1557b8;
+      --primary-light: #bbe6ff;
+      --primary-container: #e7f0fe;
+      --on-primary: #ffffff;
+      --on-primary-container: #041e49;
 
-      /* Neutral Colors */
-      --surface: #ffffff;
-      --surface-variant: #f5f5f5;
-      --background: #fafafa;
-      --text-primary: #212121;
-      --text-secondary: #757575;
-      --text-disabled: #bdbdbd;
-      --divider: #e0e0e0;
+      /* Secondary Colors */
+      --secondary-10: #ffffff;
+      --secondary-50: #f7f2fa;
+      --secondary-100: #e3d9ea;
+      --secondary-200: #c7b2dd;
+      --secondary-300: #a88cd0;
+      --secondary-400: #8f6bc3;
+      --secondary-500: #7851a9;
+      --secondary-600: #673794;
+      --secondary-700: #57307f;
+      --secondary-800: #2e1b41;
+      --secondary-900: #1d0d27;
 
-      /* Dark Theme */
+      --secondary: #673794;
+      --secondary-hover: #57307f;
+      --secondary-light: #e3d9ea;
+      --secondary-container: #f7f2fa;
+      --on-secondary: #ffffff;
+      --on-secondary-container: #2e1b41;
+
+      /* Tertiary Colors */
+      --tertiary: #b3261e;
+      --tertiary-hover: #8c1d18;
+      --tertiary-light: #fabfb8;
+      --tertiary-container: #fddad6;
+      --on-tertiary: #ffffff;
+      --on-tertiary-container: #410e0b;
+
+      /* Semantic Colors - Updated */
+      --success: #146c2e;
+      --success-hover: #0f5223;
+      --success-light: #F6FFED;
+      --success-container: #A6F38B;
+      --on-success: #ffffff;
+      --on-success-container: #041e0b;
+
+      --danger: #b3261e;
+      --danger-hover: #8c1d18;
+      --danger-light: #fabfb8;
+      --danger-container: #fddad6;
+      --on-danger: #ffffff;
+      --on-danger-container: #410e0b;
+
+      --warning: #7d5800;
+      --warning-hover: #5c4200;
+      --warning-light: #f6e27a;
+      --warning-container: #f9e67f;
+      --on-warning: #ffffff;
+      --on-warning-container: #221b00;
+
+      --info: #0b57d0;
+      --info-hover: #0842a0;
+      --info-light: #bbe6ff;
+      --info-container: #d4e3fd;
+      --on-info: #ffffff;
+      --on-info-container: #0a1c2e;
+
+      /* Neutral Colors - Material Design 3 Gray Scale */
+      --neutral-10: #ffffff;
+      --neutral-50: #fef7ff;
+      --neutral-100: #f6f2fa;
+      --neutral-200: #e6e1e9;
+      --neutral-300: #c9c3ce;
+      --neutral-400: #9d95ad;
+      --neutral-500: #79767d;
+      --neutral-600: #625f66;
+      --neutral-700: #4e4950;
+      --neutral-800: #3b383e;
+      --neutral-900: #201f25;
+
+      --surface: #fef7ff;
+      --surface-variant: #f6f2fa;
+      --surface-container: #e6e1e9;
+      --surface-container-high: #c9c3ce;
+      --surface-container-highest: #9d95ad;
+      --on-surface: #201f25;
+      --on-surface-variant: #4e4950;
+      --outline: #79767d;
+      --outline-variant: #c9c3ce;
+
+      /* Background and Cards */
+      --background: #fef7ff;
+      --on-background: #1c1c1f;
+      --card-bg: #ffffff;
+      --on-card: #1c1c1f;
+
+      /* Dark Theme - Material Design 3 */
       --dark-background: #121212;
-      --dark-surface: #1e1e1e;
-      --dark-surface-variant: #2a2a2a;
-      --dark-text-primary: #ffffff;
-      --dark-text-secondary: #a0a0a0;
-      --dark-text-disabled: #666666;
-      --dark-divider: #333333;
+      --dark-surface: #1b1b1b;
+      --dark-surface-variant: #2d2d2d;
+      --dark-surface-container: #333333;
+      --dark-surface-container-high: #414141;
+      --dark-surface-container-highest: #4f4f4f;
+      --dark-on-surface: #ffffff;
+      --dark-on-surface-variant: #c5c5c5;
+      --dark-outline: #9c9c9c;
+      --dark-outline-variant: #494949;
 
-      /* Spacing System (4px base grid) */
+      --dark-text-primary: #ffffff;
+      --dark-text-secondary: #c5c5c5;
+      --dark-text-disabled: #797776;
+      --dark-divider: #494949;
+
+      /* Spacing System (Material Design 3 uses 4px base grid) */
+      --space-0: 0px;
+      --space-05: 2px;
       --space-1: 4px;
       --space-2: 8px;
       --space-3: 12px;
@@ -55,42 +151,68 @@
       --space-9: 36px;
       --space-10: 40px;
 
-      /* Typography */
-      --font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-      --font-size-xs: 0.75rem;
-      --font-size-sm: 0.875rem;
-      --font-size-base: 1rem;
-      --font-size-lg: 1.125rem;
-      --font-size-xl: 1.25rem;
-      --font-size-2xl: 1.5rem;
-      --font-size-3xl: 2rem;
+      /* Typography - Material Design 3 Scale */
+      --font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+      --font-size-sm: 0.875rem; /* 14px */
+      --font-size-base: 1rem; /* 16px */
+      --font-size-lg: 1.125rem; /* 18px */
+      --font-size-xl: 1.25rem; /* 20px */
+      --font-size-2xl: 1.5rem; /* 24px */
+      --font-size-3xl: 1.875rem; /* 30px */
+      --font-size-4xl: 2.25rem; /* 36px */
+      --font-size-5xl: 3rem; /* 48px */
+
+      --font-weight-light: 300;
       --font-weight-normal: 400;
       --font-weight-medium: 500;
       --font-weight-semibold: 600;
       --font-weight-bold: 700;
+
       --line-height-tight: 1.25;
       --line-height-normal: 1.5;
-      --line-height-relaxed: 1.75;
+      --line-height-relaxed: 1.625;
+
+      --letter-spacing-tight: -0.025em;
+      --letter-spacing-normal: 0em;
+      --letter-spacing-wide: 0.025em;
 
       /* Layout */
-      --border-radius-sm: 4px;
-      --border-radius: 8px;
-      --border-radius-lg: 12px;
-      --border-radius-xl: 16px;
+      --border-radius-xs: 4px;
+      --border-radius-sm: 8px;
+      --border-radius: 12px;
+      --border-radius-lg: 16px;
+      --border-radius-xl: 28px;
+      --border-radius-full: 9999px;
+
       --max-width-sm: 480px;
       --max-width-md: 768px;
       --max-width-lg: 1024px;
+      --max-width-xl: 1280px;
 
-      /* Elevation (Material Design) */
-      --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-      --shadow-3: 0 4px 10px rgba(0, 0, 0, 0.19), 0 5px 10px rgba(0, 0, 0, 0.23);
-      --shadow-4: 0 8px 16px rgba(0, 0, 0, 0.42);
+      /* Elevation - Material Design 3 */
+      --shadow-key-penumbra: 0 3px 5px rgba(0, 0, 0, 0.2);
+      --shadow-key-umbra: 0 1px 18px rgba(0, 0, 0, 0.12);
+      --shadow-key-ambient: 0 1px 10px rgba(0, 0, 0, 0.08);
 
-      /* Transitions */
-      --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+      --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+      --shadow-3: 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
+      --shadow-4: 0 6px 10px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.15);
+      --shadow-5: 0 8px 12px rgba(0, 0, 0, 0.3), 0 6px 8px rgba(0, 0, 0, 0.15);
+
+      /* Transitions - Material Design 3 */
+      --transition-fast: all 100ms cubic-bezier(0.25, 1, 0.75, 1);
+      --transition-normal: all 200ms cubic-bezier(0.25, 1, 0.75, 1);
+      --transition-slow: all 500ms cubic-bezier(0.25, 1, 0.75, 1);
+      --transition-bounce: all 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+      /* State Layer Opacities */
+      --state-hover: 0.08;
+      --state-focus: 0.12;
+      --state-pressed: 0.16;
+      --state-dragged: 0.16;
+      --state-selected: 0.12;
+      --state-disabled: 0.38;
     }
 
     /* Light theme variables */
@@ -2978,6 +3100,7 @@
       flex-direction: column;
       gap: 16px;
       padding: 20px 0;
+      min-height: 200px;
     }
 
     .vibe-sidebar-item {
