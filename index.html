@@ -1086,16 +1086,16 @@
     .notification {
       position: fixed;
       top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 16px;
+      right: 16px;
       background: var(--card-bg);
       border-radius: var(--border-radius);
-      padding: 12px 20px;
+      padding: 16px 20px;
       backdrop-filter: blur(20px);
       border: 2px solid rgba(255, 255, 255, 0.15);
       z-index: 10000;
-      max-width: calc(100vw - 40px);
-      min-width: 300px;
+      max-width: none;
+      min-width: 0;
       animation: slideInDown 0.3s;
       display: flex;
       align-items: center;
@@ -2115,22 +2115,20 @@
       touch-action: manipulation;
     }
 
-    /* Reduce animations on low-performance devices */
+    /* Optimize animations for mobile devices */
     @media (max-device-width: 480px) and (max-device-height: 800px) {
+      /* Restore reasonable animation speeds for mobile */
       *, *::before, *::after {
-        animation-duration: 0.2s !important;
-        animation-delay: 0s !important;
-        transition-duration: 0.2s !important;
-        transition-delay: 0s !important;
+        animation-duration: 0.4s !important;
+        transition-duration: 0.3s !important;
       }
 
-      /* Disable complex animations on low-end devices */
       .mood-vote-card.selected {
-        animation: none;
+        animation: moodPulse 3s ease-in-out infinite;
       }
 
       .vibe-sidebar-fill {
-        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
       }
     }
 
@@ -7021,7 +7019,7 @@
       let startY = 0;
       let currentY = 0;
       let isPulling = false;
-      const pullThreshold = 80;
+      const pullThreshold = 150;
 
       const contentArea = document.querySelector('.content-area');
       if (!contentArea) return;
