@@ -3486,9 +3486,36 @@
   </div>
 
   <script>
-    // HyperApp Mini App - Complete Fixed Implementation
+    // HyperApp Mini App - Complete Fixed Implementation with Error Handling
     class HyperApp {
       constructor() {
+        // Configuration - Move these to environment variables in production
+        this.config = {
+          supabaseUrl: 'https://nqwejzbayquzsvcodunl.supabase.co',
+          supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78',
+          weatherApiKey: 'bd5e378503939ddaee76f12ad7a97608',
+          // Feature flags for graceful degradation
+          features: {
+            realtime: true,
+            geofencing: true,
+            weather: true,
+            map: true
+          }
+        };
+
+        // Dependency loading status
+        this.dependenciesLoaded = {
+          telegram: false,
+          supabase: false,
+          leaflet: false,
+          leafletHeat: false,
+          fontAwesome: false
+        };
+
+        // Error tracking
+        this.errors = [];
+        this.fallbackMode = false;
+
         this.tg = window.Telegram.WebApp;
         this.currentLanguage = 'en';
         this.userData = null;
@@ -3506,19 +3533,113 @@
         this.geofenceWatchId = null;
         this.currentGeofenceZones = new Set(); // Track which zones user is currently in
         this.lastGeofenceCheck = null;
-        
-        // Initialize Supabase with the correct API key
-        this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
-        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
-        this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
-        
-        // Check authentication state
-        this.checkAuthState();
-        
-        // Bind all methods to maintain 'this' context
-        this.bindMethods();
-        
-        this.init();
+
+        // Initialize with error handling
+        this.initializeApp();
+      }
+
+      // Enhanced initialization with error handling
+      async initializeApp() {
+        try {
+          console.log('Initializing HyperApp...');
+
+          // Check and load dependencies
+          await this.checkDependencies();
+
+          // Initialize Supabase with error handling
+          if (this.dependenciesLoaded.supabase) {
+            this.supabase = window.supabase.createClient(this.config.supabaseUrl, this.config.supabaseKey);
+          } else {
+            console.warn('Supabase library failed to load - running in fallback mode');
+            this.fallbackMode = true;
+            this.showNotification('Some features may be limited due to missing dependencies', 'warning');
+          }
+
+          // Check authentication state
+          this.checkAuthState();
+
+          // Bind all methods to maintain 'this' context
+          this.bindMethods();
+
+          // Initialize the app
+          this.init();
+
+        } catch (error) {
+          console.error('Failed to initialize app:', error);
+          this.showNotification('App initialization failed. Some features may not work.', 'error');
+          // Try to initialize with limited functionality
+          this.fallbackMode = true;
+          this.init();
+        }
+      }
+
+      // Check if external dependencies loaded successfully
+      async checkDependencies() {
+        const dependencies = [
+          { name: 'telegram', url: 'https://telegram.org/js/telegram-web-app.js' },
+          { name: 'supabase', url: 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2' },
+          { name: 'leaflet', url: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js' },
+          { name: 'leafletHeat', url: 'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js' },
+          { name: 'fontAwesome', url: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css' }
+        ];
+
+        // Check each dependency with timeout
+        for (const dep of dependencies) {
+          try {
+            const isLoaded = await this.checkDependencyLoaded(dep.name, dep.url);
+            this.dependenciesLoaded[dep.name] = isLoaded;
+
+            if (!isLoaded) {
+              console.warn(`Dependency ${dep.name} failed to load`);
+            }
+          } catch (error) {
+            console.warn(`Error checking dependency ${dep.name}:`, error);
+            this.dependenciesLoaded[dep.name] = false;
+          }
+        }
+
+        // Log dependency status
+        console.log('Dependency check complete:', this.dependenciesLoaded);
+      }
+
+      // Check if a specific dependency loaded
+      async checkDependencyLoaded(name, url) {
+        return new Promise((resolve) => {
+          // For CSS dependencies, check if stylesheet loaded
+          if (url.includes('.css')) {
+            const links = document.querySelectorAll('link[rel="stylesheet"]');
+            const loaded = Array.from(links).some(link => link.href.includes(url.split('/').pop()));
+            resolve(loaded);
+            return;
+          }
+
+          // For JS dependencies, check if global object exists
+          const checkGlobal = () => {
+            switch (name) {
+              case 'telegram':
+                return typeof window.Telegram !== 'undefined' || typeof window.TelegramWebApp !== 'undefined';
+              case 'supabase':
+                return typeof window.supabase !== 'undefined';
+              case 'leaflet':
+                return typeof window.L !== 'undefined';
+              case 'leafletHeat':
+                return typeof window.L !== 'undefined' && typeof window.L.heatLayer !== 'undefined';
+              default:
+                return true; // Assume loaded if we can't check
+            }
+          };
+
+          // Check immediately
+          if (checkGlobal()) {
+            resolve(true);
+            return;
+          }
+
+          // Wait a bit and check again (some scripts load asynchronously)
+          setTimeout(() => {
+            resolve(checkGlobal());
+          }, 2000);
+        });
       }
       
       // Bind all methods to maintain proper 'this' context
