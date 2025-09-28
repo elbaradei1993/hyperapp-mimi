@@ -237,26 +237,37 @@
       --text-muted: #64748B;
       --background: #ffffff;
       --on-background: #1c1c1f;
-      --card-bg-hover: rgba(26, 73, 224, 0.05);
-      --border: rgba(0, 0, 0, 0.1);
-      --border-hover: rgba(26, 73, 224, 0.2);
+      --card-bg-hover: rgba(26, 73, 224, 0.08);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-hover: rgba(26, 73, 224, 0.25);
       --text-primary: #1c1c1f;
       --text-secondary: #64748b;
+
+      /* Fix primary container for light theme */
+      --primary-container: rgba(26, 70, 224, 0.12);
     }
 
     /* Dark theme overrides */
     [data-theme="dark"] {
+      --primary: #4dabff;
+      --primary-dark: #1a73e8;
+      --secondary: #ff8a65;
+      --success: #4caf50;
+      --danger: #f44336;
+      --warning: #ff9800;
+      --info: #2196f3;
+
       --card-bg: var(--dark-surface);
       --background: var(--dark-background);
-      --card-bg-hover: rgba(255, 255, 255, 0.08);
-      --border: rgba(255, 255, 255, 0.1);
-      --border-hover: rgba(255, 255, 255, 0.2);
       --text-primary: var(--dark-text-primary);
       --text-secondary: var(--dark-text-secondary);
       --text-light: var(--dark-text-primary);
       --text-muted: var(--dark-text-secondary);
 
-      /* Additional dark mode overrides for missing variables */
+      /* Enhanced dark mode styling for visibility */
+      --card-bg-hover: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.15);
+      --border-hover: rgba(255, 255, 255, 0.25);
       --surface: var(--dark-surface);
       --surface-variant: var(--dark-surface-variant);
       --surface-container: var(--dark-surface-container);
@@ -267,9 +278,12 @@
       --outline: var(--dark-outline);
       --outline-variant: var(--dark-outline-variant);
 
-      /* Fix shadows for dark mode */
-      --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+      /* Fix primary container for dark theme */
+      --primary-container: rgba(77, 171, 255, 0.18);
+
+      /* Enhanced shadows for dark mode */
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
     }
 
     * {
@@ -598,7 +612,7 @@
       border-radius: var(--border-radius);
       padding: 24px;
       margin-bottom: 20px;
-      backdrop-filter: blur(20px);
+      backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
       transition: var(--transition);
@@ -2402,7 +2416,7 @@
       border-radius: 16px;
       padding: 20px;
       margin-bottom: 16px;
-      backdrop-filter: blur(20px);
+      backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
       transition: var(--transition);
