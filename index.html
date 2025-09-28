@@ -1188,35 +1188,6 @@
 
     /* Loading skeleton shimmer effect removed */
 
-    .skeleton-text {
-      height: 16px;
-      margin-bottom: 8px;
-      border-radius: 4px;
-    }
-
-    .skeleton-text:last-child {
-      width: 60%;
-    }
-
-    .skeleton-card {
-      padding: 20px;
-      margin-bottom: 15px;
-    }
-
-    .skeleton-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-bottom: 10px;
-    }
-
-    .skeleton-button {
-      height: 36px;
-      width: 80px;
-      border-radius: 18px;
-      margin: 5px;
-    }
-
     .fade-in {
       animation: fadeIn 0.3s ease-in-out;
     }
@@ -1731,7 +1702,7 @@
       border-color: var(--primary);
       transform: translateY(-2px) scale(1.03);
       box-shadow: 0 0 40px rgba(99, 102, 241, 0.5), 0 12px 32px rgba(0, 0, 0, 0.2);
-      animation: moodPulse 4s ease-in-out infinite;
+      /* Mood pulse animation removed */
     }
 
     .mood-vote-card.selected::before {
@@ -1739,14 +1710,7 @@
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.15));
     }
 
-    @keyframes moodPulse {
-      0%, 100% {
-        box-shadow: 0 0 40px rgba(99, 102, 241, 0.5), 0 12px 32px rgba(0, 0, 0, 0.2);
-      }
-      50% {
-        box-shadow: 0 0 50px rgba(99, 102, 241, 0.7), 0 12px 32px rgba(0, 0, 0, 0.2);
-      }
-    }
+    /* Mood pulse animation removed */
 
     .mood-emoji {
       font-size: 16px;
@@ -1763,17 +1727,10 @@
     .mood-vote-card.selected .mood-emoji {
       transform: scale(1.2);
       filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-      animation: emojiGlow 1.5s ease-in-out infinite alternate;
+      /* Emoji glow animation removed */
     }
 
-    @keyframes emojiGlow {
-      0% {
-        filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-      }
-      100% {
-        filter: drop-shadow(0 0 16px rgba(99, 102, 241, 1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-      }
-    }
+    /* Emoji glow animation removed */
 
     .mood-info {
       display: flex;
@@ -2798,12 +2755,7 @@
     }
 
     .weather-alert i {
-      animation: weatherIconPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes weatherIconPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
+      /* Weather icon pulse animation removed */
     }
 
     /* Reputation Display Enhancement */
