@@ -119,6 +119,13 @@
       --on-background: #1c1c1f;
       --card-bg: #ffffff;
       --on-card: #1c1c1f;
+      --card-bg-hover: rgba(59, 130, 246, 0.1);
+      --border: rgba(0, 0, 0, 0.1);
+      --border-hover: rgba(59, 130, 246, 0.3);
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+      --text-primary: #1c1c1f;
+      --text-secondary: #64748b;
 
       /* Dark Theme - Material Design 3 */
       --dark-background: #121212;
@@ -225,9 +232,27 @@
       --warning: #D97706;
       --info: #0891B2;
       --dark-bg: #F8FAFC;
-      --card-bg: rgba(0, 0, 0, 0.05);
+      --card-bg: #ffffff;
       --text-light: #1E293B;
       --text-muted: #64748B;
+      --background: #ffffff;
+      --on-background: #1c1c1f;
+      --card-bg-hover: rgba(26, 73, 224, 0.05);
+      --border: rgba(0, 0, 0, 0.1);
+      --border-hover: rgba(26, 73, 224, 0.2);
+      --text-primary: #1c1c1f;
+      --text-secondary: #64748b;
+    }
+
+    /* Dark theme overrides */
+    [data-theme="dark"] {
+      --card-bg: var(--dark-surface);
+      --background: var(--dark-background);
+      --card-bg-hover: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-hover: rgba(255, 255, 255, 0.2);
+      --text-primary: var(--dark-text-primary);
+      --text-secondary: var(--dark-text-secondary);
     }
 
     * {
