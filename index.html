@@ -1767,7 +1767,7 @@
       border-color: var(--primary);
       transform: translateY(-2px) scale(1.03);
       box-shadow: 0 0 40px rgba(99, 102, 241, 0.5), 0 12px 32px rgba(0, 0, 0, 0.2);
-      animation: moodPulse 2s ease-in-out infinite;
+      animation: moodPulse 4s ease-in-out infinite;
     }
 
     .mood-vote-card.selected::before {
@@ -1973,7 +1973,7 @@
     }
 
     .map-point {
-      animation: pulse-map 2s infinite ease-in-out;
+      animation: pulse-map 4s infinite ease-in-out;
     }
 
     .map-point[data-vibe="dangerous"] {
@@ -3044,9 +3044,9 @@
 
     .vibe-sidebar-bar {
       flex: 1;
-      height: 16px;
+      height: 24px;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      border-radius: 12px;
       overflow: hidden;
       position: relative;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -3068,7 +3068,7 @@
       right: 0;
       bottom: 0;
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-      animation: sidebar-shimmer 3s infinite;
+      animation: sidebar-shimmer 6s infinite;
     }
 
     @keyframes sidebar-shimmer {
@@ -9520,12 +9520,7 @@
             }
           }
 
-          // Show appropriate notification based on results
-          if (successCount > 0) {
-            this.showNotification("Data refreshed successfully", "success");
-          } else {
-            this.showNotification("Failed to refresh data. Please check your connection and try again.", "error");
-          }
+          // Notifications removed as requested - refresh completes silently
 
         } catch (error) {
           console.error("Unexpected error during data refresh:", error);
