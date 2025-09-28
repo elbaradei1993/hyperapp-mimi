@@ -253,6 +253,8 @@
       --border-hover: rgba(255, 255, 255, 0.2);
       --text-primary: var(--dark-text-primary);
       --text-secondary: var(--dark-text-secondary);
+      --text-light: var(--dark-text-primary);
+      --text-muted: var(--dark-text-secondary);
 
       /* Additional dark mode overrides for missing variables */
       --surface: var(--dark-surface);
@@ -3336,56 +3338,58 @@
       line-height: 1.4;
     }
 
-    .community-vibe-sidebar .sidebar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
+    /* Dominant vibe styling for proper visibility */
     .dominant-vibe {
       display: flex;
       align-items: center;
       gap: 8px;
       font-weight: 600;
-      color: var(--text-primary);
-      position: relative;
-      padding-right: 60px; /* Make room for the percentage badge */
     }
 
     .dominant-vibe i {
       color: var(--primary);
-      font-size: 16px;
     }
 
-    .dominant-vibe span:first-of-type {
-      color: var(--text-primary);
-    }
-
+    /* Ensure vibe percentage is always visible in both themes */
     .vibe-percentage {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 16px;
+      color: var(--primary) !important;
       font-weight: bold;
-      color: var(--primary) !important; /* Force primary color for visibility */
       background: var(--primary-container);
-      padding: 4px 8px;
-      border-radius: 12px;
-      min-width: 50px;
-      text-align: center;
+      padding: 2px 8px;
+      border-radius: 20px;
       border: 1px solid var(--primary);
+      display: inline-block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      position: static !important; /* Force normal document flow */
+      line-height: 1.2;
+      font-size: 14px;
+      min-width: 45px;
+      text-align: center;
     }
 
-    /* Dark mode specific fixes */
+    /* Light theme specific styling - ensure high contrast */
+    [data-theme="light"] .vibe-percentage {
+      background: rgba(26, 73, 224, 0.1);
+      border-color: var(--primary);
+      color: #1a73e8 !important;
+    }
+
+    /* Dark theme specific styling - ensure high contrast against dark background */
     [data-theme="dark"] .vibe-percentage {
-      color: var(--primary) !important;
-      background: rgba(26, 73, 224, 0.1) !important; /* Light blue tint in dark mode */
-      border-color: var(--primary) !important;
+      background: rgba(26, 73, 224, 0.2) !important;
+      border-color: #4dabff !important;
+      color: #4dabff !important;
+      box-shadow: 0 0 6px rgba(26, 73, 224, 0.3);
+    }
+
+    /* Force visibility for dominant vibe element and its children */
+    .dominant-vibe,
+    .dominant-vibe i,
+    .dominant-vibe span {
+      display: inline-block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
 
     /* Force display for mobile views */
