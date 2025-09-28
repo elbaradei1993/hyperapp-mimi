@@ -2123,6 +2123,11 @@
         transition-duration: 0.3s !important;
       }
 
+      /* Override mobile animation speed reduction for sidebar shimmer */
+      .vibe-sidebar-fill::after {
+        animation-duration: 8s !important;
+      }
+
       .mood-vote-card.selected {
         animation: moodPulse 3s ease-in-out infinite;
       }
