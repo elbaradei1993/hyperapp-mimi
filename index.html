@@ -10,6 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <script src="config.js"></script>
+  <script src="db-validation.js"></script>
   <style>
     :root {
       --primary: #6366f1;
@@ -3538,108 +3540,41 @@
         this.initializeApp();
       }
 
-      // Enhanced initialization with error handling
+      // Medium-term error handling - balanced approach
       async initializeApp() {
+        console.log('Initializing HyperApp...');
+
+        // Quick dependency check for critical services
+        await this.checkCriticalDependencies();
+
+        // Initialize Supabase with basic error handling
         try {
-          console.log('Initializing HyperApp...');
-
-          // Check and load dependencies
-          await this.checkDependencies();
-
-          // Initialize Supabase with error handling
-          if (this.dependenciesLoaded.supabase) {
-            this.supabase = window.supabase.createClient(this.config.supabaseUrl, this.config.supabaseKey);
-          } else {
-            console.warn('Supabase library failed to load - running in fallback mode');
-            this.fallbackMode = true;
-            this.showNotification('Some features may be limited due to missing dependencies', 'warning');
-          }
-
-          // Check authentication state
-          this.checkAuthState();
-
-          // Bind all methods to maintain 'this' context
-          this.bindMethods();
-
-          // Initialize the app
-          this.init();
-
+          this.supabase = window.supabase.createClient(this.config.supabaseUrl, this.config.supabaseKey);
         } catch (error) {
-          console.error('Failed to initialize app:', error);
-          this.showNotification('App initialization failed. Some features may not work.', 'error');
-          // Try to initialize with limited functionality
-          this.fallbackMode = true;
-          this.init();
-        }
-      }
-
-      // Check if external dependencies loaded successfully
-      async checkDependencies() {
-        const dependencies = [
-          { name: 'telegram', url: 'https://telegram.org/js/telegram-web-app.js' },
-          { name: 'supabase', url: 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2' },
-          { name: 'leaflet', url: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js' },
-          { name: 'leafletHeat', url: 'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js' },
-          { name: 'fontAwesome', url: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css' }
-        ];
-
-        // Check each dependency with timeout
-        for (const dep of dependencies) {
-          try {
-            const isLoaded = await this.checkDependencyLoaded(dep.name, dep.url);
-            this.dependenciesLoaded[dep.name] = isLoaded;
-
-            if (!isLoaded) {
-              console.warn(`Dependency ${dep.name} failed to load`);
-            }
-          } catch (error) {
-            console.warn(`Error checking dependency ${dep.name}:`, error);
-            this.dependenciesLoaded[dep.name] = false;
-          }
+          console.warn('Supabase initialization failed:', error);
+          this.showNotification('Database connection limited', 'warning');
         }
 
-        // Log dependency status
-        console.log('Dependency check complete:', this.dependenciesLoaded);
+        // Check authentication state
+        this.checkAuthState();
+
+        // Bind methods and initialize
+        this.bindMethods();
+        this.init();
       }
 
-      // Check if a specific dependency loaded
-      async checkDependencyLoaded(name, url) {
-        return new Promise((resolve) => {
-          // For CSS dependencies, check if stylesheet loaded
-          if (url.includes('.css')) {
-            const links = document.querySelectorAll('link[rel="stylesheet"]');
-            const loaded = Array.from(links).some(link => link.href.includes(url.split('/').pop()));
-            resolve(loaded);
-            return;
-          }
+      // Check only critical dependencies
+      async checkCriticalDependencies() {
+        // Simple check for Supabase (most critical)
+        if (typeof window.supabase === 'undefined') {
+          console.warn('Supabase library not loaded');
+          this.showNotification('Some features may be limited', 'info');
+        }
 
-          // For JS dependencies, check if global object exists
-          const checkGlobal = () => {
-            switch (name) {
-              case 'telegram':
-                return typeof window.Telegram !== 'undefined' || typeof window.TelegramWebApp !== 'undefined';
-              case 'supabase':
-                return typeof window.supabase !== 'undefined';
-              case 'leaflet':
-                return typeof window.L !== 'undefined';
-              case 'leafletHeat':
-                return typeof window.L !== 'undefined' && typeof window.L.heatLayer !== 'undefined';
-              default:
-                return true; // Assume loaded if we can't check
-            }
-          };
-
-          // Check immediately
-          if (checkGlobal()) {
-            resolve(true);
-            return;
-          }
-
-          // Wait a bit and check again (some scripts load asynchronously)
-          setTimeout(() => {
-            resolve(checkGlobal());
-          }, 2000);
-        });
+        // Check Telegram WebApp
+        if (!window.Telegram || !window.Telegram.WebApp) {
+          console.warn('Telegram WebApp not available');
+        }
       }
       
       // Bind all methods to maintain proper 'this' context
