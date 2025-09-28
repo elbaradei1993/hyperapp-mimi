@@ -1519,12 +1519,25 @@ class HyperApp {
         }
         this.showNotification(errorMessage, "error");
       } else {
+        // Add the new report to nearbyReports immediately for instant UI feedback
+        const newReport = {
+          ...reportData,
+          id: data[0].id,
+          created_at: data[0].created_at,
+          upvotes: 0,
+          downvotes: 0,
+          user_vote: null
+        };
+        this.nearbyReports.unshift(newReport);
+
         this.showNotification("Report submitted successfully", "success");
         this.closeModal('reportModal');
-        // Reload data to show the new report
-        await this.loadNearbyReports();
+        // Update UI immediately
+        this.displayNearbyReports();
         // Refresh map to show new report
         this.loadMap();
+        // Reload data in background to ensure consistency
+        this.loadNearbyReports();
       }
     } catch (error) {
       console.error("Error submitting report:", error);
