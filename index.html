@@ -253,6 +253,21 @@
       --border-hover: rgba(255, 255, 255, 0.2);
       --text-primary: var(--dark-text-primary);
       --text-secondary: var(--dark-text-secondary);
+
+      /* Additional dark mode overrides for missing variables */
+      --surface: var(--dark-surface);
+      --surface-variant: var(--dark-surface-variant);
+      --surface-container: var(--dark-surface-container);
+      --surface-container-high: var(--dark-surface-container-high);
+      --surface-container-highest: var(--dark-surface-container-highest);
+      --on-surface: var(--dark-on-surface);
+      --on-surface-variant: var(--dark-on-surface-variant);
+      --outline: var(--dark-outline);
+      --outline-variant: var(--dark-outline-variant);
+
+      /* Fix shadows for dark mode */
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
     }
 
     * {
@@ -1646,6 +1661,9 @@
       font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.025em;
+      color: inherit;
+      display: block;
+      visibility: visible;
     }
 
     /* Safety Hub Styles */
