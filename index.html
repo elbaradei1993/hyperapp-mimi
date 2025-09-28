@@ -3336,6 +3336,58 @@
       line-height: 1.4;
     }
 
+    .community-vibe-sidebar .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dominant-vibe {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--text-primary);
+      position: relative;
+      padding-right: 60px; /* Make room for the percentage badge */
+    }
+
+    .dominant-vibe i {
+      color: var(--primary);
+      font-size: 16px;
+    }
+
+    .dominant-vibe span:first-of-type {
+      color: var(--text-primary);
+    }
+
+    .vibe-percentage {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--primary) !important; /* Force primary color for visibility */
+      background: var(--primary-container);
+      padding: 4px 8px;
+      border-radius: 12px;
+      min-width: 50px;
+      text-align: center;
+      border: 1px solid var(--primary);
+    }
+
+    /* Dark mode specific fixes */
+    [data-theme="dark"] .vibe-percentage {
+      color: var(--primary) !important;
+      background: rgba(26, 73, 224, 0.1) !important; /* Light blue tint in dark mode */
+      border-color: var(--primary) !important;
+    }
+
     /* Force display for mobile views */
     @media (max-width: 480px) {
       #mainView,
@@ -3524,6 +3576,23 @@
 
       .insight-item span {
         font-size: 12px;
+      }
+
+      /* Mobile-specific Vibe Header Fixes */
+      .community-vibe-sidebar .sidebar-header {
+        padding-bottom: 8px;
+      }
+
+      .dominant-vibe {
+        gap: 6px;
+        font-size: 15px;
+        padding-right: 50px;
+      }
+
+      .vibe-percentage {
+        font-size: 14px;
+        padding: 3px 6px;
+        min-width: 45px;
       }
     }
 
