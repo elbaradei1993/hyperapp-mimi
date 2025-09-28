@@ -1,494 +1,979 @@
-generateDynamicSafetyTips() {
-        const safetyTipsContainer = document.getElementById('safetyTips');
-        if (!safetyTipsContainer) return;
+<script>
+// HyperApp Mini App - Enhanced with AI-like safety intelligence
+class HyperApp {
+  constructor() {
+    // Configuration - Move these to environment variables in production
+    this.config = {
+      supabaseUrl: 'https://nqwejzbayquzsvcodunl.supabase.co',
+      supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78',
+      weatherApiKey: 'bd5e378503939ddaee76f12ad7a97608',
+      // Feature flags for graceful degradation
+      features: {
+        realtime: true,
+        geofencing: true,
+        weather: true,
+        map: true
+      }
+    };
 
-        if (!this.nearbyReports || this.nearbyReports.length === 0) {
-          // Default tips when no reports
-          safetyTipsContainer.innerHTML = `
-            <div class="guideline-item">
-              <i class="fas fa-users"></i>
-              <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
-            </div>
-            <div class="guideline-item">
-              <i class="fas fa-mobile-alt"></i>
-              <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
-            </div>
-            <div class="guideline-item">
-              <i class="fas fa-share-alt"></i>
-              <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
-            </div>
-          `;
-          return;
+    // Dependency loading status
+    this.dependenciesLoaded = {
+      telegram: false,
+      supabase: false,
+      leaflet: false,
+      leafletHeat: false,
+      fontAwesome: false
+    };
+
+    // Error tracking
+    this.errors = [];
+    this.fallbackMode = false;
+
+    this.tg = window.Telegram.WebApp;
+    this.currentLanguage = 'en';
+    this.userData = null;
+    this.nearbyReports = [];
+    this.userReports = [];
+    this.selectedVibe = null;
+    this.isConnected = false;
+    this.userLocation = null;
+    this.isAuthenticated = false;
+
+    // Initialize with error handling
+    this.initializeApp();
+  }
+
+  // Medium-term error handling - balanced approach
+  async initializeApp() {
+    console.log('Initializing HyperApp...');
+
+    // Quick dependency check for critical services
+    await this.checkCriticalDependencies();
+
+    // Initialize Supabase with basic error handling
+    try {
+      this.supabase = window.supabase.createClient(this.config.supabaseUrl, this.config.supabaseKey);
+    } catch (error) {
+      console.warn('Supabase initialization failed:', error);
+      this.showNotification('Database connection limited', 'warning');
+    }
+
+    // Check authentication state
+    this.checkAuthState();
+
+    // Bind methods and initialize
+    this.bindMethods();
+    this.init();
+  }
+
+  // Check only critical dependencies
+  async checkCriticalDependencies() {
+    // Simple check for Supabase (most critical)
+    if (typeof window.supabase === 'undefined') {
+      console.warn('Supabase library not loaded');
+      this.showNotification('Some features may be limited', 'info');
+    }
+
+    // Check Telegram WebApp
+    if (!window.Telegram || !window.Telegram.WebApp) {
+      console.warn('Telegram WebApp not available');
+    }
+  }
+
+  // Bind all methods to maintain proper 'this' context
+  bindMethods() {
+    const methods = [
+      'init', 'setupEventListeners', 'syncUserWithSupabase', 'updateConnectionStatus',
+      'updateUserInfo', 'loadInitialData', 'loadNearbyReports', 'displayNearbyReports',
+      'loadUserReports', 'displayUserReports', 'voteReport', 'showReportModal',
+      'selectVibe', 'submitReport', 'showEmergencyReport', 'submitEmergencyReport',
+      'showView', 'loadMap', 'displayMap', 'loadTopAreas', 'toggleLanguage',
+      'changeLanguage', 'applyLanguage', 'showNotification', 'closeModal',
+      'getVibeIcon', 'getVibeArabicName', 'capitalizeFirstLetter', 'formatTimeAgo',
+      'updateTextDirection', 'requestUserLocation', 'checkAuthState',
+      'showAuthModal', 'hideAuthModal', 'setupAuthListeners', 'handleAuthLogin',
+      'handleAuthSignup', 'loadWeatherData', 'updateSafetyHub', 'generateDynamicSafetyTips',
+      'calculateUserReputation', 'updateUserReputation', 'getUserBadges', 'checkBadgeUnlocks',
+      'showBadgeNotification', 'loadEnhancedStats', 'renderStatsCharts', 'setupWeatherAlerts',
+      'checkWeatherAlerts', 'sendWeatherAlert', 'updateCommunityInsights',
+      // Geofence methods
+      'loadGeofenceSettings', 'saveGeofenceSettings', 'toggleGeofenceMonitoring',
+      'classifyGeofenceZones', 'startGeofenceMonitoring', 'stopGeofenceMonitoring',
+      'checkGeofenceStatus', 'handleGeofenceEvent', 'sendGeofenceNotification',
+      'getGeofenceNotificationPriority', 'getGeofenceNotificationMessage',
+      // AI safety analysis methods
+      'analyzeAreaSafetyIntelligence', 'analyzeLocationBasedRisks', 'analyzeTemporalPatterns',
+      'analyzeWeatherSafety', 'analyzeCommunityVibeTrends', 'calculatePredictedRisks',
+      'considerPersonalSafetyFactors', 'generateIntelligentSafetyTips', 'calculateAreaDangerLevel',
+      'analyzeReportDensity', 'getCurrentWeatherData', 'getSeasonalSafetyFactor',
+      'analyzeRecentActivityTrends', 'getWeatherSafetyModifier', 'calculateCommunityConsensus',
+      'findVibeCorrelations', 'calculateEmergencyReadiness', 'generateFallbackTips',
+      'generateDefaultTips'
+    ];
+
+    methods.forEach(method => {
+      this[method] = this[method].bind(this);
+    });
+  }
+
+  async init() {
+    // Load saved theme
+    const savedTheme = localStorage.getItem('hyperapp-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Update theme toggle icon
+    const themeIcon = document.querySelector('#themeToggle i');
+    if (themeIcon) {
+      themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    }
+
+    // Always force fresh data load on app initialization
+    this.forceFreshDataLoad = true;
+    // Clear local data to ensure fresh load
+    this.nearbyReports = [];
+    this.userReports = [];
+    // Clear any cached weather data
+    localStorage.removeItem('hyperapp_weather_data');
+    localStorage.removeItem('hyperapp_weather_time');
+    console.log('App initialization - forcing fresh data load');
+
+    // Set up auth listeners first
+    this.setupAuthListeners();
+
+    // Initialize Telegram WebApp
+    if (this.tg) {
+      this.tg.expand();
+      this.tg.MainButton.hide();
+
+      // Get user data
+      const user = this.tg.initDataUnsafe.user;
+      if (user) {
+        this.userData = user;
+        this.isAuthenticated = true;
+        await this.syncUserWithSupabase();
+        this.updateUserInfo();
+      }
+
+      // Update connection status
+      this.updateConnectionStatus(true);
+    } else {
+      this.updateConnectionStatus(false);
+      this.showNotification("Running in standalone mode", "info");
+
+      // For testing without Telegram, show auth modal
+      this.showAuthModal();
+    }
+
+    // Set up event listeners early
+    this.setupEventListeners();
+
+    // Critical: Request location immediately and wait for it before loading data
+    await this.requestLocationImmediately();
+
+    // Load all data synchronously after location is available
+    await this.loadAllDataImmediately();
+
+    // Set up real-time subscriptions after initial data load
+    this.setupRealtimeSubscriptions();
+
+    // Make app instance globally available
+    window.hyperApp = this;
+  }
+
+  async fastInitialLoad() {
+    try {
+      // Load only essential data first - use force refresh on page reload
+      const forceRefresh = this.forceFreshDataLoad || false;
+      await this.loadNearbyReports(0, forceRefresh);
+
+      // Load enhanced stats first (this creates the UI)
+      await this.loadEnhancedStats();
+
+      // Now update all UI components in sequence to avoid race conditions
+      await this.updateStats();
+
+      // Load map (lightweight)
+      this.loadMap();
+
+      // Try to load weather data immediately
+      this.loadWeatherData();
+
+    } catch (error) {
+      console.error('Error in fastInitialLoad:', error);
+      // Fallback: try to update UI anyway with empty data
+      this.updateStats();
+    }
+  }
+
+  async checkAuthState() {
+    // Check if we have a Telegram user first
+    if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
+      const telegramUser = this.tg.initDataUnsafe.user;
+      this.userData = telegramUser;
+      this.isAuthenticated = true;
+      await this.syncUserWithSupabase();
+      this.updateUserInfo();
+      await this.loadUserMoodVote(); // Load existing mood vote
+      return;
+    }
+
+    // Check Supabase authentication as fallback
+    const { data: { session }, error } = await this.supabase.auth.getSession();
+    if (session && session.user) {
+      this.isAuthenticated = true;
+      this.userData = {
+        id: session.user.id,
+        email: session.user.email,
+        ...session.user.user_metadata
+      };
+      await this.syncUserWithSupabase();
+      this.updateUserInfo();
+      await this.loadUserMoodVote(); // Load existing mood vote
+    } else {
+      // Show auth modal if no authentication found
+      this.showAuthModal();
+    }
+  }
+
+  showAuthModal() {
+    document.getElementById('authModal').style.display = 'block';
+  }
+
+  hideAuthModal() {
+    document.getElementById('authModal').style.display = 'none';
+  }
+
+  async setupAuthListeners() {
+    // Auth tabs
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const tabName = e.target.getAttribute('data-tab');
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.add('hidden'));
+        e.target.classList.add('active');
+        document.getElementById(tabName + 'Form').classList.remove('hidden');
+      });
+    });
+
+    // Close auth modal
+    document.getElementById('closeAuth').addEventListener('click', () => {
+      this.hideAuthModal();
+    });
+
+    // Login button
+    document.getElementById('loginBtn').addEventListener('click', this.handleAuthLogin);
+
+    // Signup button
+    document.getElementById('signupBtn').addEventListener('click', this.handleAuthSignup);
+  }
+
+  async handleAuthLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+      this.showNotification("Please fill all fields", "error");
+      return;
+    }
+
+    // Show loading state
+    const loginBtn = document.getElementById('loginBtn');
+    const originalText = loginBtn.textContent;
+    loginBtn.textContent = 'Logging in...';
+    loginBtn.disabled = true;
+
+    try {
+      const { data, error } = await this.supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Account not found. Please sign up first.";
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "Please check your email and confirm your account.";
         }
-
-        // AI-powered safety tip generation algorithm
-        const insights = this.analyzeAreaSafetyIntelligence();
-
-        // Generate personalized safety tips based on comprehensive analysis
-        const tips = this.generateIntelligentSafetyTips(insights);
-
-        // Display the intelligent tips with dynamic styling
-        safetyTipsContainer.innerHTML = tips.slice(0, 3).map(tip => `
-          <div class="guideline-item ${tip.priority || ''}" style="${tip.style || ''}">
-            <i class="${tip.icon}"></i>
-            <span>${tip.text}</span>
-          </div>
-        `).join('');
-      }
-
-      analyzeAreaSafetyIntelligence() {
-        const insights = {
-          locationBased: this.analyzeLocationBasedRisks(),
-          temporal: this.analyzeTemporalPatterns(),
-          weatherImpact: this.analyzeWeatherSafety(),
-          communityVibes: this.analyzeCommunityVibeTrends(),
-          predictedRisks: this.calculatePredictedRisks(),
-          personalFactors: this.considerPersonalSafetyFactors()
+        this.showNotification(errorMessage, "error");
+      } else {
+        this.isAuthenticated = true;
+        this.userData = {
+          id: data.user.id,
+          email: data.user.email,
+          ...data.user.user_metadata
         };
-
-        return insights;
+        await this.syncUserWithSupabase();
+        this.updateUserInfo();
+        this.hideAuthModal();
+        this.loadInitialData();
+        this.showNotification("Login successful", "success");
       }
+    } catch (error) {
+      this.showNotification("Login failed. Please try again.", "error");
+      console.error("Login error:", error);
+    } finally {
+      // Reset button state
+      loginBtn.textContent = originalText;
+      loginBtn.disabled = false;
+    }
+  }
 
-      analyzeLocationBasedRisks() {
-        if (!this.userLocation) return { hasLocationData: false };
+  async handleAuthSignup() {
+    const username = document.getElementById('signupUsername').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
 
-        const locationRisks = {
-          hasLocationData: true,
-          proximityRisks: [],
-          safeAreas: [],
-          riskZones: [],
-          densityAnalysis: this.analyzeReportDensity()
-        };
+    if (!username || !email || !password || !passwordConfirm) {
+      this.showNotification("Please fill all fields", "error");
+      return;
+    }
 
-        // Analyze reports within different radius ranges
-        const ranges = [500, 1000, 2000]; // meters
-        ranges.forEach(radius => {
-          const nearby = this.nearbyReports.filter(report => {
-            if (!report.latitude || !report.longitude) return false;
-            const distance = this.calculateDistance(
-              this.userLocation.latitude, this.userLocation.longitude,
-              report.latitude, report.longitude
-            );
-            return distance * 1000 <= radius;
-          });
+    if (password !== passwordConfirm) {
+      this.showNotification("Passwords don't match", "error");
+      return;
+    }
 
-          const dangerLevel = this.calculateAreaDangerLevel(nearby);
+    if (password.length < 6) {
+      this.showNotification("Password must be at least 6 characters", "error");
+      return;
+    }
 
-          if (radius === 500) {
-            locationRisks.immediateAreaDanger = dangerLevel;
-          } else if (radius === 1000) {
-            locationRisks.nearbyAreaDanger = dangerLevel;
+    // Show loading state
+    const signupBtn = document.getElementById('signupBtn');
+    const originalText = signupBtn.textContent;
+    signupBtn.textContent = 'Signing up...';
+    signupBtn.disabled = true;
+
+    try {
+      const { data, error } = await this.supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username,
+            reputation: 0,
+            language: 'en'
           }
-        });
+        }
+      });
 
-        return locationRisks;
+      if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes('User already registered')) {
+          errorMessage = "Account already exists. Please login instead.";
+        }
+        this.showNotification(errorMessage, "error");
+      } else {
+        this.showNotification("Signup successful! Please check your email for verification.", "success");
+        // Switch to login tab
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.add('hidden'));
+        document.querySelector('[data-tab="login"]').classList.add('active');
+        document.getElementById('loginForm').classList.remove('hidden');
       }
+    } catch (error) {
+      this.showNotification("Signup failed. Please try again.", "error");
+      console.error("Signup error:", error);
+    } finally {
+      // Reset button state
+      signupBtn.textContent = originalText;
+      signupBtn.disabled = false;
+    }
+  }
 
-      analyzeTemporalPatterns() {
-        const now = new Date();
-        const hour = now.getHours();
-        const dayOfWeek = now.getDay();
+  async syncUserWithSupabase() {
+    if (!this.userData) {
+      return false;
+    }
 
-        const temporalInsights = {
-          isNighttime: hour >= 22 || hour <= 5,
-          isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
-          peakHours: hour >= 17 && hour <= 21, // Evening peak
-          lowActivityHours: hour >= 2 && hour <= 6,
-          seasonalFactor: this.getSeasonalSafetyFactor(),
-          recentActivityTrend: this.analyzeRecentActivityTrends()
-        };
+    try {
+      // Check if user exists in users table
+      const { data, error } = await this.supabase
+        .from('users')
+        .select('*')
+        .eq('user_id', this.userData.id)
+        .maybeSingle();
 
-        return temporalInsights;
-      }
+      if (error) {
+        return false;
+      } else if (data) {
+        // Update user data with Supabase info
+        this.userData.reputation = data.reputation || 0;
+        this.userData.language = data.language || 'en';
+        this.currentLanguage = data.language || 'en';
+        this.applyLanguage(this.currentLanguage);
 
-      analyzeWeatherSafety() {
-        const weatherData = this.getCurrentWeatherData();
-        if (!weatherData) return {};
+        // Update language selector
+        document.getElementById('languageSelect').value = this.currentLanguage;
+        document.getElementById('currentLanguage').textContent = this.currentLanguage === 'en' ? 'EN' : 'AR';
 
-        const weatherInsights = {
-          affectsVisibility: ['rain', 'fog', 'snow'].includes(weatherData.condition),
-          affectsMobility: ['rain', 'snow', 'wind'].includes(weatherData.condition),
-          extremeTemperature: Math.abs(weatherData.temperature - 22) > 15, // Far from comfortable 22°C
-          precipitationRisk: weatherData.condition === 'rain' || weatherData.condition === 'snow',
-          safetyModifier: this.getWeatherSafetyModifier(weatherData)
-        };
+        return true;
+      } else {
+        // User doesn't exist in users table, create a new record
+        const { data: newUser, error: insertError } = await this.supabase
+          .from('users')
+          .insert([
+            {
+              user_id: this.userData.id,
+              username: this.userData.username || this.userData.first_name || 'User',
+              reputation: 0,
+              language: 'en'
+            }
+          ])
+          .select()
+          .single();
 
-        return weatherInsights;
-      }
-
-      analyzeCommunityVibeTrends() {
-        // Analyze vibe distribution and trends
-        const recentReports = this.nearbyReports.slice(0, 50); // Analyze more reports for trends
-
-        const vibeAnalysis = {
-          dominantVibes: {},
-          trendingUp: [],
-          trendingDown: [],
-          communityConsensus: this.calculateCommunityConsensus(recentReports),
-          vibeCorrelations: this.findVibeCorrelations(recentReports)
-        };
-
-        // Calculate dominant vibes
-        recentReports.forEach(report => {
-          if (!vibeAnalysis.dominantVibes[report.vibe_type]) {
-            vibeAnalysis.dominantVibes[report.vibe_type] = 0;
-          }
-          vibeAnalysis.dominantVibes[report.vibe_type]++;
-        });
-
-        // Find trending vibes (increase in last 24h vs previous 24h)
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        const recent24h = recentReports.filter(r => new Date(r.created_at) > yesterday);
-        const previous24h = recentReports.filter(r => {
-          const reportDate = new Date(r.created_at);
-          return reportDate > new Date(yesterday.getTime() - 24 * 60 * 60 * 1000) && reportDate <= yesterday;
-        });
-
-        Object.keys(vibeAnalysis.dominantVibes).forEach(vibe => {
-          const recentCount = recent24h.filter(r => r.vibe_type === vibe).length;
-          const previousCount = previous24h.filter(r => r.vibe_type === vibe).length;
-
-          if (recentCount > previousCount * 1.5) {
-            vibeAnalysis.trendingUp.push(vibe);
-          } else if (recentCount < previousCount * 0.5) {
-            vibeAnalysis.trendingDown.push(vibe);
-          }
-        });
-
-        return vibeAnalysis;
-      }
-
-      calculatePredictedRisks() {
-        const predictions = {
-          shortTermRisk: 'medium', // Next 1-2 hours
-          mediumTermTrend: 'stable', // Next 24 hours
-          locationSpecificWarnings: [],
-          timeBasedAdvice: []
-        };
-
-        // Predict based on current trends and patterns
-        const communityInsights = this.analyzeCommunityVibeTrends();
-
-        if (communityInsights.trendingUp.includes('dangerous')) {
-          predictions.shortTermRisk = 'high';
-          predictions.locationSpecificWarnings.push('Increasing dangerous activity reported');
+        if (insertError) {
+          return false;
         }
 
-        if (communityInsights.trendingUp.includes('crowded') && this.analyzeTemporalPatterns().isNighttime) {
-          predictions.locationSpecificWarnings.push('Crowded evening areas may become risky');
-        }
+        this.userData.reputation = 0;
+        this.userData.language = 'en';
+        return true;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
 
-        // Time-based predictions
-        const temporal = this.analyzeTemporalPatterns();
-        if (temporal.isNighttime && communityInsights.dominantVibes.dangerous > 5) {
-          predictions.timeBasedAdvice.push('Nighttime caution due to reported dangerous activity');
-        }
+  updateConnectionStatus(connected) {
+    this.isConnected = connected;
+    const statusElement = document.getElementById('connectionStatus');
 
-        return predictions;
+    if (statusElement) {
+      if (connected) {
+        statusElement.innerHTML = '<i class="fas fa-check-circle connected"></i> <span data-en="Connected" data-ar="متصل">Connected</span>';
+        statusElement.classList.add('connected');
+        statusElement.classList.remove('disconnected');
+      } else {
+        statusElement.innerHTML = '<i class="fas fa-times-circle disconnected"></i> <span data-en="Disconnected" data-ar="غير متصل">Disconnected</span>';
+        statusElement.classList.add('disconnected');
+        statusElement.classList.remove('connected');
+      }
+    }
+  }
+
+  updateUserInfo() {
+    if (this.userData) {
+      const usernameElement = document.getElementById('settingsUsername');
+      if (usernameElement) {
+        usernameElement.textContent = this.userData.username || this.userData.first_name;
       }
 
-      considerPersonalSafetyFactors() {
-        const personal = {
-          hasReportedRecently: false,
-          trustedNetworkSize: 0,
-          emergencyPreparedness: 'basic',
-          locationHistoryPatterns: []
-        };
+      document.getElementById('userReputation').textContent = this.userData.reputation || 0;
+      document.getElementById('settingsReputation').textContent = this.userData.reputation || 0;
+    }
+  }
 
-        if (this.isAuthenticated && this.userData) {
-          // Check recent personal activity
-          const recentPersonalReports = this.userReports?.filter(report => {
-            const reportDate = new Date(report.created_at);
-            const weekAgo = new Date();
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            return reportDate > weekAgo;
-          }) || [];
+  async loadInitialData() {
+    await this.loadNearbyReports();
+    if (this.isAuthenticated) {
+      await this.loadUserReports();
+    }
+    this.loadMap();
+  }
 
-          personal.hasReportedRecently = recentPersonalReports.length > 0;
-          personal.emergencyPreparedness = this.calculateEmergencyReadiness(recentPersonalReports);
-        }
+  generateDynamicSafetyTips() {
+    const safetyTipsContainer = document.getElementById('safetyTips');
+    if (!safetyTipsContainer) return;
 
-        return personal;
+    if (!this.nearbyReports || this.nearbyReports.length === 0) {
+      // Default tips when no reports
+      safetyTipsContainer.innerHTML = `
+        <div class="guideline-item">
+          <i class="fas fa-users"></i>
+          <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
+        </div>
+        <div class="guideline-item">
+          <i class="fas fa-mobile-alt"></i>
+          <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
+        </div>
+        <div class="guideline-item">
+          <i class="fas fa-share-alt"></i>
+          <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
+        </div>
+      `;
+      return;
+    }
+
+    // AI-powered safety tip generation algorithm
+    const insights = this.analyzeAreaSafetyIntelligence();
+
+    // Generate personalized safety tips based on comprehensive analysis
+    const tips = this.generateIntelligentSafetyTips(insights);
+
+    // Display the intelligent tips with dynamic styling
+    safetyTipsContainer.innerHTML = tips.slice(0, 3).map(tip => `
+      <div class="guideline-item ${tip.priority || ''}" style="${tip.style || ''}">
+        <i class="${tip.icon}"></i>
+        <span>${tip.text}</span>
+      </div>
+    `).join('');
+  }
+
+  // Analysis methods
+  analyzeAreaSafetyIntelligence() {
+    const insights = {
+      locationBased: this.analyzeLocationBasedRisks(),
+      temporal: this.analyzeTemporalPatterns(),
+      weatherImpact: this.analyzeWeatherSafety(),
+      communityVibes: this.analyzeCommunityVibeTrends(),
+      predictedRisks: this.calculatePredictedRisks(),
+      personalFactors: this.considerPersonalSafetyFactors()
+    };
+    return insights;
+  }
+
+  analyzeLocationBasedRisks() {
+    if (!this.userLocation) return { hasLocationData: false };
+
+    const locationRisks = {
+      hasLocationData: true,
+      proximityRisks: [],
+      safeAreas: [],
+      riskZones: [],
+      densityAnalysis: this.analyzeReportDensity()
+    };
+
+    // Analyze reports within different radius ranges
+    const ranges = [500, 1000, 2000]; // meters
+    ranges.forEach(radius => {
+      const nearby = this.nearbyReports.filter(report => {
+        if (!report.latitude || !report.longitude) return false;
+        const distance = this.calculateDistance(
+          this.userLocation.latitude, this.userLocation.longitude,
+          report.latitude, report.longitude
+        );
+        return distance * 1000 <= radius;
+      });
+
+      const dangerLevel = this.calculateAreaDangerLevel(nearby);
+
+      if (radius === 500) {
+        locationRisks.immediateAreaDanger = dangerLevel;
+      } else if (radius === 1000) {
+        locationRisks.nearbyAreaDanger = dangerLevel;
       }
+    });
 
-      generateIntelligentSafetyTips(insights) {
-        const tips = [];
+    return locationRisks;
+  }
 
-        // High priority alerts
-        if (insights.predictedRisks.shortTermRisk === 'high') {
+  analyzeTemporalPatterns() {
+    const now = new Date();
+    const hour = now.getHours();
+    const dayOfWeek = now.getDay();
+
+    const temporalInsights = {
+      isNighttime: hour >= 22 || hour <= 5,
+      isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+      peakHours: hour >= 17 && hour <= 21, // Evening peak
+      lowActivityHours: hour >= 2 && hour <= 6,
+      seasonalFactor: this.getSeasonalSafetyFactor(),
+      recentActivityTrend: this.analyzeRecentActivityTrends()
+    };
+
+    return temporalInsights;
+  }
+
+  analyzeWeatherSafety() {
+    const weatherData = this.getCurrentWeatherData();
+    if (!weatherData) return {};
+
+    const weatherInsights = {
+      affectsVisibility: ['rain', 'fog', 'snow'].includes(weatherData.condition),
+      affectsMobility: ['rain', 'snow', 'wind'].includes(weatherData.condition),
+      extremeTemperature: Math.abs(weatherData.temperature - 22) > 15, // Far from comfortable 22°C
+      precipitationRisk: weatherData.condition === 'rain' || weatherData.condition === 'snow',
+      safetyModifier: this.getWeatherSafetyModifier(weatherData)
+    };
+
+    return weatherInsights;
+  }
+
+  analyzeCommunityVibeTrends() {
+    // Analyze vibe distribution and trends
+    const recentReports = this.nearbyReports.slice(0, 50); // Analyze more reports for trends
+
+    const vibeAnalysis = {
+      dominantVibes: {},
+      trendingUp: [],
+      trendingDown: [],
+      communityConsensus: this.calculateCommunityConsensus(recentReports),
+      vibeCorrelations: this.findVibeCorrelations(recentReports)
+    };
+
+    // Calculate dominant vibes
+    recentReports.forEach(report => {
+      if (!vibeAnalysis.dominantVibes[report.vibe_type]) {
+        vibeAnalysis.dominantVibes[report.vibe_type] = 0;
+      }
+      vibeAnalysis.dominantVibes[report.vibe_type]++;
+    });
+
+    // Find trending vibes (increase in last 24h vs previous 24h)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const recent24h = recentReports.filter(r => new Date(r.created_at) > yesterday);
+    const previous24h = recentReports.filter(r => {
+      const reportDate = new Date(r.created_at);
+      return reportDate > new Date(yesterday.getTime() - 24 * 60 * 60 * 1000) && reportDate <= yesterday;
+    });
+
+    Object.keys(vibeAnalysis.dominantVibes).forEach(vibe => {
+      const recentCount = recent24h.filter(r => r.vibe_type === vibe).length;
+      const previousCount = previous24h.filter(r => r.vibe_type === vibe).length;
+
+      if (recentCount > previousCount * 1.5) {
+        vibeAnalysis.trendingUp.push(vibe);
+      } else if (recentCount < previousCount * 0.5) {
+        vibeAnalysis.trendingDown.push(vibe);
+      }
+    });
+
+    return vibeAnalysis;
+  }
+
+  calculatePredictedRisks() {
+    const predictions = {
+      shortTermRisk: 'medium', // Next 1-2 hours
+      mediumTermTrend: 'stable', // Next 24 hours
+      locationSpecificWarnings: [],
+      timeBasedAdvice: []
+    };
+
+    // Predict based on current trends and patterns
+    const communityInsights = this.analyzeCommunityVibeTrends();
+
+    if (communityInsights.trendingUp.includes('dangerous')) {
+      predictions.shortTermRisk = 'high';
+      predictions.locationSpecificWarnings.push('Increasing dangerous activity reported');
+    }
+
+    if (communityInsights.trendingUp.includes('crowded') && this.analyzeTemporalPatterns().isNighttime) {
+      predictions.locationSpecificWarnings.push('Crowded evening areas may become risky');
+    }
+
+    // Time-based predictions
+    const temporal = this.analyzeTemporalPatterns();
+    if (temporal.isNighttime && communityInsights.dominantVibes.dangerous > 5) {
+      predictions.timeBasedAdvice.push('Nighttime caution due to reported dangerous activity');
+    }
+
+    return predictions;
+  }
+
+  considerPersonalSafetyFactors() {
+    const personal = {
+      hasReportedRecently: false,
+      trustedNetworkSize: 0,
+      emergencyPreparedness: 'basic',
+      locationHistoryPatterns: []
+    };
+
+    if (this.isAuthenticated && this.userData) {
+      // Check recent personal activity
+      const recentPersonalReports = this.userReports?.filter(report => {
+        const reportDate = new Date(report.created_at);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return reportDate > weekAgo;
+      }) || [];
+
+      personal.hasReportedRecently = recentPersonalReports.length > 0;
+      personal.emergencyPreparedness = this.calculateEmergencyReadiness(recentPersonalReports);
+    }
+
+    return personal;
+  }
+
+  generateIntelligentSafetyTips(insights) {
+    const tips = [];
+
+    // High priority alerts
+    if (insights.predictedRisks.shortTermRisk === 'high') {
+      tips.push({
+        icon: 'fas fa-exclamation-triangle',
+        text: 'High alert: Immediate safety concerns detected in your area',
+        priority: 'high-priority'
+      });
+    }
+
+    // Location-based recommendations
+    if (insights.locationBased.hasLocationData) {
+      if (insights.locationBased.immediateAreaDanger > 0.7) {
+        tips.push({
+          icon: 'fas fa-exclamation-triangle',
+          text: 'High danger reports within 500m - consider relocating safely',
+          priority: 'high-priority',
+          style: 'color: #dc3545;'
+        });
+      } else if (insights.weatherImpact.affectsVisibility) {
+        tips.push({
+          icon: 'fas fa-eye',
+          text: 'Poor visibility due to weather - use extra caution moving around',
+          priority: 'medium-priority'
+        });
+      }
+    }
+
+    // Temporal patterns
+    if (insights.temporal.isNighttime) {
+      if (insights.communityVibes.dominantVibes.dangerous > 3) {
+        tips.push({
+          icon: 'fas fa-moon',
+          text: 'Nighttime high-risk area: Travel well-lit routes with others when possible',
+          priority: 'medium-priority'
+        });
+      }
+    }
+
+    // Weather safety integration
+    const weatherModifier = insights.weatherImpact.safetyModifier;
+    if (weatherModifier < 0.7) {
+      tips.push({
+        icon: 'fas fa-cloud-rain',
+        text: 'Weather conditions may impact safety - plan accordingly',
+        priority: 'medium-priority'
+      });
+    }
+
+    // Community consensus tips
+    const consensus = insights.communityVibes.communityConsensus;
+    if (consensus && consensus.confidence > 0.7) {
+      switch (consensus.dominantSentiment) {
+        case 'dangerous':
           tips.push({
-            icon: 'fas fa-exclamation-triangle',
-            text: 'High alert: Immediate safety concerns detected in your area',
+            icon: 'fas fa-shield-alt',
+            text: 'Community consensus: High-caution area with multiple danger reports',
             priority: 'high-priority'
           });
-        }
-
-        // Location-based recommendations
-        if (insights.locationBased.hasLocationData) {
-          if (insights.locationBased.immediateAreaDanger > 0.7) {
-            tips.push({
-              icon: 'fas fa-exclamation-triangle',
-              text: 'High danger reports within 500m - consider relocating safely',
-              priority: 'high-priority',
-              style: 'color: #dc3545;'
-            });
-          } else if (insights.weatherImpact.affectsVisibility) {
-            tips.push({
-              icon: 'fas fa-eye',
-              text: 'Poor visibility due to weather - use extra caution moving around',
-              priority: 'medium-priority'
-            });
-          }
-        }
-
-        // Temporal patterns
-        if (insights.temporal.isNighttime) {
-          if (insights.communityVibes.dominantVibes.dangerous > 3) {
-            tips.push({
-              icon: 'fas fa-moon',
-              text: 'Nighttime high-risk area: Travel well-lit routes with others when possible',
-              priority: 'medium-priority'
-            });
-          }
-        }
-
-        // Weather safety integration
-        const weatherModifier = insights.weatherImpact.safetyModifier;
-        if (weatherModifier < 0.7) {
+          break;
+        case 'suspicious':
           tips.push({
-            icon: 'fas fa-cloud-rain',
-            text: 'Weather conditions may impact safety - plan accordingly',
+            icon: 'fas fa-eye-slash',
+            text: 'Stay alert: Community reports suspicious activity nearby',
             priority: 'medium-priority'
           });
-        }
-
-        // Community consensus tips
-        const consensus = insights.communityVibes.communityConsensus;
-        if (consensus && consensus.confidence > 0.7) {
-          switch (consensus.dominantSentiment) {
-            case 'dangerous':
-              tips.push({
-                icon: 'fas fa-shield-alt',
-                text: 'Community consensus: High-caution area with multiple danger reports',
-                priority: 'high-priority'
-              });
-              break;
-            case 'suspicious':
-              tips.push({
-                icon: 'fas fa-eye-slash',
-                text: 'Stay alert: Community reports suspicious activity nearby',
-                priority: 'medium-priority'
-              });
-              break;
-            case 'calm':
-              tips.push({
-                icon: 'fas fa-peace',
-                text: 'Community rated area as generally calm and safe',
-                priority: 'low-priority',
-                style: 'color: #28a745;'
-              });
-              break;
-          }
-        }
-
-        // Predictive recommendations
-        if (insights.predictedRisks.locationSpecificWarnings.length > 0) {
+          break;
+        case 'calm':
           tips.push({
-            icon: 'fas fa-chart-line',
-            text: insights.predictedRisks.locationSpecificWarnings[0], // Take first warning
-            priority: 'medium-priority'
+            icon: 'fas fa-peace',
+            text: 'Community rated area as generally calm and safe',
+            priority: 'low-priority',
+            style: 'color: #28a745;'
           });
-        }
-
-        // Fallback tips if not enough AI-generated content
-        if (tips.length < 3) {
-          const fallbackTips = this.generateFallbackTips(insights);
-          tips.push(...fallbackTips.slice(0, 3 - tips.length));
-        }
-
-        return tips.length > 0 ? tips : this.generateDefaultTips();
+          break;
       }
+    }
 
-      calculateAreaDangerLevel(reports) {
-        if (!reports || reports.length === 0) return 0;
+    // Predictive recommendations
+    if (insights.predictedRisks.locationSpecificWarnings.length > 0) {
+      tips.push({
+        icon: 'fas fa-chart-line',
+        text: insights.predictedRisks.locationSpecificWarnings[0], // Take first warning
+        priority: 'medium-priority'
+      });
+    }
 
-        const dangerous = reports.filter(r => r.vibe_type === 'dangerous').length;
-        const suspicious = reports.filter(r => r.vibe_type === 'suspicious').length;
-        const total = reports.length;
+    // Fallback tips if not enough AI-generated content
+    if (tips.length < 3) {
+      const fallbackTips = this.generateFallbackTips(insights);
+      tips.push(...fallbackTips.slice(0, 3 - tips.length));
+    }
 
-        // Weighted danger score
-        return (dangerous * 1.0 + suspicious * 0.5) / total;
+    return tips.length > 0 ? tips : this.generateDefaultTips();
+  }
+
+  calculateAreaDangerLevel(reports) {
+    if (!reports || reports.length === 0) return 0;
+
+    const dangerous = reports.filter(r => r.vibe_type === 'dangerous').length;
+    const suspicious = reports.filter(r => r.vibe_type === 'suspicious').length;
+    const total = reports.length;
+
+    // Weighted danger score
+    return (dangerous * 1.0 + suspicious * 0.5) / total;
+  }
+
+  analyzeReportDensity() {
+    if (!this.userLocation) return { density: 0 };
+
+    const nearbyReports = this.nearbyReports.filter(report => {
+      if (!report.latitude || !report.longitude) return false;
+      const distance = this.calculateDistance(
+        this.userLocation.latitude, this.userLocation.longitude,
+        report.latitude, report.longitude
+      );
+      return distance <= 1; // Within 1km
+    });
+
+    return {
+      density: nearbyReports.length,
+      densityCategory: nearbyReports.length > 10 ? 'high' : nearbyReports.length > 5 ? 'medium' : 'low'
+    };
+  }
+
+  getCurrentWeatherData() {
+    const weatherData = localStorage.getItem('hyperapp_weather_data');
+    if (!weatherData) return null;
+
+    try {
+      const data = JSON.parse(weatherData);
+      return {
+        temperature: data.main?.temp,
+        condition: data.weather?.[0]?.main?.toLowerCase()
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  getSeasonalSafetyFactor() {
+    const month = new Date().getMonth();
+    // Higher caution during winter months, festivals, etc.
+    if (month >= 11 || month <= 2) return 0.8; // Winter caution
+    if (month >= 5 && month <= 8) return 1.0; // Summer generally safer
+    return 0.9; // Moderate caution otherwise
+  }
+
+  analyzeRecentActivityTrends() {
+    const recent = this.nearbyReports.slice(0, 20);
+    const older = this.nearbyReports.slice(20, 40);
+
+    const recentDangerous = recent.filter(r => r.vibe_type === 'dangerous').length;
+    const olderDangerous = older.filter(r => r.vibe_type === 'dangerous').length;
+
+    if (recentDangerous > olderDangerous * 1.5) return 'increasing';
+    if (recentDangerous < olderDangerous * 0.5) return 'decreasing';
+    return 'stable';
+  }
+
+  getWeatherSafetyModifier(weatherData) {
+    if (!weatherData) return 1.0; // No modification if no weather data
+
+    const condition = weatherData.condition;
+    const temp = weatherData.temperature;
+
+    let modifier = 1.0;
+
+    // Reduce safety score for adverse conditions
+    if (['rain', 'snow', 'fog'].includes(condition)) modifier *= 0.8;
+    if (condition === 'storm' || condition === 'thunderstorm') modifier *= 0.7;
+    if (temp < 0 || temp > 35) modifier *= 0.8; // Extreme temperatures
+
+    // Improve safety score for clear conditions
+    if (condition === 'clear' && temp >= 15 && temp <= 25) modifier *= 1.1;
+
+    return Math.max(0.5, Math.min(1.5, modifier)); // Clamp between 0.5 and 1.5
+  }
+
+  calculateCommunityConsensus(reports) {
+    if (!reports || reports.length < 5) return null;
+
+    const vibeCounts = {};
+    reports.forEach(report => {
+      vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
+    });
+
+    const total = reports.length;
+    let dominantVibe = null;
+    let maxCount = 0;
+
+    Object.entries(vibeCounts).forEach(([vibe, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        dominantVibe = vibe;
       }
+    });
 
-      analyzeReportDensity() {
-        if (!this.userLocation) return { density: 0 };
+    const confidence = maxCount / total;
 
-        const nearbyReports = this.nearbyReports.filter(report => {
-          if (!report.latitude || !report.longitude) return false;
-          const distance = this.calculateDistance(
-            this.userLocation.latitude, this.userLocation.longitude,
-            report.latitude, report.longitude
-          );
-          return distance <= 1; // Within 1km
-        });
+    return {
+      dominantSentiment: dominantVibe,
+      confidence: confidence,
+      consensusStrength: confidence > 0.6 ? 'strong' : confidence > 0.4 ? 'moderate' : 'weak'
+    };
+  }
 
-        return {
-          density: nearbyReports.length,
-          densityCategory: nearbyReports.length > 10 ? 'high' : nearbyReports.length > 5 ? 'medium' : 'low'
-        };
+  findVibeCorrelations(reports) {
+    if (!reports || reports.length < 10) return {};
+
+    // Find correlations between different vibes (e.g., crowded often with noisy)
+    const correlations = {};
+
+    return correlations; // Simplified for now
+  }
+
+  calculateEmergencyReadiness(reports) {
+    if (!reports || reports.length === 0) return 'basic';
+
+    const hasEmergencyReports = reports.some(r => r.vibe_type === 'dangerous');
+    const recentActivity = reports.length;
+
+    if (hasEmergencyReports && recentActivity >= 5) return 'experienced';
+    if (recentActivity >= 3) return 'active';
+    return 'basic';
+  }
+
+  generateFallbackTips(insights) {
+    const tips = [];
+
+    // Generate tips based on available insights
+    if (insights.weatherImpact.precipitationRisk) {
+      tips.push({
+        icon: 'fas fa-umbrella',
+        text: 'Weather conditions suggest carrying rain gear and staying aware of slippery surfaces'
+      });
+    }
+
+    if (insights.temporal.isWeekend && insights.temporal.peakHours) {
+      tips.push({
+        icon: 'fas fa-clock',
+        text: 'Weekend evening hours may have higher activity and different safety dynamics'
+      });
+    }
+
+    if (insights.temporal.lowActivityHours) {
+      tips.push({
+        icon: 'fas fa-moon',
+        text: 'Low-activity hours: Stick to well-lit, populated routes when possible'
+      });
+    }
+
+    return tips;
+  }
+
+  generateDefaultTips() {
+    return [
+      {
+        icon: 'fas fa-users',
+        text: this.currentLanguage === 'en'
+          ? 'Stay aware of your surroundings and trust your instincts'
+          : 'ابق على دراية بمحيطك وثق بغريزتك'
+      },
+      {
+        icon: 'fas fa-mobile-alt',
+        text: this.currentLanguage === 'en'
+          ? 'Keep emergency contacts saved and battery charged'
+          : 'احتفظ بجهات الاتصال الطارئة محفوظة وبطارية مشحونة'
+      },
+      {
+        icon: 'fas fa-share-alt',
+        text: this.currentLanguage === 'en'
+          ? 'Consider sharing location with trusted friends when in unfamiliar areas'
+          : 'فكر في مشاركة موقعك مع الأصدقاء الموثوقين عندما تكون في مناطق غير مألوفة'
       }
+    ];
+  }
+}
 
-      getCurrentWeatherData() {
-        const weatherData = localStorage.getItem('hyperapp_weather_data');
-        if (!weatherData) return null;
-
-        try {
-          const data = JSON.parse(weatherData);
-          return {
-            temperature: data.main?.temp,
-            condition: data.weather?.[0]?.main?.toLowerCase()
-          };
-        } catch (e) {
-          return null;
-        }
-      }
-
-      getSeasonalSafetyFactor() {
-        const month = new Date().getMonth();
-        // Higher caution during winter months, festivals, etc.
-        if (month >= 11 || month <= 2) return 0.8; // Winter caution
-        if (month >= 5 && month <= 8) return 1.0; // Summer generally safer
-        return 0.9; // Moderate caution otherwise
-      }
-
-      analyzeRecentActivityTrends() {
-        const recent = this.nearbyReports.slice(0, 20);
-        const older = this.nearbyReports.slice(20, 40);
-
-        const recentDangerous = recent.filter(r => r.vibe_type === 'dangerous').length;
-        const olderDangerous = older.filter(r => r.vibe_type === 'dangerous').length;
-
-        if (recentDangerous > olderDangerous * 1.5) return 'increasing';
-        if (recentDangerous < olderDangerous * 0.5) return 'decreasing';
-        return 'stable';
-      }
-
-      getWeatherSafetyModifier(weatherData) {
-        if (!weatherData) return 1.0; // No modification if no weather data
-
-        const condition = weatherData.condition;
-        const temp = weatherData.temperature;
-
-        let modifier = 1.0;
-
-        // Reduce safety score for adverse conditions
-        if (['rain', 'snow', 'fog'].includes(condition)) modifier *= 0.8;
-        if (condition === 'storm' || condition === 'thunderstorm') modifier *= 0.7;
-        if (temp < 0 || temp > 35) modifier *= 0.8; // Extreme temperatures
-
-        // Improve safety score for clear conditions
-        if (condition === 'clear' && temp >= 15 && temp <= 25) modifier *= 1.1;
-
-        return Math.max(0.5, Math.min(1.5, modifier)); // Clamp between 0.5 and 1.5
-      }
-
-      calculateCommunityConsensus(reports) {
-        if (!reports || reports.length < 5) return null;
-
-        const vibeCounts = {};
-        reports.forEach(report => {
-          vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
-        });
-
-        const total = reports.length;
-        let dominantVibe = null;
-        let maxCount = 0;
-
-        Object.entries(vibeCounts).forEach(([vibe, count]) => {
-          if (count > maxCount) {
-            maxCount = count;
-            dominantVibe = vibe;
-          }
-        });
-
-        const confidence = maxCount / total;
-
-        return {
-          dominantSentiment: dominantVibe,
-          confidence: confidence,
-          consensusStrength: confidence > 0.6 ? 'strong' : confidence > 0.4 ? 'moderate' : 'weak'
-        };
-      }
-
-      findVibeCorrelations(reports) {
-        if (!reports || reports.length < 10) return {};
-
-        // Find correlations between different vibes (e.g., crowded often with noisy)
-        const correlations = {};
-
-        return correlations; // Simplified for now
-      }
-
-      calculateEmergencyReadiness(reports) {
-        if (!reports || reports.length === 0) return 'basic';
-
-        const hasEmergencyReports = reports.some(r => r.vibe_type === 'dangerous');
-        const recentActivity = reports.length;
-
-        if (hasEmergencyReports && recentActivity >= 5) return 'experienced';
-        if (recentActivity >= 3) return 'active';
-        return 'basic';
-      }
-
-      generateFallbackTips(insights) {
-        const tips = [];
-
-        // Generate tips based on available insights
-        if (insights.weatherImpact.precipitationRisk) {
-          tips.push({
-            icon: 'fas fa-umbrella',
-            text: 'Weather conditions suggest carrying rain gear and staying aware of slippery surfaces'
-          });
-        }
-
-        if (insights.temporal.isWeekend && insights.temporal.peakHours) {
-          tips.push({
-            icon: 'fas fa-clock',
-            text: 'Weekend evening hours may have higher activity and different safety dynamics'
-          });
-        }
-
-        if (insights.temporal.lowActivityHours) {
-          tips.push({
-            icon: 'fas fa-moon',
-            text: 'Low-activity hours: Stick to well-lit, populated routes when possible'
-          });
-        }
-
-        return tips;
-      }
-
-      generateDefaultTips() {
-        return [
-          {
-            icon: 'fas fa-users',
-            text: this.currentLanguage === 'en'
-              ? 'Stay aware of your surroundings and trust your instincts'
-              : 'ابق على دراية بمحيطك وثق بغريزتك'
-          },
-          {
-            icon: 'fas fa-mobile-alt',
-            text: this.currentLanguage === 'en'
-              ? 'Keep emergency contacts saved and battery charged'
-              : 'احتفظ بجهات الاتصال الطارئة محفوظة وبطارية مشحونة'
-          },
-          {
-            icon: 'fas fa-share-alt',
-            text: this.currentLanguage === 'en'
-              ? 'Consider sharing location with trusted friends when in unfamiliar areas'
-              : 'فكر في مشاركة موقعك مع الأصدقاء الموثوقين عندما تكون في مناطق غير مألوفة'
-          }
-        ];
-      }
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing HyperApp...');
+  window.hyperApp = new HyperApp();
+});
+</script>
