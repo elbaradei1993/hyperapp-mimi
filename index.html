@@ -243,8 +243,11 @@
       --text-primary: #1c1c1f;
       --text-secondary: #64748b;
 
-      /* Fix primary container for light theme */
-      --primary-container: rgba(26, 70, 224, 0.12);
+    /* Fix primary container for light theme */
+    --primary-container: rgba(26, 70, 224, 0.12);
+
+    /* Action buttons text color for light mode */
+    --action-btn-text: #1c1c1f;
     }
 
     /* Dark theme overrides */
@@ -1686,6 +1689,11 @@
       color: inherit;
       display: block;
       visibility: visible;
+    }
+
+    /* Override button text color for light mode */
+    [data-theme="light"] .action-buttons-section .action-btn span {
+      color: var(--action-btn-text);
     }
 
     /* Safety Hub Styles */
