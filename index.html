@@ -7227,31 +7227,38 @@
     }
 
     setupPullToRefresh() {
-      // Pull-to-refresh functionality for mobile
+      // Pull-to-refresh functionality for mobile - more conservative to avoid conflicts
       let startY = 0;
       let currentY = 0;
       let isPulling = false;
-      const pullThreshold = 80;
+      const pullThreshold = 120; // Increased threshold to avoid accidental triggers
+      const minPullStart = 30; // Minimum initial pull before considering it a refresh gesture
 
       const contentArea = document.querySelector('.content-area');
       if (!contentArea) return;
 
       contentArea.addEventListener('touchstart', (e) => {
         startY = e.touches[0].clientY;
+        isPulling = false;
       }, { passive: true });
 
       contentArea.addEventListener('touchmove', (e) => {
-        if (contentArea.scrollTop === 0) { // Only when at top
+        if (contentArea.scrollTop === 0 && startY > 0) { // Only when at top and we have a start position
           currentY = e.touches[0].clientY;
           const pullDistance = currentY - startY;
 
-          if (pullDistance > 0) {
-            e.preventDefault();
+          // Only consider it a pull gesture if initial movement is significant and downward
+          if (pullDistance > minPullStart && !isPulling) {
             isPulling = true;
+          }
 
-            // Visual feedback for pull
-            if (pullDistance > 20) {
-              contentArea.style.transform = `translateY(${Math.min(pullDistance * 0.3, pullThreshold)}px)`;
+          if (isPulling && pullDistance > 0) {
+            e.preventDefault();
+
+            // Visual feedback for pull - more subtle
+            if (pullDistance > minPullStart) {
+              const translateY = Math.min(pullDistance * 0.2, pullThreshold * 0.8); // More conservative visual feedback
+              contentArea.style.transform = `translateY(${translateY}px)`;
             }
           }
         }
