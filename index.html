@@ -1686,14 +1686,19 @@
       font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.025em;
-      color: inherit;
+      color: white;
       display: block;
       visibility: visible;
     }
 
-    /* Override button text color for light mode */
+    /* Dark mode: ensure white text */
+    [data-theme="dark"] .action-buttons-section .action-btn span {
+      color: white;
+    }
+
+    /* Light mode: dark text for visibility */
     [data-theme="light"] .action-buttons-section .action-btn span {
-      color: var(--action-btn-text);
+      color: #1c1c1f;
     }
 
     /* Safety Hub Styles */
