@@ -1870,9 +1870,42 @@ class HyperApp {
     }
   }
 
-  loadMap() {
+  async loadMapReports() {
+    try {
+      console.log('Loading all reports with coordinates for map display...');
+
+      // Load all reports that have coordinates (not limited to recent ones)
+      const { data: reports, error } = await this.supabase
+        .from('reports')
+        .select(`id, vibe_type, location, notes, created_at, upvotes, downvotes, latitude, longitude, votes (user_id, vote_type)`)
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading map reports:', error);
+        this.mapReports = [];
+        return;
+      }
+
+      // Process reports data with user votes
+      this.mapReports = reports.map(report => {
+        const userVote = report.votes && report.votes.length > 0 ?
+          report.votes.find(v => v.user_id === this.userData?.id)?.vote_type : null;
+
+        return { ...report, user_vote: userVote };
+      });
+
+      console.log(`Loaded ${this.mapReports.length} reports with coordinates for map display`);
+
+    } catch (error) {
+      console.error('Error in loadMapReports:', error);
+      this.mapReports = [];
+    }
+  }
+
+  async loadMap() {
     const mapContainer = document.getElementById('mapContainer');
-    const hasReports = this.nearbyReports && this.nearbyReports.length > 0;
 
     // Clear any existing map
     if (this.map) {
@@ -1880,11 +1913,16 @@ class HyperApp {
       this.map = null;
     }
 
+    // Load all reports with coordinates for the map
+    await this.loadMapReports();
+
+    const hasReports = this.mapReports && this.mapReports.length > 0;
+
     mapContainer.innerHTML = `
       <div class="map-header">
         <h3 data-en="Community Vibe Map" data-ar="خريطة حالة المجتمع">Community Vibe Map</h3>
-        <p data-en="${hasReports ? 'Showing recent reports in your area' : 'Map of your area - submit reports to see them here'}" data-ar="${hasReports ? 'عرض التقارير الحديثة في منطقتك' : 'خريطة منطقتك - أرسل التقارير لرؤيتها هنا'}">
-          ${hasReports ? 'Showing recent reports in your area' : 'Map of your area - submit reports to see them here'}
+        <p data-en="${hasReports ? `Showing ${this.mapReports.length} reports with locations` : 'Map of your area - submit reports to see them here'}" data-ar="${hasReports ? `عرض ${this.mapReports.length} تقارير بمواقع` : 'خريطة منطقتك - أرسل التقارير لرؤيتها هنا'}">
+          ${hasReports ? `Showing ${this.mapReports.length} reports with locations` : 'Map of your area - submit reports to see them here'}
         </p>
       </div>
       <div id="leaflet-map" style="height: 320px; width: 100%; position: relative;"></div>
@@ -2017,9 +2055,9 @@ class HyperApp {
   }
 
   addReportMarkers() {
-    if (!this.map || !this.nearbyReports) return;
+    if (!this.map || !this.mapReports) return;
 
-    console.log('Adding report markers for', this.nearbyReports.length, 'reports');
+    console.log('Adding report markers for', this.mapReports.length, 'reports');
 
     // Clear existing markers (but keep user location marker)
     this.map.eachLayer((layer) => {
@@ -2029,7 +2067,7 @@ class HyperApp {
     });
 
     // Add markers for each report
-    this.nearbyReports.forEach(report => {
+    this.mapReports.forEach(report => {
       // Use actual coordinates if available, otherwise cluster around user location or default area
       let lat, lng;
       if (report.latitude && report.longitude) {
@@ -2124,12 +2162,12 @@ class HyperApp {
   }
 
   addHeatMapLayer() {
-    if (!this.map || !this.nearbyReports) {
+    if (!this.map || !this.mapReports) {
       console.log('Heat map: No map or reports available');
       return;
     }
 
-    console.log('Adding heat map layer with', this.nearbyReports.length, 'points');
+    console.log('Adding heat map layer with', this.mapReports.length, 'points');
 
     // Remove existing heat map layer
     this.map.eachLayer((layer) => {
@@ -2142,7 +2180,7 @@ class HyperApp {
     const heatData = [];
     const maxIntensity = 1.0; // Maximum intensity for heat map
 
-    this.nearbyReports.forEach((report, index) => {
+    this.mapReports.forEach((report, index) => {
       // Use actual coordinates if available, otherwise use clustered positions
       let lat, lng;
       if (report.latitude && report.longitude) {
