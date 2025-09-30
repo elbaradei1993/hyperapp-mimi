@@ -26,25 +26,16 @@
             }
           }
 
-          // Fallback to sample data if no valid cache
+          // Fallback to sample data if no valid cache - PRIORITIZE DOMINANT VIBE
           if (!stats) {
             stats = {
-              totalReports: 127,
-              activeUsers: 32,
               vibeCounts: {calm: 43, crowded: 28, noisy: 19, festive: 15, suspicious: 12, dangerous: 10},
               dominantVibe: 'calm',
               dominantVibePercentage: 34
             };
           }
 
-          // Update DOM synchronously
-          const totalReportsEl = document.getElementById('totalReports');
-          if (totalReportsEl) totalReportsEl.textContent = stats.totalReports || 0;
-
-          const activeUsersEl = document.getElementById('activeUsers');
-          if (activeUsersEl) activeUsersEl.textContent = stats.activeUsers || Math.max(1, Math.floor((stats.totalReports || 0) / 3));
-
-          // Update dominant vibe
+          // PRIORITY 1: Show dominant vibe card immediately
           const dominantVibeEl = document.getElementById('dominantVibe');
           if (dominantVibeEl) {
             const iconEl = dominantVibeEl.querySelector('i');
@@ -61,7 +52,7 @@
             if (pctEl) pctEl.textContent = stats.dominantVibePercentage ? `${stats.dominantVibePercentage}%` : '0%';
           }
 
-          // Update vibe sidebars
+          // PRIORITY 2: Show vibe sidebar chart
           const sidebarChart = document.getElementById('vibeSidebarsChart');
           if (sidebarChart && stats.vibeCounts) {
             const total = Object.values(stats.vibeCounts).reduce((sum, count) => sum + count, 0);
@@ -75,6 +66,11 @@
                 calm: '#17A2B8', suspicious: '#FFC107', dangerous: '#DC3545'
               }[vibe] || '#6C757D');
 
+              const getVibeIcon = vibe => ({
+                crowded: 'users', noisy: 'volume-up', festive: 'glass-cheers',
+                calm: 'peace', suspicious: 'eye-slash', dangerous: 'exclamation-triangle'
+              }[vibe] || 'question-circle');
+
               const html = sortedVibes.map(([vibe, count]) => {
                 const percentage = (count / total) * 100;
                 return `<div class="vibe-sidebar-item"><div class="vibe-sidebar-label"><i class="fas fa-${getVibeIcon(vibe)}"></i><span>${vibe.charAt(0).toUpperCase() + vibe.slice(1)}</span></div><div class="vibe-sidebar-bar"><div class="vibe-sidebar-fill" style="width: ${percentage}%; background: ${getVibeColor(vibe)}"></div></div><div class="vibe-sidebar-count">${count}</div><div class="vibe-sidebar-percentage">${percentage.toFixed(1)}%</div></div>`;
@@ -83,19 +79,24 @@
             }
           }
 
-          // Show cached indicator
-          const statsGrid = document.getElementById('statsGrid');
-          if (statsGrid) {
-            const indicator = document.createElement('div');
-            indicator.id = 'cached-indicator';
-            indicator.style.cssText = 'position:absolute;top:5px;right:5px;font-size:8px;color:var(--text-muted);opacity:0.4;pointer-events:none;font-weight:300;';
-            indicator.textContent = 'cached';
-            statsGrid.style.position = 'relative';
+          // DELAYED: Let total reports/users update in background (after DOM ready)
+          setTimeout(() => {
+            try {
+              // Only update numbers now if they weren't set by the main app yet
+              const totalReportsEl = document.getElementById('totalReports');
+              if (totalReportsEl && (!totalReportsEl.textContent || totalReportsEl.textContent === '--' || totalReportsEl.textContent === '0')) {
+                if (stats.totalReports) totalReportsEl.textContent = stats.totalReports;
+              }
 
-            const existing = statsGrid.querySelector('#cached-indicator');
-            if (existing) existing.remove();
-            statsGrid.appendChild(indicator);
-          }
+              const activeUsersEl = document.getElementById('activeUsers');
+              if (activeUsersEl && (!activeUsersEl.textContent || activeUsersEl.textContent === '--' || activeUsersEl.textContent === '0')) {
+                if (stats.activeUsers) activeUsersEl.textContent = stats.activeUsers;
+                else if (stats.totalReports) activeUsersEl.textContent = Math.max(1, Math.floor(stats.totalReports / 3));
+              }
+            } catch (e) {
+              console.warn('Error in delayed numbers update:', e);
+            }
+          }, 100); // Short delay to let main app potentially load first
 
         } catch (error) {
           console.warn('Error showing immediate Community Stats:', error);
