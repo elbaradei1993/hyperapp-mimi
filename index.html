@@ -3,158 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HyperApp - Community Safety</title>
+  <title>HyperApp - Community Safety Platform</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- PRELOAD Community Stats display BEFORE other scripts for instant loading -->
-  <script>
-  // Immediate execution - cache or show sample Community Stats synchronously
-  (function() {
-    function instantShowCommunityStats() {
-      try {
-        // Check cache synchronously
-        const cached = localStorage.getItem('hyperapp_cached_community_stats');
-        const cacheTime = localStorage.getItem('hyperapp_cached_stats_time');
-        let stats;
+    <!-- PRELOAD Community Stats display BEFORE other scripts for instant loading -->
+    <script>
+    // Immediate execution - cache or show sample Community Stats synchronously
+    (function() {
+      function instantShowCommunityStats() {
+        try {
+          // Check cache synchronously
+          const cached = localStorage.getItem('hyperapp_cached_community_stats');
+          const cacheTime = localStorage.getItem('hyperapp_cached_stats_time');
+          let stats;
 
-        if (cached && cacheTime) {
-          const age = Date.now() - parseInt(cacheTime);
-          if (age < 86400000) { // 24 hours
-            stats = JSON.parse(cached);
+          if (cached && cacheTime) {
+            const age = Date.now() - parseInt(cacheTime);
+            if (age < 86400000) { // 24 hours
+              stats = JSON.parse(cached);
+            }
           }
-        }
 
-        // Fallback to sample data if no valid cache - PRIORITIZE DOMINANT VIBE
-        if (!stats) {
-          stats = {
-            vibeCounts: {calm: 43, crowded: 28, noisy: 19, festive: 15, suspicious: 12, dangerous: 10},
-            dominantVibe: 'calm',
-            dominantVibePercentage: 34
-          };
-        }
+          // Fallback to sample data if no valid cache - PRIORITIZE DOMINANT VIBE
+          if (!stats) {
+            stats = {
+              vibeCounts: {calm: 43, crowded: 28, noisy: 19, festive: 15, suspicious: 12, dangerous: 10},
+              dominantVibe: 'calm',
+              dominantVibePercentage: 34
+            };
+          }
 
-        // PRIORITY 1: Show dominant vibe card immediately
-        const dominantVibeEl = document.getElementById('dominantVibe');
-        if (dominantVibeEl) {
-          const iconEl = dominantVibeEl.querySelector('i');
-          const nameEl = dominantVibeEl.querySelector('span:first-of-type');
-          const pctEl = dominantVibeEl.querySelector('.vibe-percentage');
-
-          const getVibeIcon = vibe => ({
-            crowded: 'users', noisy: 'volume-up', festive: 'glass-cheers',
-            calm: 'peace', suspicious: 'eye-slash', dangerous: 'exclamation-triangle'
-          }[vibe] || 'question-circle');
-
-          if (iconEl) iconEl.className = `fas fa-${getVibeIcon(stats.dominantVibe)}`;
-          if (nameEl) nameEl.textContent = stats.dominantVibe ? stats.dominantVibe.charAt(0).toUpperCase() + stats.dominantVibe.slice(1) : 'Calm';
-          if (pctEl) pctEl.textContent = stats.dominantVibePercentage ? `${stats.dominantVibePercentage}%` : '0%';
-        }
-
-        // PRIORITY 2: Show vibe sidebar chart
-        const sidebarChart = document.getElementById('vibeSidebarsChart');
-        if (sidebarChart && stats.vibeCounts) {
-          const total = Object.values(stats.vibeCounts).reduce((sum, count) => sum + count, 0);
-          if (total > 0) {
-            const sortedVibes = Object.entries(stats.vibeCounts)
-              .sort(([,a], [,b]) => b - a)
-              .filter(([, count]) => count > 0);
-
-            const getVibeColor = vibe => ({
-              crowded: '#FFA500', noisy: '#FF6B35', festive: '#28A745',
-              calm: '#17A2B8', suspicious: '#FFC107', dangerous: '#DC3545'
-            }[vibe] || '#6C757D');
+          // PRIORITY 1: Show dominant vibe card immediately
+          const dominantVibeEl = document.getElementById('dominantVibe');
+          if (dominantVibeEl) {
+            const iconEl = dominantVibeEl.querySelector('i');
+            const nameEl = dominantVibeEl.querySelector('span:first-of-type');
+            const pctEl = dominantVibeEl.querySelector('.vibe-percentage');
 
             const getVibeIcon = vibe => ({
               crowded: 'users', noisy: 'volume-up', festive: 'glass-cheers',
               calm: 'peace', suspicious: 'eye-slash', dangerous: 'exclamation-triangle'
             }[vibe] || 'question-circle');
 
-            const html = sortedVibes.map(([vibe, count]) => {
-              const percentage = (count / total) * 100;
-              return `<div class="vibe-sidebar-item"><div class="vibe-sidebar-label"><i class="fas fa-${getVibeIcon(vibe)}"></i><span>${vibe.charAt(0).toUpperCase() + vibe.slice(1)}</span></div><div class="vibe-sidebar-bar"><div class="vibe-sidebar-fill" style="width: ${percentage}%; background: ${getVibeColor(vibe)}"></div></div><div class="vibe-sidebar-count">${count}</div><div class="vibe-sidebar-percentage">${percentage.toFixed(1)}%</div></div>`;
-            }).join('');
-            sidebarChart.innerHTML = html;
+            if (iconEl) iconEl.className = `fas fa-${getVibeIcon(stats.dominantVibe)}`;
+            if (nameEl) nameEl.textContent = stats.dominantVibe ? stats.dominantVibe.charAt(0).toUpperCase() + stats.dominantVibe.slice(1) : 'Calm';
+            if (pctEl) pctEl.textContent = stats.dominantVibePercentage ? `${stats.dominantVibePercentage}%` : '0%';
           }
+
+          // PRIORITY 2: Show vibe sidebar chart
+          const sidebarChart = document.getElementById('vibeSidebarsChart');
+          if (sidebarChart && stats.vibeCounts) {
+            const total = Object.values(stats.vibeCounts).reduce((sum, count) => sum + count, 0);
+            if (total > 0) {
+              const sortedVibes = Object.entries(stats.vibeCounts)
+                .sort(([,a], [,b]) => b - a)
+                .filter(([, count]) => count > 0);
+
+              const getVibeColor = vibe => ({
+                crowded: '#FFA500', noisy: '#FF6B35', festive: '#28A745',
+                calm: '#17A2B8', suspicious: '#FFC107', dangerous: '#DC3545'
+              }[vibe] || '#6C757D');
+
+              const getVibeIcon = vibe => ({
+                crowded: 'users', noisy: 'volume-up', festive: 'glass-cheers',
+                calm: 'peace', suspicious: 'eye-slash', dangerous: 'exclamation-triangle'
+              }[vibe] || 'question-circle');
+
+              const html = sortedVibes.map(([vibe, count]) => {
+                const percentage = (count / total) * 100;
+                return `<div class="vibe-sidebar-item"><div class="vibe-sidebar-label"><i class="fas fa-${getVibeIcon(vibe)}"></i><span>${vibe.charAt(0).toUpperCase() + vibe.slice(1)}</span></div><div class="vibe-sidebar-bar"><div class="vibe-sidebar-fill" style="width: ${percentage}%; background: ${getVibeColor(vibe)}"></div></div><div class="vibe-sidebar-count">${count}</div><div class="vibe-sidebar-percentage">${percentage.toFixed(1)}%</div></div>`;
+              }).join('');
+              sidebarChart.innerHTML = html;
+            }
+          }
+
+          // DELAYED: Let total reports/users update in background (after DOM ready)
+          setTimeout(() => {
+            try {
+              // Only update numbers now if they weren't set by the main app yet
+              const totalReportsEl = document.getElementById('totalReports');
+              if (totalReportsEl && (!totalReportsEl.textContent || totalReportsEl.textContent === '--' || totalReportsEl.textContent === '0')) {
+                if (stats.totalReports) totalReportsEl.textContent = stats.totalReports;
+              }
+
+              const activeUsersEl = document.getElementById('activeUsers');
+              if (activeUsersEl && (!activeUsersEl.textContent || activeUsersEl.textContent === '--' || activeUsersEl.textContent === '0')) {
+                if (stats.activeUsers) activeUsersEl.textContent = stats.activeUsers;
+                else if (stats.totalReports) activeUsersEl.textContent = Math.max(1, Math.floor(stats.totalReports / 3));
+              }
+            } catch (e) {
+              console.warn('Error in delayed numbers update:', e);
+            }
+          }, 100); // Short delay to let main app potentially load first
+
+        } catch (error) {
+          console.warn('Error showing immediate Community Stats:', error);
         }
-
-        // DELAYED: Let total reports/users update in background (after DOM ready)
-        setTimeout(() => {
-          try {
-            // Only update numbers now if they weren't set by the main app yet
-            const totalReportsEl = document.getElementById('totalReports');
-            if (totalReportsEl && (!totalReportsEl.textContent || totalReportsEl.textContent === '--' || totalReportsEl.textContent === '0')) {
-              if (stats.totalReports) totalReportsEl.textContent = stats.totalReports;
-            }
-
-            const activeUsersEl = document.getElementById('activeUsers');
-            if (activeUsersEl && (!activeUsersEl.textContent || activeUsersEl.textContent === '--' || activeUsersEl.textContent === '0')) {
-              if (stats.activeUsers) activeUsersEl.textContent = stats.activeUsers;
-              else if (stats.totalReports) activeUsersEl.textContent = Math.max(1, Math.floor(stats.totalReports / 3));
-            }
-          } catch (e) {
-            console.warn('Error in delayed numbers update:', e);
-          }
-        }, 100); // Short delay to let main app potentially load first
-
-      } catch (error) {
-        console.warn('Error showing immediate Community Stats:', error);
       }
-    }
 
-    // Execute immediately after DOM is ready but before other scripts
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', instantShowCommunityStats);
-    } else {
-      instantShowCommunityStats();
-    }
-  })();
-  </script>
+      // Execute immediately after DOM is ready but before other scripts
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', instantShowCommunityStats);
+      } else {
+        instantShowCommunityStats();
+      }
+    })();
+    </script>
 
-  <!-- Load other scripts normally -->
-  <script src="config.js"></script>
-  <script src="db-validation.js"></script>
+    <!-- Load other scripts normally -->
+    <script src="config.js"></script>
+    <script src="db-validation.js"></script>
   <style>
-    /* Uber-Inspired Design System */
     :root {
-      /* Uber Color Palette */
-      --uber-black: #000000;
-      --uber-white: #FFFFFF;
-      --uber-gray-50: #F7F7F7;
-      --uber-gray-100: #EDEDED;
-      --uber-gray-200: #E1E1E1;
-      --uber-gray-300: #CACACA;
-      --uber-gray-400: #A3A3A3;
-      --uber-gray-500: #8A8A8A;
-      --uber-gray-600: #6F6F6F;
-      --uber-gray-700: #565656;
-      --uber-gray-800: #333333;
-      --uber-gray-900: #1A1A1A;
+      /* Uber-Inspired Professional Color Palette */
+      --primary-50: #f0f8ff;
+      --primary-100: #e0f0fe;
+      --primary-200: #bae1fd;
+      --primary-300: #7cc8fc;
+      --primary-400: #36a9fb;
+      --primary-500: #0d9df7;
+      --primary-600: #0077e6;
+      --primary-700: #015fc4;
+      --primary-800: #064c99;
+      --primary-900: #0b3974;
 
-      /* Uber Brand Colors */
-      --uber-primary: #000000;
-      --uber-primary-light: #333333;
-      --uber-primary-dark: #000000;
-      --uber-secondary: #1FBAD6;
-      --uber-success: #14A800;
-      --uber-warning: #FFC043;
-      --uber-error: #D93B30;
+      /* Primary Colors - Uber Blue */
+      --primary: #276ef1;
+      --primary-hover: #1e5bd9;
+      --primary-light: #e8f2ff;
+      --primary-container: #f0f8ff;
+      --on-primary: #ffffff;
+      --on-primary-container: #0b3974;
 
-      /* Semantic Colors */
-      --text-primary: var(--uber-gray-900);
-      --text-secondary: var(--uber-gray-600);
-      --text-tertiary: var(--uber-gray-400);
-      --text-inverse: var(--uber-white);
+      /* Secondary Colors - Sophisticated Gray */
+      --secondary-50: #fafbfc;
+      --secondary-100: #f1f3f5;
+      --secondary-200: #e8eaed;
+      --secondary-300: #dadce0;
+      --secondary-400: #bdc1c6;
+      --secondary-500: #9aa0a6;
+      --secondary-600: #80868b;
+      --secondary-700: #5f6368;
+      --secondary-800: #3c4043;
+      --secondary-900: #202124;
 
-      --background-primary: var(--uber-white);
-      --background-secondary: var(--uber-gray-50);
-      --background-tertiary: var(--uber-gray-100);
+      --secondary: #5f6368;
+      --secondary-hover: #3c4043;
+      --secondary-light: #f1f3f5;
+      --secondary-container: #fafbfc;
+      --on-secondary: #ffffff;
+      --on-secondary-container: #3c4043;
 
-      --border-light: var(--uber-gray-200);
-      --border-medium: var(--uber-gray-300);
+      /* Tertiary Colors - Professional Red */
+      --tertiary: #d93025;
+      --tertiary-hover: #b3261e;
+      --tertiary-light: #fce8e6;
+      --tertiary-container: #fef7f6;
+      --on-tertiary: #ffffff;
+      --on-tertiary-container: #b3261e;
 
-      /* Spacing System */
+      /* Semantic Colors - Professional */
+      --success: #188038;
+      --success-hover: #146c2e;
+      --success-light: #e8f5e8;
+      --success-container: #c8e6c9;
+      --on-success: #ffffff;
+      --on-success-container: #146c2e;
+
+      --danger: #d93025;
+      --danger-hover: #b3261e;
+      --danger-light: #fce8e6;
+      --danger-container: #f9d3d0;
+      --on-danger: #ffffff;
+      --on-danger-container: #b3261e;
+
+      --warning: #fbbc04;
+      --warning-hover: #f9ab00;
+      --warning-light: #fef7e0;
+      --warning-container: #fef3c7;
+      --on-warning: #202124;
+      --on-warning-container: #92400e;
+
+      --info: #1a73e8;
+      --info-hover: #1557b8;
+      --info-light: #e8f0fe;
+      --info-container: #d2e3fc;
+      --on-info: #ffffff;
+      --on-info-container: #0b3974;
+
+      /* Neutral Colors - Uber Gray Scale */
+      --neutral-50: #fafbfc;
+      --neutral-100: #f1f3f5;
+      --neutral-200: #e8eaed;
+      --neutral-300: #dadce0;
+      --neutral-400: #bdc1c6;
+      --neutral-500: #9aa0a6;
+      --neutral-600: #80868b;
+      --neutral-700: #5f6368;
+      --neutral-800: #3c4043;
+      --neutral-900: #202124;
+
+      --surface: #ffffff;
+      --surface-variant: #f8f9fa;
+      --surface-container: #f1f3f5;
+      --surface-container-high: #e8eaed;
+      --surface-container-highest: #dadce0;
+      --on-surface: #202124;
+      --on-surface-variant: #5f6368;
+      --outline: #9aa0a6;
+      --outline-variant: #dadce0;
+
+      /* Background and Cards */
+      --background: #f8f9fa;
+      --on-background: #202124;
+      --card-bg: #ffffff;
+      --on-card: #202124;
+      --card-bg-hover: rgba(39, 110, 241, 0.04);
+      --border: rgba(32, 33, 36, 0.12);
+      --border-hover: rgba(39, 110, 241, 0.24);
+      --shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px rgba(60, 64, 67, 0.15);
+      --shadow-lg: 0 2px 4px rgba(60, 64, 67, 0.2), 0 4px 8px rgba(60, 64, 67, 0.12);
+      --shadow-xl: 0 4px 8px rgba(60, 64, 67, 0.3), 0 8px 16px rgba(60, 64, 67, 0.15);
+      --text-primary: #202124;
+      --text-secondary: #5f6368;
+
+      /* Dark Theme - Material Design 3 */
+      --dark-background: #121212;
+      --dark-surface: #1b1b1b;
+      --dark-surface-variant: #2d2d2d;
+      --dark-surface-container: #333333;
+      --dark-surface-container-high: #414141;
+      --dark-surface-container-highest: #4f4f4f;
+      --dark-on-surface: #ffffff;
+      --dark-on-surface-variant: #c5c5c5;
+      --dark-outline: #9c9c9c;
+      --dark-outline-variant: #494949;
+
+      --dark-text-primary: #ffffff;
+      --dark-text-secondary: #c5c5c5;
+      --dark-text-disabled: #797776;
+      --dark-divider: #494949;
+
+      /* Spacing System (Material Design 3 uses 4px base grid) */
+      --space-0: 0px;
+      --space-05: 2px;
       --space-1: 4px;
       --space-2: 8px;
       --space-3: 12px;
@@ -165,19 +259,17 @@
       --space-8: 32px;
       --space-9: 36px;
       --space-10: 40px;
-      --space-12: 48px;
-      --space-16: 64px;
 
-      /* Typography */
-      --font-family: 'Uber Move', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      --font-size-xs: 12px;
-      --font-size-sm: 14px;
-      --font-size-base: 16px;
-      --font-size-lg: 18px;
-      --font-size-xl: 20px;
-      --font-size-2xl: 24px;
-      --font-size-3xl: 30px;
-      --font-size-4xl: 36px;
+      /* Typography - Uber SF Pro Font Stack */
+      --font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-size-sm: 0.875rem; /* 14px */
+      --font-size-base: 1rem; /* 16px */
+      --font-size-lg: 1.125rem; /* 18px */
+      --font-size-xl: 1.25rem; /* 20px */
+      --font-size-2xl: 1.5rem; /* 24px */
+      --font-size-3xl: 1.875rem; /* 30px */
+      --font-size-4xl: 2.25rem; /* 36px */
+      --font-size-5xl: 3rem; /* 48px */
 
       --font-weight-light: 300;
       --font-weight-normal: 400;
@@ -187,93 +279,116 @@
 
       --line-height-tight: 1.25;
       --line-height-normal: 1.5;
-      --line-height-relaxed: 1.75;
+      --line-height-relaxed: 1.625;
 
-      /* Border Radius */
-      --radius-sm: 4px;
-      --radius: 8px;
-      --radius-lg: 12px;
-      --radius-xl: 16px;
-      --radius-full: 9999px;
+      --letter-spacing-tight: -0.025em;
+      --letter-spacing-normal: 0em;
+      --letter-spacing-wide: 0.025em;
 
-      /* Shadows */
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.05);
-      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.05), 0 10px 10px rgba(0, 0, 0, 0.04);
+      /* Layout */
+      --border-radius-xs: 4px;
+      --border-radius-sm: 8px;
+      --border-radius: 12px;
+      --border-radius-lg: 16px;
+      --border-radius-xl: 28px;
+      --border-radius-full: 9999px;
 
-      /* Transitions */
-      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+      --max-width-sm: 480px;
+      --max-width-md: 768px;
+      --max-width-lg: 1024px;
+      --max-width-xl: 1280px;
+
+      /* Elevation - Material Design 3 */
+      --shadow-key-penumbra: 0 3px 5px rgba(0, 0, 0, 0.2);
+      --shadow-key-umbra: 0 1px 18px rgba(0, 0, 0, 0.12);
+      --shadow-key-ambient: 0 1px 10px rgba(0, 0, 0, 0.08);
+
+      --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+      --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+      --shadow-3: 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
+      --shadow-4: 0 6px 10px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.15);
+      --shadow-5: 0 8px 12px rgba(0, 0, 0, 0.3), 0 6px 8px rgba(0, 0, 0, 0.15);
+
+      /* Transitions - Material Design 3 */
+      --transition-fast: all 100ms cubic-bezier(0.25, 1, 0.75, 1);
+      --transition-normal: all 200ms cubic-bezier(0.25, 1, 0.75, 1);
+      --transition-slow: all 500ms cubic-bezier(0.25, 1, 0.75, 1);
+      --transition-bounce: all 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+      /* State Layer Opacities */
+      --state-hover: 0.08;
+      --state-focus: 0.12;
+      --state-pressed: 0.16;
+      --state-dragged: 0.16;
+      --state-selected: 0.12;
+      --state-disabled: 0.38;
     }
 
-    /* Light theme variables - Uber Inspired */
+    /* Light theme variables */
     [data-theme="light"] {
-      --primary: var(--uber-primary);
-      --primary-dark: var(--uber-primary-dark);
-      --secondary: var(--uber-secondary);
-      --success: var(--uber-success);
-      --danger: var(--uber-error);
-      --warning: var(--uber-warning);
-      --info: var(--uber-secondary);
-      --dark-bg: var(--background-secondary);
-      --card-bg: var(--background-primary);
-      --text-light: var(--text-primary);
-      --text-muted: var(--text-secondary);
-      --background: var(--background-primary);
-      --on-background: var(--text-primary);
-      --card-bg-hover: rgba(0, 0, 0, 0.04);
-      --border: var(--border-light);
-      --border-hover: var(--border-medium);
-      --text-primary: var(--text-primary);
-      --text-secondary: var(--text-secondary);
+      --primary: #1A46E0;
+      --primary-dark: #1E3A8A;
+      --secondary: #EA580C;
+      --success: #16A34A;
+      --danger: #DC2626;
+      --warning: #D97706;
+      --info: #0891B2;
+      --dark-bg: #F8FAFC;
+      --card-bg: #ffffff;
+      --text-light: #1E293B;
+      --text-muted: #64748B;
+      --background: #ffffff;
+      --on-background: #1c1c1f;
+      --card-bg-hover: rgba(26, 73, 224, 0.08);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-hover: rgba(26, 73, 224, 0.25);
+      --text-primary: #1c1c1f;
+      --text-secondary: #64748b;
 
-      /* Fix primary container for light theme */
-      --primary-container: rgba(0, 0, 0, 0.08);
+    /* Fix primary container for light theme */
+    --primary-container: rgba(26, 70, 224, 0.12);
 
-      /* Action buttons text color for light mode */
-      --action-btn-text: var(--text-primary);
+    /* Action buttons text color for light mode */
+    --action-btn-text: #1c1c1f;
     }
 
-    /* Dark theme overrides - Uber Inspired */
+    /* Dark theme overrides */
     [data-theme="dark"] {
-      --primary: var(--uber-secondary);
-      --primary-dark: var(--uber-secondary);
-      --secondary: var(--uber-secondary);
-      --success: var(--uber-success);
-      --danger: var(--uber-error);
-      --warning: var(--uber-warning);
-      --info: var(--uber-secondary);
+      --primary: #4dabff;
+      --primary-dark: #1a73e8;
+      --secondary: #ff8a65;
+      --success: #4caf50;
+      --danger: #f44336;
+      --warning: #ff9800;
+      --info: #2196f3;
 
-      --card-bg: var(--background-secondary);
-      --background: var(--background-primary);
-      --text-primary: var(--text-primary);
-      --text-secondary: var(--text-secondary);
-      --text-light: var(--text-primary);
-      --text-muted: var(--text-secondary);
+      --card-bg: var(--dark-surface);
+      --background: var(--dark-background);
+      --text-primary: var(--dark-text-primary);
+      --text-secondary: var(--dark-text-secondary);
+      --text-light: var(--dark-text-primary);
+      --text-muted: var(--dark-text-secondary);
 
       /* Enhanced dark mode styling for visibility */
-      --card-bg-hover: rgba(255, 255, 255, 0.08);
-      --border: var(--border-light);
-      --border-hover: var(--border-medium);
-      --surface: var(--background-secondary);
-      --surface-variant: var(--background-tertiary);
-      --surface-container: var(--background-secondary);
-      --surface-container-high: var(--background-tertiary);
-      --surface-container-highest: var(--background-tertiary);
-      --on-surface: var(--text-primary);
-      --on-surface-variant: var(--text-secondary);
-      --outline: var(--border-light);
-      --outline-variant: var(--border-medium);
+      --card-bg-hover: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.15);
+      --border-hover: rgba(255, 255, 255, 0.25);
+      --surface: var(--dark-surface);
+      --surface-variant: var(--dark-surface-variant);
+      --surface-container: var(--dark-surface-container);
+      --surface-container-high: var(--dark-surface-container-high);
+      --surface-container-highest: var(--dark-surface-container-highest);
+      --on-surface: var(--dark-on-surface);
+      --on-surface-variant: var(--dark-on-surface-variant);
+      --outline: var(--dark-outline);
+      --outline-variant: var(--dark-outline-variant);
 
       /* Fix primary container for dark theme */
-      --primary-container: rgba(26, 186, 214, 0.15);
+      --primary-container: rgba(77, 171, 255, 0.18);
 
       /* Enhanced shadows for dark mode */
-      --shadow: var(--shadow);
-      --shadow-lg: var(--shadow-md);
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
     }
 
     * {
@@ -287,7 +402,7 @@
     }
 
     body {
-      background: var(--background-primary);
+      background: var(--background);
       color: var(--text-primary);
       min-height: 100vh;
       padding: 0;
@@ -295,13 +410,11 @@
       line-height: var(--line-height-normal);
       font-weight: var(--font-weight-normal);
       font-family: var(--font-family);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
     [data-theme="dark"] body {
-      background: var(--background-primary);
-      color: var(--text-primary);
+      background: var(--dark-background);
+      color: var(--dark-text-primary);
     }
 
     .container {
@@ -567,61 +680,23 @@
     .nav-btn {
       background: none;
       border: none;
-      color: var(--uber-gray-400);
-      padding: var(--space-3);
-      border-radius: var(--radius);
+      color: var(--text-muted);
+      padding: 10px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: var(--transition-normal);
+      transition: all 0.3s ease;
       flex: 1;
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-width: 44px;
-      min-height: 44px;
-      margin: 0 var(--space-1);
-      position: relative;
-    }
-
-    .nav-btn:hover {
-      background: rgba(0, 0, 0, 0.04);
-      color: var(--uber-black);
     }
 
     .nav-btn.active {
-      background: var(--uber-black);
-      color: var(--uber-white);
-      box-shadow: var(--shadow);
-    }
-
-    .nav-btn.active::after {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 20px;
-      height: 2px;
-      background: var(--uber-secondary);
-      border-radius: 1px;
-    }
-
-    /* Dark theme navigation */
-    [data-theme="dark"] .nav-btn {
-      color: var(--uber-gray-400);
-    }
-
-    [data-theme="dark"] .nav-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--uber-white);
-    }
-
-    [data-theme="dark"] .nav-btn.active {
-      background: var(--uber-white);
-      color: var(--uber-black);
+      background: rgba(45, 91, 255, 0.2);
+      color: var(--primary);
     }
 
     .nav-btn i {
-      font-size: var(--font-size-lg);
+      font-size: 20px;
     }
 
     .content-area {
@@ -637,13 +712,13 @@
     }
 
     .card {
-      background: var(--background-primary);
-      border-radius: var(--radius-lg);
-      padding: var(--space-5);
-      margin-bottom: var(--space-4);
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition-normal);
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
       position: relative;
       overflow: hidden;
     }
@@ -655,14 +730,15 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(90deg, var(--uber-primary), var(--uber-secondary));
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
       opacity: 0;
-      transition: opacity var(--transition-fast);
+      transition: opacity 0.3s ease;
     }
 
     .card:hover {
-      border-color: var(--uber-gray-300);
-      box-shadow: var(--shadow);
+      background: var(--card-bg-hover);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-lg);
       transform: translateY(-1px);
     }
 
@@ -673,11 +749,10 @@
     .card-title {
       display: flex;
       align-items: center;
-      gap: var(--space-3);
-      margin-bottom: var(--space-4);
-      font-weight: var(--font-weight-semibold);
-      color: var(--text-primary);
-      font-size: var(--font-size-lg);
+      gap: 10px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: var(--primary);
     }
 
     .reports-container {
@@ -799,20 +874,20 @@
     }
 
     .btn {
-      background: var(--uber-black);
-      color: var(--uber-white);
-      border: 1px solid var(--uber-black);
-      border-radius: var(--radius);
-      padding: var(--space-3) var(--space-5);
+      background: var(--primary);
+      color: var(--on-primary);
+      border: 1px solid var(--primary);
+      border-radius: var(--border-radius);
+      padding: 12px 20px;
       cursor: pointer;
-      font-weight: var(--font-weight-medium);
-      font-size: var(--font-size-base);
+      font-weight: 600;
+      font-size: 14px;
       letter-spacing: 0.025em;
-      transition: var(--transition-normal);
+      transition: var(--transition);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: var(--space-2);
+      gap: 8px;
       text-decoration: none;
       position: relative;
       overflow: hidden;
@@ -821,10 +896,10 @@
     }
 
     .btn:hover {
-      background: var(--uber-gray-800);
-      border-color: var(--uber-gray-800);
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
       transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-lg);
     }
 
     .btn:active {
@@ -833,7 +908,7 @@
     }
 
     .btn:focus {
-      outline: 2px solid var(--uber-secondary);
+      outline: 2px solid var(--primary-container);
       outline-offset: 2px;
     }
 
@@ -2216,73 +2291,38 @@
     .nav-btn {
       background: none;
       border: none;
-      color: var(--uber-gray-400);
-      padding: var(--space-3);
-      border-radius: var(--radius);
+      color: var(--text-muted);
+      padding: 12px; /* Increased padding for touch targets */
+      border-radius: 12px;
       cursor: pointer;
-      transition: var(--transition-normal);
+      transition: all 0.3s ease;
       flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-width: 44px;
+      min-width: 44px; /* Minimum touch target */
       min-height: 44px;
-      margin: 0 var(--space-1);
-      position: relative;
-    }
-
-    .nav-btn:hover {
-      background: rgba(0, 0, 0, 0.04);
-      color: var(--uber-black);
+      margin: 0 4px;
     }
 
     .nav-btn.active {
-      background: var(--uber-black);
-      color: var(--uber-white);
-      box-shadow: var(--shadow);
-    }
-
-    .nav-btn.active::after {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 20px;
-      height: 2px;
-      background: var(--uber-secondary);
-      border-radius: 1px;
-    }
-
-    /* Dark theme navigation */
-    [data-theme="dark"] .nav-btn {
-      color: var(--uber-gray-400);
-    }
-
-    [data-theme="dark"] .nav-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--uber-white);
-    }
-
-    [data-theme="dark"] .nav-btn.active {
-      background: var(--uber-white);
-      color: var(--uber-black);
+      background: rgba(45, 91, 255, 0.2);
+      color: var(--primary);
     }
 
     .nav-btn i {
-      font-size: var(--font-size-lg);
+      font-size: 18px; /* Slightly smaller for mobile */
     }
 
     /* Mobile-first container and spacing */
     .container {
       max-width: 100%;
-      padding: var(--space-4);
+      padding: 20px;
       margin: 0 auto;
-      padding-bottom: calc(var(--space-16) + var(--space-2)); /* Account for fixed nav with more space */
+      padding-bottom: 90px; /* Account for fixed nav with more space */
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      background: var(--background-primary);
     }
 
     /* Vertical scrolling priority - ensure all content stacks vertically */
@@ -3733,219 +3773,6 @@
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Uber-Style Header -->
-    <header class="app-header">
-      <div class="header-content">
-        <div class="logo">
-          <div class="logo-icon">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <div class="logo-text">HyperApp</div>
-        </div>
-        <div class="header-actions">
-          <button class="header-btn" id="themeToggle">
-            <i class="fas fa-moon"></i>
-          </button>
-          <button class="header-btn">
-            <i class="fas fa-bell"></i>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content">
-      <!-- Safety Status Card -->
-      <div class="safety-status fade-in">
-        <div class="safety-title">Area Safety Status</div>
-        <div class="safety-description">Your neighborhood is currently safe</div>
-        <div class="safety-metrics">
-          <div class="safety-metric">
-            <div class="metric-value">94%</div>
-            <div class="metric-label">Safety Score</div>
-          </div>
-          <div class="safety-metric">
-            <div class="metric-value">12</div>
-            <div class="metric-label">Active Reports</div>
-          </div>
-          <div class="safety-metric">
-            <div class="metric-value">28</div>
-            <div class="metric-label">Community</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="quick-actions fade-in">
-        <div class="action-card" data-action="report">
-          <div class="action-icon">
-            <i class="fas fa-plus"></i>
-          </div>
-          <div class="action-label">Report</div>
-        </div>
-        <div class="action-card" data-action="map">
-          <div class="action-icon">
-            <i class="fas fa-map"></i>
-          </div>
-          <div class="action-label">Map</div>
-        </div>
-        <div class="action-card emergency" data-action="emergency">
-          <div class="action-icon">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <div class="action-label">Emergency</div>
-        </div>
-      </div>
-
-      <!-- Community Stats -->
-      <div class="card fade-in">
-        <div class="card-header">
-          <div class="card-title">Community Overview</div>
-          <div class="card-action">View All</div>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number">156</div>
-            <div class="stat-label">Total Reports</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">42</div>
-            <div class="stat-label">Active Now</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Vibe Distribution -->
-      <div class="card fade-in">
-        <div class="card-header">
-          <div class="card-title">Area Vibes</div>
-          <div class="card-action">See Details</div>
-        </div>
-        <div class="vibe-distribution">
-          <div class="vibe-item">
-            <div class="vibe-icon" style="background: #14A800;">
-              <i class="fas fa-peace"></i>
-            </div>
-            <div class="vibe-info">
-              <div class="vibe-name">Calm & Peaceful</div>
-            </div>
-            <div class="vibe-bar">
-              <div class="vibe-fill" style="width: 65%; background: #14A800;"></div>
-            </div>
-            <div class="vibe-count">65%</div>
-          </div>
-          <div class="vibe-item">
-            <div class="vibe-icon" style="background: #1FBAD6;">
-              <i class="fas fa-users"></i>
-            </div>
-            <div class="vibe-info">
-              <div class="vibe-name">Crowded</div>
-            </div>
-            <div class="vibe-bar">
-              <div class="vibe-fill" style="width: 20%; background: #1FBAD6;"></div>
-            </div>
-            <div class="vibe-count">20%</div>
-          </div>
-          <div class="vibe-item">
-            <div class="vibe-icon" style="background: #FFC043;">
-              <i class="fas fa-volume-up"></i>
-            </div>
-            <div class="vibe-info">
-              <div class="vibe-name">Noisy</div>
-            </div>
-            <div class="vibe-bar">
-              <div class="vibe-fill" style="width: 10%; background: #FFC043;"></div>
-            </div>
-            <div class="vibe-count">10%</div>
-          </div>
-          <div class="vibe-item">
-            <div class="vibe-icon" style="background: #D93B30;">
-              <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="vibe-info">
-              <div class="vibe-name">Alert</div>
-            </div>
-            <div class="vibe-bar">
-              <div class="vibe-fill" style="width: 5%; background: #D93B30;"></div>
-            </div>
-            <div class="vibe-count">5%</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Activity -->
-      <div class="card fade-in">
-        <div class="card-header">
-          <div class="card-title">Recent Activity</div>
-          <div class="card-action">See All</div>
-        </div>
-        <div class="reports-list">
-          <div class="report-card">
-            <div class="report-header">
-              <div class="report-type" style="background: #14A800;">
-                <i class="fas fa-peace"></i>
-              </div>
-              <div class="report-info">
-                <div class="report-title">Peaceful Gathering</div>
-                <div class="report-location">Central Park Area</div>
-              </div>
-              <div class="report-time">15 min ago</div>
-            </div>
-            <div class="report-actions">
-              <button class="action-btn">
-                <i class="fas fa-thumbs-up"></i> 12
-              </button>
-              <button class="action-btn">
-                <i class="fas fa-comment"></i> 3
-              </button>
-            </div>
-          </div>
-          <div class="report-card">
-            <div class="report-header">
-              <div class="report-type" style="background: #1FBAD6;">
-                <i class="fas fa-users"></i>
-              </div>
-              <div class="report-info">
-                <div class="report-title">Busy Street</div>
-                <div class="report-location">Main Street</div>
-              </div>
-              <div class="report-time">1 hour ago</div>
-            </div>
-            <div class="report-actions">
-              <button class="action-btn">
-                <i class="fas fa-thumbs-up"></i> 8
-              </button>
-              <button class="action-btn">
-                <i class="fas fa-comment"></i> 2
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-      <button class="nav-item active">
-        <i class="fas fa-home nav-icon"></i>
-        <div class="nav-label">Home</div>
-      </button>
-      <button class="nav-item">
-        <i class="fas fa-map nav-icon"></i>
-        <div class="nav-label">Map</div>
-      </button>
-      <button class="nav-item">
-        <i class="fas fa-bell nav-icon"></i>
-        <div class="nav-label">Alerts</div>
-      </button>
-      <button class="nav-item">
-        <i class="fas fa-user nav-icon"></i>
-        <div class="nav-label">Profile</div>
-      </button>
-    </nav>
-  </div>
-
   <!-- Auth Modal -->
   <div id="authModal" class="auth-modal">
     <div class="auth-content">
@@ -3953,12 +3780,12 @@
         <h2 data-en="Authentication Required" data-ar="مطلوب مصادقة">Authentication Required</h2>
         <span class="close" id="closeAuth">&times;</span>
       </div>
-
+      
       <div class="auth-tabs">
         <div class="auth-tab active" data-tab="login">Login</div>
         <div class="auth-tab" data-tab="signup">Sign Up</div>
       </div>
-
+      
       <div class="auth-form" id="loginForm">
         <div class="form-group">
           <label data-en="Email" data-ar="البريد الإلكتروني">Email</label>
@@ -3970,7 +3797,7 @@
         </div>
         <button class="auth-btn" id="loginBtn" data-en="Login" data-ar="تسجيل الدخول">Login</button>
       </div>
-
+      
       <div class="auth-form hidden" id="signupForm">
         <div class="form-group">
           <label data-en="Username" data-ar="اسم المستخدم">Username</label>
@@ -3990,14 +3817,359 @@
         </div>
         <button class="auth-btn" id="signupBtn" data-en="Sign Up" data-ar="إنشاء حساب">Sign Up</button>
       </div>
-
+      
       <div class="auth-footer">
         <p data-en="You need to authenticate to use all features" data-ar="تحتاج إلى المصادقة لاستخدام جميع الميزات">You need to authenticate to use all features</p>
       </div>
     </div>
   </div>
 
+  <div class="container">
+    <!-- Compact Header -->
+    <header class="compact-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="header-info">
+            <h1>HyperApp</h1>
+            <div class="status-indicator" id="connectionStatus">
+              <i class="fas fa-circle-notch fa-spin"></i>
+              <span data-en="Connecting..." data-ar="جاري الاتصال...">Connecting...</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="header-actions">
+            <button id="locationBtn" class="header-btn" title="Enable location">
+              <i class="fas fa-map-marker-alt"></i>
+            </button>
+            <button id="refreshBtn" class="header-btn" title="Refresh data">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+            <div class="theme-toggle" id="themeToggle" title="Toggle theme">
+              <i class="fas fa-moon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
 
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- Main View -->
+      <div id="mainView" class="view active">
+        <!-- Community Stats with Color-coded Sidebar -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-chart-bar"></i>
+            <span data-en="Community Stats" data-ar="إحصائيات المجتمع">Community Stats</span>
+          </div>
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+              <div class="stat-number" id="totalReports">0</div>
+              <div class="stat-label">Reports</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="activeUsers">0</div>
+              <div class="stat-label">Active Users</div>
+            </div>
+          </div>
+
+          <!-- Color-coded Community Vibe Sidebar -->
+          <div class="community-vibe-sidebar" id="communityVibeSidebar">
+            <div class="sidebar-header">
+              <span data-en="Community Vibe" data-ar="حالة المجتمع">Community Vibe</span>
+              <div class="dominant-vibe" id="dominantVibe">
+                <i class="fas fa-peace"></i>
+                <span data-en="Calm" data-ar="هادئ">Calm</span>
+                <span class="vibe-percentage" id="dominantVibePercentage">0%</span>
+              </div>
+            </div>
+            <div class="vibe-sidebars-chart" id="vibeSidebarsChart">
+              <!-- Color-coded sidebar bars will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Safety Hub -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-shield-alt"></i>
+            <span data-en="Safety Hub" data-ar="مركز السلامة">Safety Hub</span>
+          </div>
+          <div class="safety-hub">
+            <!-- Geofence Control -->
+            <div class="geofence-control" id="geofenceControl">
+              <div class="geofence-header">
+                <div class="geofence-icon">
+                  <i class="fas fa-draw-polygon"></i>
+                </div>
+                <div class="geofence-info">
+                  <span class="geofence-title" data-en="Geofence Monitoring" data-ar="مراقبة المناطق الجغرافية">Geofence Monitoring</span>
+                  <span class="geofence-status" id="geofenceStatusText" data-en="Disabled - Click to enable" data-ar="معطل - اضغط للتفعيل">Disabled - Click to enable</span>
+                </div>
+                <button class="geofence-toggle" id="geofenceToggleBtn">
+                  <div class="toggle-slider">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </button>
+              </div>
+              <div class="geofence-description">
+                <span data-en="Get notified when entering safe or risk zones" data-ar="احصل على إشعارات عند دخول مناطق آمنة أو خطرة">Get notified when entering safe or risk zones</span>
+              </div>
+            </div>
+
+            <div class="weather-alert" id="weatherAlert">
+              <i class="fas fa-cloud-sun"></i>
+              <div class="alert-content">
+                <span class="alert-title" data-en="Weather Alert" data-ar="تنبيه جوي">Weather Alert</span>
+                <span class="alert-message" data-en="Loading weather information..." data-ar="جاري تحميل معلومات الطقس...">Loading weather information...</span>
+              </div>
+            </div>
+            <div class="safety-tips" id="safetyTips">
+              <div class="guideline-item">
+                <i class="fas fa-heart"></i>
+                <span data-en="Stay aware and trust your instincts" data-ar="ابق يقظاً وثق بغريزتك">Stay aware and trust your instincts</span>
+              </div>
+              <div class="guideline-item">
+                <i class="fas fa-users"></i>
+                <span data-en="Travel with friends when possible" data-ar="سافر مع الأصدقاء عند الإمكان">Travel with friends when possible</span>
+              </div>
+              <div class="guideline-item">
+                <i class="fas fa-home"></i>
+                <span data-en="Know your way home or to safety" data-ar="اعرف طريقك إلى المنزل أو إلى الأمان">Know your way home or to safety</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Area Mood Voting -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-chart-pie"></i>
+            <span data-en="Area Mood Voting" data-ar="تصويت المزاج المنطقة">Area Mood Voting</span>
+          </div>
+          <div class="mood-voting-grid" id="moodVotingGrid">
+            <div class="mood-vote-card" data-mood="chill">
+              <div class="mood-emoji">😎</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Chill" data-ar="هادئ">Chill</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="excited">
+              <div class="mood-emoji">🤩</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Excited" data-ar="مثير">Excited</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="anxious">
+              <div class="mood-emoji">😰</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Anxious" data-ar="قلق">Anxious</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="sad">
+              <div class="mood-emoji">😢</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Sad" data-ar="حزين">Sad</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="angry">
+              <div class="mood-emoji">😠</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Angry" data-ar="غاضب">Angry</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="happy">
+              <div class="mood-emoji">😀</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Happy" data-ar="سعيد">Happy</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="tired">
+              <div class="mood-emoji">😴</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Tired" data-ar="متعب">Tired</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="confused">
+              <div class="mood-emoji">🤔</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Confused" data-ar="مشوش">Confused</span>
+              </div>
+            </div>
+            <div class="mood-vote-card" data-mood="bored">
+              <div class="mood-emoji">🥱</div>
+              <div class="mood-info">
+                <span class="mood-name" data-en="Bored" data-ar="ممل">Bored</span>
+              </div>
+            </div>
+          </div>
+          <div class="mood-voting-status" id="moodVotingStatus" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
+            <div style="font-size: 14px; color: var(--text-light); margin-bottom: 5px;">
+              <i class="fas fa-users"></i>
+              <span data-en="Population Mood" data-ar="مزاج السكان">Population Mood</span>
+            </div>
+            <div style="font-size: 18px; font-weight: bold; color: var(--primary);" id="populationMoodDisplay">
+              <i class="fas fa-question-circle"></i>
+              <span data-en="Collecting votes..." data-ar="جمع التصويتات...">Collecting votes...</span>
+            </div>
+          </div>
+
+          <!-- Mood-Based Activity Suggestions -->
+          <div class="mood-activity-suggestions" id="moodActivitySuggestions" style="display: none; margin-top: 20px;">
+            <div class="card-title" style="margin-bottom: 12px; font-size: 16px;">
+              <i class="fas fa-map-marker-alt"></i>
+              <span data-en="Suggested Places for Your Mood" data-ar="أماكن مقترحة لمزاجك">Suggested Places for Your Mood</span>
+            </div>
+            <div class="activity-suggestions-list" id="activitySuggestionsList">
+              <!-- Activity suggestions will be populated here -->
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+
+      <!-- Map View -->
+      <div id="mapView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-map"></i> 
+            <span data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</span>
+          </div>
+          <div id="mapContainer" class="map-container">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reports View -->
+      <div id="reportsView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-user"></i>
+            <span data-en="My Dashboard" data-ar="لوحة التحكم الخاصة بي">My Dashboard</span>
+          </div>
+
+          <!-- User Profile Section -->
+          <div class="user-profile-section" id="userProfileSection">
+            <div class="loading-spinner"></div>
+          </div>
+
+          <!-- Achievement Badges -->
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-trophy"></i>
+              <span data-en="Achievements" data-ar="الإنجازات">Achievements</span>
+            </div>
+            <div id="userBadges" class="badge-showcase">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+
+          <!-- Personal Stats -->
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-chart-line"></i>
+              <span data-en="My Impact" data-ar="تأثيري">My Impact</span>
+            </div>
+            <div class="stats-grid" id="userStatsGrid">
+              <div class="stat-card">
+                <div class="stat-number" id="userTotalReports">0</div>
+                <div class="stat-label">My Reports</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="userTotalUpvotes">0</div>
+                <div class="stat-label">Upvotes Received</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="userReputationScore">0</div>
+                <div class="stat-label">Reputation</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="userRank">-</div>
+                <div class="stat-label">Community Rank</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-history"></i>
+              <span data-en="Recent Activity" data-ar="النشاط الأخير">Recent Activity</span>
+            </div>
+            <div id="userRecentActivity" class="reports-container">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings View -->
+      <div id="settingsView" class="view">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-cog"></i> 
+            <span data-en="Settings" data-ar="الإعدادات">Settings</span>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="Account" data-ar="الحساب">Account</h3>
+            <div class="setting-item">
+              <span data-en="Username" data-ar="اسم المستخدم">Username</span>
+              <span id="settingsUsername">-</span>
+            </div>
+            <div class="setting-item">
+              <span data-en="Reputation" data-ar="النقاط">Reputation</span>
+              <span id="settingsReputation">0</span>
+            </div>
+            <div class="setting-item">
+              <span data-en="Account Actions" data-ar="إجراءات الحساب">Account Actions</span>
+              <button class="btn btn-danger" id="logoutBtn" data-en="Logout" data-ar="تسجيل الخروج">Logout</button>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="Preferences" data-ar="التفضيلات">Preferences</h3>
+            <div class="setting-item">
+              <span data-en="Language" data-ar="اللغة">Language</span>
+              <select id="languageSelect">
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h3 data-en="Privacy & Policy" data-ar="الخصوصية والسياسة">Privacy & Policy</h3>
+            <div class="setting-item">
+              <span data-en="Data Collection" data-ar="جمع البيانات">Data Collection</span>
+              <button class="btn" data-action="privacy-policy" data-en="View Policy" data-ar="عرض السياسة">View Policy</button>
+            </div>
+            <div class="setting-item">
+              <span data-en="Location Data" data-ar="بيانات الموقع">Location Data</span>
+              <span data-en="Used for safety reports only" data-ar="تُستخدم لتقارير السلامة فقط">Used for safety reports only</span>
+            </div>
+            <div class="setting-item">
+              <span data-en="Anonymous Reporting" data-ar="الإبلاغ المجهول">Anonymous Reporting</span>
+              <span data-en="Reports are anonymous by default" data-ar="التقارير مجهولة افتراضياً">Reports are anonymous by default</span>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3 data-en="About" data-ar="عن التطبيق">About</h3>
+            <p data-en="HyperApp helps communities stay informed about safety conditions in their area." data-ar="يساعد HyperApp المجتمعات على البقاء على اطلاع بظروف السلامة في منطقتهم.">
+              HyperApp helps communities stay informed about safety conditions in their area.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <!-- Report Modal -->
   <div id="reportModal" class="modal">
