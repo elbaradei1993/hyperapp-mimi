@@ -3825,213 +3825,267 @@
   </div>
 
   <div class="container">
-    <!-- Compact Header -->
-    <header class="compact-header">
-      <div class="header-content">
-        <div class="header-left">
-          <div class="logo">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <div class="header-info">
-            <h1>HyperApp</h1>
-            <div class="status-indicator" id="connectionStatus">
-              <i class="fas fa-circle-notch fa-spin"></i>
-              <span data-en="Connecting..." data-ar="جاري الاتصال...">Connecting...</span>
+    <!-- Modern Dashboard Layout -->
+    <div class="dashboard-layout">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="top-bar-content">
+          <div class="brand-section">
+            <div class="logo">
+              <i class="fas fa-shield-alt"></i>
             </div>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="header-actions">
-            <button id="locationBtn" class="header-btn" title="Enable location">
-              <i class="fas fa-map-marker-alt"></i>
-            </button>
-            <button id="refreshBtn" class="header-btn" title="Refresh data">
-              <i class="fas fa-sync-alt"></i>
-            </button>
-            <div class="theme-toggle" id="themeToggle" title="Toggle theme">
-              <i class="fas fa-moon"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Content Area -->
-    <main class="content-area">
-      <!-- Main View -->
-      <div id="mainView" class="view active">
-        <!-- Community Stats with Color-coded Sidebar -->
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-chart-bar"></i>
-            <span data-en="Community Stats" data-ar="إحصائيات المجتمع">Community Stats</span>
-          </div>
-          <div class="stats-grid" id="statsGrid">
-            <div class="stat-card">
-              <div class="stat-number" id="totalReports">0</div>
-              <div class="stat-label">Reports</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" id="activeUsers">0</div>
-              <div class="stat-label">Active Users</div>
+            <div class="brand-info">
+              <h1>HyperApp</h1>
+              <span class="tagline">Stay Safe • Stay Connected</span>
             </div>
           </div>
 
-          <!-- Color-coded Community Vibe Sidebar -->
-          <div class="community-vibe-sidebar" id="communityVibeSidebar">
-            <div class="sidebar-header">
-              <span data-en="Community Vibe" data-ar="حالة المجتمع">Community Vibe</span>
-              <div class="dominant-vibe" id="dominantVibe">
-                <i class="fas fa-peace"></i>
-                <span data-en="Calm" data-ar="هادئ">Calm</span>
-                <span class="vibe-percentage" id="dominantVibePercentage">0%</span>
+          <div class="top-controls">
+            <div class="quick-stats">
+              <div class="quick-stat">
+                <span class="stat-value" id="totalReports">0</span>
+                <span class="stat-label">Reports</span>
+              </div>
+              <div class="quick-stat">
+                <span class="stat-value" id="activeUsers">0</span>
+                <span class="stat-label">Active</span>
               </div>
             </div>
-            <div class="vibe-sidebars-chart" id="vibeSidebarsChart">
-              <!-- Color-coded sidebar bars will be populated by JavaScript -->
+
+            <div class="header-actions">
+              <button id="locationBtn" class="action-btn" title="Location">
+                <i class="fas fa-map-marker-alt"></i>
+              </button>
+              <button id="refreshBtn" class="action-btn" title="Refresh">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+              <div class="language-switcher" id="languageSwitcher">
+                <i class="fas fa-globe"></i> <span id="currentLanguage">EN</span>
+              </div>
+              <div class="theme-toggle" id="themeToggle" title="Toggle theme">
+                <i class="fas fa-moon"></i>
+              </div>
             </div>
           </div>
         </div>
+      </header>
 
-        <!-- Safety Hub -->
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-shield-alt"></i>
-            <span data-en="Safety Hub" data-ar="مركز السلامة">Safety Hub</span>
-          </div>
-          <div class="safety-hub">
-            <!-- Geofence Control -->
-            <div class="geofence-control" id="geofenceControl">
-              <div class="geofence-header">
-                <div class="geofence-icon">
-                  <i class="fas fa-draw-polygon"></i>
-                </div>
-                <div class="geofence-info">
-                  <span class="geofence-title" data-en="Geofence Monitoring" data-ar="مراقبة المناطق الجغرافية">Geofence Monitoring</span>
-                  <span class="geofence-status" id="geofenceStatusText" data-en="Disabled - Click to enable" data-ar="معطل - اضغط للتفعيل">Disabled - Click to enable</span>
-                </div>
-                <button class="geofence-toggle" id="geofenceToggleBtn">
-                  <div class="toggle-slider">
-                    <div class="toggle-knob"></div>
+      <!-- Main Dashboard Grid -->
+      <main class="dashboard-grid">
+        <!-- Left Column - Primary Actions & Status -->
+        <div class="dashboard-column left-column">
+          <!-- Quick Actions Panel -->
+          <div class="panel primary-actions">
+            <div class="panel-header">
+              <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            </div>
+            <div class="panel-content">
+              <div class="action-grid">
+                <button class="primary-action-btn report-btn" data-action="report">
+                  <div class="action-icon">
+                    <i class="fas fa-plus-circle"></i>
+                  </div>
+                  <div class="action-text">
+                    <span class="action-title">Report Vibe</span>
+                    <span class="action-subtitle">Share safety info</span>
+                  </div>
+                </button>
+
+                <button class="primary-action-btn emergency-btn" data-action="emergency">
+                  <div class="action-icon emergency">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </div>
+                  <div class="action-text">
+                    <span class="action-title">Emergency</span>
+                    <span class="action-subtitle">Urgent situation</span>
+                  </div>
+                </button>
+
+                <button class="primary-action-btn areas-btn" data-action="areas">
+                  <div class="action-icon">
+                    <i class="fas fa-chart-line"></i>
+                  </div>
+                  <div class="action-text">
+                    <span class="action-title">Top Areas</span>
+                    <span class="action-subtitle">Safety rankings</span>
                   </div>
                 </button>
               </div>
-              <div class="geofence-description">
-                <span data-en="Get notified when entering safe or risk zones" data-ar="احصل على إشعارات عند دخول مناطق آمنة أو خطرة">Get notified when entering safe or risk zones</span>
-              </div>
             </div>
+          </div>
 
-            <div class="weather-alert" id="weatherAlert">
-              <i class="fas fa-cloud-sun"></i>
-              <div class="alert-content">
-                <span class="alert-title" data-en="Weather Alert" data-ar="تنبيه جوي">Weather Alert</span>
-                <span class="alert-message" data-en="Loading weather information..." data-ar="جاري تحميل معلومات الطقس...">Loading weather information...</span>
-              </div>
+          <!-- Safety Status Panel -->
+          <div class="panel safety-status">
+            <div class="panel-header">
+              <h3><i class="fas fa-shield-alt"></i> Safety Status</h3>
             </div>
-            <div class="safety-tips" id="safetyTips">
-              <div class="guideline-item">
-                <i class="fas fa-heart"></i>
-                <span data-en="Stay aware and trust your instincts" data-ar="ابق يقظاً وثق بغريزتك">Stay aware and trust your instincts</span>
+            <div class="panel-content">
+              <div class="status-indicator-large">
+                <div class="status-icon" id="connectionStatus">
+                  <i class="fas fa-circle-notch fa-spin"></i>
+                </div>
+                <div class="status-info">
+                  <span class="status-text">Connecting...</span>
+                  <span class="status-detail">Real-time monitoring active</span>
+                </div>
               </div>
-              <div class="guideline-item">
-                <i class="fas fa-users"></i>
-                <span data-en="Travel with friends when possible" data-ar="سافر مع الأصدقاء عند الإمكان">Travel with friends when possible</span>
-              </div>
-              <div class="guideline-item">
-                <i class="fas fa-home"></i>
-                <span data-en="Know your way home or to safety" data-ar="اعرف طريقك إلى المنزل أو إلى الأمان">Know your way home or to safety</span>
+
+              <!-- Geofence Control -->
+              <div class="geofence-control" id="geofenceControl">
+                <div class="geofence-header">
+                  <div class="geofence-icon">
+                    <i class="fas fa-draw-polygon"></i>
+                  </div>
+                  <div class="geofence-info">
+                    <span class="geofence-title">Geofence Monitoring</span>
+                    <span class="geofence-status" id="geofenceStatusText">Disabled - Click to enable</span>
+                  </div>
+                  <button class="geofence-toggle" id="geofenceToggleBtn">
+                    <div class="toggle-slider">
+                      <div class="toggle-knob"></div>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Area Mood Voting -->
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-chart-pie"></i>
-            <span data-en="Area Mood Voting" data-ar="تصويت المزاج المنطقة">Area Mood Voting</span>
-          </div>
-          <div class="mood-voting-grid" id="moodVotingGrid">
-            <div class="mood-vote-card" data-mood="chill">
-              <div class="mood-emoji">😎</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Chill" data-ar="هادئ">Chill</span>
+        <!-- Center Column - Main Content -->
+        <div class="dashboard-column center-column">
+          <!-- Community Vibe Overview -->
+          <div class="panel community-vibe">
+            <div class="panel-header">
+              <h3><i class="fas fa-chart-bar"></i> Community Vibe</h3>
+              <div class="dominant-vibe" id="dominantVibe">
+                <i class="fas fa-peace"></i>
+                <span>Calm</span>
+                <span class="vibe-percentage" id="dominantVibePercentage">0%</span>
               </div>
             </div>
-            <div class="mood-vote-card" data-mood="excited">
-              <div class="mood-emoji">🤩</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Excited" data-ar="مثير">Excited</span>
+            <div class="panel-content">
+              <div class="vibe-sidebars-chart" id="vibeSidebarsChart">
+                <!-- Color-coded sidebar bars will be populated by JavaScript -->
               </div>
-            </div>
-            <div class="mood-vote-card" data-mood="anxious">
-              <div class="mood-emoji">😰</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Anxious" data-ar="قلق">Anxious</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="sad">
-              <div class="mood-emoji">😢</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Sad" data-ar="حزين">Sad</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="angry">
-              <div class="mood-emoji">😠</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Angry" data-ar="غاضب">Angry</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="happy">
-              <div class="mood-emoji">😀</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Happy" data-ar="سعيد">Happy</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="tired">
-              <div class="mood-emoji">😴</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Tired" data-ar="متعب">Tired</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="confused">
-              <div class="mood-emoji">🤔</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Confused" data-ar="مشوش">Confused</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="bored">
-              <div class="mood-emoji">🥱</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Bored" data-ar="ممل">Bored</span>
-              </div>
-            </div>
-          </div>
-          <div class="mood-voting-status" id="moodVotingStatus" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
-            <div style="font-size: 14px; color: var(--text-light); margin-bottom: 5px;">
-              <i class="fas fa-users"></i>
-              <span data-en="Population Mood" data-ar="مزاج السكان">Population Mood</span>
-            </div>
-            <div style="font-size: 18px; font-weight: bold; color: var(--primary);" id="populationMoodDisplay">
-              <i class="fas fa-question-circle"></i>
-              <span data-en="Collecting votes..." data-ar="جمع التصويتات...">Collecting votes...</span>
             </div>
           </div>
 
-          <!-- Mood-Based Activity Suggestions -->
-          <div class="mood-activity-suggestions" id="moodActivitySuggestions" style="display: none; margin-top: 20px;">
-            <div class="card-title" style="margin-bottom: 12px; font-size: 16px;">
-              <i class="fas fa-map-marker-alt"></i>
-              <span data-en="Suggested Places for Your Mood" data-ar="أماكن مقترحة لمزاجك">Suggested Places for Your Mood</span>
-            </div>
-            <div class="activity-suggestions-list" id="activitySuggestionsList">
-              <!-- Activity suggestions will be populated here -->
+          <!-- Weather & Safety Tips -->
+          <div class="panel weather-safety">
+            <div class="panel-content">
+              <div class="weather-alert" id="weatherAlert">
+                <i class="fas fa-cloud-sun"></i>
+                <div class="alert-content">
+                  <span class="alert-title">Weather Alert</span>
+                  <span class="alert-message">Loading weather information...</span>
+                </div>
+              </div>
+
+              <div class="safety-tips" id="safetyTips">
+                <div class="guideline-item">
+                  <i class="fas fa-heart"></i>
+                  <span>Stay aware and trust your instincts</span>
+                </div>
+                <div class="guideline-item">
+                  <i class="fas fa-users"></i>
+                  <span>Travel with friends when possible</span>
+                </div>
+                <div class="guideline-item">
+                  <i class="fas fa-home"></i>
+                  <span>Know your way home or to safety</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- Right Column - Mood & Activity -->
+        <div class="dashboard-column right-column">
+          <!-- Area Mood Voting -->
+          <div class="panel mood-voting">
+            <div class="panel-header">
+              <h3><i class="fas fa-chart-pie"></i> Area Mood</h3>
+            </div>
+            <div class="panel-content">
+              <div class="mood-voting-grid" id="moodVotingGrid">
+                <div class="mood-vote-card" data-mood="chill">
+                  <div class="mood-emoji">😎</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Chill</span>
+                  </div>
+                </div>
+                <div class="mood-vote-card" data-mood="excited">
+                  <div class="mood-emoji">🤩</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Excited</span>
+                  </div>
+                </div>
+                <div class="mood-vote-card" data-mood="anxious">
+                  <div class="mood-emoji">😰</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Anxious</span>
+                  </div>
+                </div>
+                <div class="mood-vote-card" data-mood="sad">
+                  <div class="mood-emoji">😢</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Sad</span>
+                  </div>
+                </div>
+                <div class="mood-vote-card" data-mood="angry">
+                  <div class="mood-emoji">😠</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Angry</span>
+                  </div>
+                </div>
+                <div class="mood-vote-card" data-mood="happy">
+                  <div class="mood-emoji">😀</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Happy</span>
+                  </div>
+                </div>
+                <div class="mood-vote-card" data-mood="tired">
+                  <div class="mood-emoji">😴</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Tired</span>
+                  </div>
+                </div>
+                <div class="mood-vote-card" data-mood="confused">
+                  <div class="mood-emoji">🤔</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Confused</span>
+                  </div>
+                </div>
+                <div class="mood-vote-card" data-mood="bored">
+                  <div class="mood-emoji">🥱</div>
+                  <div class="mood-info">
+                    <span class="mood-name">Bored</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mood-voting-status" id="moodVotingStatus" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
+                <div style="font-size: 14px; color: var(--text-light); margin-bottom: 5px;">
+                  <i class="fas fa-users"></i>
+                  <span>Population Mood</span>
+                </div>
+                <div style="font-size: 18px; font-weight: bold; color: var(--primary);" id="populationMoodDisplay">
+                  <i class="fas fa-question-circle"></i>
+                  <span>Collecting votes...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
 
-      </div>
+      <!-- Bottom Navigation -->
+      <nav class="app-nav">
+        <button class="nav-btn active" data-view="main"><i class="fas fa-home"></i></button>
+        <button class="nav-btn" data-view="map"><i class="fas fa-map"></i></button>
+        <button class="nav-btn" data-view="reports"><i class="fas fa-list"></i></button>
+        <button class="nav-btn" data-view="settings"><i class="fas fa-cog"></i></button>
+      </nav>
+    </div>
 
       <!-- Map View -->
       <div id="mapView" class="view">
