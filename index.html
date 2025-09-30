@@ -3824,16 +3824,16 @@
             </div>
             <div class="safety-tips" id="safetyTips">
               <div class="guideline-item">
+                <i class="fas fa-heart"></i>
+                <span data-en="Stay aware and trust your instincts" data-ar="ابق يقظاً وثق بغريزتك">Stay aware and trust your instincts</span>
+              </div>
+              <div class="guideline-item">
                 <i class="fas fa-users"></i>
-                <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
+                <span data-en="Travel with friends when possible" data-ar="سافر مع الأصدقاء عند الإمكان">Travel with friends when possible</span>
               </div>
               <div class="guideline-item">
-                <i class="fas fa-mobile-alt"></i>
-                <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
-              </div>
-              <div class="guideline-item">
-                <i class="fas fa-share-alt"></i>
-                <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
+                <i class="fas fa-home"></i>
+                <span data-en="Know your way home or to safety" data-ar="اعرف طريقك إلى المنزل أو إلى الأمان">Know your way home or to safety</span>
               </div>
             </div>
           </div>
@@ -8155,103 +8155,209 @@
       generateDynamicSafetyTips() {
         const safetyTipsContainer = document.getElementById('safetyTips');
 
-        if (!this.nearbyReports || this.nearbyReports.length === 0) {
-          // Default tips when no reports
-          safetyTipsContainer.innerHTML = `
-            <div class="guideline-item">
-              <i class="fas fa-users"></i>
-              <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
-            </div>
-            <div class="guideline-item">
-              <i class="fas fa-mobile-alt"></i>
-              <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
-            </div>
-            <div class="guideline-item">
-              <i class="fas fa-share-alt"></i>
-              <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
-            </div>
-          `;
-          return;
-        }
+        // Get current time and context
+        const now = new Date();
+        const hour = now.getHours();
+        const isNightTime = hour >= 22 || hour <= 6;
+        const isEvening = hour >= 18 && hour < 22;
+        const isMorningRush = hour >= 7 && hour <= 9;
 
-        // Analyze recent reports to generate relevant safety tips
-        const recentReports = this.nearbyReports.slice(0, 10); // Last 10 reports
+        // Analyze recent reports and trends
+        const recentReports = this.nearbyReports.slice(0, 15); // More reports for better analysis
         const vibeCounts = {};
+        const recentVibes = [];
+        let communityActivity = 0;
 
         recentReports.forEach(report => {
           vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
+          recentVibes.push(report.vibe_type);
+
+          // Calculate recent activity (reports in last 2 hours)
+          const reportTime = new Date(report.created_at);
+          const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+          if (reportTime > twoHoursAgo) {
+            communityActivity++;
+          }
         });
 
+        // Determine dominant vibe patterns
+        const totalReports = Object.values(vibeCounts).reduce((a, b) => a + b, 0);
+        let dominantVibe = null;
+        let dominantCount = 0;
+
+        Object.entries(vibeCounts).forEach(([vibe, count]) => {
+          if (count > dominantCount) {
+            dominantVibe = vibe;
+            dominantCount = count;
+          }
+        });
+
+        // Calculate danger level
+        const dangerCount = (vibeCounts.dangerous || 0) + (vibeCounts.suspicious || 0);
+        const dangerRatio = totalReports > 0 ? dangerCount / totalReports : 0;
+        const safetyLevel = dangerRatio > 0.5 ? 'high_risk' : dangerRatio > 0.2 ? 'moderate_risk' : 'safe';
+
         const tips = [];
+        const isEnglish = this.currentLanguage === 'en';
 
-        // Generate tips based on most common vibes
-        if (vibeCounts.dangerous > 0) {
+        // Generate highly contextual tips based on multiple factors
+
+        // Time-based tips first
+        if (isNightTime) {
+          if (vibeCounts.dangerous > 0 || vibeCounts.suspicious > 0) {
+            tips.push({
+              icon: 'fas fa-moon',
+              text: isEnglish ? "Be extra careful at night - stick to well-lit areas and well-traveled routes" : "كن حذراً بشكل خاص ليلاً - التزم بالمناطق المضيئة والطرق المزدحمة"
+            });
+          } else {
+            tips.push({
+              icon: 'fas fa-moon',
+              text: isEnglish ? "Nighttime tip: Walk confidently and stay aware of your surroundings" : "نصيحة ليلاً: امش بثقة وابق على دراية بمحيطك"
+            });
+          }
+        } else if (isEvening) {
           tips.push({
-            icon: 'fas fa-exclamation-triangle',
-            text: this.currentLanguage === 'en'
-              ? 'High danger reports in area - stay vigilant'
-              : 'تقارير خطر عالية في المنطقة - كن يقظاً'
+            icon: 'fas fa-clock',
+            text: isEnglish ? "Evening reminder: Stay visible and keep your phone easily accessible" : "تذكير مسائي: كن مرئياً واحتفظ بهاتفك متاحاً بسهولة"
+          });
+        } else if (dominantVibe === 'crowded' && isMorningRush) {
+          tips.push({
+            icon: 'fas fa-traffic-light',
+            text: isEnglish ? "Morning rush hour - be mindful of busy streets and crowded transport" : "ساعات الذروة الصباحية - كن على دراية بالشوارع المزدحمة والمواصلات المليئة"
           });
         }
 
-        if (vibeCounts.crowded > vibeCounts.calm) {
-          tips.push({
-            icon: 'fas fa-users',
-            text: this.currentLanguage === 'en'
-              ? 'Area appears crowded - be aware of surroundings'
-              : 'المنطقة تبدو مزدحمة - كن على دراية بمحيطك'
-          });
-        }
+        // Location-based contextual tips
+        if (this.userLocation) {
+          // Weather-based tips (would integrate with weather data)
+          const weatherData = localStorage.getItem('hyperapp_weather_data');
+          if (weatherData) {
+            try {
+              const weather = JSON.parse(weatherData);
+              const temp = weather.main?.temp || 20;
 
-        if (vibeCounts.suspicious > 0) {
-          tips.push({
-            icon: 'fas fa-eye-slash',
-            text: this.currentLanguage === 'en'
-              ? 'Suspicious activity reported - trust your instincts'
-              : 'تم الإبلاغ عن نشاط مشبوه - ثق بغريزتك'
-          });
-        }
-
-        // Add default tips if we don't have enough specific ones
-        if (tips.length < 3) {
-          const defaultTips = [
-            {
-              icon: 'fas fa-mobile-alt',
-              text: this.currentLanguage === 'en'
-                ? 'Keep your phone charged and accessible'
-                : 'احتفظ بهاتفك مشحوناً ومتاحاً'
-            },
-            {
-              icon: 'fas fa-share-alt',
-              text: this.currentLanguage === 'en'
-                ? 'Share your location with trusted contacts'
-                : 'شارك موقعك مع جهات الاتصال الموثوقة'
-            },
-            {
-              icon: 'fas fa-users',
-              text: this.currentLanguage === 'en'
-                ? 'Stay aware of your surroundings'
-                : 'ابق على دراية بمحيطك'
-            }
-          ];
-
-          // Add default tips to fill up to 3
-          while (tips.length < 3 && defaultTips.length > 0) {
-            const tip = defaultTips.shift();
-            if (!tips.find(t => t.text === tip.text)) {
-              tips.push(tip);
+              if (temp < 10) {
+                tips.push({
+                  icon: 'fas fa-temperature-low',
+                  text: isEnglish ? "Cold weather tip: Dress warmly and be prepared for slippery conditions" : "نصيحة في الطقس البارد: ارتدِ ملابس دافئة واستعد للظروف الزلقة"
+                });
+              } else if (temp > 30) {
+                tips.push({
+                  icon: 'fas fa-sun',
+                  text: isEnglish ? "Hot day reminder: Stay hydrated and seek shade when needed" : "تذكير في يوم حار: ابق رطباً واطلب الظل عند الحاجة"
+                });
+              }
+            } catch (e) {
+              // Weather data parse error, skip weather tips
             }
           }
         }
 
-        // Limit to 3 tips and update UI
+        // Community activity-based tips
+        if (communityActivity > 3) {
+          tips.push({
+            icon: 'fas fa-users-cog',
+            text: isEnglish ? "Community is very active here - great time to see how others stay safe!" : "المجتمع نشط جداً هنا - وقت رائع لرؤية كيف يحافظ الآخرون على سلامتهم!"
+          });
+        } else if (communityActivity === 0) {
+          tips.push({
+            icon: 'fas fa-user-plus',
+            text: isEnglish ? "Consider submitting a report to help others know about local conditions" : "فكر في إرسال تقرير لمساعدة الآخرين على معرفة ظروف المنطقة المحلية"
+          });
+        }
+
+        // Vibe-specific tips with more friendly language
+        if (safetyLevel === 'safe' || totalReports === 0) {
+          // Positive, reassuring tips for safe areas
+          const safeTips = [
+            {
+              icon: 'fas fa-heart',
+              text: isEnglish ? "This area feels like a welcoming community - enjoy your time here!" : "هذه المنطقة تبدو كمجتمع مضياف - استمتع بوقتك هنا!"
+            },
+            {
+              icon: 'fas fa-shield-alt',
+              text: isEnglish ? "Great community spirit here - people are looking out for each other" : "روح مجتمعية رائعة هنا - الناس يراقبون بعضهم بعضاً"
+            },
+            {
+              icon: 'fas fa-smile',
+              text: isEnglish ? "Feeling good about your surroundings? Help others by sharing positive vibes!" : "تشعر بالراحة حولك؟ ساعد الآخرين بمشاركة الطاقة الإيجابية!"
+            }
+          ];
+          tips.push(...safeTips.slice(0, 3 - tips.length));
+        } else {
+          // Contextual tips based on specific vibes
+          if (dominantVibe === 'dangerous') {
+            tips.push({
+              icon: 'fas fa-exclamation-triangle',
+              text: isEnglish ? "Safety first: Take a moment to plan your route and stay alert" : "السلامة أولاً: خذ لحظة لتخطيط مسارك وابق يقظاً"
+            });
+          } else if (dominantVibe === 'crowded') {
+            tips.push({
+              icon: 'fas fa-users',
+              text: isEnglish ? "Popular spot! Keep an eye on your belongings in crowded areas" : "مكان شهير! راقب متعلقاتك في المناطق المزدحمة"
+            });
+          } else if (dominantVibe === 'suspicious') {
+            tips.push({
+              icon: 'fas fa-eye',
+              text: isEnglish ? "Trust your instincts - if something feels off, it's okay to move to a different area" : "ثق بغريزتك - إذا شعرت بشيء غريب، من المقبول الانتقال إلى منطقة أخرى"
+            });
+          } else if (dominantVibe === 'festive') {
+            tips.push({
+              icon: 'fas fa-glass-cheers',
+              text: isEnglish ? "Great atmosphere! Celebrate responsibly and help keep everyone safe" : "أجواء رائعة! احتفل بمسؤولية وساعد في الحفاظ على سلامة الجميع"
+            });
+          }
+        }
+
+        // Add personalized tips based on user behavior patterns
+        if (this.isAuthenticated && this.userData) {
+          // Add a tip about being part of the community
+          tips.push({
+            icon: 'fas fa-user-friends',
+            text: isEnglish ? "You're part of keeping this community safe - thank you!" : "أنت جزء من الحفاظ على سلامة هذا المجتمع - شكراً لك!"
+          });
+        }
+
+        // Add default essential tips if we still need more
+        const essentialTips = [
+          {
+            icon: 'fas fa-mobile-alt',
+            text: isEnglish ? "Pro tip: Keep your phone charged and ready for emergencies" : "نصيحة ذكية: احتفظ بهاتفك مشحوناً وجاهز للطوارئ"
+          },
+          {
+            icon: 'fas fa-map-marked-alt',
+            text: isEnglish ? "Smart choice: Know your exits and have a backup plan" : "اختيار ذكي: اعرف مخارجك واحتفظ بخطة احتياطية"
+          },
+          {
+            icon: 'fas fa-hands-helping',
+            text: isEnglish ? "Remember: Real safety comes from community awareness and support" : "تذكر: تأتي السلامة الحقيقية من وعي المجتمع والدعم المتبادل"
+          }
+        ];
+
+        // Fill remaining slots with essential tips
+        let tipIndex = 0;
+        while (tips.length < 3 && tipIndex < essentialTips.length) {
+          const tip = essentialTips[tipIndex++];
+          if (!tips.find(t => t.text === tip.text)) {
+            tips.push(tip);
+          }
+        }
+
+        // Limit to 3 tips and update UI with smooth transitions
         const displayTips = tips.slice(0, 3);
-        safetyTipsContainer.innerHTML = displayTips.map(tip => `
-          <div class="guideline-item">
-            <i class="${tip.icon}"></i>
-            <span>${tip.text}</span>
-          </div>
-        `).join('');
+
+        // Add fade effect for tip updates
+        safetyTipsContainer.style.opacity = '0';
+        setTimeout(() => {
+          safetyTipsContainer.innerHTML = displayTips.map(tip => `
+            <div class="guideline-item">
+              <i class="${tip.icon}"></i>
+              <span>${tip.text}</span>
+            </div>
+          `).join('');
+
+          safetyTipsContainer.style.opacity = '1';
+        }, 150);
       }
 
       showPrivacyPolicy() {
