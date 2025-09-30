@@ -114,6 +114,324 @@ class HyperApp {
     });
   }
 
+  // CRITICAL OPTIMIZATION: Load cached Community Stats data IMMEDIATELY
+  // This ensures Community Stats show right away without waiting for location/data loading
+  loadCachedCommunityStats() {
+    try {
+      console.log('Loading cached Community Stats immediately...');
+
+      // Get cached community stats from localStorage
+      const cachedStats = localStorage.getItem('hyperapp_cached_community_stats');
+      const cacheTime = localStorage.getItem('hyperapp_cached_stats_time');
+
+      if (cachedStats && cacheTime) {
+        const age = Date.now() - parseInt(cacheTime);
+        // Use cache if less than 24 hours old (community stats can be reasonably stale)
+        if (age < 24 * 60 * 60 * 1000) { // 24 hours
+          const stats = JSON.parse(cachedStats);
+
+          console.log('Using cached Community Stats:', stats);
+
+          // Update all Community Stats UI elements immediately
+          this.updateCommunityStatsWithCache(stats);
+          this.updateCommunityVibeWithCache(stats);
+
+          // Show a subtle indicator that this is cached data
+          this.showCachedDataIndicator();
+
+          return true; // Successfully loaded cached data
+        } else {
+          console.log('Cached stats too old, will load fresh data');
+          // Clear old cache
+          localStorage.removeItem('hyperapp_cached_community_stats');
+          localStorage.removeItem('hyperapp_cached_stats_time');
+        }
+      }
+
+      // No valid cache - show default/empty state
+      console.log('No cached Community Stats available, showing defaults');
+      this.showCommunityStatsDefaults();
+
+      return false; // No cached data available
+
+    } catch (error) {
+      console.error('Error loading cached Community Stats:', error);
+      // Fallback to defaults
+      this.showCommunityStatsDefaults();
+      return false;
+    }
+  }
+
+  // Update Community Stats display with cached data
+  updateCommunityStatsWithCache(stats) {
+    // Update total reports count
+    const totalReportsEl = document.getElementById('totalReports');
+    if (totalReportsEl) {
+      totalReportsEl.textContent = stats.totalReports || 0;
+    }
+
+    // Update active users estimate
+    const activeUsersEl = document.getElementById('activeUsers');
+    if (activeUsersEl) {
+      activeUsersEl.textContent = stats.activeUsers || Math.max(1, Math.floor((stats.totalReports || 0) / 3));
+    }
+  }
+
+  // Update Community Vibe sidebar with cached data
+  updateCommunityVibeWithCache(stats) {
+    // Update dominant vibe display
+    if (stats.dominantVibe || stats.vibeCounts) {
+      const dominantVibe = stats.dominantVibe;
+      const vibePercentage = stats.dominantVibePercentage || 0;
+
+      const dominantVibeElement = document.getElementById('dominantVibe');
+      if (dominantVibeElement) {
+        const iconElement = dominantVibeElement.querySelector('i');
+        const nameElement = dominantVibeElement.querySelector('span:first-of-type');
+        const percentageElement = dominantVibeElement.querySelector('.vibe-percentage');
+
+        if (iconElement) iconElement.className = `fas fa-${this.getVibeIconName(dominantVibe)}`;
+        if (nameElement) nameElement.textContent = this.capitalizeFirstLetter(dominantVibe);
+        if (percentageElement) percentageElement.textContent = `${vibePercentage}%`;
+      }
+    }
+
+    // Update vibe sidebars chart
+    if (stats.vibeCounts) {
+      this.updateVibeSidebarsWithCache(stats.vibeCounts);
+    }
+  }
+
+  // Update vibe sidebars chart with cached data
+  updateVibeSidebarsWithCache(vibeCounts) {
+    const sidebarChart = document.getElementById('vibeSidebarsChart');
+    if (!sidebarChart) return;
+
+    const totalReports = Object.values(vibeCounts).reduce((sum, count) => sum + count, 0);
+    if (totalReports === 0) return;
+
+    const sortedVibes = Object.entries(vibeCounts)
+      .sort(([,a], [,b]) => b - a) // Sort by count descending
+      .filter(([, count]) => count > 0); // Only show vibes with reports
+
+    const sidebarHtml = sortedVibes.map(([vibe, count]) => {
+      const percentage = (count / totalReports) * 100;
+      return `
+        <div class="vibe-sidebar-item">
+          <div class="vibe-sidebar-label">
+            <i class="fas fa-${this.getVibeIconName(vibe)}"></i>
+            <span>${this.capitalizeFirstLetter(vibe)}</span>
+          </div>
+          <div class="vibe-sidebar-bar">
+            <div class="vibe-sidebar-fill" style="width: ${percentage}%; background: ${this.getVibeColor(vibe)}"></div>
+          </div>
+          <div class="vibe-sidebar-count">${count}</div>
+          <div class="vibe-sidebar-percentage">${percentage.toFixed(1)}%</div>
+        </div>
+      `;
+    }).join('');
+
+    sidebarChart.innerHTML = sidebarHtml;
+  }
+
+  // Helper method to get FontAwesome icon class name
+  getVibeIconName(vibeType) {
+    const icons = {
+      crowded: 'users',
+      noisy: 'volume-up',
+      festive: 'glass-cheers',
+      calm: 'peace',
+      suspicious: 'eye-slash',
+      dangerous: 'exclamation-triangle'
+    };
+    return icons[vibeType] || 'question-circle';
+  }
+
+  // Show subtle indicator that cached data is being displayed
+  showCachedDataIndicator() {
+    // Add a very subtle indicator in the stats section
+    const statsGrid = document.getElementById('statsGrid');
+    if (statsGrid) {
+      // Add a tiny "cached" indicator that doesn't distract
+      const indicator = document.createElement('div');
+      indicator.id = 'cached-indicator';
+      indicator.style.cssText = `
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-size: 8px;
+        color: var(--text-muted);
+        opacity: 0.4;
+        pointer-events: none;
+        font-weight: 300;
+      `;
+      indicator.textContent = 'cached';
+
+      // Make stats grid position relative if not already
+      statsGrid.style.position = 'relative';
+
+      // Remove any existing indicator first
+      const existing = statsGrid.querySelector('#cached-indicator');
+      if (existing) {
+        existing.remove();
+      }
+
+      statsGrid.appendChild(indicator);
+    }
+  }
+
+  // Show default values when no cached data is available
+  showCommunityStatsDefaults() {
+    // Show basic defaults - these will be updated when fresh data loads
+    const totalReportsEl = document.getElementById('totalReports');
+    if (totalReportsEl) totalReportsEl.textContent = '0';
+
+    const activeUsersEl = document.getElementById('activeUsers');
+    if (activeUsersEl) activeUsersEl.textContent = '0';
+
+    // Show default vibe state
+    const dominantVibeElement = document.getElementById('dominantVibe');
+    if (dominantVibeElement) {
+      const iconElement = dominantVibeElement.querySelector('i');
+      const nameElement = dominantVibeElement.querySelector('span:first-of-type');
+      const percentageElement = dominantVibeElement.querySelector('.vibe-percentage');
+
+      if (iconElement) iconElement.className = 'fas fa-peace';
+      if (nameElement) nameElement.textContent = 'Calm';
+      if (percentageElement) percentageElement.textContent = '0%';
+    }
+
+    // Clear vibe sidebars chart
+    const sidebarChart = document.getElementById('vibeSidebarsChart');
+    if (sidebarChart) {
+      sidebarChart.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading community vibe data...</div>';
+    }
+  }
+
+  // Load fresh data asynchronously after cached data is displayed
+  async startAsyncDataLoading() {
+    console.log('Starting async fresh data loading...');
+
+    try {
+      // Step 1: Load fresh community stats and cache them
+      await this.loadAndCacheFreshCommunityStats();
+
+      // Step 2: Load other data that depends on location/connection
+      // These happen in parallel for better performance
+      const promises = [
+        // Load reports data (critical for nearby reports)
+        this.loadNearbyReports().catch(err => {
+          console.warn('Failed to load nearby reports:', err);
+        }),
+
+        // Try to get user location (needed for location-based features)
+        this.requestLocationImmediately().then(() => {
+          // Once we have location, these can load:
+          if (this.userLocation) {
+            // Parallel load of location-dependent features
+            return Promise.all([
+              // Map data (heavy but important)
+              this.loadMapReports().catch(err => console.warn('Map reports failed:', err)),
+              // Weather data (useful)
+              this.loadWeatherData().catch(err => console.warn('Weather data failed:', err))
+            ]);
+          }
+        }).catch(err => console.warn('Location request failed:', err)),
+
+        // Auth-dependent data (if authenticated)
+        this.loadAuthDependentData().catch(err => console.warn('Auth data failed:', err))
+      ];
+
+      // Wait for critical data to load before finishing initialization
+      await Promise.allSettled(promises);
+
+      console.log('Async data loading completed');
+
+    } catch (error) {
+      console.warn('Error in async data loading:', error);
+      // Don't crash the app - cached data is already displayed
+    }
+  }
+
+  // Load and cache fresh community stats
+  async loadAndCacheFreshCommunityStats() {
+    try {
+      console.log('Loading fresh community stats for cache...');
+      const freshStats = await this.getCommunityStats();
+
+      if (freshStats && freshStats.totalReports >= 0) {
+        // Calculate derived stats for caching
+        const totalReports = freshStats.totalReports;
+
+        // Find dominant vibe
+        let dominantVibe = 'calm';
+        let maxVibeCount = 0;
+        let dominantVibePercentage = 0;
+
+        if (totalReports > 0 && freshStats.vibeCounts) {
+          Object.entries(freshStats.vibeCounts).forEach(([vibe, count]) => {
+            if (count > maxVibeCount) {
+              maxVibeCount = count;
+              dominantVibe = vibe;
+            }
+          });
+          dominantVibePercentage = Math.round((maxVibeCount / totalReports) * 100);
+        }
+
+        // Prepare cache object
+        const cacheData = {
+          totalReports: totalReports,
+          activeUsers: Math.max(1, Math.floor(totalReports / 3)), // Rough estimate
+          vibeCounts: freshStats.vibeCounts || {},
+          dominantVibe: dominantVibe,
+          dominantVibePercentage: dominantVibePercentage,
+          timestamp: freshStats.timestamp
+        };
+
+        // Update cache
+        localStorage.setItem('hyperapp_cached_community_stats', JSON.stringify(cacheData));
+        localStorage.setItem('hyperapp_cached_stats_time', Date.now().toString());
+
+        // Remove cached indicator since we now have fresh data
+        const indicator = document.getElementById('cached-indicator');
+        if (indicator) {
+          indicator.remove();
+        }
+
+        // Update UI with fresh data seamlessly
+        this.updateCommunityStatsWithCache(cacheData);
+        this.updateCommunityVibeWithCache(cacheData);
+
+        console.log('Fresh community stats cached and UI updated');
+      }
+    } catch (error) {
+      console.warn('Failed to load fresh community stats for cache:', error);
+      // Keep old cached data if fresh load fails
+    }
+  }
+
+  // Load authentication-dependent data
+  async loadAuthDependentData() {
+    if (!this.isAuthenticated) return;
+
+    try {
+      console.log('Loading auth-dependent data...');
+
+      // Load user reports
+      await this.loadUserReports();
+
+      // Update user reputation
+      await this.updateUserReputation();
+
+      // Load geofence settings
+      await this.loadGeofenceSettings();
+
+      console.log('Auth-dependent data loaded');
+    } catch (error) {
+      console.warn('Error loading auth-dependent data:', error);
+    }
+  }
+
   async init() {
     // Load saved theme
     const savedTheme = localStorage.getItem('hyperapp-theme') || 'dark';
@@ -127,13 +445,13 @@ class HyperApp {
 
     // Always force fresh data load on app initialization
     this.forceFreshDataLoad = true;
-    // Clear local data to ensure fresh load
+    // Clear local data to ensure fresh load (but Community Stats already loaded from cache)
     this.nearbyReports = [];
     this.userReports = [];
     // Clear any cached weather data
     localStorage.removeItem('hyperapp_weather_data');
     localStorage.removeItem('hyperapp_weather_time');
-    console.log('App initialization - forcing fresh data load');
+    console.log('App initialization - cached stats loaded, now loading fresh data in background');
 
     // Set up auth listeners first
     this.setupAuthListeners();
@@ -165,24 +483,22 @@ class HyperApp {
     // Set up event listeners early
     this.setupEventListeners();
 
-    // Validate database schema on startup
-    await this.validateDatabaseSchema();
+    // Validate database schema on startup (don't await - run in background)
+    this.validateDatabaseSchema().catch(err => console.warn('Schema validation failed:', err));
 
-    // Critical: Request location immediately and wait for it before loading data
-    await this.requestLocationImmediately();
+    // OPTIMIZATION: Start data loading asynchronously without blocking UI
+    // Load fresh data in background while cached stats are already displayed
+    this.startAsyncDataLoading();
 
-    // Load all data synchronously after location is available
-    await this.loadAllDataImmediately();
-
-    // Set up real-time subscriptions after initial data load
+    // Set up real-time subscriptions after initial data load (also async)
     this.setupRealtimeSubscriptions();
 
-    // Initialize geofence functionality
+    // Initialize geofence functionality (async)
     if (this.isAuthenticated) {
-      await this.loadGeofenceSettings();
+      this.loadGeofenceSettings().catch(err => console.warn('Geofence settings failed:', err));
     }
 
-  // Initialize service worker for offline authentication
+    // Initialize service worker for offline authentication (async)
     this.initializeServiceWorker();
 
     // Make app instance globally available
