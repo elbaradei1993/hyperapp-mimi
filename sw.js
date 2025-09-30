@@ -434,21 +434,6 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - serve from cache or network
-self.addEventListener('fetch', event => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Handle API requests differently
-  if (url.hostname.includes('supabase.co') ||
-      url.hostname.includes('openweathermap.org') ||
-      url.hostname.includes('nominatim.openstreetmap.org')) {
-    event.respondWith(networkFirstStrategy(request));
-  } else {
-    event.respondWith(cacheFirstStrategy(request));
-  }
-});
-
 // Cache-first strategy for static assets
 async function cacheFirstStrategy(request) {
   try {
