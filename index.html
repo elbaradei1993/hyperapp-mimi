@@ -8,226 +8,124 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- PRELOAD Community Stats display BEFORE other scripts for instant loading -->
-    <script>
-    // Immediate execution - cache or show sample Community Stats synchronously
-    (function() {
-      function instantShowCommunityStats() {
-        try {
-          // Check cache synchronously
-          const cached = localStorage.getItem('hyperapp_cached_community_stats');
-          const cacheTime = localStorage.getItem('hyperapp_cached_stats_time');
-          let stats;
-
-          if (cached && cacheTime) {
-            const age = Date.now() - parseInt(cacheTime);
-            if (age < 86400000) { // 24 hours
-              stats = JSON.parse(cached);
-            }
-          }
-
-          // Fallback to sample data if no valid cache - PRIORITIZE DOMINANT VIBE
-          if (!stats) {
-            stats = {
-              vibeCounts: {calm: 43, crowded: 28, noisy: 19, festive: 15, suspicious: 12, dangerous: 10},
-              dominantVibe: 'calm',
-              dominantVibePercentage: 34
-            };
-          }
-
-          // PRIORITY 1: Show dominant vibe card immediately
-          const dominantVibeEl = document.getElementById('dominantVibe');
-          if (dominantVibeEl) {
-            const iconEl = dominantVibeEl.querySelector('i');
-            const nameEl = dominantVibeEl.querySelector('span:first-of-type');
-            const pctEl = dominantVibeEl.querySelector('.vibe-percentage');
-
-            const getVibeIcon = vibe => ({
-              crowded: 'users', noisy: 'volume-up', festive: 'glass-cheers',
-              calm: 'peace', suspicious: 'eye-slash', dangerous: 'exclamation-triangle'
-            }[vibe] || 'question-circle');
-
-            if (iconEl) iconEl.className = `fas fa-${getVibeIcon(stats.dominantVibe)}`;
-            if (nameEl) nameEl.textContent = stats.dominantVibe ? stats.dominantVibe.charAt(0).toUpperCase() + stats.dominantVibe.slice(1) : 'Calm';
-            if (pctEl) pctEl.textContent = stats.dominantVibePercentage ? `${stats.dominantVibePercentage}%` : '0%';
-          }
-
-          // PRIORITY 2: Show vibe sidebar chart
-          const sidebarChart = document.getElementById('vibeSidebarsChart');
-          if (sidebarChart && stats.vibeCounts) {
-            const total = Object.values(stats.vibeCounts).reduce((sum, count) => sum + count, 0);
-            if (total > 0) {
-              const sortedVibes = Object.entries(stats.vibeCounts)
-                .sort(([,a], [,b]) => b - a)
-                .filter(([, count]) => count > 0);
-
-              const getVibeColor = vibe => ({
-                crowded: '#FFA500', noisy: '#FF6B35', festive: '#28A745',
-                calm: '#17A2B8', suspicious: '#FFC107', dangerous: '#DC3545'
-              }[vibe] || '#6C757D');
-
-              const getVibeIcon = vibe => ({
-                crowded: 'users', noisy: 'volume-up', festive: 'glass-cheers',
-                calm: 'peace', suspicious: 'eye-slash', dangerous: 'exclamation-triangle'
-              }[vibe] || 'question-circle');
-
-              const html = sortedVibes.map(([vibe, count]) => {
-                const percentage = (count / total) * 100;
-                return `<div class="vibe-sidebar-item"><div class="vibe-sidebar-label"><i class="fas fa-${getVibeIcon(vibe)}"></i><span>${vibe.charAt(0).toUpperCase() + vibe.slice(1)}</span></div><div class="vibe-sidebar-bar"><div class="vibe-sidebar-fill" style="width: ${percentage}%; background: ${getVibeColor(vibe)}"></div></div><div class="vibe-sidebar-count">${count}</div><div class="vibe-sidebar-percentage">${percentage.toFixed(1)}%</div></div>`;
-              }).join('');
-              sidebarChart.innerHTML = html;
-            }
-          }
-
-          // DELAYED: Let total reports/users update in background (after DOM ready)
-          setTimeout(() => {
-            try {
-              // Only update numbers now if they weren't set by the main app yet
-              const totalReportsEl = document.getElementById('totalReports');
-              if (totalReportsEl && (!totalReportsEl.textContent || totalReportsEl.textContent === '--' || totalReportsEl.textContent === '0')) {
-                if (stats.totalReports) totalReportsEl.textContent = stats.totalReports;
-              }
-
-              const activeUsersEl = document.getElementById('activeUsers');
-              if (activeUsersEl && (!activeUsersEl.textContent || activeUsersEl.textContent === '--' || activeUsersEl.textContent === '0')) {
-                if (stats.activeUsers) activeUsersEl.textContent = stats.activeUsers;
-                else if (stats.totalReports) activeUsersEl.textContent = Math.max(1, Math.floor(stats.totalReports / 3));
-              }
-            } catch (e) {
-              console.warn('Error in delayed numbers update:', e);
-            }
-          }, 100); // Short delay to let main app potentially load first
-
-        } catch (error) {
-          console.warn('Error showing immediate Community Stats:', error);
-        }
-      }
-
-      // Execute immediately after DOM is ready but before other scripts
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', instantShowCommunityStats);
-      } else {
-        instantShowCommunityStats();
-      }
-    })();
-    </script>
-
-    <!-- Load other scripts normally -->
-    <script src="config.js"></script>
-    <script src="db-validation.js"></script>
+  <!-- Load Leaflet and heat map lazily for better mobile performance -->
+  <script src="config.js"></script>
+  <script src="db-validation.js"></script>
   <style>
     :root {
-      /* Uber-Inspired Professional Color Palette */
-      --primary-50: #f0f8ff;
-      --primary-100: #e0f0fe;
-      --primary-200: #bae1fd;
-      --primary-300: #7cc8fc;
-      --primary-400: #36a9fb;
-      --primary-500: #0d9df7;
-      --primary-600: #0077e6;
-      --primary-700: #015fc4;
-      --primary-800: #064c99;
-      --primary-900: #0b3974;
+      /* Material Design 3 Primary Colors - Vibrant and Dynamic */
+      --primary-10: #ffffff;
+      --primary-50: #e7f0fe;
+      --primary-100: #bbe6ff;
+      --primary-200: #8fd0fd;
+      --primary-300: #1a73e8;
+      --primary-400: #1557b8;
+      --primary-500: #0b57d0;
+      --primary-600: #0842a0;
+      --primary-700: #063284;
+      --primary-800: #041e49;
+      --primary-900: #022140;
 
-      /* Primary Colors - Uber Blue */
-      --primary: #276ef1;
-      --primary-hover: #1e5bd9;
-      --primary-light: #e8f2ff;
-      --primary-container: #f0f8ff;
+      /* Updated Primary Colors (using primary-300 as main) */
+      --primary: #1a73e8;
+      --primary-hover: #1557b8;
+      --primary-light: #bbe6ff;
+      --primary-container: #e7f0fe;
       --on-primary: #ffffff;
-      --on-primary-container: #0b3974;
+      --on-primary-container: #041e49;
 
-      /* Secondary Colors - Sophisticated Gray */
-      --secondary-50: #fafbfc;
-      --secondary-100: #f1f3f5;
-      --secondary-200: #e8eaed;
-      --secondary-300: #dadce0;
-      --secondary-400: #bdc1c6;
-      --secondary-500: #9aa0a6;
-      --secondary-600: #80868b;
-      --secondary-700: #5f6368;
-      --secondary-800: #3c4043;
-      --secondary-900: #202124;
+      /* Secondary Colors */
+      --secondary-10: #ffffff;
+      --secondary-50: #f7f2fa;
+      --secondary-100: #e3d9ea;
+      --secondary-200: #c7b2dd;
+      --secondary-300: #a88cd0;
+      --secondary-400: #8f6bc3;
+      --secondary-500: #7851a9;
+      --secondary-600: #673794;
+      --secondary-700: #57307f;
+      --secondary-800: #2e1b41;
+      --secondary-900: #1d0d27;
 
-      --secondary: #5f6368;
-      --secondary-hover: #3c4043;
-      --secondary-light: #f1f3f5;
-      --secondary-container: #fafbfc;
+      --secondary: #673794;
+      --secondary-hover: #57307f;
+      --secondary-light: #e3d9ea;
+      --secondary-container: #f7f2fa;
       --on-secondary: #ffffff;
-      --on-secondary-container: #3c4043;
+      --on-secondary-container: #2e1b41;
 
-      /* Tertiary Colors - Professional Red */
-      --tertiary: #d93025;
-      --tertiary-hover: #b3261e;
-      --tertiary-light: #fce8e6;
-      --tertiary-container: #fef7f6;
+      /* Tertiary Colors */
+      --tertiary: #b3261e;
+      --tertiary-hover: #8c1d18;
+      --tertiary-light: #fabfb8;
+      --tertiary-container: #fddad6;
       --on-tertiary: #ffffff;
-      --on-tertiary-container: #b3261e;
+      --on-tertiary-container: #410e0b;
 
-      /* Semantic Colors - Professional */
-      --success: #188038;
-      --success-hover: #146c2e;
-      --success-light: #e8f5e8;
-      --success-container: #c8e6c9;
+      /* Semantic Colors - Updated */
+      --success: #146c2e;
+      --success-hover: #0f5223;
+      --success-light: #F6FFED;
+      --success-container: #A6F38B;
       --on-success: #ffffff;
-      --on-success-container: #146c2e;
+      --on-success-container: #041e0b;
 
-      --danger: #d93025;
-      --danger-hover: #b3261e;
-      --danger-light: #fce8e6;
-      --danger-container: #f9d3d0;
+      --danger: #b3261e;
+      --danger-hover: #8c1d18;
+      --danger-light: #fabfb8;
+      --danger-container: #fddad6;
       --on-danger: #ffffff;
-      --on-danger-container: #b3261e;
+      --on-danger-container: #410e0b;
 
-      --warning: #fbbc04;
-      --warning-hover: #f9ab00;
-      --warning-light: #fef7e0;
-      --warning-container: #fef3c7;
-      --on-warning: #202124;
-      --on-warning-container: #92400e;
+      --warning: #7d5800;
+      --warning-hover: #5c4200;
+      --warning-light: #f6e27a;
+      --warning-container: #f9e67f;
+      --on-warning: #ffffff;
+      --on-warning-container: #221b00;
 
-      --info: #1a73e8;
-      --info-hover: #1557b8;
-      --info-light: #e8f0fe;
-      --info-container: #d2e3fc;
+      --info: #0b57d0;
+      --info-hover: #0842a0;
+      --info-light: #bbe6ff;
+      --info-container: #d4e3fd;
       --on-info: #ffffff;
-      --on-info-container: #0b3974;
+      --on-info-container: #0a1c2e;
 
-      /* Neutral Colors - Uber Gray Scale */
-      --neutral-50: #fafbfc;
-      --neutral-100: #f1f3f5;
-      --neutral-200: #e8eaed;
-      --neutral-300: #dadce0;
-      --neutral-400: #bdc1c6;
-      --neutral-500: #9aa0a6;
-      --neutral-600: #80868b;
-      --neutral-700: #5f6368;
-      --neutral-800: #3c4043;
-      --neutral-900: #202124;
+      /* Neutral Colors - Material Design 3 Gray Scale */
+      --neutral-10: #ffffff;
+      --neutral-50: #fef7ff;
+      --neutral-100: #f6f2fa;
+      --neutral-200: #e6e1e9;
+      --neutral-300: #c9c3ce;
+      --neutral-400: #9d95ad;
+      --neutral-500: #79767d;
+      --neutral-600: #625f66;
+      --neutral-700: #4e4950;
+      --neutral-800: #3b383e;
+      --neutral-900: #201f25;
 
-      --surface: #ffffff;
-      --surface-variant: #f8f9fa;
-      --surface-container: #f1f3f5;
-      --surface-container-high: #e8eaed;
-      --surface-container-highest: #dadce0;
-      --on-surface: #202124;
-      --on-surface-variant: #5f6368;
-      --outline: #9aa0a6;
-      --outline-variant: #dadce0;
+      --surface: #fef7ff;
+      --surface-variant: #f6f2fa;
+      --surface-container: #e6e1e9;
+      --surface-container-high: #c9c3ce;
+      --surface-container-highest: #9d95ad;
+      --on-surface: #201f25;
+      --on-surface-variant: #4e4950;
+      --outline: #79767d;
+      --outline-variant: #c9c3ce;
 
       /* Background and Cards */
-      --background: #f8f9fa;
-      --on-background: #202124;
+      --background: #fef7ff;
+      --on-background: #1c1c1f;
       --card-bg: #ffffff;
-      --on-card: #202124;
-      --card-bg-hover: rgba(39, 110, 241, 0.04);
-      --border: rgba(32, 33, 36, 0.12);
-      --border-hover: rgba(39, 110, 241, 0.24);
-      --shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px rgba(60, 64, 67, 0.15);
-      --shadow-lg: 0 2px 4px rgba(60, 64, 67, 0.2), 0 4px 8px rgba(60, 64, 67, 0.12);
-      --shadow-xl: 0 4px 8px rgba(60, 64, 67, 0.3), 0 8px 16px rgba(60, 64, 67, 0.15);
-      --text-primary: #202124;
-      --text-secondary: #5f6368;
+      --on-card: #1c1c1f;
+      --card-bg-hover: rgba(59, 130, 246, 0.1);
+      --border: rgba(0, 0, 0, 0.1);
+      --border-hover: rgba(59, 130, 246, 0.3);
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+      --text-primary: #1c1c1f;
+      --text-secondary: #64748b;
 
       /* Dark Theme - Material Design 3 */
       --dark-background: #121212;
@@ -260,8 +158,8 @@
       --space-9: 36px;
       --space-10: 40px;
 
-      /* Typography - Uber SF Pro Font Stack */
-      --font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      /* Typography - Material Design 3 Scale */
+      --font-family: 'Inter', 'Roboto', system-ui, sans-serif;
       --font-size-sm: 0.875rem; /* 14px */
       --font-size-base: 1rem; /* 16px */
       --font-size-lg: 1.125rem; /* 18px */
@@ -714,8 +612,8 @@
     .card {
       background: var(--card-bg);
       border-radius: var(--border-radius);
-      padding: 20px;
-      margin-bottom: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
       transition: var(--transition);
@@ -729,8 +627,8 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
       opacity: 0;
       transition: opacity 0.3s ease;
     }
@@ -739,7 +637,7 @@
       background: var(--card-bg-hover);
       border-color: var(--border-hover);
       box-shadow: var(--shadow-lg);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
 
     .card:hover::before {
@@ -874,11 +772,11 @@
     }
 
     .btn {
-      background: var(--primary);
-      color: var(--on-primary);
-      border: 1px solid var(--primary);
-      border-radius: var(--border-radius);
-      padding: 12px 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      border-radius: var(--border-radius-sm);
+      padding: 14px 24px;
       cursor: pointer;
       font-weight: 600;
       font-size: 14px;
@@ -892,24 +790,19 @@
       position: relative;
       overflow: hidden;
       box-shadow: var(--shadow);
-      min-height: 44px;
     }
 
+    /* Shimmer effect removed */
+
     .btn:hover {
-      background: var(--primary-hover);
-      border-color: var(--primary-hover);
-      transform: translateY(-1px);
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      transform: translateY(-3px);
       box-shadow: var(--shadow-lg);
     }
 
     .btn:active {
-      transform: translateY(0);
+      transform: translateY(-1px);
       box-shadow: var(--shadow);
-    }
-
-    .btn:focus {
-      outline: 2px solid var(--primary-container);
-      outline-offset: 2px;
     }
 
     .refresh-btn {
@@ -2317,9 +2210,9 @@
     /* Mobile-first container and spacing */
     .container {
       max-width: 100%;
-      padding: 20px;
+      padding: 16px;
       margin: 0 auto;
-      padding-bottom: 90px; /* Account for fixed nav with more space */
+      padding-bottom: 80px; /* Account for fixed nav */
       display: flex;
       flex-direction: column;
       min-height: 100vh;
@@ -2476,9 +2369,9 @@
     .action-buttons-section {
       display: flex;
       justify-content: space-between;
-      gap: 6px;
-      margin: 12px 0;
-      padding: 0 2px;
+      gap: 8px;
+      margin: 15px 0;
+      padding: 0;
     }
 
     .action-buttons-section .action-btn {
@@ -2486,8 +2379,8 @@
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       border: none;
-      border-radius: 14px;
-      padding: 14px 8px;
+      border-radius: 12px;
+      padding: 16px 8px;
       text-align: center;
       cursor: pointer;
       transition: var(--transition);
@@ -2495,42 +2388,19 @@
       position: relative;
       overflow: hidden;
       min-height: 48px; /* Touch-friendly height */
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
     }
 
     .action-buttons-section .action-btn i {
       font-size: 16px;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
       display: block;
     }
 
     .action-buttons-section .action-btn span {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.025em;
       display: block;
-      line-height: 1.2;
-    }
-
-    /* Very small screens - hide text and make icon-only */
-    @media (max-width: 320px) {
-      .action-buttons-section .action-btn span {
-        display: none;
-      }
-
-      .action-buttons-section .action-btn {
-        padding: 12px;
-        min-height: 44px;
-      }
-
-      .action-buttons-section .action-btn i {
-        font-size: 18px;
-        margin-bottom: 0;
-      }
     }
 
     /* Mobile-first status bar */
@@ -2558,19 +2428,12 @@
       min-width: 0;
     }
 
-    /* Hide reputation on very small screens to save space */
-    @media (max-width: 360px) {
-      .status-item:nth-child(2) {
-        display: none;
-      }
-    }
-
     /* Mobile-first cards */
     .card {
       background: var(--card-bg);
       border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
       backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
@@ -3825,36 +3688,67 @@
   </div>
 
   <div class="container">
-    <!-- Compact Header -->
-    <header class="compact-header">
-      <div class="header-content">
-        <div class="header-left">
-          <div class="logo">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <div class="header-info">
-            <h1>HyperApp</h1>
-            <div class="status-indicator" id="connectionStatus">
-              <i class="fas fa-circle-notch fa-spin"></i>
-              <span data-en="Connecting..." data-ar="جاري الاتصال...">Connecting...</span>
-            </div>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="header-actions">
-            <button id="locationBtn" class="header-btn" title="Enable location">
-              <i class="fas fa-map-marker-alt"></i>
-            </button>
-            <button id="refreshBtn" class="header-btn" title="Refresh data">
-              <i class="fas fa-sync-alt"></i>
-            </button>
-            <div class="theme-toggle" id="themeToggle" title="Toggle theme">
-              <i class="fas fa-moon"></i>
-            </div>
-          </div>
-        </div>
+    <!-- Header Section -->
+    <header>
+      <div class="logo">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h1>HyperApp</h1>
+      <p class="subtitle">Stay Safe...Stay Connected</p>
+
+      <div class="language-switcher" id="languageSwitcher">
+        <i class="fas fa-globe"></i> <span id="currentLanguage">EN</span>
+      </div>
+
+      <!-- Theme Toggle -->
+      <div class="theme-toggle" id="themeToggle" title="Toggle theme">
+        <i class="fas fa-moon"></i>
       </div>
     </header>
+
+    <!-- Action Buttons Section -->
+    <div class="action-buttons-section">
+      <div class="action-btn primary" data-action="report">
+        <i class="fas fa-plus-circle"></i>
+        <span data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</span>
+      </div>
+      <div class="action-btn secondary" data-action="areas">
+        <i class="fas fa-chart-line"></i>
+        <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
+      </div>
+      <div class="action-btn emergency" data-action="emergency">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span data-en="Emergency" data-ar="طارئ">Emergency</span>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-item" id="connectionStatus">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span data-en="Connecting..." data-ar="جاري الاتصال...">Connecting...</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-star"></i>
+        <span data-en="Rep:" data-ar="النقاط:">Rep:</span> <span id="userReputation">0</span>
+      </div>
+      <div class="status-item">
+        <button id="locationBtn" class="refresh-btn" title="Enable location for local reports" style="margin-right: 8px;">
+          <i class="fas fa-map-marker-alt"></i>
+        </button>
+        <button id="refreshBtn" class="refresh-btn" title="Refresh data">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="app-nav">
+      <button class="nav-btn active" data-view="main"><i class="fas fa-home"></i></button>
+      <button class="nav-btn" data-view="map"><i class="fas fa-map"></i></button>
+      <button class="nav-btn" data-view="reports"><i class="fas fa-list"></i></button>
+      <button class="nav-btn" data-view="settings"><i class="fas fa-cog"></i></button>
+    </nav>
 
     <!-- Main Content Area -->
     <main class="content-area">
