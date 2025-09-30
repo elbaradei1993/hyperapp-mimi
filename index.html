@@ -2317,9 +2317,9 @@
     /* Mobile-first container and spacing */
     .container {
       max-width: 100%;
-      padding: 16px;
+      padding: 20px;
       margin: 0 auto;
-      padding-bottom: 80px; /* Account for fixed nav */
+      padding-bottom: 90px; /* Account for fixed nav with more space */
       display: flex;
       flex-direction: column;
       min-height: 100vh;
@@ -2476,9 +2476,9 @@
     .action-buttons-section {
       display: flex;
       justify-content: space-between;
-      gap: 8px;
-      margin: 15px 0;
-      padding: 0;
+      gap: 6px;
+      margin: 12px 0;
+      padding: 0 2px;
     }
 
     .action-buttons-section .action-btn {
@@ -2486,8 +2486,8 @@
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       border: none;
-      border-radius: 12px;
-      padding: 16px 8px;
+      border-radius: 14px;
+      padding: 14px 8px;
       text-align: center;
       cursor: pointer;
       transition: var(--transition);
@@ -2495,19 +2495,42 @@
       position: relative;
       overflow: hidden;
       min-height: 48px; /* Touch-friendly height */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
 
     .action-buttons-section .action-btn i {
       font-size: 16px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       display: block;
     }
 
     .action-buttons-section .action-btn span {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       letter-spacing: 0.025em;
       display: block;
+      line-height: 1.2;
+    }
+
+    /* Very small screens - hide text and make icon-only */
+    @media (max-width: 320px) {
+      .action-buttons-section .action-btn span {
+        display: none;
+      }
+
+      .action-buttons-section .action-btn {
+        padding: 12px;
+        min-height: 44px;
+      }
+
+      .action-buttons-section .action-btn i {
+        font-size: 18px;
+        margin-bottom: 0;
+      }
     }
 
     /* Mobile-first status bar */
@@ -2535,12 +2558,19 @@
       min-width: 0;
     }
 
+    /* Hide reputation on very small screens to save space */
+    @media (max-width: 360px) {
+      .status-item:nth-child(2) {
+        display: none;
+      }
+    }
+
     /* Mobile-first cards */
     .card {
       background: var(--card-bg);
       border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
       backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
