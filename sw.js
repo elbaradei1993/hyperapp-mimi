@@ -434,8 +434,6 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - serve from cache or network (removed duplicate)
-
 // Cache-first strategy for static assets
 async function cacheFirstStrategy(request) {
   try {
