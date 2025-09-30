@@ -5320,6 +5320,12 @@
       }
       
       async submitReport() {
+        console.log('=== SUBMIT REPORT DEBUG ===');
+        console.log('Selected vibe:', this.selectedVibe);
+        console.log('Current location:', this.currentReportLocation);
+        console.log('User location:', this.userLocation);
+        console.log('Supabase client:', !!this.supabase);
+
         if (!this.selectedVibe) {
           this.showNotification("Please select a vibe type", "error");
           return;
@@ -5338,23 +5344,33 @@
 
         try {
           const notes = document.getElementById('reportNotes').value;
+          console.log('Report notes:', notes);
 
-          // Check for existing report with same vibe and location
-          const { data: existingReports, error: checkError } = await this.supabase
-            .from('reports')
-            .select('id, created_at')
-            .eq('vibe_type', this.selectedVibe)
-            .eq('location', this.currentReportLocation)
-            .order('created_at', { ascending: false })
-            .limit(1);
+          // Check for existing report with same vibe and location (with timeout)
+          console.log('Checking for existing reports...');
+          const { data: existingReports, error: checkError } = await Promise.race([
+            this.supabase
+              .from('reports')
+              .select('id, created_at')
+              .eq('vibe_type', this.selectedVibe)
+              .eq('location', this.currentReportLocation)
+              .order('created_at', { ascending: false })
+              .limit(1),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Check timeout')), 5000)
+            )
+          ]);
 
           if (checkError) {
             console.error("Error checking for existing reports:", checkError);
+            // Continue with submission even if check fails
           } else if (existingReports && existingReports.length > 0) {
             const existingReport = existingReports[0];
             const reportTime = new Date(existingReport.created_at);
             const now = new Date();
             const timeDiff = (now - reportTime) / (1000 * 60); // Difference in minutes
+
+            console.log('Time difference:', timeDiff);
 
             // If a similar report exists within the last 30 minutes, don't create a duplicate
             if (timeDiff < 30) {
@@ -5376,23 +5392,35 @@
           if (this.userLocation) {
             reportData.latitude = this.userLocation.latitude;
             reportData.longitude = this.userLocation.longitude;
+            console.log('Adding coordinates:', this.userLocation.latitude, this.userLocation.longitude);
           }
 
-          const { data, error } = await this.supabase
-            .from('reports')
-            .insert([reportData])
-            .select();
+          console.log('Report data to submit:', reportData);
+
+          // Submit with timeout
+          const { data, error } = await Promise.race([
+            this.supabase
+              .from('reports')
+              .insert([reportData])
+              .select(),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Submission timeout')), 10000)
+            )
+          ]);
 
           if (error) {
             console.error("Error submitting report:", error);
             let errorMessage = "Failed to submit report";
             if (error.message.includes('network') || error.message.includes('fetch')) {
               errorMessage = "Network error. Please check your connection and try again.";
+            } else if (error.message.includes('timeout')) {
+              errorMessage = "Request timed out. Please try again.";
             } else {
               errorMessage = `Failed to submit report: ${error.message}`;
             }
             this.showNotification(errorMessage, "error");
           } else {
+            console.log('Report submitted successfully:', data);
             this.showNotification("Report submitted successfully", "success");
             this.closeModal('reportModal');
             // Reload data to show the new report
@@ -5400,17 +5428,24 @@
             // Refresh map to show new report
             this.loadMap();
           }
-          } catch (error) {
-            let errorMessage = "Unable to get your location";
-            if (error.code === 1) {
-              errorMessage = "Location access denied. Please enable location permissions in your browser settings.";
-            } else if (error.code === 2) {
-              errorMessage = "Location unavailable. Please check your GPS settings and try again.";
-            } else if (error.code === 3) {
-              errorMessage = "Location request timed out. This can happen in poor signal areas. Please try again.";
-            }
-            this.showNotification(errorMessage, "error");
+        } catch (error) {
+          console.error('Submission error:', error);
+          let errorMessage = "Failed to submit report";
+          if (error.message.includes('timeout')) {
+            errorMessage = "Request timed out. Please check your connection and try again.";
+          } else if (error.message.includes('network') || error.message.includes('fetch')) {
+            errorMessage = "Network error. Please check your connection and try again.";
+          } else if (error.message.includes('Location')) {
+            errorMessage = "Location error. Please enable location services and try again.";
+          } else {
+            errorMessage = `Error: ${error.message}`;
           }
+          this.showNotification(errorMessage, "error");
+        } finally {
+          // Reset button state
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
       }
       
       showEmergencyReport() {
@@ -5769,24 +5804,40 @@
         const mapElement = document.getElementById('leaflet-map');
         if (!mapElement) return;
 
-        // Default center (can be user's location if available)
-        let initialCenter = [30.0444, 31.2357]; // Cairo, Egypt as default
-        let initialZoom = 10;
-
-        // If we already have user location, use it
-        if (this.userLocation) {
-          initialCenter = [this.userLocation.latitude, this.userLocation.longitude];
-          initialZoom = 13;
+        // Check if Leaflet is loaded
+        if (typeof L === 'undefined') {
+          console.error('Leaflet library not loaded');
+          mapElement.innerHTML = `
+            <div class="map-placeholder-center">
+              <i class="fas fa-exclamation-triangle"></i>
+              <p>Map unavailable - Leaflet library failed to load</p>
+              <button class="btn" onclick="window.app.loadMap()">Retry</button>
+            </div>
+          `;
+          return;
         }
 
-        // Create map
-        this.map = L.map('leaflet-map').setView(initialCenter, initialZoom);
+        try {
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 19,
-        }).addTo(this.map);
+        try {
+          // Default center (can be user's location if available)
+          let initialCenter = [30.0444, 31.2357]; // Cairo, Egypt as default
+          let initialZoom = 10;
+
+          // If we already have user location, use it
+          if (this.userLocation) {
+            initialCenter = [this.userLocation.latitude, this.userLocation.longitude];
+            initialZoom = 13;
+          }
+
+          // Create map
+          this.map = L.map('leaflet-map').setView(initialCenter, initialZoom);
+
+          // Add OpenStreetMap tiles
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+          }).addTo(this.map);
 
         // Wait for map to be fully loaded before adding markers
         this.map.whenReady(() => {
