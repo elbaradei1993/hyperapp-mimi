@@ -4,13 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HyperApp - Community Safety Platform</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/heroicons@2.0.18/24/outline/index.js" type="module"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Load Leaflet and heat map lazily for better mobile performance -->
   <script src="config.js"></script>
   <script src="db-validation.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          backdropBlur: {
+            xs: '2px',
+          }
+        }
+      }
+    }
+  </script>
   <style>
     :root {
       /* Material Design 3 Primary Colors - Vibrant and Dynamic */
@@ -289,558 +306,132 @@
       --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    body {
-      background: var(--background);
-      color: var(--text-primary);
-      min-height: 100vh;
-      padding: 0;
-      overflow-x: hidden;
-      line-height: var(--line-height-normal);
-      font-weight: var(--font-weight-normal);
-      font-family: var(--font-family);
-    }
-
-    [data-theme="dark"] body {
-      background: var(--dark-background);
-      color: var(--dark-text-primary);
-    }
-
-    .container {
-      max-width: 100%;
-      padding: 16px;
-      margin: 0 auto;
-      padding-bottom: 70px;
-    }
-
-    header {
-      text-align: center;
-      padding: var(--space-4) 0;
-      position: relative;
-      border-bottom: 1px solid var(--divider);
-    }
-
-    .logo {
-      width: 56px;
-      height: 56px;
-      margin: 0 auto var(--space-3);
-      background: var(--primary);
-      border-radius: var(--border-radius-xl);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-    }
-
-    .logo i {
-      font-size: var(--font-size-xl);
-    }
-
-    h1 {
-      font-size: var(--font-size-2xl);
-      font-weight: var(--font-weight-bold);
-      margin-bottom: var(--space-2);
-      color: var(--text-primary);
-    }
-
-    .subtitle {
-      color: var(--text-secondary);
-      font-size: var(--font-size-sm);
-      margin-bottom: var(--space-5);
-      font-weight: var(--font-weight-medium);
-    }
-
-    .language-switcher {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--surface);
-      border-radius: var(--border-radius);
-      padding: var(--space-3) var(--space-4);
-      margin: var(--space-4) 0;
-      border: 1px solid var(--divider);
-      transition: var(--transition-normal);
-    }
-
-    .refresh-btn {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      padding: var(--space-2);
-      border-radius: 50%;
-      cursor: pointer;
-      transition: var(--transition-fast);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 40px;
-      min-height: 40px;
-    }
-
-    .refresh-btn:hover {
-      background: var(--surface-variant);
-      color: var(--primary);
-    }
-
-    .refresh-btn.spinning {
-      animation: spin 1s linear infinite;
-    }
-
-    .refresh-btn.spinning i {
-      color: var(--primary);
-    }
-
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-size: var(--font-size-sm);
-      color: var(--text-secondary);
-    }
-
-    .connected {
-      color: var(--success);
-    }
-
-    .disconnected {
-      color: var(--danger);
-    }
-
-    .app-nav {
-      display: flex;
-      justify-content: space-around;
-      background: var(--card-bg);
-      border-radius: var(--border-radius);
-      padding: 10px;
-      margin: 15px 0;
-      border: 1px solid var(--border);
-      position: fixed;
-      bottom: 15px;
-      left: 15px;
-      right: 15px;
-      z-index: 100;
-    }
-
-    /* Filter Controls */
-    .filter-controls {
-      display: flex;
-      gap: 8px;
-      margin: 10px 0;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      color: var(--text-light);
-    }
-
-    .filter-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .filter-btn.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: white;
-    }
-
-    /* Emergency Contacts */
-    .emergency-contacts {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin: 15px 0;
-    }
-
-    .emergency-btn {
-      background: rgba(220, 53, 69, 0.9);
-      border: 1px solid rgba(220, 53, 69, 0.5);
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      color: white;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .emergency-btn:hover {
-      background: rgba(220, 53, 69, 1);
-      transform: scale(1.02);
-    }
-
-    .emergency-btn i {
-      display: block;
-      font-size: 20px;
-      margin-bottom: 4px;
-    }
-
-    /* Theme Toggle */
-    .theme-toggle {
-      position: absolute;
-      top: 15px;
-      right: 60px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      padding: 6px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .theme-toggle:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .theme-toggle i {
-      color: var(--text-light);
-      font-size: 16px;
-    }
-
-    /* Statistics Card */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin: 15px 0;
-    }
-
-    .stat-card {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .stat-number {
-      font-size: 24px;
-      font-weight: bold;
-      color: var(--primary);
-      margin-bottom: 4px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* Offline indicator */
-    .offline-indicator {
-      position: fixed;
-      top: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 193, 7, 0.9);
-      color: #000;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      z-index: 1000;
-      display: none;
-    }
-
-    .offline-indicator.online {
-      background: rgba(40, 167, 69, 0.9);
-      color: white;
-    }
-
-    .nav-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      flex: 1;
-      display: flex;
-      justify-content: center;
-    }
-
-    .nav-btn.active {
-      background: rgba(45, 91, 255, 0.2);
-      color: var(--primary);
-    }
-
-    .nav-btn i {
-      font-size: 20px;
-    }
-
-    .content-area {
-      margin-bottom: 70px;
-    }
-
-    .view {
-      display: none;
-    }
-
-    .view.active {
-      display: block;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--border-radius);
-      padding: 24px;
-      margin-bottom: 20px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .card:hover {
-      background: var(--card-bg-hover);
-      border-color: var(--border-hover);
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
-    }
-
-    .card:hover::before {
-      opacity: 1;
-    }
-
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    .reports-container {
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .report-item {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .report-info {
-      flex: 1;
-    }
-
-    .report-type {
-      font-weight: 500;
-      margin-bottom: 5px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .report-details {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 5px;
-    }
-
-    .report-meta {
-      font-size: 12px;
-      color: var(--text-muted);
-      display: flex;
-      gap: 10px;
-    }
-
-    .report-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .vote-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      border-radius: 6px;
-      padding: 6px 10px;
-      cursor: pointer;
-      color: var(--text-light);
-      transition: all 0.3s ease;
-    }
-
-    .vote-btn:hover:not([aria-disabled="true"]) {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .vote-btn[aria-disabled="true"] {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .upvote-btn.active {
-      color: var(--success);
-      background: rgba(40, 167, 69, 0.2);
-    }
-
-    .downvote-btn.active {
-      color: var(--danger);
-      background: rgba(220, 53, 69, 0.2);
-    }
-
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: 20px 0;
-    }
-
-    .action-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 15px 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .action-btn:hover {
-      background: rgba(45, 91, 255, 0.15);
-      transform: translateY(-2px);
-    }
-
-    .action-btn i {
-      font-size: 20px;
-      color: var(--primary);
-      margin-bottom: 5px;
-      display: block;
-    }
-
-    .action-btn span {
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .emergency-btn {
-      background: rgba(220, 53, 69, 0.2);
-      border-color: rgba(220, 53, 69, 0.3);
-    }
-
-    .emergency-btn i {
-      color: var(--danger);
-    }
-
-    .btn {
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: white;
-      border: none;
-      border-radius: var(--border-radius-sm);
-      padding: 14px 24px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      letter-spacing: 0.025em;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-
-    /* Shimmer effect removed */
-
-    .btn:hover {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .btn:active {
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
-
-    .refresh-btn {
-      width: 100%;
-      margin-top: 15px;
-    }
-
-    .btn-emergency {
-      background: var(--danger);
-      width: 100%;
-    }
-
-    .btn-emergency:hover {
-      background: #c82333;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
-
-    .btn-danger:hover {
-      background: #c82333;
-    }
-
+    /* Base styles - minimal custom CSS, mostly Tailwind utilities */
     .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      border-top: 3px solid var(--primary);
-      animation: spin 1s linear infinite;
-      margin: 40px auto;
+      @apply w-10 h-10 border-4 border-white/20 border-t-blue-500 rounded-full animate-spin mx-auto my-10;
     }
 
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    /* Browser compatibility fixes */
+    .backdrop-blur-xl {
+      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(24px);
+    }
+
+    .backdrop-blur-lg {
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
+
+    .backdrop-blur-md {
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+
+    .backdrop-blur-sm {
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+
+    .backdrop-blur {
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+
+    /* Additional backdrop-filter support for Safari */
+    @supports not (backdrop-filter: blur(8px)) {
+      .backdrop-blur-xl {
+        background: rgba(255, 255, 255, 0.8);
+      }
+      .backdrop-blur-lg {
+        background: rgba(255, 255, 255, 0.8);
+      }
+      .backdrop-blur-md {
+        background: rgba(255, 255, 255, 0.8);
+      }
+      .backdrop-blur-sm {
+        background: rgba(255, 255, 255, 0.8);
+      }
+      .backdrop-blur {
+        background: rgba(255, 255, 255, 0.8);
+      }
+    }
+
+    /* Fix for Safari backdrop-filter support */
+    @supports (-webkit-backdrop-filter: blur(8px)) and (not (backdrop-filter: blur(8px))) {
+      .backdrop-blur-xl {
+        -webkit-backdrop-filter: blur(24px);
+      }
+      .backdrop-blur-lg {
+        -webkit-backdrop-filter: blur(16px);
+      }
+      .backdrop-blur-md {
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .backdrop-blur-sm {
+        -webkit-backdrop-filter: blur(4px);
+      }
+      .backdrop-blur {
+        -webkit-backdrop-filter: blur(8px);
+      }
+    }
+
+    /* Additional Safari-specific backdrop-filter support */
+    @supports (-webkit-backdrop-filter: blur(8px)) {
+      .backdrop-blur-xl {
+        -webkit-backdrop-filter: blur(24px);
+      }
+      .backdrop-blur-lg {
+        -webkit-backdrop-filter: blur(16px);
+      }
+      .backdrop-blur-md {
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .backdrop-blur-sm {
+        -webkit-backdrop-filter: blur(4px);
+      }
+      .backdrop-blur {
+        -webkit-backdrop-filter: blur(8px);
+      }
+    }
+
+    /* Image rendering compatibility */
+    img, svg, .fas, .far, .fab {
+      /* Prevent layout shift during loading */
+      aspect-ratio: auto;
+      /* Optimize rendering */
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      -webkit-image-rendering: crisp-edges;
+      /* Reduce paint on mobile */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+
+    /* Additional Edge support for image rendering */
+    @supports (-webkit-image-rendering: crisp-edges) and (not (image-rendering: crisp-edges)) {
+      img, svg, .fas, .far, .fab {
+        image-rendering: -webkit-optimize-contrast;
+      }
+    }
+
+    /* Fix for Edge image-rendering support */
+    @supports not (image-rendering: crisp-edges) {
+      img, svg, .fas, .far, .fab {
+        -webkit-image-rendering: -webkit-optimize-contrast;
+        image-rendering: -webkit-optimize-contrast;
+      }
+    }
+
+    /* Additional Edge support for image rendering */
+    @supports (-webkit-image-rendering: crisp-edges) and (not (image-rendering: crisp-edges)) {
+      img, svg, .fas, .far, .fab {
+        image-rendering: -webkit-optimize-contrast;
+      }
     }
 
     .map-container {
@@ -968,10 +559,18 @@
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 6px;
       z-index: 1000;
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       max-height: none;
       overflow: visible;
+    }
+
+    /* Additional Safari-specific backdrop-filter support */
+    @supports (-webkit-backdrop-filter: blur(10px)) and (not (backdrop-filter: blur(10px))) {
+      .map-legend {
+        -webkit-backdrop-filter: blur(10px);
+      }
     }
 
     .legend-item {
@@ -1563,6 +1162,7 @@
       margin-bottom: 10px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--text-light);
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
     }
 
@@ -1714,6 +1314,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 16px;
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
       transition: var(--transition);
     }
@@ -1834,6 +1435,7 @@
       border: 1px solid rgba(23, 162, 184, 0.3);
       border-radius: 10px;
       padding: 12px;
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
     }
 
@@ -3687,383 +3289,164 @@
     </div>
   </div>
 
-  <div class="container">
-    <!-- Header Section -->
-    <header>
-      <div class="logo">
-        <i class="fas fa-shield-alt"></i>
-      </div>
-      <h1>HyperApp</h1>
-      <p class="subtitle">Stay Safe...Stay Connected</p>
+  <!-- Modern Apple Weather-inspired Design -->
+  <div class="min-h-screen bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600">
+    <!-- Header -->
+    <header class="relative z-10">
+      <div class="flex items-center justify-between p-6">
+        <!-- Location & Time -->
+        <div class="text-white">
+          <h1 class="text-2xl font-light">Your Area</h1>
+          <p class="text-white/80 text-sm" id="currentTime">Loading...</p>
+        </div>
 
-      <div class="language-switcher" id="languageSwitcher">
-        <i class="fas fa-globe"></i> <span id="currentLanguage">EN</span>
-      </div>
-
-      <!-- Theme Toggle -->
-      <div class="theme-toggle" id="themeToggle" title="Toggle theme">
-        <i class="fas fa-moon"></i>
+        <!-- Controls -->
+        <div class="flex items-center space-x-3">
+        <button id="locationBtn" class="w-10 h-10 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all" aria-label="Enable location services">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+        <button id="refreshBtn" class="w-10 h-10 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all" aria-label="Refresh data">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        </div>
       </div>
     </header>
 
-    <!-- Action Buttons Section -->
-    <div class="action-buttons-section">
-      <div class="action-btn primary" data-action="report">
-        <i class="fas fa-plus-circle"></i>
-        <span data-en="Report Vibe" data-ar="الإبلاغ عن حالة">Report Vibe</span>
-      </div>
-      <div class="action-btn secondary" data-action="areas">
-        <i class="fas fa-chart-line"></i>
-        <span data-en="Top Areas" data-ar="أهم المناطق">Top Areas</span>
-      </div>
-      <div class="action-btn emergency" data-action="emergency">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span data-en="Emergency" data-ar="طارئ">Emergency</span>
-      </div>
-    </div>
+    <!-- Main Weather Card -->
+    <main class="relative z-10 px-6 pb-6">
+      <!-- Current Safety Status -->
+      <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 mb-6 border border-white/20 shadow-2xl">
+        <div class="text-center">
+          <!-- Safety Score -->
+          <div class="mb-6">
+            <div class="text-6xl font-light text-white mb-2" id="safetyScore">--</div>
+            <p class="text-white/80 text-lg">Safety Score</p>
+          </div>
 
-    <!-- Status Bar -->
-    <div class="status-bar">
-      <div class="status-item" id="connectionStatus">
-        <i class="fas fa-circle-notch fa-spin"></i>
-        <span data-en="Connecting..." data-ar="جاري الاتصال...">Connecting...</span>
+          <!-- Dominant Vibe -->
+          <div class="flex items-center justify-center space-x-3 mb-6">
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center" id="dominantVibeIcon">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="text-2xl font-light text-white" id="dominantVibe">Loading...</div>
+              <div class="text-white/70 text-sm" id="vibePercentage">--%</div>
+            </div>
+          </div>
+
+          <!-- Status Message -->
+          <p class="text-white/90 text-base" id="safetyMessage">Checking community reports...</p>
+        </div>
       </div>
-      <div class="status-item">
-        <i class="fas fa-star"></i>
-        <span data-en="Rep:" data-ar="النقاط:">Rep:</span> <span id="userReputation">0</span>
-      </div>
-      <div class="status-item">
-        <button id="locationBtn" class="refresh-btn" title="Enable location for local reports" style="margin-right: 8px;">
-          <i class="fas fa-map-marker-alt"></i>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-2 gap-4 mb-8">
+        <button class="bg-white/20 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/30 transition-all group" id="reportBtn">
+          <div class="text-center">
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-white/30 transition-all">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+            </div>
+            <p class="text-white font-medium">Report</p>
+            <p class="text-white/70 text-sm">Share safety info</p>
+          </div>
         </button>
-        <button id="refreshBtn" class="refresh-btn" title="Refresh data">
-          <i class="fas fa-sync-alt"></i>
+
+        <button class="bg-white/20 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/30 transition-all group" id="emergencyBtn">
+          <div class="text-center">
+            <div class="w-12 h-12 bg-red-500/80 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-red-500/90 transition-all">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <p class="text-white font-medium">Emergency</p>
+            <p class="text-white/70 text-sm">Call for help</p>
+          </div>
         </button>
       </div>
-    </div>
 
-    <!-- Main Navigation -->
-    <nav class="app-nav">
-      <button class="nav-btn active" data-view="main"><i class="fas fa-home"></i></button>
-      <button class="nav-btn" data-view="map"><i class="fas fa-map"></i></button>
-      <button class="nav-btn" data-view="reports"><i class="fas fa-list"></i></button>
-      <button class="nav-btn" data-view="settings"><i class="fas fa-cog"></i></button>
-    </nav>
-
-    <!-- Main Content Area -->
-    <main class="content-area">
-      <!-- Main View -->
-      <div id="mainView" class="view active">
-        <!-- Community Stats with Color-coded Sidebar -->
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-chart-bar"></i>
-            <span data-en="Community Stats" data-ar="إحصائيات المجتمع">Community Stats</span>
-          </div>
-          <div class="stats-grid" id="statsGrid">
-            <div class="stat-card">
-              <div class="stat-number" id="totalReports">0</div>
-              <div class="stat-label">Reports</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" id="activeUsers">0</div>
-              <div class="stat-label">Active Users</div>
-            </div>
-          </div>
-
-          <!-- Color-coded Community Vibe Sidebar -->
-          <div class="community-vibe-sidebar" id="communityVibeSidebar">
-            <div class="sidebar-header">
-              <span data-en="Community Vibe" data-ar="حالة المجتمع">Community Vibe</span>
-              <div class="dominant-vibe" id="dominantVibe">
-                <i class="fas fa-peace"></i>
-                <span data-en="Calm" data-ar="هادئ">Calm</span>
-                <span class="vibe-percentage" id="dominantVibePercentage">0%</span>
-              </div>
-            </div>
-            <div class="vibe-sidebars-chart" id="vibeSidebarsChart">
-              <!-- Color-coded sidebar bars will be populated by JavaScript -->
-            </div>
-          </div>
+      <!-- Recent Reports -->
+      <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-light text-white">Recent Reports</h2>
+          <button class="text-white/70 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
         </div>
-
-        <!-- Safety Hub -->
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-shield-alt"></i>
-            <span data-en="Safety Hub" data-ar="مركز السلامة">Safety Hub</span>
-          </div>
-          <div class="safety-hub">
-            <!-- Geofence Control -->
-            <div class="geofence-control" id="geofenceControl">
-              <div class="geofence-header">
-                <div class="geofence-icon">
-                  <i class="fas fa-draw-polygon"></i>
-                </div>
-                <div class="geofence-info">
-                  <span class="geofence-title" data-en="Geofence Monitoring" data-ar="مراقبة المناطق الجغرافية">Geofence Monitoring</span>
-                  <span class="geofence-status" id="geofenceStatusText" data-en="Disabled - Click to enable" data-ar="معطل - اضغط للتفعيل">Disabled - Click to enable</span>
-                </div>
-                <button class="geofence-toggle" id="geofenceToggleBtn">
-                  <div class="toggle-slider">
-                    <div class="toggle-knob"></div>
-                  </div>
-                </button>
-              </div>
-              <div class="geofence-description">
-                <span data-en="Get notified when entering safe or risk zones" data-ar="احصل على إشعارات عند دخول مناطق آمنة أو خطرة">Get notified when entering safe or risk zones</span>
-              </div>
-            </div>
-
-            <div class="weather-alert" id="weatherAlert">
-              <i class="fas fa-cloud-sun"></i>
-              <div class="alert-content">
-                <span class="alert-title" data-en="Weather Alert" data-ar="تنبيه جوي">Weather Alert</span>
-                <span class="alert-message" data-en="Loading weather information..." data-ar="جاري تحميل معلومات الطقس...">Loading weather information...</span>
-              </div>
-            </div>
-            <div class="safety-tips" id="safetyTips">
-              <div class="guideline-item">
-                <i class="fas fa-users"></i>
-                <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
-              </div>
-              <div class="guideline-item">
-                <i class="fas fa-mobile-alt"></i>
-                <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
-              </div>
-              <div class="guideline-item">
-                <i class="fas fa-share-alt"></i>
-                <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Area Mood Voting -->
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-chart-pie"></i>
-            <span data-en="Area Mood Voting" data-ar="تصويت المزاج المنطقة">Area Mood Voting</span>
-          </div>
-          <div class="mood-voting-grid" id="moodVotingGrid">
-            <div class="mood-vote-card" data-mood="chill">
-              <div class="mood-emoji">😎</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Chill" data-ar="هادئ">Chill</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="excited">
-              <div class="mood-emoji">🤩</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Excited" data-ar="مثير">Excited</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="anxious">
-              <div class="mood-emoji">😰</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Anxious" data-ar="قلق">Anxious</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="sad">
-              <div class="mood-emoji">😢</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Sad" data-ar="حزين">Sad</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="angry">
-              <div class="mood-emoji">😠</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Angry" data-ar="غاضب">Angry</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="happy">
-              <div class="mood-emoji">😀</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Happy" data-ar="سعيد">Happy</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="tired">
-              <div class="mood-emoji">😴</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Tired" data-ar="متعب">Tired</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="confused">
-              <div class="mood-emoji">🤔</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Confused" data-ar="مشوش">Confused</span>
-              </div>
-            </div>
-            <div class="mood-vote-card" data-mood="bored">
-              <div class="mood-emoji">🥱</div>
-              <div class="mood-info">
-                <span class="mood-name" data-en="Bored" data-ar="ممل">Bored</span>
-              </div>
-            </div>
-          </div>
-          <div class="mood-voting-status" id="moodVotingStatus" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.1); border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
-            <div style="font-size: 14px; color: var(--text-light); margin-bottom: 5px;">
-              <i class="fas fa-users"></i>
-              <span data-en="Population Mood" data-ar="مزاج السكان">Population Mood</span>
-            </div>
-            <div style="font-size: 18px; font-weight: bold; color: var(--primary);" id="populationMoodDisplay">
-              <i class="fas fa-question-circle"></i>
-              <span data-en="Collecting votes..." data-ar="جمع التصويتات...">Collecting votes...</span>
-            </div>
-          </div>
-
-          <!-- Mood-Based Activity Suggestions -->
-          <div class="mood-activity-suggestions" id="moodActivitySuggestions" style="display: none; margin-top: 20px;">
-            <div class="card-title" style="margin-bottom: 12px; font-size: 16px;">
-              <i class="fas fa-map-marker-alt"></i>
-              <span data-en="Suggested Places for Your Mood" data-ar="أماكن مقترحة لمزاجك">Suggested Places for Your Mood</span>
-            </div>
-            <div class="activity-suggestions-list" id="activitySuggestionsList">
-              <!-- Activity suggestions will be populated here -->
-            </div>
-          </div>
-        </div>
-
-
-      </div>
-
-      <!-- Map View -->
-      <div id="mapView" class="view">
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-map"></i> 
-            <span data-en="Vibe Map" data-ar="خريطة الحالات">Vibe Map</span>
-          </div>
-          <div id="mapContainer" class="map-container">
-            <div class="loading-spinner"></div>
-          </div>
+        <div id="nearbyReports" class="space-y-3">
+          <!-- Reports will be loaded here -->
         </div>
       </div>
 
-      <!-- Reports View -->
-      <div id="reportsView" class="view">
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-user"></i>
-            <span data-en="My Dashboard" data-ar="لوحة التحكم الخاصة بي">My Dashboard</span>
+      <!-- Community Insights -->
+      <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
+        <h2 class="text-xl font-light text-white mb-4">Community Insights</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="text-center">
+            <div class="text-2xl font-light text-white" id="totalReports">--</div>
+            <p class="text-white/70 text-sm">Total Reports</p>
           </div>
-
-          <!-- User Profile Section -->
-          <div class="user-profile-section" id="userProfileSection">
-            <div class="loading-spinner"></div>
-          </div>
-
-          <!-- Achievement Badges -->
-          <div class="card">
-            <div class="card-title">
-              <i class="fas fa-trophy"></i>
-              <span data-en="Achievements" data-ar="الإنجازات">Achievements</span>
-            </div>
-            <div id="userBadges" class="badge-showcase">
-              <div class="loading-spinner"></div>
-            </div>
-          </div>
-
-          <!-- Personal Stats -->
-          <div class="card">
-            <div class="card-title">
-              <i class="fas fa-chart-line"></i>
-              <span data-en="My Impact" data-ar="تأثيري">My Impact</span>
-            </div>
-            <div class="stats-grid" id="userStatsGrid">
-              <div class="stat-card">
-                <div class="stat-number" id="userTotalReports">0</div>
-                <div class="stat-label">My Reports</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number" id="userTotalUpvotes">0</div>
-                <div class="stat-label">Upvotes Received</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number" id="userReputationScore">0</div>
-                <div class="stat-label">Reputation</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number" id="userRank">-</div>
-                <div class="stat-label">Community Rank</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Activity -->
-          <div class="card">
-            <div class="card-title">
-              <i class="fas fa-history"></i>
-              <span data-en="Recent Activity" data-ar="النشاط الأخير">Recent Activity</span>
-            </div>
-            <div id="userRecentActivity" class="reports-container">
-              <div class="loading-spinner"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Settings View -->
-      <div id="settingsView" class="view">
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-cog"></i> 
-            <span data-en="Settings" data-ar="الإعدادات">Settings</span>
-          </div>
-          
-          <div class="settings-section">
-            <h3 data-en="Account" data-ar="الحساب">Account</h3>
-            <div class="setting-item">
-              <span data-en="Username" data-ar="اسم المستخدم">Username</span>
-              <span id="settingsUsername">-</span>
-            </div>
-            <div class="setting-item">
-              <span data-en="Reputation" data-ar="النقاط">Reputation</span>
-              <span id="settingsReputation">0</span>
-            </div>
-            <div class="setting-item">
-              <span data-en="Account Actions" data-ar="إجراءات الحساب">Account Actions</span>
-              <button class="btn btn-danger" id="logoutBtn" data-en="Logout" data-ar="تسجيل الخروج">Logout</button>
-            </div>
-          </div>
-          
-          <div class="settings-section">
-            <h3 data-en="Preferences" data-ar="التفضيلات">Preferences</h3>
-            <div class="setting-item">
-              <span data-en="Language" data-ar="اللغة">Language</span>
-              <select id="languageSelect">
-                <option value="en">English</option>
-                <option value="ar">العربية</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="settings-section">
-            <h3 data-en="Privacy & Policy" data-ar="الخصوصية والسياسة">Privacy & Policy</h3>
-            <div class="setting-item">
-              <span data-en="Data Collection" data-ar="جمع البيانات">Data Collection</span>
-              <button class="btn" data-action="privacy-policy" data-en="View Policy" data-ar="عرض السياسة">View Policy</button>
-            </div>
-            <div class="setting-item">
-              <span data-en="Location Data" data-ar="بيانات الموقع">Location Data</span>
-              <span data-en="Used for safety reports only" data-ar="تُستخدم لتقارير السلامة فقط">Used for safety reports only</span>
-            </div>
-            <div class="setting-item">
-              <span data-en="Anonymous Reporting" data-ar="الإبلاغ المجهول">Anonymous Reporting</span>
-              <span data-en="Reports are anonymous by default" data-ar="التقارير مجهولة افتراضياً">Reports are anonymous by default</span>
-            </div>
-          </div>
-
-          <div class="settings-section">
-            <h3 data-en="About" data-ar="عن التطبيق">About</h3>
-            <p data-en="HyperApp helps communities stay informed about safety conditions in their area." data-ar="يساعد HyperApp المجتمعات على البقاء على اطلاع بظروف السلامة في منطقتهم.">
-              HyperApp helps communities stay informed about safety conditions in their area.
-            </p>
+          <div class="text-center">
+            <div class="text-2xl font-light text-white" id="activeUsers">--</div>
+            <p class="text-white/70 text-sm">Active Users</p>
           </div>
         </div>
       </div>
     </main>
-  </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-xl border-t border-white/20">
+      <div class="flex items-center justify-around py-2">
+        <button class="flex flex-col items-center p-3 text-white hover:text-white/80 transition-colors nav-btn active" data-view="main">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span class="text-xs mt-1">Home</span>
+        </button>
+        <button class="flex flex-col items-center p-3 text-white/70 hover:text-white transition-colors nav-btn" data-view="map">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+          </svg>
+          <span class="text-xs mt-1">Map</span>
+        </button>
+        <button class="flex flex-col items-center p-3 text-white/70 hover:text-white transition-colors nav-btn" data-view="reports">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="text-xs mt-1">Reports</span>
+        </button>
+        <button class="flex flex-col items-center p-3 text-white/70 hover:text-white transition-colors nav-btn" data-view="settings">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span class="text-xs mt-1">Settings</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Hidden Views (for navigation) -->
+    <div id="mainView" class="view active"></div>
+    <div id="mapView" class="view hidden"></div>
+    <div id="reportsView" class="view hidden"></div>
+    <div id="settingsView" class="view hidden"></div>
+
+    <!-- Status Bar (hidden in new design) -->
+    <div class="hidden">
+      <div id="connectionStatus">Connected</div>
+      <div id="userReputation">0</div>
+      <div id="currentLanguage">EN</div>
+    </div>
 
   <!-- Report Modal -->
   <div id="reportModal" class="modal">
