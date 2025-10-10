@@ -6,9 +6,10 @@
   <title>HyperApp - Community Safety Platform</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Load Leaflet and heat map lazily for better mobile performance -->
   <script src="config.js"></script>
   <script src="db-validation.js"></script>
   <style>
@@ -5570,7 +5571,7 @@
       
       loadMap() {
         const mapContainer = document.getElementById('mapContainer');
-        const hasReports = this.nearbyReports && this.nearbyReports.length > 0;
+        const hasReports = (this.nearbyReports && this.nearbyReports.length > 0) || (this.mapReports && this.mapReports.length > 0);
 
         // Clear any existing map
         if (this.map) {
