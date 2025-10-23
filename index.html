@@ -6,11 +6,13 @@
   <title>HyperApp - Community Safety Platform</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Load Leaflet and heat map lazily for better mobile performance -->
   <script src="config.js"></script>
   <script src="db-validation.js"></script>
+  <!-- Non-critical modules will be loaded dynamically as needed -->
   <style>
     :root {
       /* Material Design 3 Primary Colors - Vibrant and Dynamic */
@@ -119,13 +121,6 @@
       --on-background: #1c1c1f;
       --card-bg: #ffffff;
       --on-card: #1c1c1f;
-      --card-bg-hover: rgba(59, 130, 246, 0.1);
-      --border: rgba(0, 0, 0, 0.1);
-      --border-hover: rgba(59, 130, 246, 0.3);
-      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
-      --text-primary: #1c1c1f;
-      --text-secondary: #64748b;
 
       /* Dark Theme - Material Design 3 */
       --dark-background: #121212;
@@ -232,61 +227,46 @@
       --warning: #D97706;
       --info: #0891B2;
       --dark-bg: #F8FAFC;
-      --card-bg: #ffffff;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --card-bg-hover: rgba(255, 255, 255, 0.98);
+      --surface: rgba(255, 255, 255, 0.9);
+      --surface-variant: rgba(0, 0, 0, 0.05);
+      --surface-container: rgba(0, 0, 0, 0.08);
+      --surface-container-high: rgba(0, 0, 0, 0.12);
+      --text-primary: #1E293B;
       --text-light: #1E293B;
       --text-muted: #64748B;
-      --background: #ffffff;
-      --on-background: #1c1c1f;
-      --card-bg-hover: rgba(26, 73, 224, 0.08);
+      --text-secondary: #64748B;
+      --text-subtle: #94A3B8;
       --border: rgba(0, 0, 0, 0.12);
-      --border-hover: rgba(26, 73, 224, 0.25);
-      --text-primary: #1c1c1f;
-      --text-secondary: #64748b;
-
-    /* Fix primary container for light theme */
-    --primary-container: rgba(26, 70, 224, 0.12);
-
-    /* Action buttons text color for light mode */
-    --action-btn-text: #1c1c1f;
+      --border-hover: rgba(0, 0, 0, 0.24);
+      --divider: rgba(0, 0, 0, 0.12);
     }
 
-    /* Dark theme overrides */
+    /* Dark theme variables */
     [data-theme="dark"] {
-      --primary: #4dabff;
-      --primary-dark: #1a73e8;
-      --secondary: #ff8a65;
-      --success: #4caf50;
-      --danger: #f44336;
-      --warning: #ff9800;
-      --info: #2196f3;
-
-      --card-bg: var(--dark-surface);
-      --background: var(--dark-background);
-      --text-primary: var(--dark-text-primary);
-      --text-secondary: var(--dark-text-secondary);
-      --text-light: var(--dark-text-primary);
-      --text-muted: var(--dark-text-secondary);
-
-      /* Enhanced dark mode styling for visibility */
-      --card-bg-hover: rgba(255, 255, 255, 0.12);
-      --border: rgba(255, 255, 255, 0.15);
-      --border-hover: rgba(255, 255, 255, 0.25);
-      --surface: var(--dark-surface);
-      --surface-variant: var(--dark-surface-variant);
-      --surface-container: var(--dark-surface-container);
-      --surface-container-high: var(--dark-surface-container-high);
-      --surface-container-highest: var(--dark-surface-container-highest);
-      --on-surface: var(--dark-on-surface);
-      --on-surface-variant: var(--dark-on-surface-variant);
-      --outline: var(--dark-outline);
-      --outline-variant: var(--dark-outline-variant);
-
-      /* Fix primary container for dark theme */
-      --primary-container: rgba(77, 171, 255, 0.18);
-
-      /* Enhanced shadows for dark mode */
-      --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+      --primary: #3B82F6;
+      --primary-dark: #1D4ED8;
+      --secondary: #F59E0B;
+      --success: #10B981;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --info: #06B6D4;
+      --dark-bg: #0F172A;
+      --card-bg: rgba(30, 41, 59, 0.95);
+      --card-bg-hover: rgba(30, 41, 59, 0.98);
+      --surface: rgba(15, 23, 42, 0.9);
+      --surface-variant: rgba(255, 255, 255, 0.05);
+      --surface-container: rgba(255, 255, 255, 0.08);
+      --surface-container-high: rgba(255, 255, 255, 0.12);
+      --text-primary: #F1F5F9;
+      --text-light: #F1F5F9;
+      --text-muted: #94A3B8;
+      --text-secondary: #94A3B8;
+      --text-subtle: #64748B;
+      --border: rgba(255, 255, 255, 0.12);
+      --border-hover: rgba(255, 255, 255, 0.24);
+      --divider: rgba(255, 255, 255, 0.12);
     }
 
     * {
@@ -363,7 +343,8 @@
       position: absolute;
       top: 15px;
       right: 15px;
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--surface-variant);
+      border: 1px solid var(--outline);
       border-radius: 20px;
       padding: 6px 12px;
       font-size: 14px;
@@ -371,6 +352,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      color: var(--text-light);
     }
 
     .status-bar {
@@ -436,7 +418,8 @@
       border-radius: var(--border-radius);
       padding: 10px;
       margin: 15px 0;
-      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--outline);
       position: fixed;
       bottom: 15px;
       left: 15px;
@@ -453,8 +436,8 @@
     }
 
     .filter-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: var(--surface-variant);
+      border: 1px solid var(--outline);
       border-radius: 20px;
       padding: 6px 12px;
       font-size: 12px;
@@ -463,8 +446,17 @@
       color: var(--text-light);
     }
 
+    [data-theme="dark"] .filter-btn {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
+    }
+
     .filter-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: var(--surface-container);
+    }
+
+    [data-theme="dark"] .filter-btn:hover {
+      background: var(--dark-surface-container);
     }
 
     .filter-btn.active {
@@ -482,8 +474,8 @@
     }
 
     .emergency-btn {
-      background: rgba(220, 53, 69, 0.9);
-      border: 1px solid rgba(220, 53, 69, 0.5);
+      background: var(--danger);
+      border: 1px solid var(--danger);
       border-radius: 8px;
       padding: 12px;
       text-align: center;
@@ -492,10 +484,11 @@
       color: white;
       font-size: 14px;
       font-weight: 500;
+      opacity: 0.9;
     }
 
     .emergency-btn:hover {
-      background: rgba(220, 53, 69, 1);
+      opacity: 1;
       transform: scale(1.02);
     }
 
@@ -510,16 +503,25 @@
       position: absolute;
       top: 15px;
       right: 60px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: var(--surface-variant);
+      border: 1px solid var(--outline);
       border-radius: 20px;
       padding: 6px;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
+    [data-theme="dark"] .theme-toggle {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
+    }
+
     .theme-toggle:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: var(--surface-container);
+    }
+
+    [data-theme="dark"] .theme-toggle:hover {
+      background: var(--dark-surface-container);
     }
 
     .theme-toggle i {
@@ -536,11 +538,16 @@
     }
 
     .stat-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-variant);
       border-radius: 8px;
       padding: 12px;
       text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--outline);
+    }
+
+    [data-theme="dark"] .stat-card {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
     }
 
     .stat-number {
@@ -614,6 +621,7 @@
       border-radius: var(--border-radius);
       padding: 24px;
       margin-bottom: 20px;
+      backdrop-filter: blur(20px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
       transition: var(--transition);
@@ -659,13 +667,17 @@
     }
 
     .report-item {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-variant);
       border-radius: 10px;
       padding: 12px;
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    [data-theme="dark"] .report-item {
+      background: var(--dark-surface-variant);
     }
 
     .report-info {
@@ -699,8 +711,8 @@
     }
 
     .vote-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
+      background: var(--surface-variant);
+      border: 1px solid var(--outline);
       border-radius: 6px;
       padding: 6px 10px;
       cursor: pointer;
@@ -708,24 +720,51 @@
       transition: all 0.3s ease;
     }
 
+    [data-theme="dark"] .vote-btn {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
+    }
+
     .vote-btn:hover:not([aria-disabled="true"]) {
-      background: rgba(255, 255, 255, 0.2);
+      background: var(--surface-container);
+      border-color: var(--outline-variant);
+    }
+
+    [data-theme="dark"] .vote-btn:hover:not([aria-disabled="true"]) {
+      background: var(--dark-surface-container);
+      border-color: var(--dark-outline-variant);
     }
 
     .vote-btn[aria-disabled="true"] {
       opacity: 0.5;
       cursor: not-allowed;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-variant);
+      border-color: var(--outline);
+    }
+
+    [data-theme="dark"] .vote-btn[aria-disabled="true"] {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
     }
 
     .upvote-btn.active {
       color: var(--success);
-      background: rgba(40, 167, 69, 0.2);
+      background: var(--surface-container);
+      border-color: var(--success);
+    }
+
+    [data-theme="dark"] .upvote-btn.active {
+      background: var(--dark-surface-container);
     }
 
     .downvote-btn.active {
       color: var(--danger);
-      background: rgba(220, 53, 69, 0.2);
+      background: var(--surface-container);
+      border-color: var(--danger);
+    }
+
+    [data-theme="dark"] .downvote-btn.active {
+      background: var(--dark-surface-container);
     }
 
     .quick-actions {
@@ -736,8 +775,8 @@
     }
 
     .action-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface-variant);
+      border: 1px solid var(--outline);
       border-radius: 12px;
       padding: 15px 10px;
       text-align: center;
@@ -745,9 +784,20 @@
       transition: all 0.3s ease;
     }
 
+    [data-theme="dark"] .action-btn {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
+    }
+
     .action-btn:hover {
-      background: rgba(45, 91, 255, 0.15);
+      background: var(--surface-container);
+      border-color: var(--outline-variant);
       transform: translateY(-2px);
+    }
+
+    [data-theme="dark"] .action-btn:hover {
+      background: var(--dark-surface-container);
+      border-color: var(--dark-outline-variant);
     }
 
     .action-btn i {
@@ -1160,22 +1210,31 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.7);
+      background: var(--dark-background);
+      opacity: 0.9;
       z-index: 1000;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
     }
 
     .modal-content {
-      background: var(--dark-bg);
+      background: var(--surface);
       margin: 1% auto;
       width: 90%;
       max-width: 500px;
       border-radius: var(--border-radius);
       overflow: hidden;
       animation: modalFadeIn 0.3s;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--outline);
       max-height: 98vh;
       display: flex;
       flex-direction: column;
+      box-shadow: var(--shadow-5);
+    }
+
+    [data-theme="dark"] .modal-content {
+      background: var(--dark-surface);
+      border-color: var(--dark-outline);
     }
 
     .modal-content.emergency {
@@ -1183,28 +1242,45 @@
     }
 
     .modal-header {
-      background: var(--card-bg);
+      background: var(--surface-variant);
       padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--outline);
+    }
+
+    [data-theme="dark"] .modal-header {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
     }
 
     .modal-header h2 {
       font-size: 18px;
-      color: var(--text-light);
+      color: var(--on-surface);
+    }
+
+    [data-theme="dark"] .modal-header h2 {
+      color: var(--dark-on-surface);
     }
 
     .close {
-      color: var(--text-muted);
+      color: var(--on-surface-variant);
       font-size: 24px;
       cursor: pointer;
       transition: color 0.3s ease;
     }
 
+    [data-theme="dark"] .close {
+      color: var(--dark-on-surface-variant);
+    }
+
     .close:hover {
-      color: var(--text-light);
+      color: var(--on-surface);
+    }
+
+    [data-theme="dark"] .close:hover {
+      color: var(--dark-on-surface);
     }
 
     .modal-body {
@@ -1229,7 +1305,7 @@
     }
 
     .vibe-option {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--surface-variant);
       border: 2px solid transparent;
       border-radius: 10px;
       padding: 12px 8px;
@@ -1238,14 +1314,26 @@
       transition: all 0.3s ease;
     }
 
+    [data-theme="dark"] .vibe-option {
+      background: var(--dark-surface-variant);
+    }
+
     .vibe-option:hover {
       border-color: var(--primary);
-      background: rgba(45, 91, 255, 0.1);
+      background: var(--surface-container);
+    }
+
+    [data-theme="dark"] .vibe-option:hover {
+      background: var(--dark-surface-container);
     }
 
     .vibe-option.selected {
       border-color: var(--primary);
-      background: rgba(45, 91, 255, 0.15);
+      background: var(--surface-container);
+    }
+
+    [data-theme="dark"] .vibe-option.selected {
+      background: var(--dark-surface-container);
     }
 
     .vibe-option i {
@@ -1305,10 +1393,12 @@
       top: 20px;
       left: 16px;
       right: 16px;
-      background: var(--card-bg);
+      background: var(--surface);
       border-radius: var(--border-radius);
       padding: 16px 20px;
-      border: 2px solid var(--border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 2px solid var(--outline);
       z-index: 10000;
       max-width: none;
       min-width: 0;
@@ -1317,11 +1407,18 @@
       align-items: center;
       gap: 12px;
       box-sizing: border-box;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+      box-shadow: var(--shadow-5);
       font-weight: 500;
       font-size: 14px;
       line-height: 1.4;
       justify-content: flex-start;
+      color: var(--on-surface);
+    }
+
+    [data-theme="dark"] .notification {
+      background: var(--dark-surface);
+      border-color: var(--dark-outline);
+      color: var(--dark-on-surface);
     }
 
     .notification.hidden {
@@ -1329,24 +1426,51 @@
     }
 
     .notification.success {
-      background: rgba(40, 167, 69, 0.9);
-      border-color: rgba(40, 167, 69, 0.5);
+      background: var(--success-container);
+      border-color: var(--success);
+      color: var(--on-success-container);
+    }
+
+    [data-theme="dark"] .notification.success {
+      background: var(--success-container);
+      border-color: var(--success);
+      color: var(--on-success-container);
     }
 
     .notification.error {
-      background: rgba(220, 53, 69, 0.9);
-      border-color: rgba(220, 53, 69, 0.5);
+      background: var(--danger-container);
+      border-color: var(--danger);
+      color: var(--on-danger-container);
+    }
+
+    [data-theme="dark"] .notification.error {
+      background: var(--danger-container);
+      border-color: var(--danger);
+      color: var(--on-danger-container);
     }
 
     .notification.warning {
-      background: rgba(255, 193, 7, 0.9);
-      border-color: rgba(255, 193, 7, 0.5);
-      color: #000;
+      background: var(--warning-container);
+      border-color: var(--warning);
+      color: var(--on-warning-container);
+    }
+
+    [data-theme="dark"] .notification.warning {
+      background: var(--warning-container);
+      border-color: var(--warning);
+      color: var(--on-warning-container);
     }
 
     .notification.info {
-      background: rgba(23, 162, 184, 0.9);
-      border-color: rgba(23, 162, 184, 0.5);
+      background: var(--info-container);
+      border-color: var(--info);
+      color: var(--on-info-container);
+    }
+
+    [data-theme="dark"] .notification.info {
+      background: var(--info-container);
+      border-color: var(--info);
+      color: var(--on-info-container);
     }
 
     .no-data {
@@ -1557,21 +1681,16 @@
     }
 
     .area-item {
-      background: rgba(0, 0, 0, 0.8);
+      background: var(--surface-variant);
       border-radius: 10px;
       padding: 15px;
       margin-bottom: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-light);
-      backdrop-filter: blur(10px);
+      border: 1px solid var(--outline);
     }
 
-    /* Light theme overrides for area items */
-    [data-theme="light"] .area-item {
-      background: rgba(248, 250, 252, 0.95);
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      color: #1e293b;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    [data-theme="dark"] .area-item {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
     }
 
     .area-header {
@@ -1597,12 +1716,12 @@
     .area-info h3 {
       margin: 0 0 4px 0;
       font-size: 16px;
-      color: var(--text-light);
+      color: var(--on-surface);
     }
 
     .area-count {
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--on-surface-variant);
     }
 
     .area-vibes {
@@ -1666,10 +1785,38 @@
 
     .action-buttons-section .action-btn.primary {
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+    }
+
+    /* Light mode - ensure proper contrast for primary button */
+    [data-theme="light"] .action-buttons-section .action-btn.primary {
+      background: linear-gradient(135deg, #1A46E0, #1E3A8A);
+      color: white;
+      box-shadow: 0 4px 12px rgba(26, 70, 224, 0.2);
     }
 
     .action-buttons-section .action-btn.secondary {
       background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+    }
+
+    /* Top Areas button - Analytics Blue */
+    .action-btn[data-action="areas"] {
+      background: linear-gradient(135deg, #1E40AF, #1E3A8A);
+      border: 1px solid rgba(30, 64, 175, 0.3);
+      color: white;
+    }
+
+    [data-theme="dark"] .action-btn[data-action="areas"] {
+      background: linear-gradient(135deg, #3B82F6, #2563EB);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    /* Light mode - brighter colors for visibility */
+    [data-theme="light"] .action-btn[data-action="areas"] {
+      background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }
 
     .action-buttons-section .action-btn.emergency {
@@ -1686,19 +1833,6 @@
       font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.025em;
-      color: white;
-      display: block;
-      visibility: visible;
-    }
-
-    /* Dark mode: ensure white text */
-    [data-theme="dark"] .action-buttons-section .action-btn span {
-      color: white;
-    }
-
-    /* Light mode: dark text for visibility */
-    [data-theme="light"] .action-buttons-section .action-btn span {
-      color: #1c1c1f;
     }
 
     /* Safety Hub Styles */
@@ -1710,18 +1844,28 @@
 
     /* Geofence Control Styles */
     .geofence-control {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface-variant);
+      border: 1px solid var(--outline);
       border-radius: 12px;
       padding: 16px;
       backdrop-filter: blur(10px);
       transition: var(--transition);
     }
 
+    [data-theme="dark"] .geofence-control {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
+    }
+
     .geofence-control:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.15);
+      background: var(--surface-container);
+      border-color: var(--outline-variant);
       transform: translateY(-1px);
+    }
+
+    [data-theme="dark"] .geofence-control:hover {
+      background: var(--dark-surface-container);
+      border-color: var(--dark-outline-variant);
     }
 
     .geofence-header {
@@ -1899,15 +2043,25 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.08));
-      border: 2px solid rgba(255, 255, 255, 0.08);
+      background: var(--surface-variant);
+      border: 2px solid var(--outline);
       border-radius: 12px;
       padding: 6px 4px;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       position: relative;
       overflow: hidden;
+      backdrop-filter: blur(10px);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="light"] .mood-vote-card {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="dark"] .mood-vote-card {
+      background: var(--dark-surface-variant);
     }
 
     .mood-vote-card::before {
@@ -2037,12 +2191,17 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--surface-variant);
+      border: 1px solid var(--outline);
       border-radius: 10px;
       padding: 12px;
       transition: var(--transition);
       cursor: pointer;
+    }
+
+    [data-theme="dark"] .vibe-category-card {
+      background: var(--dark-surface-variant);
+      border-color: var(--dark-outline);
     }
 
     .vibe-category-card:hover {
@@ -2064,32 +2223,32 @@
 
     .vibe-category-card[data-vibe="crowded"] .category-icon {
       background: rgba(255, 165, 0, 0.2);
-      color: #FFA500;
+      color: var(--warning);
     }
 
     .vibe-category-card[data-vibe="noisy"] .category-icon {
       background: rgba(255, 107, 53, 0.2);
-      color: #FF6B35;
+      color: var(--secondary);
     }
 
     .vibe-category-card[data-vibe="festive"] .category-icon {
       background: rgba(40, 167, 69, 0.2);
-      color: #28A745;
+      color: var(--success);
     }
 
     .vibe-category-card[data-vibe="calm"] .category-icon {
       background: rgba(23, 162, 184, 0.2);
-      color: #17A2B8;
+      color: var(--info);
     }
 
     .vibe-category-card[data-vibe="suspicious"] .category-icon {
       background: rgba(255, 193, 7, 0.2);
-      color: #FFC107;
+      color: var(--warning);
     }
 
     .vibe-category-card[data-vibe="dangerous"] .category-icon {
       background: rgba(220, 53, 69, 0.2);
-      color: #DC3545;
+      color: var(--danger);
     }
 
     .category-info {
@@ -2434,7 +2593,7 @@
       border-radius: 16px;
       padding: 20px;
       margin-bottom: 16px;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(20px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
       transition: var(--transition);
@@ -2581,15 +2740,20 @@
     }
 
     .stat-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-variant);
       border-radius: 12px;
       padding: 16px;
       text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--outline);
       min-height: 80px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+    }
+
+    [data-theme="light"] .stat-card {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.12);
     }
 
     .stat-number {
@@ -2627,7 +2791,8 @@
     }
 
     .report-item {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--surface-variant);
+      border: 1px solid var(--outline);
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 8px;
@@ -2635,6 +2800,11 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 12px;
+    }
+
+    [data-theme="light"] .report-item {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.08);
     }
 
     .report-info {
@@ -3370,60 +3540,6 @@
       line-height: 1.4;
     }
 
-    /* Dominant vibe styling for proper visibility */
-    .dominant-vibe {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-    }
-
-    .dominant-vibe i {
-      color: var(--primary);
-    }
-
-    /* Ensure vibe percentage is always visible in both themes */
-    .vibe-percentage {
-      color: var(--primary) !important;
-      font-weight: bold;
-      background: var(--primary-container);
-      padding: 2px 8px;
-      border-radius: 20px;
-      border: 1px solid var(--primary);
-      display: inline-block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      position: static !important; /* Force normal document flow */
-      line-height: 1.2;
-      font-size: 14px;
-      min-width: 45px;
-      text-align: center;
-    }
-
-    /* Light theme specific styling - ensure high contrast */
-    [data-theme="light"] .vibe-percentage {
-      background: rgba(26, 73, 224, 0.1);
-      border-color: var(--primary);
-      color: #1a73e8 !important;
-    }
-
-    /* Dark theme specific styling - ensure high contrast against dark background */
-    [data-theme="dark"] .vibe-percentage {
-      background: rgba(26, 73, 224, 0.2) !important;
-      border-color: #4dabff !important;
-      color: #4dabff !important;
-      box-shadow: 0 0 6px rgba(26, 73, 224, 0.3);
-    }
-
-    /* Force visibility for dominant vibe element and its children */
-    .dominant-vibe,
-    .dominant-vibe i,
-    .dominant-vibe span {
-      display: inline-block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-
     /* Force display for mobile views */
     @media (max-width: 480px) {
       #mainView,
@@ -3613,23 +3729,6 @@
       .insight-item span {
         font-size: 12px;
       }
-
-      /* Mobile-specific Vibe Header Fixes */
-      .community-vibe-sidebar .sidebar-header {
-        padding-bottom: 8px;
-      }
-
-      .dominant-vibe {
-        gap: 6px;
-        font-size: 15px;
-        padding-right: 50px;
-      }
-
-      .vibe-percentage {
-        font-size: 14px;
-        padding: 3px 6px;
-        min-width: 45px;
-      }
     }
 
 
@@ -3754,11 +3853,6 @@
     <main class="content-area">
       <!-- Main View -->
       <div id="mainView" class="view active">
-        <!-- Nearby Reports Container -->
-        <div id="nearbyReports" class="reports-container" style="display: none;">
-          <div class="loading-spinner"></div>
-        </div>
-
         <!-- Community Stats with Color-coded Sidebar -->
         <div class="card">
           <div class="card-title">
@@ -3775,6 +3869,8 @@
               <div class="stat-label">Active Users</div>
             </div>
           </div>
+
+
 
           <!-- Color-coded Community Vibe Sidebar -->
           <div class="community-vibe-sidebar" id="communityVibeSidebar">
@@ -3829,16 +3925,16 @@
             </div>
             <div class="safety-tips" id="safetyTips">
               <div class="guideline-item">
-                <i class="fas fa-heart"></i>
-                <span data-en="Stay aware and trust your instincts" data-ar="ابق يقظاً وثق بغريزتك">Stay aware and trust your instincts</span>
-              </div>
-              <div class="guideline-item">
                 <i class="fas fa-users"></i>
-                <span data-en="Travel with friends when possible" data-ar="سافر مع الأصدقاء عند الإمكان">Travel with friends when possible</span>
+                <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
               </div>
               <div class="guideline-item">
-                <i class="fas fa-home"></i>
-                <span data-en="Know your way home or to safety" data-ar="اعرف طريقك إلى المنزل أو إلى الأمان">Know your way home or to safety</span>
+                <i class="fas fa-mobile-alt"></i>
+                <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
+              </div>
+              <div class="guideline-item">
+                <i class="fas fa-share-alt"></i>
+                <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
               </div>
             </div>
           </div>
@@ -3953,11 +4049,6 @@
             <span data-en="My Dashboard" data-ar="لوحة التحكم الخاصة بي">My Dashboard</span>
           </div>
 
-          <!-- User Reports Container -->
-          <div id="userReports" class="reports-container" style="display: none;">
-            <div class="loading-spinner"></div>
-          </div>
-
           <!-- User Profile Section -->
           <div class="user-profile-section" id="userProfileSection">
             <div class="loading-spinner"></div>
@@ -4010,6 +4101,9 @@
               <div class="loading-spinner"></div>
             </div>
           </div>
+
+          <!-- User Reports Section (for JavaScript compatibility) -->
+          <div id="userReports" style="display: none;"></div>
         </div>
       </div>
 
@@ -4044,6 +4138,13 @@
               <select id="languageSelect">
                 <option value="en">English</option>
                 <option value="ar">العربية</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <span data-en="Theme" data-ar="المظهر">Theme</span>
+              <select id="themeSelect">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
               </select>
             </div>
           </div>
@@ -4150,564 +4251,61 @@
   </div>
 
   <script>
-    // HyperApp - Minimal Working Version
+    // HyperApp Mini App - Complete Fixed Implementation with Error Handling
     class HyperApp {
       constructor() {
-        this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
-        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
-        this.supabase = null;
+        // Configuration - Move these to environment variables in production
+        this.config = {
+          supabaseUrl: 'https://nqwejzbayquzsvcodunl.supabase.co',
+          supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78',
+          weatherApiKey: 'bd5e378503939ddaee76f12ad7a97608',
+          // Feature flags for graceful degradation
+          features: {
+            realtime: true,
+            geofencing: true,
+            weather: true,
+            map: true
+          }
+        };
 
-        this.tg = window.Telegram?.WebApp;
+        // Dependency loading status
+        this.dependenciesLoaded = {
+          telegram: false,
+          supabase: false,
+          leaflet: false,
+          leafletHeat: false,
+          fontAwesome: false
+        };
+
+        // Error tracking
+        this.errors = [];
+        this.fallbackMode = false;
+
+        this.tg = window.Telegram.WebApp;
         this.currentLanguage = 'en';
         this.userData = null;
         this.nearbyReports = [];
+        this.userReports = [];
         this.selectedVibe = null;
         this.isConnected = false;
         this.userLocation = null;
         this.isAuthenticated = false;
 
-        this.init();
+        // Set Supabase credentials for forced refresh
+        this.supabaseUrl = this.config.supabaseUrl;
+        this.supabaseKey = this.config.supabaseKey;
+
+        // Geofence properties
+        this.geofenceEnabled = false;
+        this.geofenceSettings = null;
+        this.geofences = [];
+        this.geofenceWatchId = null;
+        this.currentGeofenceZones = new Set(); // Track which zones user is currently in
+        this.lastGeofenceCheck = null;
+
+        // Initialize with error handling
+        this.initializeApp();
       }
-
-      async init() {
-        try {
-          // Initialize Supabase
-          this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
-
-          // Load saved theme
-          const savedTheme = localStorage.getItem('hyperapp-theme') || 'dark';
-          document.documentElement.setAttribute('data-theme', savedTheme);
-
-          // Setup event listeners
-          this.setupEventListeners();
-
-          // Check authentication
-          await this.checkAuthState();
-
-          // Load initial data
-          await this.loadNearbyReports();
-
-          // Update connection status
-          this.updateConnectionStatus(true);
-
-          console.log('HyperApp initialized successfully');
-        } catch (error) {
-          console.error('Error initializing app:', error);
-          this.showNotification('App initialization failed', 'error');
-        }
-      }
-
-      setupEventListeners() {
-        // Navigation buttons
-        document.addEventListener('click', (e) => {
-          const navBtn = e.target.closest('.nav-btn');
-          if (navBtn) {
-            const view = navBtn.getAttribute('data-view');
-            if (view) {
-              this.showView(view);
-            }
-          }
-
-          // Action buttons
-          const actionBtn = e.target.closest('.action-btn');
-          if (actionBtn) {
-            const action = actionBtn.getAttribute('data-action');
-            if (action === 'report') {
-              this.showReportModal();
-            } else if (action === 'areas') {
-              this.loadTopAreas();
-            } else if (action === 'emergency') {
-              this.showEmergencyReport();
-            }
-          }
-
-          // Vibe options
-          const vibeOption = e.target.closest('.vibe-option');
-          if (vibeOption) {
-            const vibe = vibeOption.getAttribute('data-vibe');
-            if (vibe) {
-              this.selectVibe(vibe);
-            }
-          }
-
-          // Modal close
-          const closeBtn = e.target.closest('.close');
-          if (closeBtn) {
-            const modalId = closeBtn.getAttribute('data-dismiss');
-            if (modalId) {
-              this.closeModal(modalId);
-            }
-          }
-
-          // Submit buttons
-          if (e.target.closest('#submitReportBtn')) {
-            this.submitReport();
-          }
-          if (e.target.closest('#submitEmergencyBtn')) {
-            this.submitEmergencyReport();
-          }
-
-          // Theme toggle
-          if (e.target.closest('#themeToggle')) {
-            this.toggleTheme();
-          }
-
-          // Language switcher
-          if (e.target.closest('#languageSwitcher')) {
-            this.toggleLanguage();
-          }
-        });
-      }
-
-      showView(viewId) {
-        document.querySelectorAll('.view').forEach(view => {
-          view.classList.remove('active');
-        });
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-          btn.classList.remove('active');
-        });
-
-        document.getElementById(viewId + 'View').classList.add('active');
-        document.querySelector(`.nav-btn[data-view="${viewId}"]`).classList.add('active');
-      }
-
-      async checkAuthState() {
-        if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
-          const telegramUser = this.tg.initDataUnsafe.user;
-          this.userData = telegramUser;
-          this.isAuthenticated = true;
-          await this.syncUserWithSupabase();
-          this.updateUserInfo();
-        } else {
-          this.showAuthModal();
-        }
-      }
-
-      showAuthModal() {
-        document.getElementById('authModal').style.display = 'block';
-      }
-
-      async syncUserWithSupabase() {
-        if (!this.userData) return false;
-
-        try {
-          const { data, error } = await this.supabase
-            .from('users')
-            .select('*')
-            .eq('user_id', this.userData.id)
-            .maybeSingle();
-
-          if (error) return false;
-
-          if (data) {
-            this.userData.reputation = data.reputation || 0;
-            this.userData.language = data.language || 'en';
-            this.currentLanguage = data.language || 'en';
-            this.applyLanguage(this.currentLanguage);
-            return true;
-          } else {
-            const { data: newUser, error: insertError } = await this.supabase
-              .from('users')
-              .insert([{
-                user_id: this.userData.id,
-                username: this.userData.username || this.userData.first_name || 'User',
-                reputation: 0,
-                language: 'en'
-              }])
-              .select()
-              .single();
-
-            if (insertError) return false;
-
-            this.userData.reputation = 0;
-            this.userData.language = 'en';
-            return true;
-          }
-        } catch (error) {
-          return false;
-        }
-      }
-
-      updateConnectionStatus(connected) {
-        this.isConnected = connected;
-        const statusElement = document.getElementById('connectionStatus');
-
-        if (statusElement) {
-          if (connected) {
-            statusElement.innerHTML = '<i class="fas fa-check-circle connected"></i> <span>Connected</span>';
-            statusElement.classList.add('connected');
-            statusElement.classList.remove('disconnected');
-          } else {
-            statusElement.innerHTML = '<i class="fas fa-times-circle disconnected"></i> <span>Disconnected</span>';
-            statusElement.classList.add('disconnected');
-            statusElement.classList.remove('connected');
-          }
-        }
-      }
-
-      updateUserInfo() {
-        if (this.userData) {
-          const usernameElement = document.getElementById('settingsUsername');
-          if (usernameElement) {
-            usernameElement.textContent = this.userData.username || this.userData.first_name;
-          }
-
-          document.getElementById('userReputation').textContent = this.userData.reputation || 0;
-          document.getElementById('settingsReputation').textContent = this.userData.reputation || 0;
-        }
-      }
-
-      async loadNearbyReports() {
-        try {
-          const container = document.getElementById('nearbyReports');
-          container.innerHTML = '<div class="loading-spinner"></div>';
-
-          const { data: reports, error } = await this.supabase
-            .from('reports')
-            .select('id, vibe_type, location, notes, created_at, upvotes, downvotes')
-            .order('created_at', { ascending: false })
-            .limit(20);
-
-          if (error) {
-            container.innerHTML = '<div class="no-data">Error loading reports</div>';
-            throw error;
-          }
-
-          this.nearbyReports = reports || [];
-          this.displayNearbyReports();
-          this.updateConnectionStatus(true);
-
-        } catch (error) {
-          console.error('Error loading reports:', error);
-          this.updateConnectionStatus(false);
-        }
-      }
-
-      displayNearbyReports() {
-        const container = document.getElementById('nearbyReports');
-
-        if (!this.nearbyReports || this.nearbyReports.length === 0) {
-          container.innerHTML = '<div class="no-data">No reports nearby</div>';
-          return;
-        }
-
-        container.innerHTML = this.nearbyReports.map(report => `
-          <div class="report-item">
-            <div class="report-info">
-              <div class="report-type">
-                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
-                <span>${this.capitalizeFirstLetter(report.vibe_type)}</span>
-              </div>
-              <div class="report-details">${report.notes || ''}</div>
-              <div class="report-meta">
-                <span>${report.location || 'Unknown location'}</span>
-                <span>${this.formatTimeAgo(report.created_at)}</span>
-              </div>
-            </div>
-            <div class="report-actions">
-              <button class="vote-btn upvote-btn">
-                <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
-              </button>
-              <button class="vote-btn downvote-btn">
-                <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
-              </button>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      showReportModal() {
-        this.selectedVibe = null;
-        document.querySelectorAll('.vibe-option').forEach(option => {
-          option.classList.remove('selected');
-        });
-        document.getElementById('reportNotes').value = '';
-        document.getElementById('reportModal').style.display = 'block';
-      }
-
-      selectVibe(vibe) {
-        this.selectedVibe = vibe;
-        document.querySelectorAll('.vibe-option').forEach(option => {
-          option.classList.remove('selected');
-        });
-        document.querySelector(`.vibe-option[data-vibe="${vibe}"]`).classList.add('selected');
-      }
-
-      async submitReport() {
-        if (!this.selectedVibe) {
-          this.showNotification("Please select a vibe type", "error");
-          return;
-        }
-
-        const notes = document.getElementById('reportNotes').value;
-
-        try {
-          const { data, error } = await this.supabase
-            .from('reports')
-            .insert([{
-              user_id: null,
-              vibe_type: this.selectedVibe,
-              location: 'Test Location',
-              notes: notes || null
-            }])
-            .select();
-
-          if (error) {
-            this.showNotification("Failed to submit report", "error");
-          } else {
-            this.showNotification("Report submitted successfully", "success");
-            this.closeModal('reportModal');
-            await this.loadNearbyReports();
-          }
-        } catch (error) {
-          this.showNotification("Failed to submit report", "error");
-        }
-      }
-
-      showEmergencyReport() {
-        document.getElementById('emergencyDetails').value = '';
-        document.getElementById('emergencyModal').style.display = 'block';
-      }
-
-      async submitEmergencyReport() {
-        const details = document.getElementById('emergencyDetails').value;
-
-        if (!details) {
-          this.showNotification("Please provide emergency details", "error");
-          return;
-        }
-
-        try {
-          const { data, error } = await this.supabase
-            .from('reports')
-            .insert([{
-              user_id: null,
-              vibe_type: 'dangerous',
-              location: 'Emergency Location',
-              notes: `EMERGENCY: ${details}`
-            }])
-            .select();
-
-          if (error) {
-            this.showNotification("Failed to submit emergency report", "error");
-          } else {
-            this.showNotification("Emergency report submitted successfully", "success");
-            this.closeModal('emergencyModal');
-            await this.loadNearbyReports();
-          }
-        } catch (error) {
-          this.showNotification("Failed to submit emergency report", "error");
-        }
-      }
-
-      async loadTopAreas() {
-        try {
-          const modalContent = `
-            <div class="modal-content">
-              <div class="modal-header">
-                <h2>Top Areas</h2>
-                <span class="close" data-dismiss="topAreasModal">&times;</span>
-              </div>
-              <div class="modal-body">
-                <div class="loading-spinner"></div>
-                <p>Analyzing community reports...</p>
-              </div>
-            </div>
-          `;
-
-          let modal = document.getElementById('topAreasModal');
-          if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'topAreasModal';
-            modal.className = 'modal';
-            document.body.appendChild(modal);
-          }
-          modal.innerHTML = modalContent;
-          modal.style.display = 'block';
-
-          const { data: reports, error } = await this.supabase
-            .from('reports')
-            .select('location, vibe_type')
-            .not('location', 'is', null)
-            .order('created_at', { ascending: false })
-            .limit(500);
-
-          if (error) {
-            modal.innerHTML = `
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h2>Top Areas</h2>
-                  <span class="close" data-dismiss="topAreasModal">&times;</span>
-                </div>
-                <div class="modal-body">
-                  <p>Error loading top areas data</p>
-                </div>
-              </div>
-            `;
-            return;
-          }
-
-          const areaStats = {};
-          reports.forEach(report => {
-            const location = report.location || 'Unknown';
-            if (!areaStats[location]) {
-              areaStats[location] = { total: 0, vibes: {} };
-            }
-            areaStats[location].total++;
-            areaStats[location].vibes[report.vibe_type] = (areaStats[location].vibes[report.vibe_type] || 0) + 1;
-          });
-
-          const topAreas = Object.entries(areaStats)
-            .sort(([,a], [,b]) => b.total - a.total)
-            .slice(0, 10);
-
-          const areasHtml = topAreas.length > 0 ? topAreas.map(([location, data], index) => `
-            <div class="area-item">
-              <div class="area-header">
-                <div class="area-rank">#${index + 1}</div>
-                <div class="area-info">
-                  <h3>${location}</h3>
-                  <span class="area-count">${data.total} report${data.total > 1 ? 's' : ''}</span>
-                </div>
-              </div>
-              <div class="area-vibes">
-                ${Object.entries(data.vibes).map(([vibe, count]) => `
-                  <span class="vibe-tag vibe-${vibe}">
-                    <i class="${this.getVibeIcon(vibe)}"></i>
-                    ${this.capitalizeFirstLetter(vibe)}: ${count}
-                  </span>
-                `).join('')}
-              </div>
-            </div>
-          `).join('') : '<p>No area data available yet.</p>';
-
-          modal.innerHTML = `
-            <div class="modal-content">
-              <div class="modal-header">
-                <h2>Top Areas</h2>
-                <span class="close" data-dismiss="topAreasModal">&times;</span>
-              </div>
-              <div class="modal-body">
-                <p>Areas ranked by number of community safety reports</p>
-                <div class="top-areas-list">
-                  ${areasHtml}
-                </div>
-              </div>
-            </div>
-          `;
-
-        } catch (error) {
-          console.error("Error loading top areas:", error);
-          this.showNotification("Failed to load top areas", "error");
-        }
-      }
-
-      toggleLanguage() {
-        this.currentLanguage = this.currentLanguage === 'en' ? 'ar' : 'en';
-        document.getElementById('currentLanguage').textContent = this.currentLanguage.toUpperCase();
-        this.applyLanguage(this.currentLanguage);
-      }
-
-      applyLanguage(lang) {
-        document.querySelectorAll('[data-en]').forEach(element => {
-          if (element.getAttribute('data-' + lang)) {
-            element.textContent = element.getAttribute('data-' + lang);
-          }
-        });
-        document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-      }
-
-      toggleTheme() {
-        const root = document.documentElement;
-        const currentTheme = root.getAttribute('data-theme') || 'dark';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-        root.setAttribute('data-theme', newTheme);
-        localStorage.setItem('hyperapp-theme', newTheme);
-
-        const themeIcon = document.querySelector('#themeToggle i');
-        if (themeIcon) {
-          themeIcon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        }
-
-        this.showNotification(`Switched to ${newTheme} theme`, 'info');
-      }
-
-      showNotification(message, type = 'info', duration = 3000) {
-        const existingNotification = document.querySelector('.notification');
-        if (existingNotification) {
-          existingNotification.remove();
-        }
-
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-
-        let icon = 'fas fa-info-circle';
-        if (type === 'success') icon = 'fas fa-check-circle';
-        if (type === 'error') icon = 'fas fa-exclamation-circle';
-        if (type === 'warning') icon = 'fas fa-exclamation-triangle';
-
-        notification.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.remove();
-          }
-        }, duration);
-      }
-
-      closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-      }
-
-      getVibeIcon(vibeType) {
-        const icons = {
-          crowded: 'fas fa-users',
-          noisy: 'fas fa-volume-up',
-          festive: 'fas fa-glass-cheers',
-          calm: 'fas fa-peace',
-          suspicious: 'fas fa-eye-slash',
-          dangerous: 'fas fa-exclamation-triangle'
-        };
-        return icons[vibeType] || 'fas fa-question-circle';
-      }
-
-      capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-      }
-
-      formatTimeAgo(timestamp) {
-        const now = new Date();
-        const time = new Date(timestamp);
-        const diffInSeconds = Math.floor((now - time) / 1000);
-
-        if (diffInSeconds < 60) {
-          return 'Just now';
-        }
-
-        const diffInMinutes = Math.floor(diffInSeconds / 60);
-        if (diffInMinutes < 60) {
-          return `${diffInMinutes} min ago`;
-        }
-
-        const diffInHours = Math.floor(diffInMinutes / 60);
-        if (diffInHours < 24) {
-          return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-        }
-
-        const diffInDays = Math.floor(diffInHours / 24);
-        return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-      }
-    }
-
-    // Initialize the app when the page loads
-    document.addEventListener('DOMContentLoaded', () => {
-      window.app = new HyperApp();
-    });
-  </script>
-</body>
-</html>
 
       // Medium-term error handling - balanced approach
       async initializeApp() {
@@ -4831,6 +4429,16 @@
         // Load all data synchronously after location is available
         await this.loadAllDataImmediately();
 
+        // Defer DOM-dependent operations until next tick to ensure DOM is ready
+        setTimeout(() => {
+          this.initializeDOMDependentFeatures();
+        }, 0);
+
+        // Make app instance globally available
+        window.hyperApp = this;
+      }
+
+      async initializeDOMDependentFeatures() {
         // Set up real-time subscriptions after initial data load
         this.setupRealtimeSubscriptions();
 
@@ -4838,9 +4446,6 @@
         if (this.isAuthenticated) {
           await this.loadGeofenceSettings();
         }
-
-        // Make app instance globally available
-        window.hyperApp = this;
       }
 
       async fastInitialLoad() {
@@ -5827,12 +5432,6 @@
       }
       
       async submitReport() {
-        console.log('=== SUBMIT REPORT DEBUG ===');
-        console.log('Selected vibe:', this.selectedVibe);
-        console.log('Current location:', this.currentReportLocation);
-        console.log('User location:', this.userLocation);
-        console.log('Supabase client:', !!this.supabase);
-
         if (!this.selectedVibe) {
           this.showNotification("Please select a vibe type", "error");
           return;
@@ -5851,33 +5450,23 @@
 
         try {
           const notes = document.getElementById('reportNotes').value;
-          console.log('Report notes:', notes);
 
-          // Check for existing report with same vibe and location (with timeout)
-          console.log('Checking for existing reports...');
-          const { data: existingReports, error: checkError } = await Promise.race([
-            this.supabase
-              .from('reports')
-              .select('id, created_at')
-              .eq('vibe_type', this.selectedVibe)
-              .eq('location', this.currentReportLocation)
-              .order('created_at', { ascending: false })
-              .limit(1),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Check timeout')), 5000)
-            )
-          ]);
+          // Check for existing report with same vibe and location
+          const { data: existingReports, error: checkError } = await this.supabase
+            .from('reports')
+            .select('id, created_at')
+            .eq('vibe_type', this.selectedVibe)
+            .eq('location', this.currentReportLocation)
+            .order('created_at', { ascending: false })
+            .limit(1);
 
           if (checkError) {
             console.error("Error checking for existing reports:", checkError);
-            // Continue with submission even if check fails
           } else if (existingReports && existingReports.length > 0) {
             const existingReport = existingReports[0];
             const reportTime = new Date(existingReport.created_at);
             const now = new Date();
             const timeDiff = (now - reportTime) / (1000 * 60); // Difference in minutes
-
-            console.log('Time difference:', timeDiff);
 
             // If a similar report exists within the last 30 minutes, don't create a duplicate
             if (timeDiff < 30) {
@@ -5899,35 +5488,23 @@
           if (this.userLocation) {
             reportData.latitude = this.userLocation.latitude;
             reportData.longitude = this.userLocation.longitude;
-            console.log('Adding coordinates:', this.userLocation.latitude, this.userLocation.longitude);
           }
 
-          console.log('Report data to submit:', reportData);
-
-          // Submit with timeout
-          const { data, error } = await Promise.race([
-            this.supabase
-              .from('reports')
-              .insert([reportData])
-              .select(),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Submission timeout')), 10000)
-            )
-          ]);
+          const { data, error } = await this.supabase
+            .from('reports')
+            .insert([reportData])
+            .select();
 
           if (error) {
             console.error("Error submitting report:", error);
             let errorMessage = "Failed to submit report";
             if (error.message.includes('network') || error.message.includes('fetch')) {
               errorMessage = "Network error. Please check your connection and try again.";
-            } else if (error.message.includes('timeout')) {
-              errorMessage = "Request timed out. Please try again.";
             } else {
               errorMessage = `Failed to submit report: ${error.message}`;
             }
             this.showNotification(errorMessage, "error");
           } else {
-            console.log('Report submitted successfully:', data);
             this.showNotification("Report submitted successfully", "success");
             this.closeModal('reportModal');
             // Reload data to show the new report
@@ -5935,24 +5512,17 @@
             // Refresh map to show new report
             this.loadMap();
           }
-        } catch (error) {
-          console.error('Submission error:', error);
-          let errorMessage = "Failed to submit report";
-          if (error.message.includes('timeout')) {
-            errorMessage = "Request timed out. Please check your connection and try again.";
-          } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            errorMessage = "Network error. Please check your connection and try again.";
-          } else if (error.message.includes('Location')) {
-            errorMessage = "Location error. Please enable location services and try again.";
-          } else {
-            errorMessage = `Error: ${error.message}`;
+          } catch (error) {
+            let errorMessage = "Unable to get your location";
+            if (error.code === 1) {
+              errorMessage = "Location access denied. Please enable location permissions in your browser settings.";
+            } else if (error.code === 2) {
+              errorMessage = "Location unavailable. Please check your GPS settings and try again.";
+            } else if (error.code === 3) {
+              errorMessage = "Location request timed out. This can happen in poor signal areas. Please try again.";
+            }
+            this.showNotification(errorMessage, "error");
           }
-          this.showNotification(errorMessage, "error");
-        } finally {
-          // Reset button state
-          submitBtn.textContent = originalText;
-          submitBtn.disabled = false;
-        }
       }
       
       showEmergencyReport() {
@@ -6270,7 +5840,7 @@
       
       loadMap() {
         const mapContainer = document.getElementById('mapContainer');
-        const hasReports = this.nearbyReports && this.nearbyReports.length > 0;
+        const hasReports = (this.nearbyReports && this.nearbyReports.length > 0) || (this.mapReports && this.mapReports.length > 0);
 
         // Clear any existing map
         if (this.map) {
@@ -6311,40 +5881,24 @@
         const mapElement = document.getElementById('leaflet-map');
         if (!mapElement) return;
 
-        // Check if Leaflet is loaded
-        if (typeof L === 'undefined') {
-          console.error('Leaflet library not loaded');
-          mapElement.innerHTML = `
-            <div class="map-placeholder-center">
-              <i class="fas fa-exclamation-triangle"></i>
-              <p>Map unavailable - Leaflet library failed to load</p>
-              <button class="btn" onclick="window.app.loadMap()">Retry</button>
-            </div>
-          `;
-          return;
+        // Default center (can be user's location if available)
+        let initialCenter = [30.0444, 31.2357]; // Cairo, Egypt as default
+        let initialZoom = 10;
+
+        // If we already have user location, use it
+        if (this.userLocation) {
+          initialCenter = [this.userLocation.latitude, this.userLocation.longitude];
+          initialZoom = 13;
         }
 
-        try {
+        // Create map
+        this.map = L.map('leaflet-map').setView(initialCenter, initialZoom);
 
-        try {
-          // Default center (can be user's location if available)
-          let initialCenter = [30.0444, 31.2357]; // Cairo, Egypt as default
-          let initialZoom = 10;
-
-          // If we already have user location, use it
-          if (this.userLocation) {
-            initialCenter = [this.userLocation.latitude, this.userLocation.longitude];
-            initialZoom = 13;
-          }
-
-          // Create map
-          this.map = L.map('leaflet-map').setView(initialCenter, initialZoom);
-
-          // Add OpenStreetMap tiles
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19,
-          }).addTo(this.map);
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+        }).addTo(this.map);
 
         // Wait for map to be fully loaded before adding markers
         this.map.whenReady(() => {
@@ -7506,240 +7060,186 @@
       }
       
       setupEventListeners() {
-        try {
-          // Use delegated event listeners for all interactions to ensure they work with dynamically created content
-          document.addEventListener('click', this.handleGlobalClick.bind(this));
-
-          // Setup offline indicator
-          this.setupOfflineIndicator();
-
-          // Setup mobile-specific interactions
-          this.setupMobileInteractions();
-
-          console.log('Event listeners setup completed successfully');
-        } catch (error) {
-          console.error('Error setting up event listeners:', error);
-          this.showNotification('Some interactive features may not work properly', 'warning');
-        }
-      }
-
-      // Centralized click handler for all interactive elements
-      handleGlobalClick(e) {
-        const target = e.target;
-
         // Navigation buttons
-        const navBtn = target.closest('.nav-btn');
-        if (navBtn) {
-          e.preventDefault();
-          const view = navBtn.getAttribute('data-view');
-          if (view) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const view = e.currentTarget.getAttribute('data-view');
             this.showView(view);
-          }
-          return;
-        }
-
+          });
+        });
+        
         // Language switcher
-        if (target.closest('#languageSwitcher')) {
-          e.preventDefault();
-          this.toggleLanguage();
-          return;
+        const languageSwitcher = document.getElementById('languageSwitcher');
+        if (languageSwitcher) {
+          languageSwitcher.addEventListener('click', this.toggleLanguage);
         }
-
+        
         // Location button
-        if (target.closest('#locationBtn')) {
-          e.preventDefault();
-          this.requestUserLocationManually();
-          return;
+        const locationBtn = document.getElementById('locationBtn');
+        if (locationBtn) {
+          locationBtn.addEventListener('click', () => {
+            this.requestUserLocationManually();
+          });
         }
 
         // Refresh button
-        if (target.closest('#refreshBtn')) {
-          e.preventDefault();
-          this.forceDataRefresh();
-          return;
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+          refreshBtn.addEventListener('click', () => {
+            this.forceDataRefresh();
+          });
         }
-
-        // Action buttons (report, areas, emergency)
-        const actionBtn = target.closest('.action-btn');
-        if (actionBtn) {
-          e.preventDefault();
-          const action = actionBtn.getAttribute('data-action');
-          if (action === 'report') {
-            this.showReportModal();
-          } else if (action === 'areas') {
-            this.loadTopAreas();
-          } else if (action === 'emergency') {
-            this.showEmergencyReport();
-          }
-          return;
-        }
-
+        
+        // Quick action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const action = e.currentTarget.getAttribute('data-action');
+            if (action === 'report') {
+              this.showReportModal();
+            } else if (action === 'areas') {
+              this.loadTopAreas();
+            } else if (action === 'emergency') {
+              this.showEmergencyReport();
+            }
+          });
+        });
+        
         // Vibe option buttons
-        const vibeOption = target.closest('.vibe-option');
-        if (vibeOption) {
-          e.preventDefault();
-          const vibe = vibeOption.getAttribute('data-vibe');
-          if (vibe) {
+        document.querySelectorAll('.vibe-option').forEach(option => {
+          option.addEventListener('click', (e) => {
+            const vibe = e.currentTarget.getAttribute('data-vibe');
             this.selectVibe(vibe);
-          }
-          return;
-        }
-
+          });
+        });
+        
         // Modal close buttons
-        const closeBtn = target.closest('.close');
-        if (closeBtn) {
-          e.preventDefault();
-          const modalId = closeBtn.getAttribute('data-dismiss');
-          if (modalId) {
-            this.closeModal(modalId);
-          }
-          return;
-        }
-
+        document.querySelectorAll('.close').forEach(closeBtn => {
+          closeBtn.addEventListener('click', (e) => {
+            const modalId = e.target.getAttribute('data-dismiss');
+            if (modalId) {
+              this.closeModal(modalId);
+            }
+          });
+        });
+        
         // Form submit buttons
-        if (target.closest('#submitReportBtn')) {
-          e.preventDefault();
-          this.submitReport();
-          return;
+        const reportSubmitBtn = document.getElementById('submitReportBtn');
+        if (reportSubmitBtn) {
+          reportSubmitBtn.addEventListener('click', this.submitReport);
+        }
+        
+        const emergencySubmitBtn = document.getElementById('submitEmergencyBtn');
+        if (emergencySubmitBtn) {
+          emergencySubmitBtn.addEventListener('click', this.submitEmergencyReport);
+        }
+        
+        // Language select dropdown
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+          languageSelect.addEventListener('change', (e) => {
+            this.changeLanguage(e.target.value);
+          });
         }
 
-        if (target.closest('#submitEmergencyBtn')) {
-          e.preventDefault();
-          this.submitEmergencyReport();
-          return;
-        }
+        // Logout button event delegation
+        document.addEventListener('click', (e) => {
+          if (e.target.id === 'logoutBtn' || e.target.closest('#logoutBtn')) {
+            this.handleLogout();
+          }
+        });
 
-        // Logout button
-        if (target.closest('#logoutBtn')) {
-          e.preventDefault();
-          this.handleLogout();
-          return;
-        }
+        // Delegated vote buttons handler
+        document.addEventListener('click', (e) => {
+          const btn = e.target.closest('.vote-btn');
+          if (!btn) return;
 
-        // Vote buttons
-        const voteBtn = target.closest('.vote-btn');
-        if (voteBtn) {
           e.preventDefault();
 
           // If user not authenticated, show auth modal and info
-          if (voteBtn.getAttribute('aria-disabled') === 'true') {
+          if (btn.getAttribute('aria-disabled') === 'true') {
             this.showNotification("Please login to vote on reports", "info");
             this.showAuthModal();
             return;
           }
 
-          const reportId = voteBtn.dataset.reportId;
-          const voteType = voteBtn.dataset.voteType;
+          const reportId = btn.dataset.reportId;
+          const voteType = btn.dataset.voteType;
           if (reportId && voteType) {
             this.voteReport(reportId, voteType);
           }
-          return;
-        }
+        });
 
         // Map button in empty state
-        if (target.closest('#firstReportBtn')) {
-          e.preventDefault();
-          this.showReportModal();
-          return;
-        }
+        document.addEventListener('click', (e) => {
+          if (e.target.id === 'firstReportBtn' || e.target.closest('#firstReportBtn')) {
+            this.showReportModal();
+          }
+        });
 
         // Filter buttons
-        const filterBtn = target.closest('.filter-btn');
-        if (filterBtn) {
-          e.preventDefault();
-          const filter = filterBtn.dataset.filter;
-          if (filter) {
+        document.addEventListener('click', (e) => {
+          const filterBtn = e.target.closest('.filter-btn');
+          if (filterBtn) {
+            const filter = filterBtn.dataset.filter;
             this.filterReports(filter);
           }
-          return;
-        }
+        });
 
         // Emergency contact buttons
-        const emergencyBtn = target.closest('.emergency-btn');
-        if (emergencyBtn && emergencyBtn.dataset.contact) {
-          e.preventDefault();
-          const contact = emergencyBtn.dataset.contact;
-          this.callEmergency(contact);
-          return;
-        }
+        document.addEventListener('click', (e) => {
+          const emergencyBtn = e.target.closest('.emergency-btn');
+          if (emergencyBtn && emergencyBtn.dataset.contact) {
+            const contact = emergencyBtn.dataset.contact;
+            this.callEmergency(contact);
+          }
+        });
 
         // Theme toggle
-        if (target.closest('#themeToggle')) {
-          e.preventDefault();
-          this.toggleTheme();
-          return;
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+          themeToggle.addEventListener('click', () => {
+            this.toggleTheme();
+          });
         }
 
-        // Vibe category cards
-        const vibeCard = target.closest('.vibe-category-card');
-        if (vibeCard) {
-          e.preventDefault();
-          const vibeType = vibeCard.dataset.vibe;
-          if (vibeType) {
+        // Vibe category cards click handler
+        document.addEventListener('click', (e) => {
+          const vibeCard = e.target.closest('.vibe-category-card');
+          if (vibeCard) {
+            const vibeType = vibeCard.dataset.vibe;
             this.showVibeCategoryReports(vibeType);
           }
-          return;
-        }
+        });
 
-        // Mood vote cards
-        const moodCard = target.closest('.mood-vote-card');
-        if (moodCard) {
-          e.preventDefault();
-          const moodType = moodCard.dataset.mood;
-          if (moodType) {
+        // Mood vote cards click handler
+        document.addEventListener('click', (e) => {
+          const moodCard = e.target.closest('.mood-vote-card');
+          if (moodCard) {
+            const moodType = moodCard.dataset.mood;
             this.selectMood(moodType);
           }
-          return;
-        }
+        });
 
-        // Geofence toggle button
-        if (target.closest('#geofenceToggleBtn')) {
-          e.preventDefault();
-          this.toggleGeofenceMonitoring();
-          return;
-        }
-
-        // Privacy policy button
-        if (target.closest('[data-action="privacy-policy"]')) {
-          e.preventDefault();
-          this.showPrivacyPolicy();
-          return;
-        }
-
-        // Auth buttons
-        if (target.closest('#loginBtn')) {
-          e.preventDefault();
-          this.handleAuthLogin();
-          return;
-        }
-
-        if (target.closest('#signupBtn')) {
-          e.preventDefault();
-          this.handleAuthSignup();
-          return;
-        }
-
-        if (target.closest('#closeAuth')) {
-          e.preventDefault();
-          this.hideAuthModal();
-          return;
-        }
-
-        // Auth tabs
-        const authTab = target.closest('.auth-tab');
-        if (authTab) {
-          e.preventDefault();
-          const tabName = authTab.getAttribute('data-tab');
-          if (tabName) {
-            // Switch auth tabs
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.auth-form').forEach(f => f.classList.add('hidden'));
-            authTab.classList.add('active');
-            document.getElementById(tabName + 'Form').classList.remove('hidden');
+        // Geofence toggle button handler
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('#geofenceToggleBtn')) {
+            this.toggleGeofenceMonitoring();
           }
-          return;
-        }
-      }
+        });
+
+        // Privacy policy button handler
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('[data-action="privacy-policy"]')) {
+            this.showPrivacyPolicy();
+          }
+        });
+
+        // Setup offline indicator
+        this.setupOfflineIndicator();
+
+      // Setup mobile-specific interactions
+      this.setupMobileInteractions();
+    }
 
 
 
@@ -8777,209 +8277,103 @@
       generateDynamicSafetyTips() {
         const safetyTipsContainer = document.getElementById('safetyTips');
 
-        // Get current time and context
-        const now = new Date();
-        const hour = now.getHours();
-        const isNightTime = hour >= 22 || hour <= 6;
-        const isEvening = hour >= 18 && hour < 22;
-        const isMorningRush = hour >= 7 && hour <= 9;
+        if (!this.nearbyReports || this.nearbyReports.length === 0) {
+          // Default tips when no reports
+          safetyTipsContainer.innerHTML = `
+            <div class="guideline-item">
+              <i class="fas fa-users"></i>
+              <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
+            </div>
+            <div class="guideline-item">
+              <i class="fas fa-mobile-alt"></i>
+              <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
+            </div>
+            <div class="guideline-item">
+              <i class="fas fa-share-alt"></i>
+              <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
+            </div>
+          `;
+          return;
+        }
 
-        // Analyze recent reports and trends
-        const recentReports = this.nearbyReports.slice(0, 15); // More reports for better analysis
+        // Analyze recent reports to generate relevant safety tips
+        const recentReports = this.nearbyReports.slice(0, 10); // Last 10 reports
         const vibeCounts = {};
-        const recentVibes = [];
-        let communityActivity = 0;
 
         recentReports.forEach(report => {
           vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
-          recentVibes.push(report.vibe_type);
-
-          // Calculate recent activity (reports in last 2 hours)
-          const reportTime = new Date(report.created_at);
-          const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-          if (reportTime > twoHoursAgo) {
-            communityActivity++;
-          }
         });
-
-        // Determine dominant vibe patterns
-        const totalReports = Object.values(vibeCounts).reduce((a, b) => a + b, 0);
-        let dominantVibe = null;
-        let dominantCount = 0;
-
-        Object.entries(vibeCounts).forEach(([vibe, count]) => {
-          if (count > dominantCount) {
-            dominantVibe = vibe;
-            dominantCount = count;
-          }
-        });
-
-        // Calculate danger level
-        const dangerCount = (vibeCounts.dangerous || 0) + (vibeCounts.suspicious || 0);
-        const dangerRatio = totalReports > 0 ? dangerCount / totalReports : 0;
-        const safetyLevel = dangerRatio > 0.5 ? 'high_risk' : dangerRatio > 0.2 ? 'moderate_risk' : 'safe';
 
         const tips = [];
-        const isEnglish = this.currentLanguage === 'en';
 
-        // Generate highly contextual tips based on multiple factors
-
-        // Time-based tips first
-        if (isNightTime) {
-          if (vibeCounts.dangerous > 0 || vibeCounts.suspicious > 0) {
-            tips.push({
-              icon: 'fas fa-moon',
-              text: isEnglish ? "Be extra careful at night - stick to well-lit areas and well-traveled routes" : "كن حذراً بشكل خاص ليلاً - التزم بالمناطق المضيئة والطرق المزدحمة"
-            });
-          } else {
-            tips.push({
-              icon: 'fas fa-moon',
-              text: isEnglish ? "Nighttime tip: Walk confidently and stay aware of your surroundings" : "نصيحة ليلاً: امش بثقة وابق على دراية بمحيطك"
-            });
-          }
-        } else if (isEvening) {
+        // Generate tips based on most common vibes
+        if (vibeCounts.dangerous > 0) {
           tips.push({
-            icon: 'fas fa-clock',
-            text: isEnglish ? "Evening reminder: Stay visible and keep your phone easily accessible" : "تذكير مسائي: كن مرئياً واحتفظ بهاتفك متاحاً بسهولة"
-          });
-        } else if (dominantVibe === 'crowded' && isMorningRush) {
-          tips.push({
-            icon: 'fas fa-traffic-light',
-            text: isEnglish ? "Morning rush hour - be mindful of busy streets and crowded transport" : "ساعات الذروة الصباحية - كن على دراية بالشوارع المزدحمة والمواصلات المليئة"
+            icon: 'fas fa-exclamation-triangle',
+            text: this.currentLanguage === 'en'
+              ? 'High danger reports in area - stay vigilant'
+              : 'تقارير خطر عالية في المنطقة - كن يقظاً'
           });
         }
 
-        // Location-based contextual tips
-        if (this.userLocation) {
-          // Weather-based tips (would integrate with weather data)
-          const weatherData = localStorage.getItem('hyperapp_weather_data');
-          if (weatherData) {
-            try {
-              const weather = JSON.parse(weatherData);
-              const temp = weather.main?.temp || 20;
-
-              if (temp < 10) {
-                tips.push({
-                  icon: 'fas fa-temperature-low',
-                  text: isEnglish ? "Cold weather tip: Dress warmly and be prepared for slippery conditions" : "نصيحة في الطقس البارد: ارتدِ ملابس دافئة واستعد للظروف الزلقة"
-                });
-              } else if (temp > 30) {
-                tips.push({
-                  icon: 'fas fa-sun',
-                  text: isEnglish ? "Hot day reminder: Stay hydrated and seek shade when needed" : "تذكير في يوم حار: ابق رطباً واطلب الظل عند الحاجة"
-                });
-              }
-            } catch (e) {
-              // Weather data parse error, skip weather tips
-            }
-          }
-        }
-
-        // Community activity-based tips
-        if (communityActivity > 3) {
+        if (vibeCounts.crowded > vibeCounts.calm) {
           tips.push({
-            icon: 'fas fa-users-cog',
-            text: isEnglish ? "Community is very active here - great time to see how others stay safe!" : "المجتمع نشط جداً هنا - وقت رائع لرؤية كيف يحافظ الآخرون على سلامتهم!"
-          });
-        } else if (communityActivity === 0) {
-          tips.push({
-            icon: 'fas fa-user-plus',
-            text: isEnglish ? "Consider submitting a report to help others know about local conditions" : "فكر في إرسال تقرير لمساعدة الآخرين على معرفة ظروف المنطقة المحلية"
+            icon: 'fas fa-users',
+            text: this.currentLanguage === 'en'
+              ? 'Area appears crowded - be aware of surroundings'
+              : 'المنطقة تبدو مزدحمة - كن على دراية بمحيطك'
           });
         }
 
-        // Vibe-specific tips with more friendly language
-        if (safetyLevel === 'safe' || totalReports === 0) {
-          // Positive, reassuring tips for safe areas
-          const safeTips = [
+        if (vibeCounts.suspicious > 0) {
+          tips.push({
+            icon: 'fas fa-eye-slash',
+            text: this.currentLanguage === 'en'
+              ? 'Suspicious activity reported - trust your instincts'
+              : 'تم الإبلاغ عن نشاط مشبوه - ثق بغريزتك'
+          });
+        }
+
+        // Add default tips if we don't have enough specific ones
+        if (tips.length < 3) {
+          const defaultTips = [
             {
-              icon: 'fas fa-heart',
-              text: isEnglish ? "This area feels like a welcoming community - enjoy your time here!" : "هذه المنطقة تبدو كمجتمع مضياف - استمتع بوقتك هنا!"
+              icon: 'fas fa-mobile-alt',
+              text: this.currentLanguage === 'en'
+                ? 'Keep your phone charged and accessible'
+                : 'احتفظ بهاتفك مشحوناً ومتاحاً'
             },
             {
-              icon: 'fas fa-shield-alt',
-              text: isEnglish ? "Great community spirit here - people are looking out for each other" : "روح مجتمعية رائعة هنا - الناس يراقبون بعضهم بعضاً"
+              icon: 'fas fa-share-alt',
+              text: this.currentLanguage === 'en'
+                ? 'Share your location with trusted contacts'
+                : 'شارك موقعك مع جهات الاتصال الموثوقة'
             },
             {
-              icon: 'fas fa-smile',
-              text: isEnglish ? "Feeling good about your surroundings? Help others by sharing positive vibes!" : "تشعر بالراحة حولك؟ ساعد الآخرين بمشاركة الطاقة الإيجابية!"
+              icon: 'fas fa-users',
+              text: this.currentLanguage === 'en'
+                ? 'Stay aware of your surroundings'
+                : 'ابق على دراية بمحيطك'
             }
           ];
-          tips.push(...safeTips.slice(0, 3 - tips.length));
-        } else {
-          // Contextual tips based on specific vibes
-          if (dominantVibe === 'dangerous') {
-            tips.push({
-              icon: 'fas fa-exclamation-triangle',
-              text: isEnglish ? "Safety first: Take a moment to plan your route and stay alert" : "السلامة أولاً: خذ لحظة لتخطيط مسارك وابق يقظاً"
-            });
-          } else if (dominantVibe === 'crowded') {
-            tips.push({
-              icon: 'fas fa-users',
-              text: isEnglish ? "Popular spot! Keep an eye on your belongings in crowded areas" : "مكان شهير! راقب متعلقاتك في المناطق المزدحمة"
-            });
-          } else if (dominantVibe === 'suspicious') {
-            tips.push({
-              icon: 'fas fa-eye',
-              text: isEnglish ? "Trust your instincts - if something feels off, it's okay to move to a different area" : "ثق بغريزتك - إذا شعرت بشيء غريب، من المقبول الانتقال إلى منطقة أخرى"
-            });
-          } else if (dominantVibe === 'festive') {
-            tips.push({
-              icon: 'fas fa-glass-cheers',
-              text: isEnglish ? "Great atmosphere! Celebrate responsibly and help keep everyone safe" : "أجواء رائعة! احتفل بمسؤولية وساعد في الحفاظ على سلامة الجميع"
-            });
+
+          // Add default tips to fill up to 3
+          while (tips.length < 3 && defaultTips.length > 0) {
+            const tip = defaultTips.shift();
+            if (!tips.find(t => t.text === tip.text)) {
+              tips.push(tip);
+            }
           }
         }
 
-        // Add personalized tips based on user behavior patterns
-        if (this.isAuthenticated && this.userData) {
-          // Add a tip about being part of the community
-          tips.push({
-            icon: 'fas fa-user-friends',
-            text: isEnglish ? "You're part of keeping this community safe - thank you!" : "أنت جزء من الحفاظ على سلامة هذا المجتمع - شكراً لك!"
-          });
-        }
-
-        // Add default essential tips if we still need more
-        const essentialTips = [
-          {
-            icon: 'fas fa-mobile-alt',
-            text: isEnglish ? "Pro tip: Keep your phone charged and ready for emergencies" : "نصيحة ذكية: احتفظ بهاتفك مشحوناً وجاهز للطوارئ"
-          },
-          {
-            icon: 'fas fa-map-marked-alt',
-            text: isEnglish ? "Smart choice: Know your exits and have a backup plan" : "اختيار ذكي: اعرف مخارجك واحتفظ بخطة احتياطية"
-          },
-          {
-            icon: 'fas fa-hands-helping',
-            text: isEnglish ? "Remember: Real safety comes from community awareness and support" : "تذكر: تأتي السلامة الحقيقية من وعي المجتمع والدعم المتبادل"
-          }
-        ];
-
-        // Fill remaining slots with essential tips
-        let tipIndex = 0;
-        while (tips.length < 3 && tipIndex < essentialTips.length) {
-          const tip = essentialTips[tipIndex++];
-          if (!tips.find(t => t.text === tip.text)) {
-            tips.push(tip);
-          }
-        }
-
-        // Limit to 3 tips and update UI with smooth transitions
+        // Limit to 3 tips and update UI
         const displayTips = tips.slice(0, 3);
-
-        // Add fade effect for tip updates
-        safetyTipsContainer.style.opacity = '0';
-        setTimeout(() => {
-          safetyTipsContainer.innerHTML = displayTips.map(tip => `
-            <div class="guideline-item">
-              <i class="${tip.icon}"></i>
-              <span>${tip.text}</span>
-            </div>
-          `).join('');
-
-          safetyTipsContainer.style.opacity = '1';
-        }, 150);
+        safetyTipsContainer.innerHTML = displayTips.map(tip => `
+          <div class="guideline-item">
+            <i class="${tip.icon}"></i>
+            <span>${tip.text}</span>
+          </div>
+        `).join('');
       }
 
       showPrivacyPolicy() {

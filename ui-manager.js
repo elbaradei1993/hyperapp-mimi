@@ -330,84 +330,33 @@ class UIManager {
       return;
     }
 
-    // PERFORMANCE FIX: Use DocumentFragment for efficient DOM manipulation
-    const fragment = document.createDocumentFragment();
+    container.innerHTML = this.app.nearbyReports.map(report => `
+      <div class="report-item" data-id="${report.id}">
+        <div class="report-info">
+          <div class="report-type">
+            <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+            <span data-en="${this.capitalizeFirstLetter(report.vibe_type)}" data-ar="${this.getVibeArabicName(report.vibe_type)}">
+              ${this.capitalizeFirstLetter(report.vibe_type)}
+            </span>
+          </div>
+          <div class="report-details">${report.notes || ''}</div>
+          <div class="report-meta">
+            <span>${report.location || 'Unknown location'}</span>
+            <span>${this.formatTimeAgo(report.created_at)}</span>
+          </div>
+        </div>
+        <div class="report-actions">
+          <button class="vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}" data-report-id="${report.id}" data-vote-type="upvote" ${!this.app.isAuthenticated ? 'aria-disabled="true" title="Login to vote"' : ''}>
+            <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
+          </button>
+          <button class="vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}" data-report-id="${report.id}" data-vote-type="downvote" ${!this.app.isAuthenticated ? 'aria-disabled="true" title="Login to vote"' : ''}>
+            <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
+          </button>
+        </div>
+      </div>
+    `).join('');
 
-    this.app.nearbyReports.forEach(report => {
-      // PERFORMANCE FIX: Create elements individually instead of using innerHTML for large lists
-      const reportItem = document.createElement('div');
-      reportItem.className = 'report-item';
-      reportItem.setAttribute('data-id', report.id);
-
-      const reportInfo = document.createElement('div');
-      reportInfo.className = 'report-info';
-
-      const reportType = document.createElement('div');
-      reportType.className = 'report-type';
-
-      const icon = document.createElement('i');
-      icon.className = this.getVibeIcon(report.vibe_type);
-      reportType.appendChild(icon);
-
-      const span = document.createElement('span');
-      span.setAttribute('data-en', this.capitalizeFirstLetter(report.vibe_type));
-      span.setAttribute('data-ar', this.getVibeArabicName(report.vibe_type));
-      span.textContent = this.capitalizeFirstLetter(report.vibe_type);
-      reportType.appendChild(span);
-
-      reportInfo.appendChild(reportType);
-
-      const reportDetails = document.createElement('div');
-      reportDetails.className = 'report-details';
-      reportDetails.textContent = report.notes || '';
-      reportInfo.appendChild(reportDetails);
-
-      const reportMeta = document.createElement('div');
-      reportMeta.className = 'report-meta';
-
-      const locationSpan = document.createElement('span');
-      locationSpan.textContent = report.location || 'Unknown location';
-      reportMeta.appendChild(locationSpan);
-
-      const timeSpan = document.createElement('span');
-      timeSpan.textContent = this.formatTimeAgo(report.created_at);
-      reportMeta.appendChild(timeSpan);
-
-      reportInfo.appendChild(reportMeta);
-      reportItem.appendChild(reportInfo);
-
-      const reportActions = document.createElement('div');
-      reportActions.className = 'report-actions';
-
-      const upvoteBtn = document.createElement('button');
-      upvoteBtn.className = `vote-btn upvote-btn ${report.user_vote === 'upvote' ? 'active' : ''}`;
-      upvoteBtn.setAttribute('data-report-id', report.id);
-      upvoteBtn.setAttribute('data-vote-type', 'upvote');
-      if (!this.app.isAuthenticated) {
-        upvoteBtn.setAttribute('aria-disabled', 'true');
-        upvoteBtn.setAttribute('title', 'Login to vote');
-      }
-      upvoteBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}`;
-      reportActions.appendChild(upvoteBtn);
-
-      const downvoteBtn = document.createElement('button');
-      downvoteBtn.className = `vote-btn downvote-btn ${report.user_vote === 'downvote' ? 'active' : ''}`;
-      downvoteBtn.setAttribute('data-report-id', report.id);
-      downvoteBtn.setAttribute('data-vote-type', 'downvote');
-      if (!this.app.isAuthenticated) {
-        downvoteBtn.setAttribute('aria-disabled', 'true');
-        downvoteBtn.setAttribute('title', 'Login to vote');
-      }
-      downvoteBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}`;
-      reportActions.appendChild(downvoteBtn);
-
-      reportItem.appendChild(reportActions);
-      fragment.appendChild(reportItem);
-    });
-
-    // PERFORMANCE FIX: Clear and append in one operation
-    container.innerHTML = '';
-    container.appendChild(fragment);
+    // Vote buttons are handled by delegated event listener in setupEventListeners()
 
     this.updateTextDirection();
   }

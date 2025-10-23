@@ -692,23 +692,7 @@ class DataManager {
       return;
     }
 
-    // EMERGENCY KILL SWITCH: Check if real-time updates are disabled
-    const realtimeDisabled = localStorage.getItem('hyperapp_realtime_disabled') === 'true';
-    if (realtimeDisabled) {
-      console.warn('Real-time subscriptions disabled via emergency kill switch');
-      this.app.uiManager.showNotification('Real-time updates disabled for performance', 'warning');
-      return;
-    }
-
     console.log('Setting up real-time subscriptions...');
-
-    // Initialize throttling timers
-    this.reportsUpdateTimer = null;
-    this.votesUpdateTimer = null;
-    this.moodVotesUpdateTimer = null;
-    this.lastReportsUpdate = 0;
-    this.lastVotesUpdate = 0;
-    this.lastMoodVotesUpdate = 0;
 
     // Subscribe to reports changes
     this.reportsSubscription = this.app.supabase
@@ -718,7 +702,7 @@ class DataManager {
         schema: 'public',
         table: 'reports'
       }, (payload) => {
-        console.log('Reports change detected:', payload);
+        console.log('Reports change detected:', payload.eventType, payload.new, payload.old);
         this.handleReportsChange(payload);
       })
       .subscribe((status) => {
@@ -740,7 +724,7 @@ class DataManager {
         schema: 'public',
         table: 'votes'
       }, (payload) => {
-        console.log('Votes change detected:', payload);
+        console.log('Votes change detected:', payload.eventType, payload.new, payload.old);
         this.handleVotesChange(payload);
       })
       .subscribe();
@@ -753,7 +737,7 @@ class DataManager {
         schema: 'public',
         table: 'mood_votes'
       }, (payload) => {
-        console.log('Mood votes change detected:', payload);
+        console.log('Mood votes change detected:', payload.eventType, payload.new, payload.old);
         this.handleMoodVotesChange(payload);
       })
       .subscribe();
@@ -761,55 +745,9 @@ class DataManager {
     console.log('Real-time subscriptions set up');
   }
 
-  // Emergency method to disable real-time subscriptions
-  disableRealtimeSubscriptions() {
-    console.warn('Disabling real-time subscriptions for performance...');
-    localStorage.setItem('hyperapp_realtime_disabled', 'true');
-
-    // Unsubscribe from all channels
-    this.cleanup();
-
-    this.app.uiManager.showNotification('Real-time updates disabled. Refresh page to re-enable.', 'warning');
-  }
-
-  // Emergency method to re-enable real-time subscriptions
-  enableRealtimeSubscriptions() {
-    console.log('Re-enabling real-time subscriptions...');
-    localStorage.removeItem('hyperapp_realtime_disabled');
-
-    // Re-setup subscriptions
-    this.setupRealtimeSubscriptions();
-
-    this.app.uiManager.showNotification('Real-time updates re-enabled', 'success');
-  }
-
   handleReportsChange(payload) {
     console.log('Handling reports change:', payload.eventType, payload.new, payload.old);
 
-    const now = Date.now();
-    const throttleMs = 500; // 500ms throttle for report updates
-
-    // Throttle updates to prevent excessive DOM manipulation
-    if (now - this.lastReportsUpdate < throttleMs) {
-      // Clear existing timer and set new one
-      if (this.reportsUpdateTimer) {
-        clearTimeout(this.reportsUpdateTimer);
-      }
-
-      this.reportsUpdateTimer = setTimeout(() => {
-        this.processReportsChange(payload);
-        this.lastReportsUpdate = Date.now();
-      }, throttleMs - (now - this.lastReportsUpdate));
-
-      return;
-    }
-
-    // Process immediately if enough time has passed
-    this.processReportsChange(payload);
-    this.lastReportsUpdate = now;
-  }
-
-  processReportsChange(payload) {
     if (payload.eventType === 'INSERT') {
       // New report added
       const newReport = payload.new;
@@ -822,9 +760,7 @@ class DataManager {
         this.app.nearbyReports.unshift(newReport); // Add to beginning
         this.app.uiManager.displayNearbyReports();
 
-        // PERFORMANCE FIX: Temporarily disable expensive map updates on real-time changes
-        // Map will be updated when user manually refreshes or switches to map view
-        /*
+        // Also add to mapReports if it has coordinates
         if (newReport.latitude && newReport.longitude) {
           if (!this.app.mapReports) {
             this.app.mapReports = [];
@@ -837,7 +773,6 @@ class DataManager {
             this.app.mapManager.addHeatMapLayer();
           }
         }
-        */
 
         this.app.uiManager.showNotification('New report added nearby', 'info');
       }
@@ -852,8 +787,7 @@ class DataManager {
         this.app.nearbyReports[existingIndex] = { ...updatedReport, user_vote: userVote };
         this.app.uiManager.displayNearbyReports();
 
-        // PERFORMANCE FIX: Temporarily disable expensive map updates
-        /*
+        // Also update in mapReports if it exists there
         if (this.app.mapReports) {
           const mapIndex = this.app.mapReports.findIndex(r => r.id === updatedReport.id);
           if (mapIndex !== -1) {
@@ -865,7 +799,6 @@ class DataManager {
             }
           }
         }
-        */
       }
     } else if (payload.eventType === 'DELETE') {
       // Report deleted
@@ -873,8 +806,7 @@ class DataManager {
       this.app.nearbyReports = this.app.nearbyReports.filter(r => r.id !== deletedId);
       this.app.uiManager.displayNearbyReports();
 
-      // PERFORMANCE FIX: Temporarily disable expensive map updates
-      /*
+      // Also remove from mapReports if it exists there
       if (this.app.mapReports) {
         this.app.mapReports = this.app.mapReports.filter(r => r.id !== deletedId);
         // Refresh map markers if map is loaded
@@ -883,175 +815,21 @@ class DataManager {
           this.app.mapManager.addHeatMapLayer();
         }
       }
-      */
     }
   }
 
   handleVotesChange(payload) {
     console.log('Handling votes change:', payload.eventType, payload.new, payload.old);
 
-    const now = Date.now();
-    const throttleMs = 2000; // 2 second throttle for vote updates (less frequent than reports)
-
-    // Throttle vote updates to prevent excessive DB queries
-    if (now - this.lastVotesUpdate < throttleMs) {
-      // Clear existing timer and set new one
-      if (this.votesUpdateTimer) {
-        clearTimeout(this.votesUpdateTimer);
-      }
-
-      this.votesUpdateTimer = setTimeout(() => {
-        this.processVotesChange(payload);
-        this.lastVotesUpdate = Date.now();
-      }, throttleMs - (now - this.lastVotesUpdate));
-
-      return;
-    }
-
-    // Process immediately if enough time has passed
-    this.processVotesChange(payload);
-    this.lastVotesUpdate = now;
-  }
-
-  processVotesChange(payload) {
-    // Instead of full reload, just update the affected report's vote counts
-    if (payload.new && payload.new.report_id) {
-      this.updateSingleReportVotes(payload.new.report_id);
-    } else if (payload.old && payload.old.report_id) {
-      this.updateSingleReportVotes(payload.old.report_id);
-    }
-  }
-
-  async updateSingleReportVotes(reportId) {
-    try {
-      // Get updated vote counts for this specific report
-      const { data: votes, error } = await this.app.supabase
-        .from('votes')
-        .select('vote_type')
-        .eq('report_id', reportId);
-
-      if (error) {
-        console.error('Error fetching votes for report:', error);
-        return;
-      }
-
-      // Calculate vote counts
-      let upvotes = 0;
-      let downvotes = 0;
-      votes.forEach(vote => {
-        if (vote.vote_type === 'upvote') upvotes++;
-        else if (vote.vote_type === 'downvote') downvotes++;
-      });
-
-      // Update local data
-      const reportIndex = this.app.nearbyReports.findIndex(r => r.id == reportId);
-      if (reportIndex !== -1) {
-        this.app.nearbyReports[reportIndex].upvotes = upvotes;
-        this.app.nearbyReports[reportIndex].downvotes = downvotes;
-      }
-
-      // Update UI for this specific report only
-      this.updateVoteUI(reportId, null, null, upvotes, downvotes);
-
-    } catch (error) {
-      console.error('Error updating single report votes:', error);
-    }
-  }
-
-  updateVoteUI(reportId, voteType, operation, upvotes, downvotes) {
-    // Find the report item in the DOM
-    const reportItem = document.querySelector(`.report-item[data-id="${reportId}"]`);
-    if (!reportItem) return;
-
-    // Find the vote buttons
-    const upvoteBtn = reportItem.querySelector('.upvote-btn');
-    const downvoteBtn = reportItem.querySelector('.downvote-btn');
-
-    if (!upvoteBtn || !downvoteBtn) return;
-
-    // Update button text with new counts (use provided counts or get from buttons)
-    if (upvotes !== undefined && downvotes !== undefined) {
-      upvoteBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${upvotes}`;
-      downvoteBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${downvotes}`;
-    } else {
-      // Fallback to original logic if counts not provided
-      let currentUpvotes = parseInt(upvoteBtn.textContent.match(/\d+/)[0]) || 0;
-      let currentDownvotes = parseInt(downvoteBtn.textContent.match(/\d+/)[0]) || 0;
-
-      // Update vote counts based on operation
-      if (operation === 'add') {
-        if (voteType === 'upvote') {
-          currentUpvotes++;
-          upvoteBtn.classList.add('active');
-          downvoteBtn.classList.remove('active');
-        } else if (voteType === 'downvote') {
-          currentDownvotes++;
-          downvoteBtn.classList.add('active');
-          upvoteBtn.classList.remove('active');
-        }
-      } else if (operation === 'change') {
-        if (voteType === 'upvote') {
-          currentUpvotes++;
-          currentDownvotes--;
-          upvoteBtn.classList.add('active');
-          downvoteBtn.classList.remove('active');
-        } else if (voteType === 'downvote') {
-          currentDownvotes++;
-          currentUpvotes--;
-          downvoteBtn.classList.add('active');
-          upvoteBtn.classList.remove('active');
-        }
-      } else if (operation === 'remove') {
-        if (voteType === 'upvote') {
-          currentUpvotes--;
-          upvoteBtn.classList.remove('active');
-        } else if (voteType === 'downvote') {
-          currentDownvotes--;
-          downvoteBtn.classList.remove('active');
-        }
-      }
-
-      // Update button text with new counts
-      upvoteBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${currentUpvotes}`;
-      downvoteBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${currentDownvotes}`;
-
-      // Update local data for consistency
-      const reportIndex = this.app.nearbyReports.findIndex(r => r.id == reportId);
-      if (reportIndex !== -1) {
-        this.app.nearbyReports[reportIndex].upvotes = currentUpvotes;
-        this.app.nearbyReports[reportIndex].downvotes = currentDownvotes;
-        this.app.nearbyReports[reportIndex].user_vote = operation === 'remove' ? null : voteType;
-      }
+    if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE' || payload.eventType === 'DELETE') {
+      // Vote changed - refresh nearby reports to get updated vote counts
+      this.loadNearbyReports();
     }
   }
 
   handleMoodVotesChange(payload) {
     console.log('Handling mood votes change:', payload.eventType, payload.new, payload.old);
 
-    const now = Date.now();
-    const throttleMs = 1000; // 1 second throttle for mood vote updates
-
-    // Throttle mood vote updates to prevent excessive UI updates
-    if (now - this.lastMoodVotesUpdate < throttleMs) {
-      // Clear existing timer and set new one
-      if (this.moodVotesUpdateTimer) {
-        clearTimeout(this.moodVotesUpdateTimer);
-      }
-
-      this.moodVotesUpdateTimer = setTimeout(() => {
-        this.processMoodVotesChange(payload);
-        this.lastMoodVotesUpdate = Date.now();
-      }, throttleMs - (now - this.lastMoodVotesUpdate));
-
-      return;
-    }
-
-    // Process immediately if enough time has passed
-    this.processMoodVotesChange(payload);
-    this.lastMoodVotesUpdate = now;
-  }
-
-  processMoodVotesChange(payload) {
     // Update mood counts when mood votes change
     this.app.updateMoodCounts();
   }
@@ -1248,50 +1026,5 @@ class DataManager {
     // Update community mood and activity insights
     this.app.updateMoodCounts();
     this.loadEnhancedStats();
-  }
-
-  // Cleanup method to prevent memory leaks
-  cleanup() {
-    console.log('Cleaning up DataManager...');
-
-    // Clear all timers
-    if (this.reportsUpdateTimer) {
-      clearTimeout(this.reportsUpdateTimer);
-      this.reportsUpdateTimer = null;
-    }
-
-    if (this.votesUpdateTimer) {
-      clearTimeout(this.votesUpdateTimer);
-      this.votesUpdateTimer = null;
-    }
-
-    if (this.moodVotesUpdateTimer) {
-      clearTimeout(this.moodVotesUpdateTimer);
-      this.moodVotesUpdateTimer = null;
-    }
-
-    // Clear subscription references
-    if (this.reportsSubscription) {
-      this.reportsSubscription.unsubscribe();
-      this.reportsSubscription = null;
-    }
-
-    if (this.votesSubscription) {
-      this.votesSubscription.unsubscribe();
-      this.votesSubscription = null;
-    }
-
-    if (this.moodVotesSubscription) {
-      this.moodVotesSubscription.unsubscribe();
-      this.moodVotesSubscription = null;
-    }
-
-    // Clear weather alert interval
-    if (this.weatherAlertInterval) {
-      clearInterval(this.weatherAlertInterval);
-      this.weatherAlertInterval = null;
-    }
-
-    console.log('DataManager cleanup completed');
   }
 }
