@@ -4,16 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HyperApp - Community Safety Platform</title>
-  <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Load Leaflet and heat map lazily for better mobile performance -->
   <script src="config.js"></script>
   <script src="db-validation.js"></script>
-  <!-- Non-critical modules will be loaded dynamically as needed -->
   <style>
     :root {
       /* Material Design 3 Primary Colors - Vibrant and Dynamic */
@@ -122,6 +119,13 @@
       --on-background: #1c1c1f;
       --card-bg: #ffffff;
       --on-card: #1c1c1f;
+      --card-bg-hover: rgba(59, 130, 246, 0.1);
+      --border: rgba(0, 0, 0, 0.1);
+      --border-hover: rgba(59, 130, 246, 0.3);
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+      --text-primary: #1c1c1f;
+      --text-secondary: #64748b;
 
       /* Dark Theme - Material Design 3 */
       --dark-background: #121212;
@@ -228,46 +232,61 @@
       --warning: #D97706;
       --info: #0891B2;
       --dark-bg: #F8FAFC;
-      --card-bg: rgba(255, 255, 255, 0.95);
-      --card-bg-hover: rgba(255, 255, 255, 0.98);
-      --surface: rgba(255, 255, 255, 0.9);
-      --surface-variant: rgba(0, 0, 0, 0.05);
-      --surface-container: rgba(0, 0, 0, 0.08);
-      --surface-container-high: rgba(0, 0, 0, 0.12);
-      --text-primary: #1E293B;
+      --card-bg: #ffffff;
       --text-light: #1E293B;
       --text-muted: #64748B;
-      --text-secondary: #64748B;
-      --text-subtle: #94A3B8;
+      --background: #ffffff;
+      --on-background: #1c1c1f;
+      --card-bg-hover: rgba(26, 73, 224, 0.08);
       --border: rgba(0, 0, 0, 0.12);
-      --border-hover: rgba(0, 0, 0, 0.24);
-      --divider: rgba(0, 0, 0, 0.12);
+      --border-hover: rgba(26, 73, 224, 0.25);
+      --text-primary: #1c1c1f;
+      --text-secondary: #64748b;
+
+    /* Fix primary container for light theme */
+    --primary-container: rgba(26, 70, 224, 0.12);
+
+    /* Action buttons text color for light mode */
+    --action-btn-text: #1c1c1f;
     }
 
-    /* Dark theme variables */
+    /* Dark theme overrides */
     [data-theme="dark"] {
-      --primary: #3B82F6;
-      --primary-dark: #1D4ED8;
-      --secondary: #F59E0B;
-      --success: #10B981;
-      --danger: #EF4444;
-      --warning: #F59E0B;
-      --info: #06B6D4;
-      --dark-bg: #0F172A;
-      --card-bg: rgba(30, 41, 59, 0.95);
-      --card-bg-hover: rgba(30, 41, 59, 0.98);
-      --surface: rgba(15, 23, 42, 0.9);
-      --surface-variant: rgba(255, 255, 255, 0.05);
-      --surface-container: rgba(255, 255, 255, 0.08);
-      --surface-container-high: rgba(255, 255, 255, 0.12);
-      --text-primary: #F1F5F9;
-      --text-light: #F1F5F9;
-      --text-muted: #94A3B8;
-      --text-secondary: #94A3B8;
-      --text-subtle: #64748B;
-      --border: rgba(255, 255, 255, 0.12);
-      --border-hover: rgba(255, 255, 255, 0.24);
-      --divider: rgba(255, 255, 255, 0.12);
+      --primary: #4dabff;
+      --primary-dark: #1a73e8;
+      --secondary: #ff8a65;
+      --success: #4caf50;
+      --danger: #f44336;
+      --warning: #ff9800;
+      --info: #2196f3;
+
+      --card-bg: var(--dark-surface);
+      --background: var(--dark-background);
+      --text-primary: var(--dark-text-primary);
+      --text-secondary: var(--dark-text-secondary);
+      --text-light: var(--dark-text-primary);
+      --text-muted: var(--dark-text-secondary);
+
+      /* Enhanced dark mode styling for visibility */
+      --card-bg-hover: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.15);
+      --border-hover: rgba(255, 255, 255, 0.25);
+      --surface: var(--dark-surface);
+      --surface-variant: var(--dark-surface-variant);
+      --surface-container: var(--dark-surface-container);
+      --surface-container-high: var(--dark-surface-container-high);
+      --surface-container-highest: var(--dark-surface-container-highest);
+      --on-surface: var(--dark-on-surface);
+      --on-surface-variant: var(--dark-on-surface-variant);
+      --outline: var(--dark-outline);
+      --outline-variant: var(--dark-outline-variant);
+
+      /* Fix primary container for dark theme */
+      --primary-container: rgba(77, 171, 255, 0.18);
+
+      /* Enhanced shadows for dark mode */
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
     }
 
     * {
@@ -344,8 +363,7 @@
       position: absolute;
       top: 15px;
       right: 15px;
-      background: var(--surface-variant);
-      border: 1px solid var(--outline);
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 20px;
       padding: 6px 12px;
       font-size: 14px;
@@ -353,7 +371,6 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      color: var(--text-light);
     }
 
     .status-bar {
@@ -419,8 +436,7 @@
       border-radius: var(--border-radius);
       padding: 10px;
       margin: 15px 0;
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--outline);
+      border: 1px solid var(--border);
       position: fixed;
       bottom: 15px;
       left: 15px;
@@ -437,8 +453,8 @@
     }
 
     .filter-btn {
-      background: var(--surface-variant);
-      border: 1px solid var(--outline);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
       padding: 6px 12px;
       font-size: 12px;
@@ -447,17 +463,8 @@
       color: var(--text-light);
     }
 
-    [data-theme="dark"] .filter-btn {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
-    }
-
     .filter-btn:hover {
-      background: var(--surface-container);
-    }
-
-    [data-theme="dark"] .filter-btn:hover {
-      background: var(--dark-surface-container);
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .filter-btn.active {
@@ -475,8 +482,8 @@
     }
 
     .emergency-btn {
-      background: var(--danger);
-      border: 1px solid var(--danger);
+      background: rgba(220, 53, 69, 0.9);
+      border: 1px solid rgba(220, 53, 69, 0.5);
       border-radius: 8px;
       padding: 12px;
       text-align: center;
@@ -485,11 +492,10 @@
       color: white;
       font-size: 14px;
       font-weight: 500;
-      opacity: 0.9;
     }
 
     .emergency-btn:hover {
-      opacity: 1;
+      background: rgba(220, 53, 69, 1);
       transform: scale(1.02);
     }
 
@@ -504,25 +510,16 @@
       position: absolute;
       top: 15px;
       right: 60px;
-      background: var(--surface-variant);
-      border: 1px solid var(--outline);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
       padding: 6px;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
-    [data-theme="dark"] .theme-toggle {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
-    }
-
     .theme-toggle:hover {
-      background: var(--surface-container);
-    }
-
-    [data-theme="dark"] .theme-toggle:hover {
-      background: var(--dark-surface-container);
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .theme-toggle i {
@@ -539,16 +536,11 @@
     }
 
     .stat-card {
-      background: var(--surface-variant);
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 8px;
       padding: 12px;
       text-align: center;
-      border: 1px solid var(--outline);
-    }
-
-    [data-theme="dark"] .stat-card {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .stat-number {
@@ -622,7 +614,6 @@
       border-radius: var(--border-radius);
       padding: 24px;
       margin-bottom: 20px;
-      backdrop-filter: blur(20px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
       transition: var(--transition);
@@ -668,17 +659,13 @@
     }
 
     .report-item {
-      background: var(--surface-variant);
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 10px;
       padding: 12px;
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    [data-theme="dark"] .report-item {
-      background: var(--dark-surface-variant);
     }
 
     .report-info {
@@ -712,8 +699,8 @@
     }
 
     .vote-btn {
-      background: var(--surface-variant);
-      border: 1px solid var(--outline);
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
       border-radius: 6px;
       padding: 6px 10px;
       cursor: pointer;
@@ -721,51 +708,24 @@
       transition: all 0.3s ease;
     }
 
-    [data-theme="dark"] .vote-btn {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
-    }
-
     .vote-btn:hover:not([aria-disabled="true"]) {
-      background: var(--surface-container);
-      border-color: var(--outline-variant);
-    }
-
-    [data-theme="dark"] .vote-btn:hover:not([aria-disabled="true"]) {
-      background: var(--dark-surface-container);
-      border-color: var(--dark-outline-variant);
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .vote-btn[aria-disabled="true"] {
       opacity: 0.5;
       cursor: not-allowed;
-      background: var(--surface-variant);
-      border-color: var(--outline);
-    }
-
-    [data-theme="dark"] .vote-btn[aria-disabled="true"] {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .upvote-btn.active {
       color: var(--success);
-      background: var(--surface-container);
-      border-color: var(--success);
-    }
-
-    [data-theme="dark"] .upvote-btn.active {
-      background: var(--dark-surface-container);
+      background: rgba(40, 167, 69, 0.2);
     }
 
     .downvote-btn.active {
       color: var(--danger);
-      background: var(--surface-container);
-      border-color: var(--danger);
-    }
-
-    [data-theme="dark"] .downvote-btn.active {
-      background: var(--dark-surface-container);
+      background: rgba(220, 53, 69, 0.2);
     }
 
     .quick-actions {
@@ -776,8 +736,8 @@
     }
 
     .action-btn {
-      background: var(--surface-variant);
-      border: 1px solid var(--outline);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 15px 10px;
       text-align: center;
@@ -785,20 +745,9 @@
       transition: all 0.3s ease;
     }
 
-    [data-theme="dark"] .action-btn {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
-    }
-
     .action-btn:hover {
-      background: var(--surface-container);
-      border-color: var(--outline-variant);
+      background: rgba(45, 91, 255, 0.15);
       transform: translateY(-2px);
-    }
-
-    [data-theme="dark"] .action-btn:hover {
-      background: var(--dark-surface-container);
-      border-color: var(--dark-outline-variant);
     }
 
     .action-btn i {
@@ -1211,31 +1160,22 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: var(--dark-background);
-      opacity: 0.9;
+      background: rgba(0, 0, 0, 0.7);
       z-index: 1000;
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
     }
 
     .modal-content {
-      background: var(--surface);
+      background: var(--dark-bg);
       margin: 1% auto;
       width: 90%;
       max-width: 500px;
       border-radius: var(--border-radius);
       overflow: hidden;
       animation: modalFadeIn 0.3s;
-      border: 1px solid var(--outline);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       max-height: 98vh;
       display: flex;
       flex-direction: column;
-      box-shadow: var(--shadow-5);
-    }
-
-    [data-theme="dark"] .modal-content {
-      background: var(--dark-surface);
-      border-color: var(--dark-outline);
     }
 
     .modal-content.emergency {
@@ -1243,45 +1183,28 @@
     }
 
     .modal-header {
-      background: var(--surface-variant);
+      background: var(--card-bg);
       padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--outline);
-    }
-
-    [data-theme="dark"] .modal-header {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .modal-header h2 {
       font-size: 18px;
-      color: var(--on-surface);
-    }
-
-    [data-theme="dark"] .modal-header h2 {
-      color: var(--dark-on-surface);
+      color: var(--text-light);
     }
 
     .close {
-      color: var(--on-surface-variant);
+      color: var(--text-muted);
       font-size: 24px;
       cursor: pointer;
       transition: color 0.3s ease;
     }
 
-    [data-theme="dark"] .close {
-      color: var(--dark-on-surface-variant);
-    }
-
     .close:hover {
-      color: var(--on-surface);
-    }
-
-    [data-theme="dark"] .close:hover {
-      color: var(--dark-on-surface);
+      color: var(--text-light);
     }
 
     .modal-body {
@@ -1306,7 +1229,7 @@
     }
 
     .vibe-option {
-      background: var(--surface-variant);
+      background: rgba(255, 255, 255, 0.08);
       border: 2px solid transparent;
       border-radius: 10px;
       padding: 12px 8px;
@@ -1315,26 +1238,14 @@
       transition: all 0.3s ease;
     }
 
-    [data-theme="dark"] .vibe-option {
-      background: var(--dark-surface-variant);
-    }
-
     .vibe-option:hover {
       border-color: var(--primary);
-      background: var(--surface-container);
-    }
-
-    [data-theme="dark"] .vibe-option:hover {
-      background: var(--dark-surface-container);
+      background: rgba(45, 91, 255, 0.1);
     }
 
     .vibe-option.selected {
       border-color: var(--primary);
-      background: var(--surface-container);
-    }
-
-    [data-theme="dark"] .vibe-option.selected {
-      background: var(--dark-surface-container);
+      background: rgba(45, 91, 255, 0.15);
     }
 
     .vibe-option i {
@@ -1394,12 +1305,10 @@
       top: 20px;
       left: 16px;
       right: 16px;
-      background: var(--surface);
+      background: var(--card-bg);
       border-radius: var(--border-radius);
       padding: 16px 20px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 2px solid var(--outline);
+      border: 2px solid var(--border);
       z-index: 10000;
       max-width: none;
       min-width: 0;
@@ -1408,18 +1317,11 @@
       align-items: center;
       gap: 12px;
       box-sizing: border-box;
-      box-shadow: var(--shadow-5);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
       font-weight: 500;
       font-size: 14px;
       line-height: 1.4;
       justify-content: flex-start;
-      color: var(--on-surface);
-    }
-
-    [data-theme="dark"] .notification {
-      background: var(--dark-surface);
-      border-color: var(--dark-outline);
-      color: var(--dark-on-surface);
     }
 
     .notification.hidden {
@@ -1427,51 +1329,24 @@
     }
 
     .notification.success {
-      background: var(--success-container);
-      border-color: var(--success);
-      color: var(--on-success-container);
-    }
-
-    [data-theme="dark"] .notification.success {
-      background: var(--success-container);
-      border-color: var(--success);
-      color: var(--on-success-container);
+      background: rgba(40, 167, 69, 0.9);
+      border-color: rgba(40, 167, 69, 0.5);
     }
 
     .notification.error {
-      background: var(--danger-container);
-      border-color: var(--danger);
-      color: var(--on-danger-container);
-    }
-
-    [data-theme="dark"] .notification.error {
-      background: var(--danger-container);
-      border-color: var(--danger);
-      color: var(--on-danger-container);
+      background: rgba(220, 53, 69, 0.9);
+      border-color: rgba(220, 53, 69, 0.5);
     }
 
     .notification.warning {
-      background: var(--warning-container);
-      border-color: var(--warning);
-      color: var(--on-warning-container);
-    }
-
-    [data-theme="dark"] .notification.warning {
-      background: var(--warning-container);
-      border-color: var(--warning);
-      color: var(--on-warning-container);
+      background: rgba(255, 193, 7, 0.9);
+      border-color: rgba(255, 193, 7, 0.5);
+      color: #000;
     }
 
     .notification.info {
-      background: var(--info-container);
-      border-color: var(--info);
-      color: var(--on-info-container);
-    }
-
-    [data-theme="dark"] .notification.info {
-      background: var(--info-container);
-      border-color: var(--info);
-      color: var(--on-info-container);
+      background: rgba(23, 162, 184, 0.9);
+      border-color: rgba(23, 162, 184, 0.5);
     }
 
     .no-data {
@@ -1682,16 +1557,21 @@
     }
 
     .area-item {
-      background: var(--surface-variant);
+      background: rgba(0, 0, 0, 0.8);
       border-radius: 10px;
       padding: 15px;
       margin-bottom: 10px;
-      border: 1px solid var(--outline);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-light);
+      backdrop-filter: blur(10px);
     }
 
-    [data-theme="dark"] .area-item {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
+    /* Light theme overrides for area items */
+    [data-theme="light"] .area-item {
+      background: rgba(248, 250, 252, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      color: #1e293b;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .area-header {
@@ -1717,12 +1597,12 @@
     .area-info h3 {
       margin: 0 0 4px 0;
       font-size: 16px;
-      color: var(--on-surface);
+      color: var(--text-light);
     }
 
     .area-count {
       font-size: 12px;
-      color: var(--on-surface-variant);
+      color: var(--text-muted);
     }
 
     .area-vibes {
@@ -1786,38 +1666,10 @@
 
     .action-buttons-section .action-btn.primary {
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: white;
-    }
-
-    /* Light mode - ensure proper contrast for primary button */
-    [data-theme="light"] .action-buttons-section .action-btn.primary {
-      background: linear-gradient(135deg, #1A46E0, #1E3A8A);
-      color: white;
-      box-shadow: 0 4px 12px rgba(26, 70, 224, 0.2);
     }
 
     .action-buttons-section .action-btn.secondary {
       background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
-    }
-
-    /* Top Areas button - Analytics Blue */
-    .action-btn[data-action="areas"] {
-      background: linear-gradient(135deg, #1E40AF, #1E3A8A);
-      border: 1px solid rgba(30, 64, 175, 0.3);
-      color: white;
-    }
-
-    [data-theme="dark"] .action-btn[data-action="areas"] {
-      background: linear-gradient(135deg, #3B82F6, #2563EB);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-    }
-
-    /* Light mode - brighter colors for visibility */
-    [data-theme="light"] .action-btn[data-action="areas"] {
-      background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-      border: 1px solid rgba(59, 130, 246, 0.4);
-      color: white;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }
 
     .action-buttons-section .action-btn.emergency {
@@ -1834,6 +1686,19 @@
       font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.025em;
+      color: white;
+      display: block;
+      visibility: visible;
+    }
+
+    /* Dark mode: ensure white text */
+    [data-theme="dark"] .action-buttons-section .action-btn span {
+      color: white;
+    }
+
+    /* Light mode: dark text for visibility */
+    [data-theme="light"] .action-buttons-section .action-btn span {
+      color: #1c1c1f;
     }
 
     /* Safety Hub Styles */
@@ -1845,28 +1710,18 @@
 
     /* Geofence Control Styles */
     .geofence-control {
-      background: var(--surface-variant);
-      border: 1px solid var(--outline);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 16px;
       backdrop-filter: blur(10px);
       transition: var(--transition);
     }
 
-    [data-theme="dark"] .geofence-control {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
-    }
-
     .geofence-control:hover {
-      background: var(--surface-container);
-      border-color: var(--outline-variant);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
       transform: translateY(-1px);
-    }
-
-    [data-theme="dark"] .geofence-control:hover {
-      background: var(--dark-surface-container);
-      border-color: var(--dark-outline-variant);
     }
 
     .geofence-header {
@@ -2044,25 +1899,15 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      background: var(--surface-variant);
-      border: 2px solid var(--outline);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.08));
+      border: 2px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       padding: 6px 4px;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(10px);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    [data-theme="light"] .mood-vote-card {
-      background: rgba(0, 0, 0, 0.03);
-      border-color: rgba(0, 0, 0, 0.08);
-    }
-
-    [data-theme="dark"] .mood-vote-card {
-      background: var(--dark-surface-variant);
     }
 
     .mood-vote-card::before {
@@ -2192,17 +2037,12 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      background: var(--surface-variant);
-      border: 1px solid var(--outline);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 10px;
       padding: 12px;
       transition: var(--transition);
       cursor: pointer;
-    }
-
-    [data-theme="dark"] .vibe-category-card {
-      background: var(--dark-surface-variant);
-      border-color: var(--dark-outline);
     }
 
     .vibe-category-card:hover {
@@ -2224,32 +2064,32 @@
 
     .vibe-category-card[data-vibe="crowded"] .category-icon {
       background: rgba(255, 165, 0, 0.2);
-      color: var(--warning);
+      color: #FFA500;
     }
 
     .vibe-category-card[data-vibe="noisy"] .category-icon {
       background: rgba(255, 107, 53, 0.2);
-      color: var(--secondary);
+      color: #FF6B35;
     }
 
     .vibe-category-card[data-vibe="festive"] .category-icon {
       background: rgba(40, 167, 69, 0.2);
-      color: var(--success);
+      color: #28A745;
     }
 
     .vibe-category-card[data-vibe="calm"] .category-icon {
       background: rgba(23, 162, 184, 0.2);
-      color: var(--info);
+      color: #17A2B8;
     }
 
     .vibe-category-card[data-vibe="suspicious"] .category-icon {
       background: rgba(255, 193, 7, 0.2);
-      color: var(--warning);
+      color: #FFC107;
     }
 
     .vibe-category-card[data-vibe="dangerous"] .category-icon {
       background: rgba(220, 53, 69, 0.2);
-      color: var(--danger);
+      color: #DC3545;
     }
 
     .category-info {
@@ -2594,7 +2434,7 @@
       border-radius: 16px;
       padding: 20px;
       margin-bottom: 16px;
-      backdrop-filter: blur(20px);
+      backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
       transition: var(--transition);
@@ -2741,20 +2581,15 @@
     }
 
     .stat-card {
-      background: var(--surface-variant);
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
       padding: 16px;
       text-align: center;
-      border: 1px solid var(--outline);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       min-height: 80px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-    }
-
-    [data-theme="light"] .stat-card {
-      background: rgba(0, 0, 0, 0.05);
-      border-color: rgba(0, 0, 0, 0.12);
     }
 
     .stat-number {
@@ -2792,8 +2627,7 @@
     }
 
     .report-item {
-      background: var(--surface-variant);
-      border: 1px solid var(--outline);
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 8px;
@@ -2801,11 +2635,6 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 12px;
-    }
-
-    [data-theme="light"] .report-item {
-      background: rgba(0, 0, 0, 0.03);
-      border-color: rgba(0, 0, 0, 0.08);
     }
 
     .report-info {
@@ -3541,6 +3370,60 @@
       line-height: 1.4;
     }
 
+    /* Dominant vibe styling for proper visibility */
+    .dominant-vibe {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .dominant-vibe i {
+      color: var(--primary);
+    }
+
+    /* Ensure vibe percentage is always visible in both themes */
+    .vibe-percentage {
+      color: var(--primary) !important;
+      font-weight: bold;
+      background: var(--primary-container);
+      padding: 2px 8px;
+      border-radius: 20px;
+      border: 1px solid var(--primary);
+      display: inline-block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      position: static !important; /* Force normal document flow */
+      line-height: 1.2;
+      font-size: 14px;
+      min-width: 45px;
+      text-align: center;
+    }
+
+    /* Light theme specific styling - ensure high contrast */
+    [data-theme="light"] .vibe-percentage {
+      background: rgba(26, 73, 224, 0.1);
+      border-color: var(--primary);
+      color: #1a73e8 !important;
+    }
+
+    /* Dark theme specific styling - ensure high contrast against dark background */
+    [data-theme="dark"] .vibe-percentage {
+      background: rgba(26, 73, 224, 0.2) !important;
+      border-color: #4dabff !important;
+      color: #4dabff !important;
+      box-shadow: 0 0 6px rgba(26, 73, 224, 0.3);
+    }
+
+    /* Force visibility for dominant vibe element and its children */
+    .dominant-vibe,
+    .dominant-vibe i,
+    .dominant-vibe span {
+      display: inline-block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
     /* Force display for mobile views */
     @media (max-width: 480px) {
       #mainView,
@@ -3730,6 +3613,23 @@
       .insight-item span {
         font-size: 12px;
       }
+
+      /* Mobile-specific Vibe Header Fixes */
+      .community-vibe-sidebar .sidebar-header {
+        padding-bottom: 8px;
+      }
+
+      .dominant-vibe {
+        gap: 6px;
+        font-size: 15px;
+        padding-right: 50px;
+      }
+
+      .vibe-percentage {
+        font-size: 14px;
+        padding: 3px 6px;
+        min-width: 45px;
+      }
     }
 
 
@@ -3854,6 +3754,11 @@
     <main class="content-area">
       <!-- Main View -->
       <div id="mainView" class="view active">
+        <!-- Nearby Reports Container -->
+        <div id="nearbyReports" class="reports-container" style="display: none;">
+          <div class="loading-spinner"></div>
+        </div>
+
         <!-- Community Stats with Color-coded Sidebar -->
         <div class="card">
           <div class="card-title">
@@ -3870,16 +3775,6 @@
               <div class="stat-label">Active Users</div>
             </div>
           </div>
-
-          <!-- Vibe Counts (hidden elements for JavaScript updates) -->
-          <div id="crowdedCount" style="display: none;">0</div>
-          <div id="noisyCount" style="display: none;">0</div>
-          <div id="festiveCount" style="display: none;">0</div>
-          <div id="calmCount" style="display: none;">0</div>
-          <div id="suspiciousCount" style="display: none;">0</div>
-          <div id="dangerousCount" style="display: none;">0</div>
-
-
 
           <!-- Color-coded Community Vibe Sidebar -->
           <div class="community-vibe-sidebar" id="communityVibeSidebar">
@@ -3934,16 +3829,16 @@
             </div>
             <div class="safety-tips" id="safetyTips">
               <div class="guideline-item">
+                <i class="fas fa-heart"></i>
+                <span data-en="Stay aware and trust your instincts" data-ar="ابق يقظاً وثق بغريزتك">Stay aware and trust your instincts</span>
+              </div>
+              <div class="guideline-item">
                 <i class="fas fa-users"></i>
-                <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
+                <span data-en="Travel with friends when possible" data-ar="سافر مع الأصدقاء عند الإمكان">Travel with friends when possible</span>
               </div>
               <div class="guideline-item">
-                <i class="fas fa-mobile-alt"></i>
-                <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
-              </div>
-              <div class="guideline-item">
-                <i class="fas fa-share-alt"></i>
-                <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
+                <i class="fas fa-home"></i>
+                <span data-en="Know your way home or to safety" data-ar="اعرف طريقك إلى المنزل أو إلى الأمان">Know your way home or to safety</span>
               </div>
             </div>
           </div>
@@ -4058,6 +3953,11 @@
             <span data-en="My Dashboard" data-ar="لوحة التحكم الخاصة بي">My Dashboard</span>
           </div>
 
+          <!-- User Reports Container -->
+          <div id="userReports" class="reports-container" style="display: none;">
+            <div class="loading-spinner"></div>
+          </div>
+
           <!-- User Profile Section -->
           <div class="user-profile-section" id="userProfileSection">
             <div class="loading-spinner"></div>
@@ -4110,9 +4010,6 @@
               <div class="loading-spinner"></div>
             </div>
           </div>
-
-          <!-- User Reports Section (for JavaScript compatibility) -->
-          <div id="userReports" style="display: none;"></div>
         </div>
       </div>
 
@@ -4147,13 +4044,6 @@
               <select id="languageSelect">
                 <option value="en">English</option>
                 <option value="ar">العربية</option>
-              </select>
-            </div>
-            <div class="setting-item">
-              <span data-en="Theme" data-ar="المظهر">Theme</span>
-              <select id="themeSelect">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
               </select>
             </div>
           </div>
@@ -4300,10 +4190,6 @@
         this.userLocation = null;
         this.isAuthenticated = false;
 
-        // Set Supabase credentials for forced refresh
-        this.supabaseUrl = this.config.supabaseUrl;
-        this.supabaseKey = this.config.supabaseKey;
-
         // Geofence properties
         this.geofenceEnabled = false;
         this.geofenceSettings = null;
@@ -4438,16 +4324,6 @@
         // Load all data synchronously after location is available
         await this.loadAllDataImmediately();
 
-        // Defer DOM-dependent operations until next tick to ensure DOM is ready
-        setTimeout(() => {
-          this.initializeDOMDependentFeatures();
-        }, 0);
-
-        // Make app instance globally available
-        window.hyperApp = this;
-      }
-
-      async initializeDOMDependentFeatures() {
         // Set up real-time subscriptions after initial data load
         this.setupRealtimeSubscriptions();
 
@@ -4455,6 +4331,9 @@
         if (this.isAuthenticated) {
           await this.loadGeofenceSettings();
         }
+
+        // Make app instance globally available
+        window.hyperApp = this;
       }
 
       async fastInitialLoad() {
@@ -5441,6 +5320,12 @@
       }
       
       async submitReport() {
+        console.log('=== SUBMIT REPORT DEBUG ===');
+        console.log('Selected vibe:', this.selectedVibe);
+        console.log('Current location:', this.currentReportLocation);
+        console.log('User location:', this.userLocation);
+        console.log('Supabase client:', !!this.supabase);
+
         if (!this.selectedVibe) {
           this.showNotification("Please select a vibe type", "error");
           return;
@@ -5459,23 +5344,33 @@
 
         try {
           const notes = document.getElementById('reportNotes').value;
+          console.log('Report notes:', notes);
 
-          // Check for existing report with same vibe and location
-          const { data: existingReports, error: checkError } = await this.supabase
-            .from('reports')
-            .select('id, created_at')
-            .eq('vibe_type', this.selectedVibe)
-            .eq('location', this.currentReportLocation)
-            .order('created_at', { ascending: false })
-            .limit(1);
+          // Check for existing report with same vibe and location (with timeout)
+          console.log('Checking for existing reports...');
+          const { data: existingReports, error: checkError } = await Promise.race([
+            this.supabase
+              .from('reports')
+              .select('id, created_at')
+              .eq('vibe_type', this.selectedVibe)
+              .eq('location', this.currentReportLocation)
+              .order('created_at', { ascending: false })
+              .limit(1),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Check timeout')), 5000)
+            )
+          ]);
 
           if (checkError) {
             console.error("Error checking for existing reports:", checkError);
+            // Continue with submission even if check fails
           } else if (existingReports && existingReports.length > 0) {
             const existingReport = existingReports[0];
             const reportTime = new Date(existingReport.created_at);
             const now = new Date();
             const timeDiff = (now - reportTime) / (1000 * 60); // Difference in minutes
+
+            console.log('Time difference:', timeDiff);
 
             // If a similar report exists within the last 30 minutes, don't create a duplicate
             if (timeDiff < 30) {
@@ -5485,52 +5380,47 @@
             }
           }
 
-          // Prepare report data - ALWAYS include coordinates for map functionality
+          // Prepare report data with coordinates if available
           const reportData = {
             user_id: null, // Anonymous report - no user association
             vibe_type: this.selectedVibe,
             location: this.currentReportLocation,
-            notes: notes || null,
-            latitude: this.userLocation ? this.userLocation.latitude : null,
-            longitude: this.userLocation ? this.userLocation.longitude : null
+            notes: notes || null
           };
 
-          // Ensure coordinates are always included if user location is available
+          // Add coordinates if available
           if (this.userLocation) {
             reportData.latitude = this.userLocation.latitude;
             reportData.longitude = this.userLocation.longitude;
-          } else {
-            // If no user location, try to get it one more time
-            try {
-              const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                  timeout: 5000,
-                  enableHighAccuracy: true
-                });
-              });
-              reportData.latitude = position.coords.latitude;
-              reportData.longitude = position.coords.longitude;
-            } catch (locationError) {
-              console.warn("Could not get location for report coordinates:", locationError);
-              // Continue without coordinates - report will still be saved but won't show on map
-            }
+            console.log('Adding coordinates:', this.userLocation.latitude, this.userLocation.longitude);
           }
 
-          const { data, error } = await this.supabase
-            .from('reports')
-            .insert([reportData])
-            .select();
+          console.log('Report data to submit:', reportData);
+
+          // Submit with timeout
+          const { data, error } = await Promise.race([
+            this.supabase
+              .from('reports')
+              .insert([reportData])
+              .select(),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Submission timeout')), 10000)
+            )
+          ]);
 
           if (error) {
             console.error("Error submitting report:", error);
             let errorMessage = "Failed to submit report";
             if (error.message.includes('network') || error.message.includes('fetch')) {
               errorMessage = "Network error. Please check your connection and try again.";
+            } else if (error.message.includes('timeout')) {
+              errorMessage = "Request timed out. Please try again.";
             } else {
               errorMessage = `Failed to submit report: ${error.message}`;
             }
             this.showNotification(errorMessage, "error");
           } else {
+            console.log('Report submitted successfully:', data);
             this.showNotification("Report submitted successfully", "success");
             this.closeModal('reportModal');
             // Reload data to show the new report
@@ -5539,14 +5429,16 @@
             this.loadMap();
           }
         } catch (error) {
-          console.error("Error in submitReport:", error);
-          let errorMessage = "Unable to get your location";
-          if (error.code === 1) {
-            errorMessage = "Location access denied. Please enable location permissions in your browser settings.";
-          } else if (error.code === 2) {
-            errorMessage = "Location unavailable. Please check your GPS settings and try again.";
-          } else if (error.code === 3) {
-            errorMessage = "Location request timed out. This can happen in poor signal areas. Please try again.";
+          console.error('Submission error:', error);
+          let errorMessage = "Failed to submit report";
+          if (error.message.includes('timeout')) {
+            errorMessage = "Request timed out. Please check your connection and try again.";
+          } else if (error.message.includes('network') || error.message.includes('fetch')) {
+            errorMessage = "Network error. Please check your connection and try again.";
+          } else if (error.message.includes('Location')) {
+            errorMessage = "Location error. Please enable location services and try again.";
+          } else {
+            errorMessage = `Error: ${error.message}`;
           }
           this.showNotification(errorMessage, "error");
         } finally {
@@ -5871,7 +5763,7 @@
       
       loadMap() {
         const mapContainer = document.getElementById('mapContainer');
-        const hasReports = (this.nearbyReports && this.nearbyReports.length > 0) || (this.mapReports && this.mapReports.length > 0);
+        const hasReports = this.nearbyReports && this.nearbyReports.length > 0;
 
         // Clear any existing map
         if (this.map) {
@@ -5912,24 +5804,40 @@
         const mapElement = document.getElementById('leaflet-map');
         if (!mapElement) return;
 
-        // Default center (can be user's location if available)
-        let initialCenter = [30.0444, 31.2357]; // Cairo, Egypt as default
-        let initialZoom = 10;
-
-        // If we already have user location, use it
-        if (this.userLocation) {
-          initialCenter = [this.userLocation.latitude, this.userLocation.longitude];
-          initialZoom = 13;
+        // Check if Leaflet is loaded
+        if (typeof L === 'undefined') {
+          console.error('Leaflet library not loaded');
+          mapElement.innerHTML = `
+            <div class="map-placeholder-center">
+              <i class="fas fa-exclamation-triangle"></i>
+              <p>Map unavailable - Leaflet library failed to load</p>
+              <button class="btn" onclick="window.app.loadMap()">Retry</button>
+            </div>
+          `;
+          return;
         }
 
-        // Create map
-        this.map = L.map('leaflet-map').setView(initialCenter, initialZoom);
+        try {
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 19,
-        }).addTo(this.map);
+        try {
+          // Default center (can be user's location if available)
+          let initialCenter = [30.0444, 31.2357]; // Cairo, Egypt as default
+          let initialZoom = 10;
+
+          // If we already have user location, use it
+          if (this.userLocation) {
+            initialCenter = [this.userLocation.latitude, this.userLocation.longitude];
+            initialZoom = 13;
+          }
+
+          // Create map
+          this.map = L.map('leaflet-map').setView(initialCenter, initialZoom);
+
+          // Add OpenStreetMap tiles
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+          }).addTo(this.map);
 
         // Wait for map to be fully loaded before adding markers
         this.map.whenReady(() => {
@@ -6015,21 +5923,7 @@
       }
 
       addReportMarkers() {
-        if (!this.map) return;
-
-        // Ensure we have reports data - if not, wait for it
-        if (!this.nearbyReports || this.nearbyReports.length === 0) {
-          console.log('No reports available for markers, waiting...');
-          // Try to load reports if we don't have them
-          if (this.nearbyReports.length === 0) {
-            this.loadNearbyReports().then(() => {
-              this.addReportMarkers(); // Retry after loading
-            }).catch(err => {
-              console.error('Failed to load reports for markers:', err);
-            });
-          }
-          return;
-        }
+        if (!this.map || !this.nearbyReports) return;
 
         console.log('Adding report markers for', this.nearbyReports.length, 'reports');
 
@@ -6040,28 +5934,14 @@
           }
         });
 
-        let markersAdded = 0;
-        let reportsWithCoords = 0;
-        let reportsWithoutCoords = 0;
-
         // Add markers for each report
         this.nearbyReports.forEach(report => {
           // Use actual coordinates if available, otherwise cluster around user location or default area
           let lat, lng;
-          let hasRealCoords = false;
-
-          if (report.latitude !== null && report.longitude !== null && report.latitude !== undefined && report.longitude !== undefined) {
-            lat = parseFloat(report.latitude);
-            lng = parseFloat(report.longitude);
-
-            // Validate that coordinates are reasonable numbers
-            if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-              hasRealCoords = true;
-              reportsWithCoords++;
-            }
-          }
-
-          if (!hasRealCoords) {
+          if (report.latitude && report.longitude) {
+            lat = report.latitude;
+            lng = report.longitude;
+          } else {
             // For reports without coordinates, place them in a cluster around the user's location
             // or default to Cairo area if no user location
             let baseLat, baseLng;
@@ -6081,13 +5961,6 @@
 
             lat = baseLat + Math.sin(angle) * radius;
             lng = baseLng + Math.cos(angle) * radius;
-            reportsWithoutCoords++;
-          }
-
-          // Validate coordinates
-          if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-            console.warn('Invalid coordinates for report:', report.id, lat, lng, 'hasRealCoords:', hasRealCoords);
-            return; // Skip invalid coordinates
           }
 
           // Create custom icon based on vibe type - use Unicode symbols instead of FontAwesome for better compatibility
@@ -6102,7 +5975,7 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-            ${!hasRealCoords ? 'opacity: 0.7;' : ''}
+            ${!report.latitude || !report.longitude ? 'opacity: 0.7;' : ''}
             animation: pulse 2s infinite ease-in-out;
             font-size: 16px;
             font-weight: bold;
@@ -6118,36 +5991,31 @@
             iconAnchor: [16, 16]
           });
 
-          try {
-            // Create marker
-            const marker = L.marker([lat, lng], { icon: customIcon }).addTo(this.map);
-            markersAdded++;
+          // Create marker
+          const marker = L.marker([lat, lng], { icon: customIcon }).addTo(this.map);
 
-            // Add popup with report details
-            const locationText = this.formatLocationForDisplay(report);
-            const popupContent = `
-              <div style="font-family: 'Segoe UI', sans-serif; max-width: 200px;">
-                <h4 style="margin: 0 0 8px 0; color: ${this.getVibeColor(report.vibe_type)};">
-                  ${this.capitalizeFirstLetter(report.vibe_type)}
-                </h4>
-                <p style="margin: 4px 0;"><strong>Location:</strong> ${locationText}</p>
-                ${report.notes ? `<p style="margin: 4px 0;"><strong>Notes:</strong> ${report.notes}</p>` : ''}
-                <p style="margin: 4px 0; font-size: 12px; color: #666;">
-                  ${this.formatTimeAgo(report.created_at)}
-                </p>
-                ${!hasRealCoords ?
-                  '<p style="margin: 4px 0; font-size: 11px; color: #888; font-style: italic;">Approximate location</p>' : ''}
-                <div style="margin-top: 8px;">
-                  <span style="color: #28a745;">👍 ${report.upvotes || 0}</span>
-                  <span style="color: #dc3545; margin-left: 8px;">👎 ${report.downvotes || 0}</span>
-                </div>
+          // Add popup with report details
+          const locationText = this.formatLocationForDisplay(report);
+          const popupContent = `
+            <div style="font-family: 'Segoe UI', sans-serif; max-width: 200px;">
+              <h4 style="margin: 0 0 8px 0; color: ${this.getVibeColor(report.vibe_type)};">
+                ${this.capitalizeFirstLetter(report.vibe_type)}
+              </h4>
+              <p style="margin: 4px 0;"><strong>Location:</strong> ${locationText}</p>
+              ${report.notes ? `<p style="margin: 4px 0;"><strong>Notes:</strong> ${report.notes}</p>` : ''}
+              <p style="margin: 4px 0; font-size: 12px; color: #666;">
+                ${this.formatTimeAgo(report.created_at)}
+              </p>
+              ${!report.latitude || !report.longitude ?
+                '<p style="margin: 4px 0; font-size: 11px; color: #888; font-style: italic;">Approximate location</p>' : ''}
+              <div style="margin-top: 8px;">
+                <span style="color: #28a745;">👍 ${report.upvotes || 0}</span>
+                <span style="color: #dc3545; margin-left: 8px;">👎 ${report.downvotes || 0}</span>
               </div>
-            `;
+            </div>
+          `;
 
-            marker.bindPopup(popupContent);
-          } catch (error) {
-            console.error('Error creating marker for report:', report.id, error);
-          }
+          marker.bindPopup(popupContent);
         });
 
         // Add user location marker if available
@@ -6158,9 +6026,7 @@
           this.map.invalidateSize();
         }
 
-        console.log('Report markers added successfully:', markersAdded, 'markers created');
-        console.log('Reports with real coordinates:', reportsWithCoords);
-        console.log('Reports with clustered coordinates:', reportsWithoutCoords);
+        console.log('Report markers added successfully');
       }
 
       addHeatMapLayer() {
@@ -6182,26 +6048,14 @@
         const heatData = [];
         const maxIntensity = 1.0; // Maximum intensity for heat map
 
-        let reportsWithCoords = 0;
-        let reportsWithoutCoords = 0;
-
         this.nearbyReports.forEach((report, index) => {
           // Use actual coordinates if available, otherwise use clustered positions
           let lat, lng;
-          let hasRealCoords = false;
-
-          if (report.latitude !== null && report.longitude !== null && report.latitude !== undefined && report.longitude !== undefined) {
+          if (report.latitude && report.longitude) {
             lat = parseFloat(report.latitude);
             lng = parseFloat(report.longitude);
-
-            // Validate that coordinates are reasonable numbers
-            if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-              hasRealCoords = true;
-              reportsWithCoords++;
-            }
-          }
-
-          if (!hasRealCoords) {
+            console.log(`Report ${index}: Using real coordinates ${lat}, ${lng} for ${report.vibe_type}`);
+          } else {
             // For reports without coordinates, use clustered positions around user location
             let baseLat, baseLng;
             if (this.userLocation) {
@@ -6218,13 +6072,7 @@
 
             lat = baseLat + Math.sin(angle) * radius;
             lng = baseLng + Math.cos(angle) * radius;
-            reportsWithoutCoords++;
-          }
-
-          // Validate coordinates one more time
-          if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-            console.warn('Invalid coordinates for heat map report:', report.id, lat, lng);
-            return; // Skip invalid coordinates
+            console.log(`Report ${index}: Using clustered coordinates ${lat}, ${lng} for ${report.vibe_type}`);
           }
 
           // Calculate intensity based on report type and votes
@@ -6264,8 +6112,6 @@
         });
 
         console.log('Heat map data prepared:', heatData.length, 'points');
-        console.log('Reports with real coordinates:', reportsWithCoords);
-        console.log('Reports with clustered coordinates:', reportsWithoutCoords);
         console.log('Sample heat data points:', heatData.slice(0, 3));
 
         // Create heat map layer if we have data
@@ -7879,9 +7725,6 @@
           vibeCounts = this.getVibeCounts();
         }
 
-        // Ensure the hidden count elements exist in the DOM
-        this.ensureVibeCountElements();
-
         // Update the UI with proper error handling
         Object.keys(vibeCounts).forEach(vibe => {
           const countElement = document.getElementById(vibe + 'Count');
@@ -7897,23 +7740,6 @@
 
         // Also update the enhanced stats if available
         this.updateEnhancedVibeStats(vibeCounts);
-      }
-
-      ensureVibeCountElements() {
-        // Ensure hidden vibe count elements exist in the DOM
-        const vibeTypes = ['crowded', 'noisy', 'festive', 'calm', 'suspicious', 'dangerous'];
-        const container = document.querySelector('.card') || document.body;
-
-        vibeTypes.forEach(vibe => {
-          let element = document.getElementById(vibe + 'Count');
-          if (!element) {
-            element = document.createElement('div');
-            element.id = vibe + 'Count';
-            element.style.display = 'none';
-            element.textContent = '0';
-            container.appendChild(element);
-          }
-        });
       }
 
       updateCommunityVibeSidebar(vibeCounts) {
@@ -8233,35 +8059,20 @@
       }
 
       async loadWeatherData(force = false) {
-        // Prevent excessive API calls - only load if we haven't loaded recently
-        const lastWeatherLoad = localStorage.getItem('hyperapp_last_weather_load');
-        const now = Date.now();
-
-        // Don't load weather more than once every 30 minutes unless forced
-        if (!force && lastWeatherLoad && (now - parseInt(lastWeatherLoad)) < 1800000) { // 30 minutes
-          // Use cached data if available
-          const cachedWeather = localStorage.getItem('hyperapp_weather_data');
-          if (cachedWeather) {
-            try {
-              const weatherData = JSON.parse(cachedWeather);
-              this.updateWeatherAlert(weatherData);
-              return;
-            } catch (e) {}
-          }
-        }
-
-        // Check if we have cached weather data that's less than 2 hours old
+        // Optimized: Load weather data asynchronously without blocking UI
+        // Check if we have cached weather data that's less than 30 minutes old
         const cachedWeather = localStorage.getItem('hyperapp_weather_data');
         const cachedTime = localStorage.getItem('hyperapp_weather_time');
 
         if (!force && cachedWeather && cachedTime) {
           const age = Date.now() - parseInt(cachedTime);
-          if (age < 7200000) { // 2 hour cache
+          if (age < 1800000) { // 30 minutes
             try {
               const weatherData = JSON.parse(cachedWeather);
               this.updateWeatherAlert(weatherData);
               return;
-            } catch (e) {}
+            } catch (e) {
+            }
           }
         }
 
@@ -8274,9 +8085,6 @@
           lng = this.userLocation.longitude;
         }
 
-        // Update last load time to prevent rapid successive calls
-        localStorage.setItem('hyperapp_last_weather_load', now.toString());
-
         // Load weather data asynchronously without await to prevent blocking
         // Use requestIdleCallback for better performance if available
         if ('requestIdleCallback' in window) {
@@ -8288,115 +8096,36 @@
 
       async loadWeatherDataAsync(lat, lng) {
         try {
-          // Using OpenWeatherMap API with enhanced rate limiting protection
+          // Using OpenWeatherMap API with a working API key
           const apiKey = 'bd5e378503939ddaee76f12ad7a97608'; // Free tier API key
 
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased timeout for better reliability
-
-          // Enhanced rate limiting: check multiple time windows
-          const now = Date.now();
-          const lastRequestTime = localStorage.getItem('hyperapp_weather_last_request');
-          const requestCount = parseInt(localStorage.getItem('hyperapp_weather_request_count') || '0');
-          const lastResetTime = parseInt(localStorage.getItem('hyperapp_weather_reset_time') || '0');
-
-          // Reset counter every hour
-          if (now - lastResetTime > 3600000) { // 1 hour
-            localStorage.setItem('hyperapp_weather_request_count', '0');
-            localStorage.setItem('hyperapp_weather_reset_time', now.toString());
-          }
-
-          // Free tier limit: 1000 calls/day, but be conservative with 50/hour max
-          if (requestCount >= 45) { // Leave buffer for other requests
-            console.warn('Weather API request limit approaching, using cached data');
-            const cachedWeather = localStorage.getItem('hyperapp_weather_data');
-            if (cachedWeather) {
-              try {
-                const weatherData = JSON.parse(cachedWeather);
-                this.updateWeatherAlert(weatherData);
-                return;
-              } catch (e) {}
-            }
-            this.updateWeatherAlert(null);
-            return;
-          }
-
-          // Minimum 2 minutes between requests to avoid rapid successive calls
-          if (lastRequestTime && (now - parseInt(lastRequestTime)) < 120000) { // 2 minutes
-            const cachedWeather = localStorage.getItem('hyperapp_weather_data');
-            if (cachedWeather) {
-              try {
-                const weatherData = JSON.parse(cachedWeather);
-                this.updateWeatherAlert(weatherData);
-                return;
-              } catch (e) {}
-            }
-          }
+          const timeoutId = setTimeout(() => controller.abort(), 3000); // Reduced timeout to 3 seconds
 
           const response = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`,
             {
               signal: controller.signal,
-              cache: 'default',
-              headers: {
-                'Accept': 'application/json',
-                'User-Agent': 'HyperApp/1.0'
-              }
+              cache: 'force-cache' // Use browser cache when possible
             }
           );
 
           clearTimeout(timeoutId);
 
-          // Update request tracking
-          localStorage.setItem('hyperapp_weather_last_request', now.toString());
-          localStorage.setItem('hyperapp_weather_request_count', (requestCount + 1).toString());
-
-          if (response.status === 429) {
-            // Rate limited - use cached data or fallback
-            console.warn('Weather API rate limited (429), using cached data');
-            const cachedWeather = localStorage.getItem('hyperapp_weather_data');
-            if (cachedWeather) {
-              try {
-                const weatherData = JSON.parse(cachedWeather);
-                this.updateWeatherAlert(weatherData);
-                return;
-              } catch (e) {}
-            }
-            // Fallback to generic message
-            this.updateWeatherAlert(null);
-            return;
-          }
-
-          if (response.status === 401) {
-            console.error('Weather API key invalid or expired');
-            this.updateWeatherAlert(null);
-            return;
-          }
-
           if (!response.ok) {
-            throw new Error(`Weather API request failed: ${response.status} ${response.statusText}`);
+            throw new Error(`Weather API request failed: ${response.status}`);
           }
 
           const weatherData = await response.json();
 
-          // Validate weather data structure
-          if (!weatherData || !weatherData.main || !weatherData.weather || !weatherData.weather[0]) {
-            console.warn('Invalid weather data structure received');
-            this.updateWeatherAlert(null);
-            return;
-          }
-
-          // Cache the weather data with timestamp
+          // Cache the weather data for longer
           localStorage.setItem('hyperapp_weather_data', JSON.stringify(weatherData));
           localStorage.setItem('hyperapp_weather_time', Date.now().toString());
 
           this.updateWeatherAlert(weatherData);
         } catch (error) {
-          console.error('Weather API error:', error);
-
           if (error.name === 'AbortError') {
             // Timeout - use cached data if available
-            console.warn('Weather API request timed out, using cached data');
             const cachedWeather = localStorage.getItem('hyperapp_weather_data');
             if (cachedWeather) {
               try {
@@ -8406,7 +8135,6 @@
               } catch (e) {}
             }
           }
-
           // Fallback to generic weather message
           this.updateWeatherAlert(null);
         }
@@ -8488,103 +8216,209 @@
       generateDynamicSafetyTips() {
         const safetyTipsContainer = document.getElementById('safetyTips');
 
-        if (!this.nearbyReports || this.nearbyReports.length === 0) {
-          // Default tips when no reports
-          safetyTipsContainer.innerHTML = `
-            <div class="guideline-item">
-              <i class="fas fa-users"></i>
-              <span data-en="Avoid crowded areas after dark" data-ar="تجنب المناطق المزدحمة بعد الظلام">Avoid crowded areas after dark</span>
-            </div>
-            <div class="guideline-item">
-              <i class="fas fa-mobile-alt"></i>
-              <span data-en="Keep your phone charged" data-ar="احتفظ بهاتفك مشحوناً">Keep your phone charged</span>
-            </div>
-            <div class="guideline-item">
-              <i class="fas fa-share-alt"></i>
-              <span data-en="Share your location with trusted contacts" data-ar="شارك موقعك مع جهات الاتصال الموثوقة">Share your location with trusted contacts</span>
-            </div>
-          `;
-          return;
-        }
+        // Get current time and context
+        const now = new Date();
+        const hour = now.getHours();
+        const isNightTime = hour >= 22 || hour <= 6;
+        const isEvening = hour >= 18 && hour < 22;
+        const isMorningRush = hour >= 7 && hour <= 9;
 
-        // Analyze recent reports to generate relevant safety tips
-        const recentReports = this.nearbyReports.slice(0, 10); // Last 10 reports
+        // Analyze recent reports and trends
+        const recentReports = this.nearbyReports.slice(0, 15); // More reports for better analysis
         const vibeCounts = {};
+        const recentVibes = [];
+        let communityActivity = 0;
 
         recentReports.forEach(report => {
           vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
+          recentVibes.push(report.vibe_type);
+
+          // Calculate recent activity (reports in last 2 hours)
+          const reportTime = new Date(report.created_at);
+          const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+          if (reportTime > twoHoursAgo) {
+            communityActivity++;
+          }
         });
 
+        // Determine dominant vibe patterns
+        const totalReports = Object.values(vibeCounts).reduce((a, b) => a + b, 0);
+        let dominantVibe = null;
+        let dominantCount = 0;
+
+        Object.entries(vibeCounts).forEach(([vibe, count]) => {
+          if (count > dominantCount) {
+            dominantVibe = vibe;
+            dominantCount = count;
+          }
+        });
+
+        // Calculate danger level
+        const dangerCount = (vibeCounts.dangerous || 0) + (vibeCounts.suspicious || 0);
+        const dangerRatio = totalReports > 0 ? dangerCount / totalReports : 0;
+        const safetyLevel = dangerRatio > 0.5 ? 'high_risk' : dangerRatio > 0.2 ? 'moderate_risk' : 'safe';
+
         const tips = [];
+        const isEnglish = this.currentLanguage === 'en';
 
-        // Generate tips based on most common vibes
-        if (vibeCounts.dangerous > 0) {
+        // Generate highly contextual tips based on multiple factors
+
+        // Time-based tips first
+        if (isNightTime) {
+          if (vibeCounts.dangerous > 0 || vibeCounts.suspicious > 0) {
+            tips.push({
+              icon: 'fas fa-moon',
+              text: isEnglish ? "Be extra careful at night - stick to well-lit areas and well-traveled routes" : "كن حذراً بشكل خاص ليلاً - التزم بالمناطق المضيئة والطرق المزدحمة"
+            });
+          } else {
+            tips.push({
+              icon: 'fas fa-moon',
+              text: isEnglish ? "Nighttime tip: Walk confidently and stay aware of your surroundings" : "نصيحة ليلاً: امش بثقة وابق على دراية بمحيطك"
+            });
+          }
+        } else if (isEvening) {
           tips.push({
-            icon: 'fas fa-exclamation-triangle',
-            text: this.currentLanguage === 'en'
-              ? 'High danger reports in area - stay vigilant'
-              : 'تقارير خطر عالية في المنطقة - كن يقظاً'
+            icon: 'fas fa-clock',
+            text: isEnglish ? "Evening reminder: Stay visible and keep your phone easily accessible" : "تذكير مسائي: كن مرئياً واحتفظ بهاتفك متاحاً بسهولة"
+          });
+        } else if (dominantVibe === 'crowded' && isMorningRush) {
+          tips.push({
+            icon: 'fas fa-traffic-light',
+            text: isEnglish ? "Morning rush hour - be mindful of busy streets and crowded transport" : "ساعات الذروة الصباحية - كن على دراية بالشوارع المزدحمة والمواصلات المليئة"
           });
         }
 
-        if (vibeCounts.crowded > vibeCounts.calm) {
-          tips.push({
-            icon: 'fas fa-users',
-            text: this.currentLanguage === 'en'
-              ? 'Area appears crowded - be aware of surroundings'
-              : 'المنطقة تبدو مزدحمة - كن على دراية بمحيطك'
-          });
-        }
+        // Location-based contextual tips
+        if (this.userLocation) {
+          // Weather-based tips (would integrate with weather data)
+          const weatherData = localStorage.getItem('hyperapp_weather_data');
+          if (weatherData) {
+            try {
+              const weather = JSON.parse(weatherData);
+              const temp = weather.main?.temp || 20;
 
-        if (vibeCounts.suspicious > 0) {
-          tips.push({
-            icon: 'fas fa-eye-slash',
-            text: this.currentLanguage === 'en'
-              ? 'Suspicious activity reported - trust your instincts'
-              : 'تم الإبلاغ عن نشاط مشبوه - ثق بغريزتك'
-          });
-        }
-
-        // Add default tips if we don't have enough specific ones
-        if (tips.length < 3) {
-          const defaultTips = [
-            {
-              icon: 'fas fa-mobile-alt',
-              text: this.currentLanguage === 'en'
-                ? 'Keep your phone charged and accessible'
-                : 'احتفظ بهاتفك مشحوناً ومتاحاً'
-            },
-            {
-              icon: 'fas fa-share-alt',
-              text: this.currentLanguage === 'en'
-                ? 'Share your location with trusted contacts'
-                : 'شارك موقعك مع جهات الاتصال الموثوقة'
-            },
-            {
-              icon: 'fas fa-users',
-              text: this.currentLanguage === 'en'
-                ? 'Stay aware of your surroundings'
-                : 'ابق على دراية بمحيطك'
-            }
-          ];
-
-          // Add default tips to fill up to 3
-          while (tips.length < 3 && defaultTips.length > 0) {
-            const tip = defaultTips.shift();
-            if (!tips.find(t => t.text === tip.text)) {
-              tips.push(tip);
+              if (temp < 10) {
+                tips.push({
+                  icon: 'fas fa-temperature-low',
+                  text: isEnglish ? "Cold weather tip: Dress warmly and be prepared for slippery conditions" : "نصيحة في الطقس البارد: ارتدِ ملابس دافئة واستعد للظروف الزلقة"
+                });
+              } else if (temp > 30) {
+                tips.push({
+                  icon: 'fas fa-sun',
+                  text: isEnglish ? "Hot day reminder: Stay hydrated and seek shade when needed" : "تذكير في يوم حار: ابق رطباً واطلب الظل عند الحاجة"
+                });
+              }
+            } catch (e) {
+              // Weather data parse error, skip weather tips
             }
           }
         }
 
-        // Limit to 3 tips and update UI
+        // Community activity-based tips
+        if (communityActivity > 3) {
+          tips.push({
+            icon: 'fas fa-users-cog',
+            text: isEnglish ? "Community is very active here - great time to see how others stay safe!" : "المجتمع نشط جداً هنا - وقت رائع لرؤية كيف يحافظ الآخرون على سلامتهم!"
+          });
+        } else if (communityActivity === 0) {
+          tips.push({
+            icon: 'fas fa-user-plus',
+            text: isEnglish ? "Consider submitting a report to help others know about local conditions" : "فكر في إرسال تقرير لمساعدة الآخرين على معرفة ظروف المنطقة المحلية"
+          });
+        }
+
+        // Vibe-specific tips with more friendly language
+        if (safetyLevel === 'safe' || totalReports === 0) {
+          // Positive, reassuring tips for safe areas
+          const safeTips = [
+            {
+              icon: 'fas fa-heart',
+              text: isEnglish ? "This area feels like a welcoming community - enjoy your time here!" : "هذه المنطقة تبدو كمجتمع مضياف - استمتع بوقتك هنا!"
+            },
+            {
+              icon: 'fas fa-shield-alt',
+              text: isEnglish ? "Great community spirit here - people are looking out for each other" : "روح مجتمعية رائعة هنا - الناس يراقبون بعضهم بعضاً"
+            },
+            {
+              icon: 'fas fa-smile',
+              text: isEnglish ? "Feeling good about your surroundings? Help others by sharing positive vibes!" : "تشعر بالراحة حولك؟ ساعد الآخرين بمشاركة الطاقة الإيجابية!"
+            }
+          ];
+          tips.push(...safeTips.slice(0, 3 - tips.length));
+        } else {
+          // Contextual tips based on specific vibes
+          if (dominantVibe === 'dangerous') {
+            tips.push({
+              icon: 'fas fa-exclamation-triangle',
+              text: isEnglish ? "Safety first: Take a moment to plan your route and stay alert" : "السلامة أولاً: خذ لحظة لتخطيط مسارك وابق يقظاً"
+            });
+          } else if (dominantVibe === 'crowded') {
+            tips.push({
+              icon: 'fas fa-users',
+              text: isEnglish ? "Popular spot! Keep an eye on your belongings in crowded areas" : "مكان شهير! راقب متعلقاتك في المناطق المزدحمة"
+            });
+          } else if (dominantVibe === 'suspicious') {
+            tips.push({
+              icon: 'fas fa-eye',
+              text: isEnglish ? "Trust your instincts - if something feels off, it's okay to move to a different area" : "ثق بغريزتك - إذا شعرت بشيء غريب، من المقبول الانتقال إلى منطقة أخرى"
+            });
+          } else if (dominantVibe === 'festive') {
+            tips.push({
+              icon: 'fas fa-glass-cheers',
+              text: isEnglish ? "Great atmosphere! Celebrate responsibly and help keep everyone safe" : "أجواء رائعة! احتفل بمسؤولية وساعد في الحفاظ على سلامة الجميع"
+            });
+          }
+        }
+
+        // Add personalized tips based on user behavior patterns
+        if (this.isAuthenticated && this.userData) {
+          // Add a tip about being part of the community
+          tips.push({
+            icon: 'fas fa-user-friends',
+            text: isEnglish ? "You're part of keeping this community safe - thank you!" : "أنت جزء من الحفاظ على سلامة هذا المجتمع - شكراً لك!"
+          });
+        }
+
+        // Add default essential tips if we still need more
+        const essentialTips = [
+          {
+            icon: 'fas fa-mobile-alt',
+            text: isEnglish ? "Pro tip: Keep your phone charged and ready for emergencies" : "نصيحة ذكية: احتفظ بهاتفك مشحوناً وجاهز للطوارئ"
+          },
+          {
+            icon: 'fas fa-map-marked-alt',
+            text: isEnglish ? "Smart choice: Know your exits and have a backup plan" : "اختيار ذكي: اعرف مخارجك واحتفظ بخطة احتياطية"
+          },
+          {
+            icon: 'fas fa-hands-helping',
+            text: isEnglish ? "Remember: Real safety comes from community awareness and support" : "تذكر: تأتي السلامة الحقيقية من وعي المجتمع والدعم المتبادل"
+          }
+        ];
+
+        // Fill remaining slots with essential tips
+        let tipIndex = 0;
+        while (tips.length < 3 && tipIndex < essentialTips.length) {
+          const tip = essentialTips[tipIndex++];
+          if (!tips.find(t => t.text === tip.text)) {
+            tips.push(tip);
+          }
+        }
+
+        // Limit to 3 tips and update UI with smooth transitions
         const displayTips = tips.slice(0, 3);
-        safetyTipsContainer.innerHTML = displayTips.map(tip => `
-          <div class="guideline-item">
-            <i class="${tip.icon}"></i>
-            <span>${tip.text}</span>
-          </div>
-        `).join('');
+
+        // Add fade effect for tip updates
+        safetyTipsContainer.style.opacity = '0';
+        setTimeout(() => {
+          safetyTipsContainer.innerHTML = displayTips.map(tip => `
+            <div class="guideline-item">
+              <i class="${tip.icon}"></i>
+              <span>${tip.text}</span>
+            </div>
+          `).join('');
+
+          safetyTipsContainer.style.opacity = '1';
+        }, 150);
       }
 
       showPrivacyPolicy() {
