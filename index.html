@@ -4150,57 +4150,564 @@
   </div>
 
   <script>
-    // HyperApp Mini App - Complete Fixed Implementation with Error Handling
+    // HyperApp - Minimal Working Version
     class HyperApp {
       constructor() {
-        // Configuration - Move these to environment variables in production
-        this.config = {
-          supabaseUrl: 'https://nqwejzbayquzsvcodunl.supabase.co',
-          supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78',
-          weatherApiKey: 'bd5e378503939ddaee76f12ad7a97608',
-          // Feature flags for graceful degradation
-          features: {
-            realtime: true,
-            geofencing: true,
-            weather: true,
-            map: true
-          }
-        };
+        this.supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+        this.supabase = null;
 
-        // Dependency loading status
-        this.dependenciesLoaded = {
-          telegram: false,
-          supabase: false,
-          leaflet: false,
-          leafletHeat: false,
-          fontAwesome: false
-        };
-
-        // Error tracking
-        this.errors = [];
-        this.fallbackMode = false;
-
-        this.tg = window.Telegram.WebApp;
+        this.tg = window.Telegram?.WebApp;
         this.currentLanguage = 'en';
         this.userData = null;
         this.nearbyReports = [];
-        this.userReports = [];
         this.selectedVibe = null;
         this.isConnected = false;
         this.userLocation = null;
         this.isAuthenticated = false;
 
-        // Geofence properties
-        this.geofenceEnabled = false;
-        this.geofenceSettings = null;
-        this.geofences = [];
-        this.geofenceWatchId = null;
-        this.currentGeofenceZones = new Set(); // Track which zones user is currently in
-        this.lastGeofenceCheck = null;
-
-        // Initialize with error handling
-        this.initializeApp();
+        this.init();
       }
+
+      async init() {
+        try {
+          // Initialize Supabase
+          this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+
+          // Load saved theme
+          const savedTheme = localStorage.getItem('hyperapp-theme') || 'dark';
+          document.documentElement.setAttribute('data-theme', savedTheme);
+
+          // Setup event listeners
+          this.setupEventListeners();
+
+          // Check authentication
+          await this.checkAuthState();
+
+          // Load initial data
+          await this.loadNearbyReports();
+
+          // Update connection status
+          this.updateConnectionStatus(true);
+
+          console.log('HyperApp initialized successfully');
+        } catch (error) {
+          console.error('Error initializing app:', error);
+          this.showNotification('App initialization failed', 'error');
+        }
+      }
+
+      setupEventListeners() {
+        // Navigation buttons
+        document.addEventListener('click', (e) => {
+          const navBtn = e.target.closest('.nav-btn');
+          if (navBtn) {
+            const view = navBtn.getAttribute('data-view');
+            if (view) {
+              this.showView(view);
+            }
+          }
+
+          // Action buttons
+          const actionBtn = e.target.closest('.action-btn');
+          if (actionBtn) {
+            const action = actionBtn.getAttribute('data-action');
+            if (action === 'report') {
+              this.showReportModal();
+            } else if (action === 'areas') {
+              this.loadTopAreas();
+            } else if (action === 'emergency') {
+              this.showEmergencyReport();
+            }
+          }
+
+          // Vibe options
+          const vibeOption = e.target.closest('.vibe-option');
+          if (vibeOption) {
+            const vibe = vibeOption.getAttribute('data-vibe');
+            if (vibe) {
+              this.selectVibe(vibe);
+            }
+          }
+
+          // Modal close
+          const closeBtn = e.target.closest('.close');
+          if (closeBtn) {
+            const modalId = closeBtn.getAttribute('data-dismiss');
+            if (modalId) {
+              this.closeModal(modalId);
+            }
+          }
+
+          // Submit buttons
+          if (e.target.closest('#submitReportBtn')) {
+            this.submitReport();
+          }
+          if (e.target.closest('#submitEmergencyBtn')) {
+            this.submitEmergencyReport();
+          }
+
+          // Theme toggle
+          if (e.target.closest('#themeToggle')) {
+            this.toggleTheme();
+          }
+
+          // Language switcher
+          if (e.target.closest('#languageSwitcher')) {
+            this.toggleLanguage();
+          }
+        });
+      }
+
+      showView(viewId) {
+        document.querySelectorAll('.view').forEach(view => {
+          view.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+
+        document.getElementById(viewId + 'View').classList.add('active');
+        document.querySelector(`.nav-btn[data-view="${viewId}"]`).classList.add('active');
+      }
+
+      async checkAuthState() {
+        if (this.tg && this.tg.initDataUnsafe && this.tg.initDataUnsafe.user) {
+          const telegramUser = this.tg.initDataUnsafe.user;
+          this.userData = telegramUser;
+          this.isAuthenticated = true;
+          await this.syncUserWithSupabase();
+          this.updateUserInfo();
+        } else {
+          this.showAuthModal();
+        }
+      }
+
+      showAuthModal() {
+        document.getElementById('authModal').style.display = 'block';
+      }
+
+      async syncUserWithSupabase() {
+        if (!this.userData) return false;
+
+        try {
+          const { data, error } = await this.supabase
+            .from('users')
+            .select('*')
+            .eq('user_id', this.userData.id)
+            .maybeSingle();
+
+          if (error) return false;
+
+          if (data) {
+            this.userData.reputation = data.reputation || 0;
+            this.userData.language = data.language || 'en';
+            this.currentLanguage = data.language || 'en';
+            this.applyLanguage(this.currentLanguage);
+            return true;
+          } else {
+            const { data: newUser, error: insertError } = await this.supabase
+              .from('users')
+              .insert([{
+                user_id: this.userData.id,
+                username: this.userData.username || this.userData.first_name || 'User',
+                reputation: 0,
+                language: 'en'
+              }])
+              .select()
+              .single();
+
+            if (insertError) return false;
+
+            this.userData.reputation = 0;
+            this.userData.language = 'en';
+            return true;
+          }
+        } catch (error) {
+          return false;
+        }
+      }
+
+      updateConnectionStatus(connected) {
+        this.isConnected = connected;
+        const statusElement = document.getElementById('connectionStatus');
+
+        if (statusElement) {
+          if (connected) {
+            statusElement.innerHTML = '<i class="fas fa-check-circle connected"></i> <span>Connected</span>';
+            statusElement.classList.add('connected');
+            statusElement.classList.remove('disconnected');
+          } else {
+            statusElement.innerHTML = '<i class="fas fa-times-circle disconnected"></i> <span>Disconnected</span>';
+            statusElement.classList.add('disconnected');
+            statusElement.classList.remove('connected');
+          }
+        }
+      }
+
+      updateUserInfo() {
+        if (this.userData) {
+          const usernameElement = document.getElementById('settingsUsername');
+          if (usernameElement) {
+            usernameElement.textContent = this.userData.username || this.userData.first_name;
+          }
+
+          document.getElementById('userReputation').textContent = this.userData.reputation || 0;
+          document.getElementById('settingsReputation').textContent = this.userData.reputation || 0;
+        }
+      }
+
+      async loadNearbyReports() {
+        try {
+          const container = document.getElementById('nearbyReports');
+          container.innerHTML = '<div class="loading-spinner"></div>';
+
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('id, vibe_type, location, notes, created_at, upvotes, downvotes')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+          if (error) {
+            container.innerHTML = '<div class="no-data">Error loading reports</div>';
+            throw error;
+          }
+
+          this.nearbyReports = reports || [];
+          this.displayNearbyReports();
+          this.updateConnectionStatus(true);
+
+        } catch (error) {
+          console.error('Error loading reports:', error);
+          this.updateConnectionStatus(false);
+        }
+      }
+
+      displayNearbyReports() {
+        const container = document.getElementById('nearbyReports');
+
+        if (!this.nearbyReports || this.nearbyReports.length === 0) {
+          container.innerHTML = '<div class="no-data">No reports nearby</div>';
+          return;
+        }
+
+        container.innerHTML = this.nearbyReports.map(report => `
+          <div class="report-item">
+            <div class="report-info">
+              <div class="report-type">
+                <i class="${this.getVibeIcon(report.vibe_type)}"></i>
+                <span>${this.capitalizeFirstLetter(report.vibe_type)}</span>
+              </div>
+              <div class="report-details">${report.notes || ''}</div>
+              <div class="report-meta">
+                <span>${report.location || 'Unknown location'}</span>
+                <span>${this.formatTimeAgo(report.created_at)}</span>
+              </div>
+            </div>
+            <div class="report-actions">
+              <button class="vote-btn upvote-btn">
+                <i class="fas fa-thumbs-up"></i> ${report.upvotes || 0}
+              </button>
+              <button class="vote-btn downvote-btn">
+                <i class="fas fa-thumbs-down"></i> ${report.downvotes || 0}
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      showReportModal() {
+        this.selectedVibe = null;
+        document.querySelectorAll('.vibe-option').forEach(option => {
+          option.classList.remove('selected');
+        });
+        document.getElementById('reportNotes').value = '';
+        document.getElementById('reportModal').style.display = 'block';
+      }
+
+      selectVibe(vibe) {
+        this.selectedVibe = vibe;
+        document.querySelectorAll('.vibe-option').forEach(option => {
+          option.classList.remove('selected');
+        });
+        document.querySelector(`.vibe-option[data-vibe="${vibe}"]`).classList.add('selected');
+      }
+
+      async submitReport() {
+        if (!this.selectedVibe) {
+          this.showNotification("Please select a vibe type", "error");
+          return;
+        }
+
+        const notes = document.getElementById('reportNotes').value;
+
+        try {
+          const { data, error } = await this.supabase
+            .from('reports')
+            .insert([{
+              user_id: null,
+              vibe_type: this.selectedVibe,
+              location: 'Test Location',
+              notes: notes || null
+            }])
+            .select();
+
+          if (error) {
+            this.showNotification("Failed to submit report", "error");
+          } else {
+            this.showNotification("Report submitted successfully", "success");
+            this.closeModal('reportModal');
+            await this.loadNearbyReports();
+          }
+        } catch (error) {
+          this.showNotification("Failed to submit report", "error");
+        }
+      }
+
+      showEmergencyReport() {
+        document.getElementById('emergencyDetails').value = '';
+        document.getElementById('emergencyModal').style.display = 'block';
+      }
+
+      async submitEmergencyReport() {
+        const details = document.getElementById('emergencyDetails').value;
+
+        if (!details) {
+          this.showNotification("Please provide emergency details", "error");
+          return;
+        }
+
+        try {
+          const { data, error } = await this.supabase
+            .from('reports')
+            .insert([{
+              user_id: null,
+              vibe_type: 'dangerous',
+              location: 'Emergency Location',
+              notes: `EMERGENCY: ${details}`
+            }])
+            .select();
+
+          if (error) {
+            this.showNotification("Failed to submit emergency report", "error");
+          } else {
+            this.showNotification("Emergency report submitted successfully", "success");
+            this.closeModal('emergencyModal');
+            await this.loadNearbyReports();
+          }
+        } catch (error) {
+          this.showNotification("Failed to submit emergency report", "error");
+        }
+      }
+
+      async loadTopAreas() {
+        try {
+          const modalContent = `
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2>Top Areas</h2>
+                <span class="close" data-dismiss="topAreasModal">&times;</span>
+              </div>
+              <div class="modal-body">
+                <div class="loading-spinner"></div>
+                <p>Analyzing community reports...</p>
+              </div>
+            </div>
+          `;
+
+          let modal = document.getElementById('topAreasModal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'topAreasModal';
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+          }
+          modal.innerHTML = modalContent;
+          modal.style.display = 'block';
+
+          const { data: reports, error } = await this.supabase
+            .from('reports')
+            .select('location, vibe_type')
+            .not('location', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(500);
+
+          if (error) {
+            modal.innerHTML = `
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h2>Top Areas</h2>
+                  <span class="close" data-dismiss="topAreasModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                  <p>Error loading top areas data</p>
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          const areaStats = {};
+          reports.forEach(report => {
+            const location = report.location || 'Unknown';
+            if (!areaStats[location]) {
+              areaStats[location] = { total: 0, vibes: {} };
+            }
+            areaStats[location].total++;
+            areaStats[location].vibes[report.vibe_type] = (areaStats[location].vibes[report.vibe_type] || 0) + 1;
+          });
+
+          const topAreas = Object.entries(areaStats)
+            .sort(([,a], [,b]) => b.total - a.total)
+            .slice(0, 10);
+
+          const areasHtml = topAreas.length > 0 ? topAreas.map(([location, data], index) => `
+            <div class="area-item">
+              <div class="area-header">
+                <div class="area-rank">#${index + 1}</div>
+                <div class="area-info">
+                  <h3>${location}</h3>
+                  <span class="area-count">${data.total} report${data.total > 1 ? 's' : ''}</span>
+                </div>
+              </div>
+              <div class="area-vibes">
+                ${Object.entries(data.vibes).map(([vibe, count]) => `
+                  <span class="vibe-tag vibe-${vibe}">
+                    <i class="${this.getVibeIcon(vibe)}"></i>
+                    ${this.capitalizeFirstLetter(vibe)}: ${count}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          `).join('') : '<p>No area data available yet.</p>';
+
+          modal.innerHTML = `
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2>Top Areas</h2>
+                <span class="close" data-dismiss="topAreasModal">&times;</span>
+              </div>
+              <div class="modal-body">
+                <p>Areas ranked by number of community safety reports</p>
+                <div class="top-areas-list">
+                  ${areasHtml}
+                </div>
+              </div>
+            </div>
+          `;
+
+        } catch (error) {
+          console.error("Error loading top areas:", error);
+          this.showNotification("Failed to load top areas", "error");
+        }
+      }
+
+      toggleLanguage() {
+        this.currentLanguage = this.currentLanguage === 'en' ? 'ar' : 'en';
+        document.getElementById('currentLanguage').textContent = this.currentLanguage.toUpperCase();
+        this.applyLanguage(this.currentLanguage);
+      }
+
+      applyLanguage(lang) {
+        document.querySelectorAll('[data-en]').forEach(element => {
+          if (element.getAttribute('data-' + lang)) {
+            element.textContent = element.getAttribute('data-' + lang);
+          }
+        });
+        document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      }
+
+      toggleTheme() {
+        const root = document.documentElement;
+        const currentTheme = root.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        root.setAttribute('data-theme', newTheme);
+        localStorage.setItem('hyperapp-theme', newTheme);
+
+        const themeIcon = document.querySelector('#themeToggle i');
+        if (themeIcon) {
+          themeIcon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        this.showNotification(`Switched to ${newTheme} theme`, 'info');
+      }
+
+      showNotification(message, type = 'info', duration = 3000) {
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+          existingNotification.remove();
+        }
+
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+
+        let icon = 'fas fa-info-circle';
+        if (type === 'success') icon = 'fas fa-check-circle';
+        if (type === 'error') icon = 'fas fa-exclamation-circle';
+        if (type === 'warning') icon = 'fas fa-exclamation-triangle';
+
+        notification.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, duration);
+      }
+
+      closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+      }
+
+      getVibeIcon(vibeType) {
+        const icons = {
+          crowded: 'fas fa-users',
+          noisy: 'fas fa-volume-up',
+          festive: 'fas fa-glass-cheers',
+          calm: 'fas fa-peace',
+          suspicious: 'fas fa-eye-slash',
+          dangerous: 'fas fa-exclamation-triangle'
+        };
+        return icons[vibeType] || 'fas fa-question-circle';
+      }
+
+      capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+
+      formatTimeAgo(timestamp) {
+        const now = new Date();
+        const time = new Date(timestamp);
+        const diffInSeconds = Math.floor((now - time) / 1000);
+
+        if (diffInSeconds < 60) {
+          return 'Just now';
+        }
+
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) {
+          return `${diffInMinutes} min ago`;
+        }
+
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) {
+          return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+        }
+
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+      }
+    }
+
+    // Initialize the app when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      window.app = new HyperApp();
+    });
+  </script>
+</body>
+</html>
 
       // Medium-term error handling - balanced approach
       async initializeApp() {
@@ -6999,186 +7506,240 @@
       }
       
       setupEventListeners() {
-        // Navigation buttons
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const view = e.currentTarget.getAttribute('data-view');
-            this.showView(view);
-          });
-        });
-        
-        // Language switcher
-        const languageSwitcher = document.getElementById('languageSwitcher');
-        if (languageSwitcher) {
-          languageSwitcher.addEventListener('click', this.toggleLanguage);
+        try {
+          // Use delegated event listeners for all interactions to ensure they work with dynamically created content
+          document.addEventListener('click', this.handleGlobalClick.bind(this));
+
+          // Setup offline indicator
+          this.setupOfflineIndicator();
+
+          // Setup mobile-specific interactions
+          this.setupMobileInteractions();
+
+          console.log('Event listeners setup completed successfully');
+        } catch (error) {
+          console.error('Error setting up event listeners:', error);
+          this.showNotification('Some interactive features may not work properly', 'warning');
         }
-        
+      }
+
+      // Centralized click handler for all interactive elements
+      handleGlobalClick(e) {
+        const target = e.target;
+
+        // Navigation buttons
+        const navBtn = target.closest('.nav-btn');
+        if (navBtn) {
+          e.preventDefault();
+          const view = navBtn.getAttribute('data-view');
+          if (view) {
+            this.showView(view);
+          }
+          return;
+        }
+
+        // Language switcher
+        if (target.closest('#languageSwitcher')) {
+          e.preventDefault();
+          this.toggleLanguage();
+          return;
+        }
+
         // Location button
-        const locationBtn = document.getElementById('locationBtn');
-        if (locationBtn) {
-          locationBtn.addEventListener('click', () => {
-            this.requestUserLocationManually();
-          });
+        if (target.closest('#locationBtn')) {
+          e.preventDefault();
+          this.requestUserLocationManually();
+          return;
         }
 
         // Refresh button
-        const refreshBtn = document.getElementById('refreshBtn');
-        if (refreshBtn) {
-          refreshBtn.addEventListener('click', () => {
-            this.forceDataRefresh();
-          });
-        }
-        
-        // Quick action buttons
-        document.querySelectorAll('.action-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const action = e.currentTarget.getAttribute('data-action');
-            if (action === 'report') {
-              this.showReportModal();
-            } else if (action === 'areas') {
-              this.loadTopAreas();
-            } else if (action === 'emergency') {
-              this.showEmergencyReport();
-            }
-          });
-        });
-        
-        // Vibe option buttons
-        document.querySelectorAll('.vibe-option').forEach(option => {
-          option.addEventListener('click', (e) => {
-            const vibe = e.currentTarget.getAttribute('data-vibe');
-            this.selectVibe(vibe);
-          });
-        });
-        
-        // Modal close buttons
-        document.querySelectorAll('.close').forEach(closeBtn => {
-          closeBtn.addEventListener('click', (e) => {
-            const modalId = e.target.getAttribute('data-dismiss');
-            if (modalId) {
-              this.closeModal(modalId);
-            }
-          });
-        });
-        
-        // Form submit buttons
-        const reportSubmitBtn = document.getElementById('submitReportBtn');
-        if (reportSubmitBtn) {
-          reportSubmitBtn.addEventListener('click', this.submitReport);
-        }
-        
-        const emergencySubmitBtn = document.getElementById('submitEmergencyBtn');
-        if (emergencySubmitBtn) {
-          emergencySubmitBtn.addEventListener('click', this.submitEmergencyReport);
-        }
-        
-        // Language select dropdown
-        const languageSelect = document.getElementById('languageSelect');
-        if (languageSelect) {
-          languageSelect.addEventListener('change', (e) => {
-            this.changeLanguage(e.target.value);
-          });
+        if (target.closest('#refreshBtn')) {
+          e.preventDefault();
+          this.forceDataRefresh();
+          return;
         }
 
-        // Logout button event delegation
-        document.addEventListener('click', (e) => {
-          if (e.target.id === 'logoutBtn' || e.target.closest('#logoutBtn')) {
-            this.handleLogout();
+        // Action buttons (report, areas, emergency)
+        const actionBtn = target.closest('.action-btn');
+        if (actionBtn) {
+          e.preventDefault();
+          const action = actionBtn.getAttribute('data-action');
+          if (action === 'report') {
+            this.showReportModal();
+          } else if (action === 'areas') {
+            this.loadTopAreas();
+          } else if (action === 'emergency') {
+            this.showEmergencyReport();
           }
-        });
+          return;
+        }
 
-        // Delegated vote buttons handler
-        document.addEventListener('click', (e) => {
-          const btn = e.target.closest('.vote-btn');
-          if (!btn) return;
+        // Vibe option buttons
+        const vibeOption = target.closest('.vibe-option');
+        if (vibeOption) {
+          e.preventDefault();
+          const vibe = vibeOption.getAttribute('data-vibe');
+          if (vibe) {
+            this.selectVibe(vibe);
+          }
+          return;
+        }
 
+        // Modal close buttons
+        const closeBtn = target.closest('.close');
+        if (closeBtn) {
+          e.preventDefault();
+          const modalId = closeBtn.getAttribute('data-dismiss');
+          if (modalId) {
+            this.closeModal(modalId);
+          }
+          return;
+        }
+
+        // Form submit buttons
+        if (target.closest('#submitReportBtn')) {
+          e.preventDefault();
+          this.submitReport();
+          return;
+        }
+
+        if (target.closest('#submitEmergencyBtn')) {
+          e.preventDefault();
+          this.submitEmergencyReport();
+          return;
+        }
+
+        // Logout button
+        if (target.closest('#logoutBtn')) {
+          e.preventDefault();
+          this.handleLogout();
+          return;
+        }
+
+        // Vote buttons
+        const voteBtn = target.closest('.vote-btn');
+        if (voteBtn) {
           e.preventDefault();
 
           // If user not authenticated, show auth modal and info
-          if (btn.getAttribute('aria-disabled') === 'true') {
+          if (voteBtn.getAttribute('aria-disabled') === 'true') {
             this.showNotification("Please login to vote on reports", "info");
             this.showAuthModal();
             return;
           }
 
-          const reportId = btn.dataset.reportId;
-          const voteType = btn.dataset.voteType;
+          const reportId = voteBtn.dataset.reportId;
+          const voteType = voteBtn.dataset.voteType;
           if (reportId && voteType) {
             this.voteReport(reportId, voteType);
           }
-        });
-
-        // Map button in empty state
-        document.addEventListener('click', (e) => {
-          if (e.target.id === 'firstReportBtn' || e.target.closest('#firstReportBtn')) {
-            this.showReportModal();
-          }
-        });
-
-        // Filter buttons
-        document.addEventListener('click', (e) => {
-          const filterBtn = e.target.closest('.filter-btn');
-          if (filterBtn) {
-            const filter = filterBtn.dataset.filter;
-            this.filterReports(filter);
-          }
-        });
-
-        // Emergency contact buttons
-        document.addEventListener('click', (e) => {
-          const emergencyBtn = e.target.closest('.emergency-btn');
-          if (emergencyBtn && emergencyBtn.dataset.contact) {
-            const contact = emergencyBtn.dataset.contact;
-            this.callEmergency(contact);
-          }
-        });
-
-        // Theme toggle
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-          themeToggle.addEventListener('click', () => {
-            this.toggleTheme();
-          });
+          return;
         }
 
-        // Vibe category cards click handler
-        document.addEventListener('click', (e) => {
-          const vibeCard = e.target.closest('.vibe-category-card');
-          if (vibeCard) {
-            const vibeType = vibeCard.dataset.vibe;
+        // Map button in empty state
+        if (target.closest('#firstReportBtn')) {
+          e.preventDefault();
+          this.showReportModal();
+          return;
+        }
+
+        // Filter buttons
+        const filterBtn = target.closest('.filter-btn');
+        if (filterBtn) {
+          e.preventDefault();
+          const filter = filterBtn.dataset.filter;
+          if (filter) {
+            this.filterReports(filter);
+          }
+          return;
+        }
+
+        // Emergency contact buttons
+        const emergencyBtn = target.closest('.emergency-btn');
+        if (emergencyBtn && emergencyBtn.dataset.contact) {
+          e.preventDefault();
+          const contact = emergencyBtn.dataset.contact;
+          this.callEmergency(contact);
+          return;
+        }
+
+        // Theme toggle
+        if (target.closest('#themeToggle')) {
+          e.preventDefault();
+          this.toggleTheme();
+          return;
+        }
+
+        // Vibe category cards
+        const vibeCard = target.closest('.vibe-category-card');
+        if (vibeCard) {
+          e.preventDefault();
+          const vibeType = vibeCard.dataset.vibe;
+          if (vibeType) {
             this.showVibeCategoryReports(vibeType);
           }
-        });
+          return;
+        }
 
-        // Mood vote cards click handler
-        document.addEventListener('click', (e) => {
-          const moodCard = e.target.closest('.mood-vote-card');
-          if (moodCard) {
-            const moodType = moodCard.dataset.mood;
+        // Mood vote cards
+        const moodCard = target.closest('.mood-vote-card');
+        if (moodCard) {
+          e.preventDefault();
+          const moodType = moodCard.dataset.mood;
+          if (moodType) {
             this.selectMood(moodType);
           }
-        });
+          return;
+        }
 
-        // Geofence toggle button handler
-        document.addEventListener('click', (e) => {
-          if (e.target.closest('#geofenceToggleBtn')) {
-            this.toggleGeofenceMonitoring();
+        // Geofence toggle button
+        if (target.closest('#geofenceToggleBtn')) {
+          e.preventDefault();
+          this.toggleGeofenceMonitoring();
+          return;
+        }
+
+        // Privacy policy button
+        if (target.closest('[data-action="privacy-policy"]')) {
+          e.preventDefault();
+          this.showPrivacyPolicy();
+          return;
+        }
+
+        // Auth buttons
+        if (target.closest('#loginBtn')) {
+          e.preventDefault();
+          this.handleAuthLogin();
+          return;
+        }
+
+        if (target.closest('#signupBtn')) {
+          e.preventDefault();
+          this.handleAuthSignup();
+          return;
+        }
+
+        if (target.closest('#closeAuth')) {
+          e.preventDefault();
+          this.hideAuthModal();
+          return;
+        }
+
+        // Auth tabs
+        const authTab = target.closest('.auth-tab');
+        if (authTab) {
+          e.preventDefault();
+          const tabName = authTab.getAttribute('data-tab');
+          if (tabName) {
+            // Switch auth tabs
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.add('hidden'));
+            authTab.classList.add('active');
+            document.getElementById(tabName + 'Form').classList.remove('hidden');
           }
-        });
-
-        // Privacy policy button handler
-        document.addEventListener('click', (e) => {
-          if (e.target.closest('[data-action="privacy-policy"]')) {
-            this.showPrivacyPolicy();
-          }
-        });
-
-        // Setup offline indicator
-        this.setupOfflineIndicator();
-
-      // Setup mobile-specific interactions
-      this.setupMobileInteractions();
-    }
+          return;
+        }
+      }
 
 
 
