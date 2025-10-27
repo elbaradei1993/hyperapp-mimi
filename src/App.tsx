@@ -20,7 +20,7 @@ import { VibeType } from './types';
 
 const AppContent: React.FC = () => {
   const { t } = useTranslation();
-  const { user, isAuthenticated, isLoading, checkOnboardingStatus } = useAuth();
+  const { user, isAuthenticated, isLoading, checkOnboardingStatus, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('map');
   const [vibes, setVibes] = useState<Vibe[]>([]);
   const [sosAlerts, setSosAlerts] = useState<SOS[]>([]);
@@ -507,7 +507,20 @@ const AppContent: React.FC = () => {
     loadData(); // Load app data after onboarding
   };
 
-  const handleOnboardingSkip = () => {
+  const handleOnboardingSkip = async () => {
+    if (user) {
+      // Mark onboarding as completed when skipped so user can access the app
+      try {
+        await updateProfile({
+          onboarding_completed: true,
+          onboarding_step: 4,
+          profile_completed_at: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Error marking onboarding as completed:', error);
+        // Continue anyway - user should still be able to use the app
+      }
+    }
     setShowOnboardingModal(false);
     loadData(); // Load app data even if onboarding is skipped
   };
