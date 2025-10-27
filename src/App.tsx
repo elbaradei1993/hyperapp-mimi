@@ -450,9 +450,10 @@ const AppContent: React.FC = () => {
   const loadData = async () => {
     try {
       // Load vibes and SOS alerts from Supabase with error handling
+      // Increased limits to show historical reports from user's location
       const [vibesData, sosData] = await Promise.all([
-        reportsService.getVibes({ limit: 100 }),
-        reportsService.getSOSAlerts({ limit: 50 })
+        reportsService.getVibes({ limit: 1000 }),    // Load 1000 vibes for historical data
+        reportsService.getSOSAlerts({ limit: 500 })  // Load 500 SOS alerts for historical data
       ]);
 
       setVibes(vibesData || []);
