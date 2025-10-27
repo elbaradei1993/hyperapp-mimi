@@ -449,46 +449,48 @@ const AppContent: React.FC = () => {
 
   const loadData = async () => {
     try {
-      // Load vibes and SOS alerts from Supabase
+      // Load vibes and SOS alerts from Supabase with error handling
       const [vibesData, sosData] = await Promise.all([
         reportsService.getVibes({ limit: 100 }),
         reportsService.getSOSAlerts({ limit: 50 })
       ]);
 
-      setVibes(vibesData);
-      setSosAlerts(sosData);
+      setVibes(vibesData || []);
+      setSosAlerts(sosData || []);
 
-      // Set up real-time subscriptions
-      const reportsSubscription = reportsService.subscribeToReports((newReport) => {
-        if (newReport.emergency) {
-          setSosAlerts(prev => [newReport, ...prev]);
-        } else {
-          setVibes(prev => [newReport, ...prev]);
-        }
-      });
+      // Set up real-time subscriptions (only if data loaded successfully)
+      if (vibesData && sosData) {
+        const reportsSubscription = reportsService.subscribeToReports((newReport) => {
+          if (newReport.emergency) {
+            setSosAlerts(prev => [newReport, ...prev]);
+          } else {
+            setVibes(prev => [newReport, ...prev]);
+          }
+        });
 
-      const votesSubscription = reportsService.subscribeToVotes((update) => {
-        // Update vote counts in real-time
-        setVibes(prev => prev.map(vibe =>
-          vibe.id === update.reportId
-            ? { ...vibe, upvotes: update.upvotes, downvotes: update.downvotes }
-            : vibe
-        ));
-        setSosAlerts(prev => prev.map(sos =>
-          sos.id === update.reportId
-            ? { ...sos, upvotes: update.upvotes, downvotes: update.downvotes }
-            : sos
-        ));
-      });
+        const votesSubscription = reportsService.subscribeToVotes((update) => {
+          // Update vote counts in real-time
+          setVibes(prev => prev.map(vibe =>
+            vibe.id === update.reportId
+              ? { ...vibe, upvotes: update.upvotes, downvotes: update.downvotes }
+              : vibe
+          ));
+          setSosAlerts(prev => prev.map(sos =>
+            sos.id === update.reportId
+              ? { ...sos, upvotes: update.upvotes, downvotes: update.downvotes }
+              : sos
+          ));
+        });
 
-      // Store subscriptions for cleanup
-      return () => {
-        reportsSubscription.unsubscribe();
-        votesSubscription.unsubscribe();
-      };
+        // Store subscriptions for cleanup
+        return () => {
+          reportsSubscription.unsubscribe();
+          votesSubscription.unsubscribe();
+        };
+      }
     } catch (error) {
       console.error('Error loading data:', error);
-      // Fallback to empty arrays if loading fails
+      // Fallback to empty arrays if loading fails - app still works
       setVibes([]);
       setSosAlerts([]);
     }
