@@ -39,25 +39,29 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
             onClick={() => onTabChange(tab.id)}
             style={{
               flex: 1,
-              padding: '12px 8px',
+              aspectRatio: '1', // Ensure square buttons
+              maxWidth: '80px', // Limit max width on larger screens
+              padding: '8px 4px',
               border: 'none',
               backgroundColor: activeTab === tab.id ? 'var(--accent-primary)' : 'transparent',
               color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '4px',
+              justifyContent: 'center',
+              gap: '2px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              fontSize: '12px',
-              fontWeight: activeTab === tab.id ? '600' : '500'
+              fontSize: '11px',
+              fontWeight: activeTab === tab.id ? '600' : '500',
+              minHeight: '60px' // Ensure minimum touch target
             }}
           >
             <i className={tab.icon} style={{
-              fontSize: '18px',
-              marginBottom: '2px'
+              fontSize: '16px',
+              marginBottom: '1px'
             }}></i>
-            <span>{tab.label}</span>
+            <span style={{ lineHeight: '1.2' }}>{tab.label}</span>
           </button>
         ))}
       </div>
@@ -114,25 +118,29 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
             onClick={() => onTabChange(tab.id)}
             style={{
               flex: 1,
-              padding: '12px 8px',
+              aspectRatio: '1', // Ensure square buttons
+              maxWidth: '80px', // Limit max width on larger screens
+              padding: '8px 4px',
               border: 'none',
               backgroundColor: activeTab === tab.id ? 'var(--accent-primary)' : 'transparent',
               color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '4px',
+              justifyContent: 'center',
+              gap: '2px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              fontSize: '12px',
-              fontWeight: activeTab === tab.id ? '600' : '500'
+              fontSize: '11px',
+              fontWeight: activeTab === tab.id ? '600' : '500',
+              minHeight: '60px' // Ensure minimum touch target
             }}
           >
             <i className={tab.icon} style={{
-              fontSize: '18px',
-              marginBottom: '2px'
+              fontSize: '16px',
+              marginBottom: '1px'
             }}></i>
-            <span>{tab.label}</span>
+            <span style={{ lineHeight: '1.2' }}>{tab.label}</span>
           </button>
         ))}
       </div>

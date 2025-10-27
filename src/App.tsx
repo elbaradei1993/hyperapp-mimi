@@ -645,43 +645,36 @@ const AppContent: React.FC = () => {
         </div>
       )}
 
-      {/* Debug Info - only show when authenticated and onboarded */}
+      {/* Compact Location Controls - only show when authenticated and onboarded */}
       {isAuthenticated && checkOnboardingStatus() && activeTab === 'map' && (
         <div style={{
           position: 'absolute',
-          bottom: '80px',
-          left: '10px',
-          background: 'var(--bg-primary)',
-          padding: '10px',
-          borderRadius: '5px',
+          bottom: '90px',
+          right: '10px',
           zIndex: 1000,
-          fontSize: '12px',
-          color: 'var(--text-primary)',
-          border: '1px solid var(--border-color)',
-          maxWidth: '250px'
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
         }}>
-          <div style={{ marginBottom: '8px' }}>
-            {t('app.welcomeBack')} {user?.first_name || user?.username}<br/>
-            {t('app.vibes')}: {vibes.length} | {t('app.sos')}: {sosAlerts.length}<br/>
-            {t('app.heatmap')}: {isHeatmapVisible ? t('app.on') : t('app.off')}<br/>
-            <strong>Location:</strong> {locationStatus}<br/>
-            <strong>Accuracy:</strong> {locationAccuracy}
-          </div>
           <button
             onClick={() => setShowLocationOverride(true)}
+            title="Set Location Manually"
             style={{
-              background: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px',
-              padding: '4px 8px',
-              fontSize: '11px',
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               cursor: 'pointer',
-              width: '100%',
-              marginBottom: '4px'
+              boxShadow: '0 2px 8px var(--shadow-color)',
+              fontSize: '16px'
             }}
           >
-            Set Location Manually
+            <i className="fas fa-map-marker-alt"></i>
           </button>
           <button
             onClick={() => {
@@ -692,18 +685,23 @@ const AppContent: React.FC = () => {
               setLocationAccuracy('Unknown');
               window.location.reload();
             }}
+            title="Refresh Location"
             style={{
-              background: '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px',
-              padding: '4px 8px',
-              fontSize: '11px',
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: 'var(--bg-primary)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               cursor: 'pointer',
-              width: '100%'
+              boxShadow: '0 2px 8px var(--shadow-color)',
+              fontSize: '14px'
             }}
           >
-            Refresh Location
+            <i className="fas fa-sync-alt"></i>
           </button>
         </div>
       )}

@@ -100,7 +100,7 @@ const ProfileView: React.FC = () => {
     try {
       setLoading(true);
 
-      // Load all profile data in parallel
+      // Load all profile data in parallel for better performance
       const [statsData, badgesData, activityData] = await Promise.all([
         loadUserStats(),
         loadUserBadges(),
@@ -112,6 +112,10 @@ const ProfileView: React.FC = () => {
       setRecentActivity(activityData);
     } catch (error) {
       console.error('Error loading profile data:', error);
+      // Set default values on error
+      setStats({ totalReports: 0, totalUpvotes: 0, reputation: 0, rank: null });
+      setBadges([]);
+      setRecentActivity([]);
     } finally {
       setLoading(false);
     }
