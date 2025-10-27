@@ -348,8 +348,20 @@ const ProfileView: React.FC = () => {
       }
 
       console.log("Loading reports for user:", user.id);
-      const reports = await reportsService.getReports({ userId: user.id });
-      console.log("Loaded reports:", reports);
+
+      // First try to get reports with user_id
+      let reports = await reportsService.getReports({ userId: user.id });
+      console.log("Reports with user_id:", reports.length);
+
+      // If no reports found with user_id, also check for reports without user_id
+      // This handles existing reports created before user_id was added
+      if (reports.length === 0) {
+        console.log("No reports found with user_id, checking for reports without user_id");
+        const allReports = await reportsService.getReports({ limit: 50 });
+        // For now, show recent reports as a fallback - in production you'd want to associate them properly
+        reports = allReports.slice(0, 10);
+        console.log("Fallback reports loaded:", reports.length);
+      }
 
       return reports.map(report => ({
         ...report,

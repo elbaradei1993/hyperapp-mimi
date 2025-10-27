@@ -133,11 +133,24 @@ class ReportsService {
     notes?: string;
     location?: string;
     emergency?: boolean;
+    user_id?: string;
   }): Promise<Report> {
     try {
+      // Get current user if not provided
+      let userId = reportData.user_id;
+      if (!userId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        userId = user?.id;
+      }
+
+      if (!userId) {
+        throw new Error('User must be authenticated to create a report');
+      }
+
       const { data, error } = await supabase
         .from('reports')
         .insert([{
+          user_id: userId,
           vibe_type: reportData.vibe_type,
           latitude: reportData.latitude,
           longitude: reportData.longitude,
