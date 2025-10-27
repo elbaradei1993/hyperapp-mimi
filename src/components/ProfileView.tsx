@@ -478,12 +478,13 @@ const ProfileView: React.FC = () => {
         </div>
 
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ marginBottom: '8px' }}>
             <h1 style={{
               fontSize: '24px',
               fontWeight: 'bold',
               color: 'var(--text-primary)',
-              margin: 0
+              margin: 0,
+              marginBottom: '12px'
             }}>
               {user?.first_name && user?.last_name
                 ? `${user.first_name} ${user.last_name}`
