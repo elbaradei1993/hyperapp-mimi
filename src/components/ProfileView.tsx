@@ -65,6 +65,7 @@ const ProfileView: React.FC = () => {
     firstName: '',
     lastName: '',
     phone: '',
+    location: '',
     interests: [] as string[]
   });
 
@@ -501,6 +502,11 @@ const ProfileView: React.FC = () => {
                   firstName: user?.first_name || '',
                   lastName: user?.last_name || '',
                   phone: user?.phone || '',
+                  location: user?.location
+                    ? (typeof user.location === 'string'
+                        ? user.location
+                        : (user.location.address || `${user.location.latitude.toFixed(4)}, ${user.location.longitude.toFixed(4)}`))
+                    : '',
                   interests: user?.interests || []
                 });
                 setShowEditModal(true);
@@ -1338,6 +1344,41 @@ const ProfileView: React.FC = () => {
                       }}
                     />
                   </div>
+
+                  {/* Location */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '4px'
+                    }}>
+                      {t('profile.location')}
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.location}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="Enter your location"
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#6b7280',
+                      marginTop: '4px',
+                      marginBottom: '0'
+                    }}>
+                      Your location was automatically detected during onboarding, but you can update it here
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -1439,10 +1480,18 @@ const ProfileView: React.FC = () => {
                 <button
                   onClick={async () => {
                     try {
+                      // Prepare location update - keep existing coordinates if available
+                      const locationUpdate = editForm.location ? {
+                        latitude: user?.location?.latitude || 0,
+                        longitude: user?.location?.longitude || 0,
+                        address: editForm.location
+                      } : undefined;
+
                       await updateProfile({
                         first_name: editForm.firstName,
                         last_name: editForm.lastName,
                         phone: editForm.phone,
+                        location: locationUpdate,
                         interests: editForm.interests
                       });
                       setShowEditModal(false);
