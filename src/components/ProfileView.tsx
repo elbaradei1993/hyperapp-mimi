@@ -446,10 +446,11 @@ const ProfileView: React.FC = () => {
 
   return (
     <div style={{
-      padding: '20px',
+      padding: '16px',
       maxWidth: '800px',
       margin: '0 auto',
-      backgroundColor: 'var(--bg-secondary)'
+      backgroundColor: 'var(--bg-secondary)',
+      paddingBottom: '100px' // Extra padding for mobile scrolling
     }}>
       {/* Profile Header */}
       <div style={{

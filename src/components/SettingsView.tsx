@@ -132,11 +132,12 @@ const SettingsView: React.FC = () => {
 
   return (
     <div style={{
-      padding: '20px',
+      padding: '16px',
       maxWidth: '600px',
       margin: '0 auto',
       backgroundColor: 'var(--bg-secondary)',
-      minHeight: '100vh'
+      minHeight: '100vh',
+      paddingBottom: '100px' // Extra padding for mobile scrolling
     }}>
       {/* Header */}
       <div style={{

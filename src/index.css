@@ -1,3 +1,19 @@
+/* Mobile viewport height fix */
+:root {
+  --vh: 1vh;
+}
+
+@media screen and (max-width: 768px) {
+  :root {
+    --vh: calc(1vh * 0.01);
+  }
+}
+
+/* Mobile-safe height utility */
+.mobile-safe-height {
+  height: calc(var(--vh, 1vh) * 100 - 70px);
+}
+
 /* Basic styles for testing */
 body {
   margin: 0;

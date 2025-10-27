@@ -696,7 +696,7 @@ const AppContent: React.FC = () => {
       {isAuthenticated && checkOnboardingStatus() && (
         <>
           <div style={{
-            height: 'calc(100vh - 70px)', // Account for bottom navigation with integrated FAB
+            height: 'calc(var(--vh, 1vh) * 100 - 70px)', // Mobile-safe height accounting for bottom navigation
             width: '100vw',
             overflow: (activeTab === 'profile' || activeTab === 'settings' || activeTab === 'reports') ? 'auto' : 'hidden'
           }}>
