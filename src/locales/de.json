@@ -1,0 +1,231 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Absenden",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein",
+    "ok": "OK",
+    "retry": "Erneut versuchen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "export": "Exportieren",
+    "import": "Importieren"
+  },
+  "auth": {
+    "welcome": "Willkommen bei HyperApp",
+    "joinCommunity": "Treten Sie der Community-Sicherheitsplattform bei",
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "username": "Benutzername",
+    "confirmPassword": "Passwort bestätigen",
+    "enterEmail": "Geben Sie Ihre E-Mail ein",
+    "enterPassword": "Geben Sie Ihr Passwort ein",
+    "chooseUsername": "Wählen Sie einen Benutzernamen",
+    "createPassword": "Erstellen Sie ein Passwort (mindestens 6 Zeichen)",
+    "confirmPasswordPlaceholder": "Bestätigen Sie Ihr Passwort",
+    "loggingIn": "Anmeldung läuft...",
+    "creatingAccount": "Konto wird erstellt...",
+    "loginFailed": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "signupFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "signupSuccessful": "Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mail zur Verifizierung.",
+    "fillAllFields": "Bitte füllen Sie alle Felder aus",
+    "passwordsNotMatch": "Passwörter stimmen nicht überein",
+    "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Verwalten Sie Ihr Konto und App-Einstellungen",
+    "accountManagement": "Kontoverwaltung",
+    "changePassword": "Passwort ändern",
+    "updatePassword": "Aktualisieren Sie das Passwort Ihres Kontos",
+    "change": "Ändern",
+    "signOut": "Von Ihrem Konto abmelden",
+    "deleteAccount": "Konto löschen",
+    "deleteAccountDesc": "Konto und alle Daten dauerhaft löschen",
+    "appPreferences": "App-Einstellungen",
+    "language": "Sprache",
+    "chooseLanguage": "Wählen Sie Ihre bevorzugte Sprache",
+    "theme": "Thema",
+    "switchTheme": "Zwischen hellem und dunklem Modus wechseln",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "notifications": "Benachrichtigungen",
+    "receiveNotifications": "App-Benachrichtigungen und Updates erhalten",
+    "privacySecurity": "Datenschutz und Sicherheit",
+    "locationSharing": "Standortfreigabe",
+    "allowLocation": "Der App erlauben, auf Ihren Standort zuzugreifen",
+    "exportData": "Daten exportieren",
+    "downloadData": "Laden Sie eine Kopie Ihrer Daten herunter",
+    "aboutSupport": "Über und Support",
+    "version": "HyperApp v1.0.0",
+    "communitySafety": "Gemeinschaftssicherheit und Stimmungskartierung",
+    "help": "Hilfe",
+    "privacy": "Datenschutz",
+    "terms": "Bedingungen",
+    "contact": "Kontakt",
+    "newPassword": "Neues Passwort",
+    "confirmNewPassword": "Neues Passwort bestätigen",
+    "updatingPassword": "Aktualisierung läuft...",
+    "passwordUpdated": "Passwort erfolgreich aktualisiert!",
+    "errorUpdatingPassword": "Fehler beim Aktualisieren des Passworts",
+    "deleteConfirmTitle": "⚠️ Konto löschen",
+    "deleteConfirmMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Berichte, Stimmen, Profildaten und Kontoinformationen werden dauerhaft gelöscht.",
+    "deleting": "Löschen läuft...",
+    "accountDeleted": "Konto erfolgreich gelöscht. Sie werden abgemeldet.",
+    "errorDeletingAccount": "Fehler beim Löschen des Kontos"
+  },
+  "tabs": {
+    "map": "Karte",
+    "reports": "Berichte",
+    "profile": "Profil",
+    "settings": "Einstellungen"
+  },
+  "app": {
+    "loadingHyperApp": "HyperApp wird geladen...",
+    "welcomeBack": "Willkommen zurück",
+    "vibes": "Stimmungen",
+    "sos": "SOS",
+    "heatmap": "Heatmap",
+    "on": "AN",
+    "off": "AUS",
+    "newReport": "Neuer Bericht"
+  },
+  "reports": {
+    "comingSoon": "Demnächst verfügbar - Berichts- und Abstimmungssystem in der Nähe",
+    "reportsView": "Berichte-Ansicht",
+    "addressNotAvailable": "Adresse nicht verfügbar"
+  },
+  "modals": {
+    "reportType": {
+      "title": "Was möchten Sie melden?",
+      "vibe": "Stimmung melden",
+      "vibeDesc": "Teilen Sie Ihre aktuelle Stimmung oder Atmosphäre",
+      "emergency": "Notfallbericht",
+      "emergencyDesc": "Dringende Sicherheitsbedenken melden"
+    },
+    "vibeReport": {
+      "title": "Melden Sie Ihre Stimmung",
+      "description": "Wie fühlen Sie sich gerade?",
+      "location": "Standort",
+      "selectLocation": "Standort auf der Karte auswählen",
+      "vibeType": "Stimmungsart",
+      "selectVibeType": "Wählen Sie Ihre aktuelle Stimmung",
+      "details": "Zusätzliche Details",
+      "detailsPlaceholder": "Teilen Sie mehr über Ihre aktuelle Situation...",
+      "submitReport": "Bericht absenden",
+      "submitting": "Wird gesendet...",
+      "reportSuccess": "Stimmung erfolgreich gemeldet!",
+      "reportError": "Fehler beim Senden des Berichts"
+    },
+    "emergencyReport": {
+      "title": "Notfallbericht",
+      "description": "Dringende Sicherheitsbedenken melden",
+      "emergencyType": "Notfallart",
+      "selectEmergencyType": "Notfallart auswählen",
+      "location": "Standort",
+      "selectLocation": "Standort auf der Karte auswählen",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Beschreiben Sie die Notsituation...",
+      "contactInfo": "Kontaktinformationen",
+      "contactPlaceholder": "Telefonnummer oder andere Kontaktinformationen",
+      "submitReport": "Notfallbericht absenden",
+      "submitting": "Wird gesendet...",
+      "reportSuccess": "Notfall erfolgreich gemeldet!",
+      "reportError": "Fehler beim Senden des Notfallberichts"
+    },
+    "onboarding": {
+      "welcome": "Willkommen bei HyperApp!",
+      "welcomeDesc": "Ihre Community-Sicherheits- und Stimmungskartierungsplattform",
+      "step1Title": "Entdecken Sie Ihre Community",
+      "step1Desc": "Erkunden Sie Echtzeit-Sicherheitsstimmungen und Notfallberichte in Ihrem Bereich",
+      "step2Title": "Teilen Sie Ihre Erfahrung",
+      "step2Desc": "Melden Sie Ihre aktuelle Stimmung oder Notfallsituationen, um anderen zu helfen",
+      "step3Title": "Bleiben Sie verbunden",
+      "step3Desc": "Erhalten Sie Benachrichtigungen über wichtige Updates und Community-Warnungen",
+      "getStarted": "Loslegen",
+      "skip": "Überspringen",
+      "errorSetup": "Fehler beim Abschließen der Einrichtung. Bitte versuchen Sie es erneut."
+    }
+  },
+  "profile": {
+    "loading": "Profil wird geladen...",
+    "editProfile": "Profil bearbeiten",
+    "personalInfo": "Persönliche Informationen",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "location": "Standort",
+    "notProvided": "Nicht angegeben",
+    "communityInterests": "Gemeinschaftsinteressen",
+    "noInterests": "Noch keine Interessen ausgewählt",
+    "totalReports": "Gesamtberichte",
+    "communityUpvotes": "Community-Upvotes",
+    "communityRank": "Community-Rang",
+    "achievementBadges": "Erfolgsabzeichen",
+    "noBadges": "Noch keine Abzeichen verdient",
+    "newReport": "Neuer Bericht",
+    "noReports": "Noch keine Berichte eingereicht",
+    "communityActivity": "Community-Aktivität",
+    "noNearbyReports": "Derzeit keine Berichte in der Nähe",
+    "recentActivity": "Kürzliche Aktivität",
+    "noRecentActivity": "Keine kürzliche Aktivität",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "firstNamePlaceholder": "Geben Sie Ihren Vornamen ein",
+    "lastNamePlaceholder": "Geben Sie Ihren Nachnamen ein",
+    "phonePlaceholder": "Geben Sie Ihre Telefonnummer ein",
+    "saveChanges": "Änderungen speichern",
+    "badges": {
+      "communityLeader": {
+        "name": "Community-Leader",
+        "description": "100+ Rufpunkte verdient"
+      },
+      "trustedReporter": {
+        "name": "Vertrauenswürdiger Reporter",
+        "description": "50+ Rufpunkte verdient"
+      },
+      "activeContributor": {
+        "name": "Aktiver Beitragender",
+        "description": "10+ Rufpunkte verdient"
+      },
+      "safetyGuardian": {
+        "name": "Sicherheitswächter",
+        "description": "50+ Sicherheitsberichte eingereicht"
+      },
+      "communityWatch": {
+        "name": "Community-Wache",
+        "description": "20+ Sicherheitsberichte eingereicht"
+      },
+      "firstResponder": {
+        "name": "Ersthelfer",
+        "description": "5+ Sicherheitsberichte eingereicht"
+      }
+    }
+  },
+  "shared": {
+    "emptyState": {
+      "title": "Keine Daten verfügbar",
+      "description": "Derzeit sind keine Elemente zum Anzeigen vorhanden."
+    },
+    "notification": {
+      "success": "Erfolg",
+      "error": "Fehler",
+      "warning": "Warnung",
+      "info": "Information"
+    }
+  }
+}

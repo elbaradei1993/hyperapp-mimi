@@ -9,9 +9,10 @@ create table if not exists public.users (
 create table if not exists public.reports (
   id bigint generated always as identity primary key,
   user_id text references public.users(user_id) on delete cascade,
-  vibe_type text not null check (vibe_type in ('calm','noisy','crowded','suspicious','dangerous')),
+  vibe_type text not null check (vibe_type in ('safe', 'calm', 'lively', 'festive', 'quiet', 'noisy', 'crowded', 'suspicious', 'dangerous')),
   location text,
   notes text,
+  emergency boolean not null default false,
   upvotes int not null default 0,
   downvotes int not null default 0,
   latitude double precision,
@@ -42,8 +43,8 @@ alter table public.votes enable row level security;
 
 drop policy if exists users_insert_self on public.users;
 create policy users_insert_self on public.users
-  for insert to authenticated
-  with check (user_id::text = auth.uid()::text);
+  for insert to authenticated, service_role
+  with check (user_id = auth.uid()::text);
 
 drop policy if exists users_select_self on public.users;
 create policy users_select_self on public.users
@@ -266,126 +267,3 @@ drop trigger if exists votes_after_update on public.votes;
 create trigger votes_after_update
 after update of vote_type on public.votes
 for each row execute function public._votes_au_update_report_counts();
-
--- Activity Suggestions Feature Tables
-create table if not exists public.mood_votes (
-  id bigint generated always as identity primary key,
-  user_id text not null references public.users(user_id) on delete cascade,
-  mood_type text not null check (mood_type in ('chill','excited','anxious','sad','angry','happy','tired','confused','bored')),
-  latitude double precision,
-  longitude double precision,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.activity_suggestions (
-  id bigint generated always as identity primary key,
-  mood_type text not null check (mood_type in ('chill','excited','anxious','sad','angry','happy','tired','confused','bored')),
-  place_name text not null,
-  place_type text not null, -- e.g., 'cafe', 'park', 'restaurant'
-  latitude double precision not null,
-  longitude double precision not null,
-  osm_id text, -- OpenStreetMap ID for reference
-  created_at timestamptz not null default now()
-);
-
--- Indexes for mood votes
-create index if not exists mood_votes_user_id_idx on public.mood_votes(user_id);
-create index if not exists mood_votes_mood_type_idx on public.mood_votes(mood_type);
-create index if not exists mood_votes_created_at_idx on public.mood_votes(created_at);
-
--- Row Level Security for mood votes
-alter table public.mood_votes enable row level security;
-
--- Mood votes policies (authenticated users only)
--- Allow all authenticated users to read all mood votes for population display
-drop policy if exists mood_votes_select_all on public.mood_votes;
-create policy mood_votes_select_all on public.mood_votes
-  for select to authenticated
-  using (true);
-
-drop policy if exists mood_votes_insert_own on public.mood_votes;
-create policy mood_votes_insert_own on public.mood_votes
-  for insert to authenticated
-  with check (user_id = auth.uid()::text);
-
-drop policy if exists mood_votes_delete_own on public.mood_votes;
-create policy mood_votes_delete_own on public.mood_votes
-  for delete to authenticated
-  using (user_id = auth.uid()::text);
-
--- Indexes for activity suggestions
-create index if not exists activity_suggestions_mood_type_idx on public.activity_suggestions(mood_type);
-create index if not exists activity_suggestions_location_idx on public.activity_suggestions(latitude, longitude);
-
--- Row Level Security for activity suggestions
-alter table public.activity_suggestions enable row level security;
-
--- Activity suggestions policies (public read, authenticated insert)
-drop policy if exists activity_suggestions_select_all on public.activity_suggestions;
-create policy activity_suggestions_select_all on public.activity_suggestions
-  for select to anon, authenticated
-  using (true);
-
-drop policy if exists activity_suggestions_insert_authenticated on public.activity_suggestions;
-create policy activity_suggestions_insert_authenticated on public.activity_suggestions
-  for insert to authenticated
-  with check (true);
-
--- Insert sample activity suggestions for different moods
--- These are example places in Cairo, Egypt area
-insert into public.activity_suggestions (mood_type, place_name, place_type, latitude, longitude, osm_id) values
--- Chill mood suggestions
-('chill', 'Zamalek Rooftop Cafe', 'cafe', 30.0631, 31.2178, 'zamalek_cafe_1'),
-('chill', 'Nile River Walk', 'park', 30.0444, 31.2357, 'nile_walk_1'),
-('chill', 'Khan el-Khalili Tea House', 'cafe', 30.0478, 31.2625, 'khan_tea_1'),
-('chill', 'Al-Azhar Park', 'park', 30.0444, 31.2657, 'azhar_park_1'),
-
--- Excited mood suggestions
-('excited', 'Cairo Festival City Mall', 'shopping', 30.0289, 31.4069, 'festival_city_1'),
-('excited', 'Pyramids of Giza', 'attraction', 29.9792, 31.1342, 'pyramids_1'),
-('excited', 'Nile Cruise Dinner', 'restaurant', 30.0444, 31.2357, 'nile_cruise_1'),
-('excited', 'Zamalek Night Market', 'market', 30.0631, 31.2178, 'zamalek_market_1'),
-
--- Anxious mood suggestions (calming places)
-('anxious', 'Al-Azhar Mosque Gardens', 'religious', 30.0444, 31.2657, 'azhar_mosque_1'),
-('anxious', 'Manial Palace Gardens', 'park', 30.0204, 31.2272, 'manial_palace_1'),
-('anxious', 'Coptic Cairo Churches', 'religious', 30.0069, 31.2302, 'coptic_cairo_1'),
-('anxious', 'Zamalek Art Gallery', 'gallery', 30.0631, 31.2178, 'zamalek_gallery_1'),
-
--- Sad mood suggestions (uplifting places)
-('sad', 'Tahrir Square Fountain', 'park', 30.0444, 31.2357, 'tahrir_fountain_1'),
-('sad', 'Egyptian Museum', 'museum', 30.0478, 31.2336, 'egyptian_museum_1'),
-('sad', 'Khan el-Khalili Bazaar', 'market', 30.0478, 31.2625, 'khan_bazaar_1'),
-('sad', 'Nile View Restaurant', 'restaurant', 30.0444, 31.2357, 'nile_view_1'),
-
--- Angry mood suggestions (relaxing places)
-('angry', 'Zamalek Gardens', 'park', 30.0631, 31.2178, 'zamalek_gardens_1'),
-('angry', 'Islamic Cairo Walking Tour', 'historical', 30.0444, 31.2657, 'islamic_cairo_1'),
-('angry', 'Nile River Boat Ride', 'activity', 30.0444, 31.2357, 'nile_boat_1'),
-('angry', 'Al-Azhar University Library', 'library', 30.0444, 31.2657, 'azhar_library_1'),
-
--- Happy mood suggestions (fun places)
-('happy', 'Cairo Tower', 'attraction', 30.0444, 31.2357, 'cairo_tower_1'),
-('happy', 'Zamalek Sports Club', 'sports', 30.0631, 31.2178, 'zamalek_sports_1'),
-('happy', 'Khan el-Khalili Food Court', 'restaurant', 30.0478, 31.2625, 'khan_food_1'),
-('happy', 'Nile Corniche Walk', 'park', 30.0444, 31.2357, 'nile_corniche_1'),
-
--- Tired mood suggestions (resting places)
-('tired', 'Zamalek Coffee Shops', 'cafe', 30.0631, 31.2178, 'zamalek_coffee_1'),
-('tired', 'Tahrir Square Benches', 'park', 30.0444, 31.2357, 'tahrir_benches_1'),
-('tired', 'Al-Azhar Park Picnic Area', 'park', 30.0444, 31.2657, 'azhar_picnic_1'),
-('tired', 'Nile View Hotels', 'hotel', 30.0444, 31.2357, 'nile_hotels_1'),
-
--- Confused mood suggestions (orienting places)
-('confused', 'Egyptian Museum', 'museum', 30.0478, 31.2336, 'museum_confused_1'),
-('confused', 'Tahrir Square Information', 'landmark', 30.0444, 31.2357, 'tahrir_info_1'),
-('confused', 'Khan el-Khalili Maps', 'market', 30.0478, 31.2625, 'khan_maps_1'),
-('confused', 'Zamalek Tourist Office', 'information', 30.0631, 31.2178, 'zamalek_info_1'),
-
--- Bored mood suggestions (entertaining places)
-('bored', 'Cairo Opera House', 'theater', 30.0419, 31.2243, 'opera_house_1'),
-('bored', 'Zamalek Cinema', 'cinema', 30.0631, 31.2178, 'zamalek_cinema_1'),
-('bored', 'Khan el-Khalili Street Performers', 'entertainment', 30.0478, 31.2625, 'khan_performers_1'),
-('bored', 'Nile River Felucca Ride', 'activity', 30.0444, 31.2357, 'felucca_ride_1')
-
-on conflict do nothing;

@@ -57,11 +57,8 @@ class DataManager {
       // Force fresh data by using different query parameters and clearing any client-side cache
       const cacheBust = force ? `&t=${Date.now()}` : '';
 
-      // Create fresh Supabase client instance for forced refresh to avoid any caching
+      // Use the existing Supabase client instance (singleton pattern prevents multiple instances)
       let supabaseClient = this.app.supabase;
-      if (force) {
-        supabaseClient = window.supabase.createClient(this.app.supabaseUrl, this.app.supabaseKey);
-      }
 
       const { data: reports, error } = await supabaseClient
         .from('reports')
@@ -427,6 +424,21 @@ class DataManager {
       console.error('Error reverse geocoding:', error);
       callback(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
     }
+  }
+
+  formatLocationForDisplay(report) {
+    // Format location for display in popups and UI
+    if (!report.location) {
+      return 'Unknown location';
+    }
+
+    // If location looks like coordinates, format them nicely
+    if (report.location.match(/^-?\d+\.\d+,\s*-?\d+\.\d+$/)) {
+      return `${parseFloat(report.location.split(',')[0]).toFixed(4)}, ${parseFloat(report.location.split(',')[1]).toFixed(4)}`;
+    }
+
+    // Return the stored location (should be a readable address)
+    return report.location;
   }
 
   async calculateUserReputation(userId) {

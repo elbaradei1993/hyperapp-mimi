@@ -814,40 +814,7 @@ class UIManager {
       });
     }
 
-    // Mood distribution chart
-    const moodChartCanvas = document.getElementById('moodChart');
-    if (moodChartCanvas) {
-      const ctx = moodChartCanvas.getContext('2d');
 
-      const moodLabels = Object.keys(stats.moodCounts);
-      const moodData = Object.values(stats.moodCounts);
-
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: moodLabels.map(m => this.capitalizeFirstLetter(m)),
-          datasets: [{
-            label: 'Votes',
-            data: moodData,
-            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
-              }
-            }
-          }
-        }
-      });
-    }
   }
 
   setupEventListeners() {
@@ -891,13 +858,7 @@ class UIManager {
       });
     });
 
-    // Mood voting
-    document.querySelectorAll('.mood-vote-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        const moodType = e.currentTarget.getAttribute('data-mood');
-        this.app.selectMood(moodType);
-      });
-    });
+
 
     // Vote buttons (delegated event listener)
     document.addEventListener('click', (e) => {

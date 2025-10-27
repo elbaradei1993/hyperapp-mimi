@@ -156,14 +156,14 @@ class ReportValidator {
   async runFullValidation() {
     console.log('🚀 Starting full validation...');
 
-    // Initialize Supabase
-    if (window.supabase && window.appConfig) {
-      this.supabase = window.supabase.createClient(
+    // Initialize Supabase using singleton manager
+    if (window.supabaseClientManager && window.appConfig) {
+      this.supabase = window.supabaseClientManager.initialize(
         window.appConfig.supabaseUrl,
         window.appConfig.supabaseKey
       );
     } else {
-      console.error('Supabase not configured');
+      console.error('Supabase client manager not available or app config missing');
       return false;
     }
 

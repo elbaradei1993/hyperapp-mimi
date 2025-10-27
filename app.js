@@ -58,7 +58,7 @@ class HyperApp {
 
     // Initialize Supabase with basic error handling
     try {
-      this.supabase = window.supabase.createClient(this.config.supabaseUrl, this.config.supabaseKey);
+      this.supabase = window.supabaseClientManager.initialize(this.config.supabaseUrl, this.config.supabaseKey);
     } catch (error) {
       console.warn('Supabase initialization failed:', error);
       this.showNotification('Database connection limited', 'warning');
@@ -544,7 +544,6 @@ class HyperApp {
       this.isAuthenticated = true;
       await this.syncUserWithSupabase();
       this.updateUserInfo();
-      await this.loadUserMoodVote(); // Load existing mood vote
       return;
     }
 
@@ -559,7 +558,6 @@ class HyperApp {
       };
       await this.syncUserWithSupabase();
       this.updateUserInfo();
-      await this.loadUserMoodVote(); // Load existing mood vote
     } else {
       // Show auth modal if no authentication found
       this.showAuthModal();
@@ -849,11 +847,8 @@ class HyperApp {
       // Force fresh data by using different query parameters and clearing any client-side cache
       const cacheBust = force ? `&t=${Date.now()}` : '';
 
-      // Create fresh Supabase client instance for forced refresh to avoid any caching
-      let supabaseClient = this.supabase;
-      if (force) {
-        supabaseClient = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
-      }
+      // Use the existing Supabase client instance
+      const supabaseClient = this.supabase;
 
       const { data: reports, error } = await supabaseClient
         .from('reports')
@@ -1230,264 +1225,15 @@ class HyperApp {
     document.querySelector(`.vibe-option[data-vibe="${vibe}"]`).classList.add('selected');
   }
 
-  async selectMood(moodType) {
-    if (!this.isAuthenticated) {
-      this.showAuthModal();
-      this.showNotification("Please login to vote on mood", "error");
-      return;
-    }
 
-    const selectedCard = document.querySelector(`.mood-vote-card[data-mood="${moodType}"]`);
-    const isCurrentlySelected = selectedCard && selectedCard.classList.contains('selected');
 
-    // Check if any mood is currently selected (not the one being clicked)
-    const hasOtherMoodSelected = document.querySelector('.mood-vote-card.selected') !== null && !isCurrentlySelected;
 
-    try {
-      if (isCurrentlySelected) {
-        // Deselect the current mood - remove the vote from database
-        const { error: deleteError } = await this.supabase
-          .from('mood_votes')
-          .delete()
-          .eq('user_id', this.userData.id)
-          .eq('mood_type', moodType);
 
-        if (deleteError) {
-          console.error("Error removing mood vote:", deleteError);
-          this.showNotification("Failed to update mood vote", "error");
-          return;
-        }
 
-        // Remove selection from UI
-        selectedCard.classList.remove('selected');
-        this.showNotification("Mood vote removed - you can now select a different mood or see community votes", "info");
 
-      } else if (hasOtherMoodSelected) {
-        // User is trying to select a different mood while one is already selected
-        // Require them to unselect first
-        this.showNotification("Please unselect your current mood first before choosing a different one", "warning");
-        return;
 
-      } else {
-        // No mood is currently selected, so select this one
-        // Add new vote to database
-        const { data, error } = await this.supabase
-          .from('mood_votes')
-          .insert([{
-            user_id: this.userData.id,
-            mood_type: moodType,
-            latitude: this.userLocation?.latitude,
-            longitude: this.userLocation?.longitude
-          }]);
 
-        if (error) {
-          // Handle 409 conflict errors (duplicate mood votes)
-          if (error.code === '23505' || error.message?.includes('duplicate key')) {
-            console.warn("Mood vote already exists, updating instead");
-            // Try to update the existing vote instead
-            const { error: updateError } = await this.supabase
-              .from('mood_votes')
-              .update({
-                mood_type: moodType,
-                latitude: this.userLocation?.latitude,
-                longitude: this.userLocation?.longitude,
-                created_at: new Date().toISOString()
-              })
-              .eq('user_id', this.userData.id);
 
-            if (updateError) {
-              console.error("Error updating mood vote:", updateError);
-              this.showNotification("Failed to update mood vote", "error");
-              return;
-            }
-          } else {
-            console.error("Error submitting mood vote:", error);
-            this.showNotification("Failed to submit mood vote", "error");
-            return;
-          }
-        }
-
-        // Select the new mood in UI
-        if (selectedCard) {
-          selectedCard.classList.add('selected');
-        }
-
-        this.showNotification(`Your mood set to ${this.capitalizeFirstLetter(moodType)}`, "success");
-      }
-
-      // Update mood counts and UI display mode
-      await this.updateMoodCounts();
-      this.updateMoodVotingDisplayMode();
-
-      // Check if we should show population mood (50+ votes)
-      await this.checkPopulationMoodThreshold();
-
-    } catch (error) {
-      console.error("Error selecting mood:", error);
-      this.showNotification("Failed to update mood", "error");
-    }
-  }
-
-  updateMoodVotingDisplayMode() {
-    // Always show community mood counts and status - never hide them
-    document.querySelectorAll('.mood-count').forEach(count => {
-      count.style.display = 'block';
-    });
-
-    // Always show mood voting status with dominant mood and percentage
-    const moodVotingStatus = document.getElementById('moodVotingStatus');
-    if (moodVotingStatus) {
-      moodVotingStatus.style.display = 'block';
-    }
-
-    // Enable all mood cards for voting
-    document.querySelectorAll('.mood-vote-card').forEach(card => {
-      card.classList.remove('disabled');
-      card.style.pointerEvents = 'auto';
-      card.style.opacity = '1';
-    });
-
-    // Ensure mood voting status is always visible by adding a minimum display time
-    if (moodVotingStatus) {
-      moodVotingStatus.style.display = 'block';
-      // Add a class to prevent flickering
-      moodVotingStatus.classList.add('always-visible');
-    }
-  }
-
-  async updateMoodCounts() {
-    try {
-      // Get mood vote counts from the last 24 hours
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      const { data: moodVotes, error } = await this.supabase
-        .from('mood_votes')
-        .select('mood_type')
-        .gte('created_at', yesterday.toISOString());
-
-      if (error) {
-        console.error("Error fetching mood votes:", error);
-        return;
-      }
-
-      // Count votes by mood type
-      const moodCounts = {};
-      moodVotes.forEach(vote => {
-        moodCounts[vote.mood_type] = (moodCounts[vote.mood_type] || 0) + 1;
-      });
-
-      // Update UI with counts
-      Object.keys(moodCounts).forEach(moodType => {
-        const countElement = document.getElementById(`${moodType}Count`);
-        if (countElement) {
-          countElement.textContent = moodCounts[moodType];
-        }
-      });
-
-      // Always show mood voting status with dominant mood and percentage
-      const totalVotes = Object.values(moodCounts).reduce((sum, count) => sum + count, 0);
-      const moodVotingStatus = document.getElementById('moodVotingStatus');
-
-      if (moodVotingStatus) {
-        // Find dominant mood
-        let dominantMood = null;
-        let maxCount = 0;
-        Object.entries(moodCounts).forEach(([mood, count]) => {
-          if (count > maxCount) {
-            maxCount = count;
-            dominantMood = mood;
-          }
-        });
-
-        if (dominantMood && totalVotes > 0) {
-          const percentage = Math.round((maxCount / totalVotes) * 100);
-          const populationMoodDisplay = document.getElementById('populationMoodDisplay');
-
-          if (populationMoodDisplay) {
-            populationMoodDisplay.innerHTML = `
-              <i class="${this.getMoodEmoji(dominantMood)}"></i>
-              <span data-en="${this.capitalizeFirstLetter(dominantMood)} (${percentage}%)" data-ar="${this.getMoodArabicName(dominantMood)} (${percentage}%)">
-                ${this.capitalizeFirstLetter(dominantMood)} (${percentage}%)
-              </span>
-            `;
-          }
-        } else if (totalVotes === 0) {
-          // Show message when no votes in the area
-          const populationMoodDisplay = document.getElementById('populationMoodDisplay');
-          if (populationMoodDisplay) {
-            populationMoodDisplay.innerHTML = `
-              <i class="fas fa-info-circle"></i>
-              <span data-en="No Votes in The Area" data-ar="لا توجد تصويتات في المنطقة">No Votes in The Area</span>
-            `;
-          }
-        }
-
-        // Always show the mood voting status
-        moodVotingStatus.style.display = 'block';
-      }
-
-    } catch (error) {
-      console.error("Error updating mood counts:", error);
-    }
-  }
-
-  async checkPopulationMoodThreshold() {
-    // Mood voting status is now always visible - no threshold checking needed
-    // This function is kept for backward compatibility but no longer hides the status
-    try {
-      // Count total mood votes in the last 24 hours for potential future features
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      const { data: moodVotes, error } = await this.supabase
-        .from('mood_votes')
-        .select('mood_type')
-        .gte('created_at', yesterday.toISOString());
-
-      if (error) {
-        console.error("Error checking population mood threshold:", error);
-        return;
-      }
-
-      // Mood voting status is always visible now
-      const moodVotingStatus = document.getElementById('moodVotingStatus');
-      if (moodVotingStatus) {
-        moodVotingStatus.style.display = 'block';
-      }
-
-    } catch (error) {
-      console.error("Error checking population mood threshold:", error);
-    }
-  }
-
-  getMoodEmoji(moodType) {
-    const emojis = {
-      chill: '😎',
-      excited: '🤩',
-      anxious: '😰',
-      sad: '😢',
-      angry: '😠',
-      happy: '😀',
-      tired: '😴',
-      confused: '🤔'
-    };
-    return emojis[moodType] || '😐';
-  }
-
-  getMoodArabicName(moodType) {
-    const names = {
-      chill: 'هادئ',
-      excited: 'مثير',
-      anxious: 'قلق',
-      sad: 'حزين',
-      angry: 'غاضب',
-      happy: 'سعيد',
-      tired: 'متعب',
-      confused: 'مشوش'
-    };
-    return names[moodType] || moodType;
-  }
 
   async submitReport() {
     if (!this.selectedVibe) {
@@ -1502,14 +1248,28 @@ class HyperApp {
 
     // Show loading state
     const submitBtn = document.getElementById('submitReportBtn');
+    if (!submitBtn) {
+      console.error("Submit button not found");
+      return;
+    }
+
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Submitting...';
     submitBtn.disabled = true;
 
+    console.log("Starting report submission process...");
+
     try {
       const notes = document.getElementById('reportNotes').value;
+      console.log("Report data:", {
+        selectedVibe: this.selectedVibe,
+        location: this.currentReportLocation,
+        notes: notes,
+        hasLocation: !!this.userLocation
+      });
 
       // Check for existing report with same vibe and location
+      console.log("Checking for existing reports...");
       const { data: existingReports, error: checkError } = await this.supabase
         .from('reports')
         .select('id, created_at')
@@ -1520,11 +1280,16 @@ class HyperApp {
 
       if (checkError) {
         console.error("Error checking for existing reports:", checkError);
-      } else if (existingReports && existingReports.length > 0) {
+        throw new Error("Failed to check for existing reports");
+      }
+
+      if (existingReports && existingReports.length > 0) {
         const existingReport = existingReports[0];
         const reportTime = new Date(existingReport.created_at);
         const now = new Date();
         const timeDiff = (now - reportTime) / (1000 * 60); // Difference in minutes
+
+        console.log("Found existing report from", timeDiff, "minutes ago");
 
         // If a similar report exists within the last 30 minutes, don't create a duplicate
         if (timeDiff < 30) {
@@ -1546,7 +1311,10 @@ class HyperApp {
       if (this.userLocation) {
         reportData.latitude = this.userLocation.latitude;
         reportData.longitude = this.userLocation.longitude;
+        console.log("Adding coordinates:", this.userLocation.latitude, this.userLocation.longitude);
       }
+
+      console.log("Submitting report data:", reportData);
 
       const { data, error } = await this.supabase
         .from('reports')
@@ -1562,53 +1330,73 @@ class HyperApp {
           errorMessage = `Failed to submit report: ${error.message}`;
         }
         this.showNotification(errorMessage, "error");
-      } else {
-        // Add the new report to nearbyReports immediately for instant UI feedback
-        const newReport = {
-          ...reportData,
-          id: data[0].id,
-          created_at: data[0].created_at,
-          upvotes: 0,
-          downvotes: 0,
-          user_vote: null
-        };
-        this.nearbyReports.unshift(newReport);
-
-        // Also add to mapReports if it has coordinates (for immediate map display)
-        if (newReport.latitude && newReport.longitude) {
-          if (!this.mapReports) {
-            this.mapReports = [];
-          }
-          this.mapReports.unshift(newReport);
-        }
-
-        this.showNotification("Report submitted successfully", "success");
-        this.closeModal('reportModal');
-        // Update UI immediately
-        this.displayNearbyReports();
-        // Refresh map markers immediately if map is loaded
-        if (this.map) {
-          this.addReportMarkers();
-          this.addHeatMapLayer();
-        }
-        // Reload data in background to ensure consistency
-        this.loadNearbyReports();
+        return;
       }
+
+      console.log("Report submitted successfully:", data);
+
+      // Add the new report to nearbyReports immediately for instant UI feedback
+      const newReport = {
+        ...reportData,
+        id: data[0].id,
+        created_at: data[0].created_at,
+        upvotes: 0,
+        downvotes: 0,
+        user_vote: null
+      };
+
+      console.log("Adding new report to local data:", newReport);
+      this.nearbyReports.unshift(newReport);
+
+      // Also add to mapReports if it has coordinates (for immediate map display)
+      if (newReport.latitude && newReport.longitude) {
+        if (!this.mapReports) {
+          this.mapReports = [];
+        }
+        this.mapReports.unshift(newReport);
+        console.log("Added to map reports for immediate display");
+      }
+
+      this.showNotification("Report submitted successfully", "success");
+      this.closeModal('reportModal');
+
+      // Update UI immediately
+      console.log("Updating UI with new report...");
+      this.displayNearbyReports();
+
+      // Refresh map markers immediately if map is loaded
+      if (this.map) {
+        console.log("Refreshing map markers...");
+        this.addReportMarkers();
+        this.addHeatMapLayer();
+      }
+
+      // Reload data in background to ensure consistency
+      console.log("Reloading data in background...");
+      this.loadNearbyReports();
+
     } catch (error) {
       console.error("Error submitting report:", error);
-      let errorMessage = "Unable to get your location";
-      if (error.code === 1) {
+      let errorMessage = "Failed to submit report";
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error.code === 1) {
         errorMessage = "Location access denied. Please enable location permissions in your browser settings.";
       } else if (error.code === 2) {
         errorMessage = "Location unavailable. Please check your GPS settings and try again.";
       } else if (error.code === 3) {
         errorMessage = "Location request timed out. This can happen in poor signal areas. Please try again.";
+      } else {
+        errorMessage = `Error: ${error.message}`;
       }
       this.showNotification(errorMessage, "error");
     } finally {
       // Reset button state
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
+      console.log("Resetting button state...");
+      if (submitBtn) {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
     }
   }
 
@@ -2692,31 +2480,31 @@ class HyperApp {
     document.getElementById(modalId).style.display = 'none';
   }
 
-  getVibeIcon(vibeType) {
-    const icons = {
-      crowded: 'fas fa-users',
-      noisy: 'fas fa-volume-up',
-      festive: 'fas fa-glass-cheers',
-      calm: 'fas fa-peace',
-      suspicious: 'fas fa-eye-slash',
-      dangerous: 'fas fa-exclamation-triangle'
-    };
+      getVibeIcon(vibeType) {
+        const icons = {
+          crowded: 'fas fa-users',
+          noisy: 'fas fa-volume-up',
+          festive: 'fas fa-glass-cheers',
+          calm: 'fas fa-peace',
+          suspicious: 'fas fa-eye-slash',
+          dangerous: 'fas fa-exclamation-triangle'
+        };
 
-    return icons[vibeType] || 'fas fa-question-circle';
-  }
+        return icons[vibeType] || 'fas fa-question-circle';
+      }
 
-  getVibeSymbol(vibeType) {
-    const symbols = {
-      crowded: '👥',
-      noisy: '🔊',
-      festive: '🎉',
-      calm: '😌',
-      suspicious: '👀',
-      dangerous: '⚠️'
-    };
+      getVibeSymbol(vibeType) {
+        const symbols = {
+          crowded: '👥',
+          noisy: '🔊',
+          festive: '🎉',
+          calm: '😌',
+          suspicious: '👀',
+          dangerous: '⚠️'
+        };
 
-    return symbols[vibeType] || '❓';
-  }
+        return symbols[vibeType] || '❓';
+      }
 
   getVibeArabicName(vibeType) {
     const names = {
@@ -2944,18 +2732,7 @@ class HyperApp {
       })
       .subscribe();
 
-    // Subscribe to mood votes changes
-    this.moodVotesSubscription = this.supabase
-      .channel('mood_votes_changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'mood_votes'
-      }, (payload) => {
-        console.log('Mood votes change detected:', payload);
-        this.handleMoodVotesChange(payload);
-      })
-      .subscribe();
+
 
     console.log('Real-time subscriptions set up');
   }
@@ -3042,12 +2819,7 @@ class HyperApp {
     }
   }
 
-  handleMoodVotesChange(payload) {
-    console.log('Handling mood votes change:', payload.eventType, payload.new, payload.old);
 
-    // Update mood counts when mood votes change
-    this.updateMoodCounts();
-  }
 
   setupEventListeners() {
     // Navigation buttons
@@ -3090,13 +2862,7 @@ class HyperApp {
       });
     });
 
-    // Mood voting
-    document.querySelectorAll('.mood-vote-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        const moodType = e.currentTarget.getAttribute('data-mood');
-        this.selectMood(moodType);
-      });
-    });
+
 
     // Vote buttons (delegated event listener)
     document.addEventListener('click', (e) => {
@@ -3417,37 +3183,17 @@ class HyperApp {
         return this.getDefaultStats();
       }
 
-      // Get mood votes from last 24 hours
-      const { data: recentMoodVotes, error: moodError } = await this.supabase
-        .from('mood_votes')
-        .select('mood_type')
-        .gte('created_at', yesterday.toISOString());
-
-      if (moodError) {
-        console.error("Error fetching mood votes:", moodError);
-      }
-
       // Calculate stats
       const vibeCounts = {};
       recentReports.forEach(report => {
         vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
       });
 
-      const moodCounts = {};
-      if (recentMoodVotes) {
-        recentMoodVotes.forEach(vote => {
-          moodCounts[vote.mood_type] = (moodCounts[vote.mood_type] || 0) + 1;
-        });
-      }
-
       const totalReports = recentReports.length;
-      const totalMoodVotes = recentMoodVotes ? recentMoodVotes.length : 0;
 
       return {
         totalReports,
-        totalMoodVotes,
         vibeCounts,
-        moodCounts,
         timestamp: new Date().toISOString()
       };
     } catch (error) {
@@ -3459,9 +3205,7 @@ class HyperApp {
   getDefaultStats() {
     return {
       totalReports: 0,
-      totalMoodVotes: 0,
       vibeCounts: {},
-      moodCounts: {},
       timestamp: new Date().toISOString()
     };
   }
@@ -3471,11 +3215,6 @@ class HyperApp {
     const totalReportsEl = document.getElementById('totalReports');
     if (totalReportsEl) {
       totalReportsEl.textContent = stats.totalReports;
-    }
-
-    const totalMoodVotesEl = document.getElementById('totalMoodVotes');
-    if (totalMoodVotesEl) {
-      totalMoodVotesEl.textContent = stats.totalMoodVotes;
     }
 
     // Update vibe breakdown
@@ -3517,41 +3256,6 @@ class HyperApp {
               labels: {
                 padding: 20,
                 usePointStyle: true
-              }
-            }
-          }
-        }
-      });
-    }
-
-    // Mood distribution chart
-    const moodChartCanvas = document.getElementById('moodChart');
-    if (moodChartCanvas) {
-      const ctx = moodChartCanvas.getContext('2d');
-
-      const moodLabels = Object.keys(stats.moodCounts);
-      const moodData = Object.values(stats.moodCounts);
-
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: moodLabels.map(m => this.capitalizeFirstLetter(m)),
-          datasets: [{
-            label: 'Votes',
-            data: moodData,
-            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
               }
             }
           }
@@ -3853,7 +3557,6 @@ class HyperApp {
 
   updateCommunityInsights() {
     // Update community mood and activity insights
-    this.updateMoodCounts();
     this.loadEnhancedStats();
   }
 
@@ -4045,35 +3748,7 @@ class HyperApp {
     this.showNotification(message, priority);
   }
 
-  // Load user mood vote on app initialization
-  async loadUserMoodVote() {
-    if (!this.isAuthenticated) return;
 
-    try {
-      const { data, error } = await this.supabase
-        .from('mood_votes')
-        .select('mood_type')
-        .eq('user_id', this.userData.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error("Error loading user mood vote:", error);
-        return;
-      }
-
-      if (data) {
-        // Mark the mood card as selected
-        const moodCard = document.querySelector(`.mood-vote-card[data-mood="${data.mood_type}"]`);
-        if (moodCard) {
-          moodCard.classList.add('selected');
-        }
-      }
-    } catch (error) {
-      console.error("Error loading user mood vote:", error);
-    }
-  }
 
   // Utility method to classify geofence zones
   classifyGeofenceZones() {

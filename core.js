@@ -54,7 +54,7 @@ class HyperApp {
 
     // Initialize Supabase with basic error handling
     try {
-      this.supabase = window.supabase.createClient(this.config.supabaseUrl, this.config.supabaseKey);
+      this.supabase = window.supabaseClientManager.initialize(this.config.supabaseUrl, this.config.supabaseKey);
     } catch (error) {
       console.warn('Supabase initialization failed:', error);
       this.uiManager.showNotification('Database connection limited', 'warning');
