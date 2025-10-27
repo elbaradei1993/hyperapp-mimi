@@ -1203,7 +1203,7 @@ const ProfileView: React.FC = () => {
         )}
       </div>
 
-      {/* Edit Profile Modal - Professional Design */}
+      {/* Edit Profile Modal - Clean & Professional */}
       {showEditModal && (
         <div style={{
           position: 'fixed',
@@ -1211,485 +1211,263 @@ const ProfileView: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 2000,
-          padding: '16px',
-          animation: 'modalFadeIn 0.3s ease-out'
+          padding: '20px'
         }}>
           <div style={{
-            backgroundColor: 'var(--bg-primary)',
-            borderRadius: '20px',
-            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
-            maxWidth: '520px',
-            width: '100%',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '90%',
             maxHeight: '90vh',
-            overflow: 'hidden',
-            animation: 'modalSlideUp 0.3s ease-out',
-            border: '1px solid var(--border-color)'
+            overflow: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
           }}>
             {/* Header */}
-            <div style={{
-              padding: '24px 24px 0 24px',
-              borderBottom: '1px solid var(--border-color)',
-              marginBottom: '24px'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '16px'
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#1f2937',
+                marginBottom: '8px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white'
-                  }}>
-                    <i className="fas fa-user-edit" style={{ fontSize: '18px' }}></i>
-                  </div>
-                  <div>
-                    <h2 style={{
-                      fontSize: '20px',
-                      fontWeight: '700',
-                      color: 'var(--text-primary)',
-                      margin: 0,
-                      lineHeight: '1.2'
-                    }}>
-                      {t('profile.editProfile')}
-                    </h2>
-                    <p style={{
-                      fontSize: '14px',
-                      color: 'var(--text-muted)',
-                      margin: '4px 0 0 0'
-                    }}>
-                      Update your personal information
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  title={t('common.close')}
-                  aria-label={t('common.close')}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    background: 'transparent',
-                    border: '1px solid var(--border-color)',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    fontSize: '16px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.borderColor = 'var(--border-color)';
-                  }}
-                >
-                  <i className="fas fa-times" aria-hidden="true"></i>
-                </button>
-              </div>
+                {t('profile.editProfile')}
+              </h2>
+              <p style={{ color: '#6b7280', fontSize: '16px' }}>
+                Update your personal information
+              </p>
             </div>
 
             {/* Form Content */}
-            <div style={{
-              padding: '0 24px 24px 24px',
-              overflow: 'auto',
-              maxHeight: 'calc(90vh - 120px)'
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-                {/* Personal Information Section */}
-                <div>
-                  <h3 style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <i className="fas fa-id-card" style={{ color: 'var(--accent-primary)' }}></i>
-                    Personal Information
-                  </h3>
+              {/* Personal Information */}
+              <div>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#1f2937',
+                  marginBottom: '16px'
+                }}>
+                  Personal Information
+                </h3>
 
-                  {/* Name Fields */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                    <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '8px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        {t('profile.firstName')}
-                      </label>
-                      <div style={{ position: 'relative' }}>
-                        <input
-                          type="text"
-                          value={editForm.firstName}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
-                          placeholder={t('profile.firstNamePlaceholder')}
-                          style={{
-                            width: '100%',
-                            padding: '12px 16px 12px 44px',
-                            border: '2px solid var(--border-color)',
-                            borderRadius: '12px',
-                            fontSize: '15px',
-                            outline: 'none',
-                            backgroundColor: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            transition: 'all 0.2s ease',
-                            fontWeight: '500'
-                          }}
-                          onFocus={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                          }}
-                          onBlur={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--border-color)';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                        />
-                        <i className="fas fa-user" style={{
-                          position: 'absolute',
-                          left: '14px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          color: 'var(--text-muted)',
-                          fontSize: '14px'
-                        }}></i>
-                      </div>
-                    </div>
-                    <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '8px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        {t('profile.lastName')}
-                      </label>
-                      <div style={{ position: 'relative' }}>
-                        <input
-                          type="text"
-                          value={editForm.lastName}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
-                          placeholder={t('profile.lastNamePlaceholder')}
-                          style={{
-                            width: '100%',
-                            padding: '12px 16px 12px 44px',
-                            border: '2px solid var(--border-color)',
-                            borderRadius: '12px',
-                            fontSize: '15px',
-                            outline: 'none',
-                            backgroundColor: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            transition: 'all 0.2s ease',
-                            fontWeight: '500'
-                          }}
-                          onFocus={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                          }}
-                          onBlur={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--border-color)';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                        />
-                        <i className="fas fa-user-tag" style={{
-                          position: 'absolute',
-                          left: '14px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          color: 'var(--text-muted)',
-                          fontSize: '14px'
-                        }}></i>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Phone Field */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* First Name */}
                   <div>
                     <label style={{
                       display: 'block',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      color: 'var(--text-secondary)',
-                      marginBottom: '8px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '4px'
+                    }}>
+                      {t('profile.firstName')}
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.firstName}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+                      placeholder={t('profile.firstNamePlaceholder')}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  {/* Last Name */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '4px'
+                    }}>
+                      {t('profile.lastName')}
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.lastName}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
+                      placeholder={t('profile.lastNamePlaceholder')}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '4px'
                     }}>
                       {t('profile.phone')}
                     </label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type="tel"
-                        value={editForm.phone}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder={t('profile.phonePlaceholder')}
-                        style={{
-                          width: '100%',
-                          padding: '12px 16px 12px 44px',
-                          border: '2px solid var(--border-color)',
-                          borderRadius: '12px',
-                          fontSize: '15px',
-                          outline: 'none',
-                          backgroundColor: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          transition: 'all 0.2s ease',
-                          fontWeight: '500'
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = 'var(--border-color)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      />
-                      <i className="fas fa-phone" style={{
-                        position: 'absolute',
-                        left: '14px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'var(--text-muted)',
-                        fontSize: '14px'
-                      }}></i>
-                    </div>
+                    <input
+                      type="tel"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder={t('profile.phonePlaceholder')}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* Community Interests Section */}
-                <div>
-                  <h3 style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <i className="fas fa-heart" style={{ color: 'var(--accent-primary)' }}></i>
-                    {t('profile.communityInterests')}
-                  </h3>
-
-                  <div style={{
-                    backgroundColor: 'var(--bg-tertiary)',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                      gap: '12px',
-                      maxHeight: '240px',
-                      overflow: 'auto'
-                    }}>
-                      {Object.entries(INTEREST_CATEGORIES).map(([categoryKey, category]) => (
-                        <div key={categoryKey} style={{
-                          backgroundColor: 'var(--bg-primary)',
-                          borderRadius: '8px',
-                          padding: '12px',
-                          border: '1px solid var(--border-color)'
-                        }}>
-                          <div style={{
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            color: 'var(--accent-primary)',
-                            marginBottom: '8px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                          }}>
-                            <span style={{ fontSize: '14px' }}>{category.icon}</span>
-                            {category.label}
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {category.items.slice(0, 3).map((interest, index) => {
-                              const isSelected = editForm.interests.includes(interest);
-                              return (
-                                <button
-                                  key={`${categoryKey}-${interest}-${index}`}
-                                  onClick={() => {
-                                    setEditForm(prev => ({
-                                      ...prev,
-                                      interests: isSelected
-                                        ? prev.interests.filter(i => i !== interest)
-                                        : [...prev.interests, interest]
-                                    }));
-                                  }}
-                                  style={{
-                                    padding: '8px 12px',
-                                    border: `2px solid ${isSelected ? 'var(--accent-primary)' : 'var(--border-color)'}`,
-                                    borderRadius: '8px',
-                                    backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-primary)',
-                                    color: isSelected ? 'var(--accent-primary)' : 'var(--text-primary)',
-                                    fontSize: '13px',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    textAlign: 'left',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between'
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!isSelected) {
-                                      e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                                      e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!isSelected) {
-                                      e.currentTarget.style.borderColor = 'var(--border-color)';
-                                      e.currentTarget.style.backgroundColor = 'var(--bg-primary)';
-                                    }
-                                  }}
-                                >
-                                  <span>{interest}</span>
-                                  {isSelected && (
-                                    <i className="fas fa-check" style={{
-                                      color: 'var(--accent-primary)',
-                                      fontSize: '12px'
-                                    }}></i>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div style={{
-                  display: 'flex',
-                  gap: '12px',
-                  paddingTop: '16px',
-                  borderTop: '1px solid var(--border-color)'
+              {/* Community Interests - Like Onboarding */}
+              <div>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#1f2937',
+                  marginBottom: '16px'
                 }}>
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    style={{
-                      flex: 1,
-                      padding: '14px 20px',
-                      border: '2px solid var(--border-color)',
-                      borderRadius: '12px',
-                      backgroundColor: 'var(--bg-primary)',
-                      color: 'var(--text-primary)',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--text-muted)';
-                      e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--border-color)';
-                      e.currentTarget.style.backgroundColor = 'var(--bg-primary)';
-                    }}
-                  >
-                    {t('common.cancel')}
-                  </button>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await updateProfile({
-                          first_name: editForm.firstName,
-                          last_name: editForm.lastName,
-                          phone: editForm.phone,
-                          interests: editForm.interests
-                        });
-                        setShowEditModal(false);
-                        // Reload profile data to reflect changes
-                        loadProfileData();
-                      } catch (error) {
-                        console.error('Error updating profile:', error);
-                      }
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: '14px 20px',
-                      border: 'none',
-                      borderRadius: '12px',
-                      background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
-                      color: 'white',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
-                    }}
-                  >
-                    <i className="fas fa-save" style={{ marginRight: '8px' }}></i>
-                    {t('profile.saveChanges')}
-                  </button>
+                  {t('profile.communityInterests')}
+                </h3>
+
+                <p style={{
+                  color: '#6b7280',
+                  marginBottom: '24px',
+                  fontSize: '14px'
+                }}>
+                  Select your interests to connect with like-minded people
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {Object.entries(INTEREST_CATEGORIES).map(([key, category]) => (
+                    <div key={key}>
+                      <h4 style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#1f2937',
+                        marginBottom: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span>{category.icon}</span>
+                        {category.label}
+                      </h4>
+
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px'
+                      }}>
+                        {category.items.map((item) => (
+                          <button
+                            key={item}
+                            onClick={() => {
+                              setEditForm(prev => ({
+                                ...prev,
+                                interests: prev.interests.includes(item)
+                                  ? prev.interests.filter(i => i !== item)
+                                  : [...prev.interests, item]
+                              }));
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              borderRadius: '20px',
+                              border: editForm.interests.includes(item) ? '2px solid #3b82f6' : '2px solid #d1d5db',
+                              backgroundColor: editForm.interests.includes(item) ? '#eff6ff' : 'white',
+                              color: editForm.interests.includes(item) ? '#1d4ed8' : '#374151',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            {item}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: '16px',
+                marginTop: '8px'
+              }}>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {t('common.cancel')}
+                </button>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      await updateProfile({
+                        first_name: editForm.firstName,
+                        last_name: editForm.lastName,
+                        phone: editForm.phone,
+                        interests: editForm.interests
+                      });
+                      setShowEditModal(false);
+                      // Reload profile data to reflect changes
+                      loadProfileData();
+                    } catch (error) {
+                      console.error('Error updating profile:', error);
+                    }
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {t('profile.saveChanges')}
+                </button>
               </div>
             </div>
           </div>
-
-          {/* Add CSS animations */}
-          <style>
-            {`
-              @keyframes modalFadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-              }
-
-              @keyframes modalSlideUp {
-                from {
-                  opacity: 0;
-                  transform: translateY(20px) scale(0.95);
-                }
-                to {
-                  opacity: 1;
-                  transform: translateY(0) scale(1);
-                }
-              }
-            `}
-          </style>
         </div>
       )}
     </div>
