@@ -342,7 +342,14 @@ const ProfileView: React.FC = () => {
 
   const loadMyReports = async (): Promise<Report[]> => {
     try {
-      const reports = await reportsService.getReports({ userId: user!.id });
+      if (!user?.id) {
+        console.log("No user ID available for loading reports");
+        return [];
+      }
+
+      console.log("Loading reports for user:", user.id);
+      const reports = await reportsService.getReports({ userId: user.id });
+      console.log("Loaded reports:", reports);
 
       return reports.map(report => ({
         ...report,
@@ -856,43 +863,18 @@ const ProfileView: React.FC = () => {
         marginBottom: '24px',
         boxShadow: '0 1px 3px var(--shadow-color)'
       }}>
-        <div style={{
+        <h2 style={{
+          fontSize: '20px',
+          fontWeight: 'bold',
+          color: 'var(--text-primary)',
+          marginBottom: '16px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '16px'
+          gap: '8px'
         }}>
-          <h2 style={{
-            fontSize: '20px',
-            fontWeight: 'bold',
-            color: 'var(--text-primary)',
-            margin: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <i className="fas fa-list" style={{ color: 'var(--text-muted)' }}></i>
-            {t('profile.myReports')} ({myReports.length})
-          </h2>
-          <button
-            style={{
-              backgroundColor: 'var(--success)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <i className="fas fa-plus"></i>
-            {t('profile.newReport')}
-          </button>
-        </div>
+          <i className="fas fa-list" style={{ color: 'var(--text-muted)' }}></i>
+          {t('profile.myReports')} ({myReports.length})
+        </h2>
 
         {myReports.length === 0 ? (
           <div style={{
