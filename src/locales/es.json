@@ -1,0 +1,231 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "OK",
+    "retry": "Reintentar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "export": "Exportar",
+    "import": "Importar"
+  },
+  "auth": {
+    "welcome": "Bienvenido a HyperApp",
+    "joinCommunity": "Únete a la plataforma de seguridad comunitaria",
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar Sesión",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "username": "Nombre de Usuario",
+    "confirmPassword": "Confirmar Contraseña",
+    "enterEmail": "Ingresa tu correo electrónico",
+    "enterPassword": "Ingresa tu contraseña",
+    "chooseUsername": "Elige un nombre de usuario",
+    "createPassword": "Crea una contraseña (mínimo 6 caracteres)",
+    "confirmPasswordPlaceholder": "Confirma tu contraseña",
+    "loggingIn": "Iniciando sesión...",
+    "creatingAccount": "Creando cuenta...",
+    "loginFailed": "Error al iniciar sesión. Por favor, inténtalo de nuevo.",
+    "signupFailed": "Error al registrarse. Por favor, inténtalo de nuevo.",
+    "signupSuccessful": "¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar.",
+    "fillAllFields": "Por favor, completa todos los campos",
+    "passwordsNotMatch": "Las contraseñas no coinciden",
+    "passwordTooShort": "La contraseña debe tener al menos 6 caracteres"
+  },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Gestiona tu cuenta y preferencias de la aplicación",
+    "accountManagement": "Gestión de Cuenta",
+    "changePassword": "Cambiar Contraseña",
+    "updatePassword": "Actualiza la contraseña de tu cuenta",
+    "change": "Cambiar",
+    "signOut": "Cerrar sesión de tu cuenta",
+    "deleteAccount": "Eliminar Cuenta",
+    "deleteAccountDesc": "Eliminar permanentemente tu cuenta y todos los datos",
+    "appPreferences": "Preferencias de la Aplicación",
+    "language": "Idioma",
+    "chooseLanguage": "Elige tu idioma preferido",
+    "theme": "Tema",
+    "switchTheme": "Cambiar entre modo claro y oscuro",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "notifications": "Notificaciones",
+    "receiveNotifications": "Recibir notificaciones y actualizaciones de la aplicación",
+    "privacySecurity": "Privacidad y Seguridad",
+    "locationSharing": "Compartir Ubicación",
+    "allowLocation": "Permitir que la aplicación acceda a tu ubicación",
+    "exportData": "Exportar Datos",
+    "downloadData": "Descarga una copia de tus datos",
+    "aboutSupport": "Acerca de y Soporte",
+    "version": "HyperApp v1.0.0",
+    "communitySafety": "Seguridad Comunitaria y Mapeo de Ambiente",
+    "help": "Ayuda",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "contact": "Contacto",
+    "newPassword": "Nueva Contraseña",
+    "confirmNewPassword": "Confirmar Nueva Contraseña",
+    "updatingPassword": "Actualizando...",
+    "passwordUpdated": "¡Contraseña actualizada exitosamente!",
+    "errorUpdatingPassword": "Error al actualizar la contraseña",
+    "deleteConfirmTitle": "⚠️ Eliminar Cuenta",
+    "deleteConfirmMessage": "Esta acción no se puede deshacer. Todos tus reportes, votos, datos de perfil e información de cuenta serán eliminados permanentemente.",
+    "deleting": "Eliminando...",
+    "accountDeleted": "Cuenta eliminada exitosamente. Serás desconectado.",
+    "errorDeletingAccount": "Error al eliminar la cuenta"
+  },
+  "tabs": {
+    "map": "Mapa",
+    "reports": "Reportes",
+    "profile": "Perfil",
+    "settings": "Configuración"
+  },
+  "app": {
+    "loadingHyperApp": "Cargando HyperApp...",
+    "welcomeBack": "Bienvenido de vuelta",
+    "vibes": "Ambiente",
+    "sos": "SOS",
+    "heatmap": "Mapa de Calor",
+    "on": "ACTIVADO",
+    "off": "DESACTIVADO",
+    "newReport": "Nuevo Reporte"
+  },
+  "reports": {
+    "comingSoon": "Próximamente - Sistema de informes y votación cercanos",
+    "reportsView": "Vista de Informes",
+    "addressNotAvailable": "Dirección no disponible"
+  },
+  "modals": {
+    "reportType": {
+      "title": "¿Qué te gustaría reportar?",
+      "vibe": "Reportar Ambiente",
+      "vibeDesc": "Comparte tu estado de ánimo o atmósfera actual",
+      "emergency": "Reporte de Emergencia",
+      "emergencyDesc": "Reportar una preocupación de seguridad urgente"
+    },
+    "vibeReport": {
+      "title": "Reporta Tu Ambiente",
+      "description": "¿Cómo te sientes ahora mismo?",
+      "location": "Ubicación",
+      "selectLocation": "Seleccionar ubicación en el mapa",
+      "vibeType": "Tipo de Ambiente",
+      "selectVibeType": "Selecciona tu ambiente actual",
+      "details": "Detalles Adicionales",
+      "detailsPlaceholder": "Comparte más sobre tu situación actual...",
+      "submitReport": "Enviar Reporte",
+      "submitting": "Enviando...",
+      "reportSuccess": "¡Ambiente reportado exitosamente!",
+      "reportError": "Error al enviar el reporte"
+    },
+    "emergencyReport": {
+      "title": "Reporte de Emergencia",
+      "description": "Reportar una preocupación de seguridad urgente",
+      "emergencyType": "Tipo de Emergencia",
+      "selectEmergencyType": "Seleccionar tipo de emergencia",
+      "location": "Ubicación",
+      "selectLocation": "Seleccionar ubicación en el mapa",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Describe la situación de emergencia...",
+      "contactInfo": "Información de Contacto",
+      "contactPlaceholder": "Número de teléfono u otra información de contacto",
+      "submitReport": "Enviar Reporte de Emergencia",
+      "submitting": "Enviando...",
+      "reportSuccess": "¡Emergencia reportada exitosamente!",
+      "reportError": "Error al enviar el reporte de emergencia"
+    },
+    "onboarding": {
+      "welcome": "¡Bienvenido a HyperApp!",
+      "welcomeDesc": "Tu plataforma de seguridad comunitaria y mapeo de ambiente",
+      "step1Title": "Descubre Tu Comunidad",
+      "step1Desc": "Explora ambientes de seguridad y reportes de emergencia en tiempo real en tu área",
+      "step2Title": "Comparte Tu Experiencia",
+      "step2Desc": "Reporta tu ambiente actual o situaciones de emergencia para ayudar a otros",
+      "step3Title": "Mantente Conectado",
+      "step3Desc": "Recibe notificaciones sobre actualizaciones importantes y alertas comunitarias",
+      "getStarted": "Comenzar",
+      "skip": "Omitir",
+      "errorSetup": "Error al completar la configuración. Por favor, inténtalo de nuevo."
+    }
+  },
+  "profile": {
+    "loading": "Cargando perfil...",
+    "editProfile": "Editar Perfil",
+    "personalInfo": "Información Personal",
+    "email": "Correo Electrónico",
+    "phone": "Teléfono",
+    "location": "Ubicación",
+    "notProvided": "No proporcionado",
+    "communityInterests": "Intereses Comunitarios",
+    "noInterests": "Aún no se han seleccionado intereses",
+    "totalReports": "Reportes Totales",
+    "communityUpvotes": "Votos Positivos de la Comunidad",
+    "communityRank": "Rango en la Comunidad",
+    "achievementBadges": "Insignias de Logros",
+    "noBadges": "Aún no se han ganado insignias",
+    "newReport": "Nuevo Reporte",
+    "noReports": "Aún no se han enviado reportes",
+    "communityActivity": "Actividad Comunitaria",
+    "noNearbyReports": "No hay reportes cercanos en este momento",
+    "recentActivity": "Actividad Reciente",
+    "noRecentActivity": "No hay actividad reciente",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "firstNamePlaceholder": "Ingresa tu nombre",
+    "lastNamePlaceholder": "Ingresa tu apellido",
+    "phonePlaceholder": "Ingresa tu número de teléfono",
+    "saveChanges": "Guardar Cambios",
+    "badges": {
+      "communityLeader": {
+        "name": "Líder Comunitario",
+        "description": "Ganó 100+ puntos de reputación"
+      },
+      "trustedReporter": {
+        "name": "Reportero de Confianza",
+        "description": "Ganó 50+ puntos de reputación"
+      },
+      "activeContributor": {
+        "name": "Contribuyente Activo",
+        "description": "Ganó 10+ puntos de reputación"
+      },
+      "safetyGuardian": {
+        "name": "Guardián de la Seguridad",
+        "description": "Envió 50+ reportes de seguridad"
+      },
+      "communityWatch": {
+        "name": "Vigilancia Comunitaria",
+        "description": "Envió 20+ reportes de seguridad"
+      },
+      "firstResponder": {
+        "name": "Primer Respondedor",
+        "description": "Envió 5+ reportes de seguridad"
+      }
+    }
+  },
+  "shared": {
+    "emptyState": {
+      "title": "No hay datos disponibles",
+      "description": "No hay elementos para mostrar en este momento."
+    },
+    "notification": {
+      "success": "Éxito",
+      "error": "Error",
+      "warning": "Advertencia",
+      "info": "Información"
+    }
+  }
+}
