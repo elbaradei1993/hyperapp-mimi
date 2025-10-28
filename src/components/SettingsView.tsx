@@ -209,7 +209,8 @@ const SettingsView: React.FC = () => {
                 padding: '8px 16px',
                 fontSize: '14px',
                 fontWeight: '500',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                minHeight: '44px' // Ensure minimum touch target
               }}
             >
               {t('settings.change')}
@@ -243,7 +244,8 @@ const SettingsView: React.FC = () => {
                 padding: '8px 16px',
                 fontSize: '14px',
                 fontWeight: '500',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                minHeight: '44px' // Ensure minimum touch target
               }}
             >
               {t('auth.logout')}
@@ -649,7 +651,8 @@ const SettingsView: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                minHeight: '44px' // Ensure minimum touch target
               }}
             >
               <i className="fas fa-question-circle"></i>
@@ -669,7 +672,8 @@ const SettingsView: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                minHeight: '44px' // Ensure minimum touch target
               }}
             >
               <i className="fas fa-file-contract"></i>
@@ -692,7 +696,8 @@ const SettingsView: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                minHeight: '44px' // Ensure minimum touch target
               }}
             >
               <i className="fas fa-gavel"></i>
@@ -712,7 +717,8 @@ const SettingsView: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                minHeight: '44px' // Ensure minimum touch target
               }}
             >
               <i className="fas fa-envelope"></i>
@@ -897,7 +903,8 @@ const SettingsView: React.FC = () => {
                   backgroundColor: 'var(--bg-primary)',
                   color: 'var(--text-primary)',
                   fontSize: '16px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  minHeight: '44px' // Ensure minimum touch target
                 }}
               >
                 Cancel
@@ -914,7 +921,8 @@ const SettingsView: React.FC = () => {
                   color: 'white',
                   fontSize: '16px',
                   cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.6 : 1
+                  opacity: loading ? 0.6 : 1,
+                  minHeight: '44px' // Ensure minimum touch target
                 }}
               >
                 {loading ? 'Deleting...' : 'Delete Account'}

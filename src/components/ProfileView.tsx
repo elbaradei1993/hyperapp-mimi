@@ -1135,7 +1135,8 @@ const ProfileView: React.FC = () => {
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '4px',
+                      minHeight: '32px' // Ensure minimum touch target for small buttons
                     }}
                   >
                     <i className="fas fa-thumbs-up"></i>
@@ -1153,7 +1154,8 @@ const ProfileView: React.FC = () => {
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '4px',
+                      minHeight: '32px' // Ensure minimum touch target for small buttons
                     }}
                   >
                     <i className="fas fa-thumbs-down"></i>
