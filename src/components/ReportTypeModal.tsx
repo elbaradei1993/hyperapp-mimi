@@ -270,19 +270,19 @@ const mobileStyles = `
   @media (max-width: 768px) {
     .report-type-grid {
       grid-template-columns: 1fr !important;
-      gap: 16px !important;
+      gap: 20px !important;
     }
 
     .report-type-grid button {
-      padding: 24px 16px !important;
+      padding: 36px 20px !important;
     }
 
     .report-type-grid button h3 {
-      font-size: 18px !important;
+      font-size: 22px !important;
     }
 
     .report-type-grid button p {
-      font-size: 13px !important;
+      font-size: 15px !important;
     }
   }
 `;

@@ -312,11 +312,11 @@ const locationMobileStyles = `
   @media (max-width: 768px) {
     .location-coordinates-grid {
       grid-template-columns: 1fr !important;
-      gap: 10px !important;
+      gap: 12px !important;
     }
 
     .location-coordinates-grid input {
-      padding: 10px !important;
+      padding: 12px !important;
     }
   }
 `;

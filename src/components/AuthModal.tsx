@@ -427,8 +427,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 const authMobileStyles = `
   @media (max-width: 768px) {
     .auth-submit-button {
-      padding: 10px !important;
-      font-size: 15px !important;
+      padding: 14px !important;
+      font-size: 17px !important;
     }
   }
 `;
