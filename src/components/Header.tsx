@@ -65,7 +65,8 @@ const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange }) => {
           display: 'flex',
           alignItems: 'center',
           gap: '16px'
-        }}>
+        }}
+        className="header-left-section">
           {/* Premium Logo Container */}
           <div style={{
             position: 'relative',
@@ -92,6 +93,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange }) => {
             cursor: 'pointer',
             overflow: 'hidden'
           }}
+          className="header-logo-container"
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'scale(1.05) rotate(5deg)';
             e.currentTarget.style.boxShadow = `
@@ -331,6 +333,53 @@ const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange }) => {
           }
 
           /* Mobile optimizations */
+          @media (max-width: 768px) {
+            .header-left-section {
+              gap: 12px !important;
+            }
+
+            .header-logo-container {
+              width: 36px !important;
+              height: 36px !important;
+            }
+
+            .header-logo-container img {
+              width: 36px !important;
+              height: 36px !important;
+            }
+
+            .header-left-section button {
+              padding: 8px 16px !important;
+              font-size: 13px !important;
+              min-height: 40px !important;
+            }
+
+            .header-left-section button i {
+              font-size: 14px !important;
+            }
+
+            .header-left-section button span {
+              font-size: 13px !important;
+            }
+          }
+
+          /* Apply mobile styles to logout button as well */
+          @media (max-width: 768px) {
+            div > button {
+              padding: 8px 16px !important;
+              font-size: 13px !important;
+              min-height: 40px !important;
+            }
+
+            div > button i {
+              font-size: 14px !important;
+            }
+
+            div > button span {
+              font-size: 13px !important;
+            }
+          }
+
           @media (max-width: 640px) {
             .header-logo-text {
               display: none;
