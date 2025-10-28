@@ -385,6 +385,26 @@ const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange }) => {
               display: none;
             }
           }
+
+          /* Hide button text on mobile for ultra-compact design */
+          @media (max-width: 768px) {
+            .header-left-section button span,
+            div > button span {
+              display: none !important;
+            }
+
+            .header-left-section button {
+              padding: 8px !important;
+              width: 40px !important;
+              justify-content: center !important;
+            }
+
+            div > button {
+              padding: 8px !important;
+              width: 40px !important;
+              justify-content: center !important;
+            }
+          }
         `}
       </style>
     </>
