@@ -84,7 +84,8 @@ const Modal: React.FC<ModalProps> = ({
                     sizeClasses[size] === 'max-w-2xl' ? '42rem' :
                     sizeClasses[size] === 'max-w-4xl' ? '56rem' : '32rem',
           maxHeight: '90vh',
-          overflow: 'auto'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}
         onClick={(e) => e.stopPropagation()}
       >

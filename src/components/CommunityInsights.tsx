@@ -377,7 +377,10 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
                     border: `2px solid ${getStatusColor(status)}`,
                     position: 'relative',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                    transition: 'transform 0.2s ease'
+                    transition: 'transform 0.2s ease',
+                    maxWidth: '100%',
+                    boxSizing: 'border-box',
+                    overflow: 'hidden'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)';

@@ -216,7 +216,8 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       height: '100vh',
       width: '100vw',
       background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-      overflow: 'auto',
+      overflowY: 'auto',
+      overflowX: 'hidden',
       padding: '16px',
       paddingBottom: '100px' // Extra padding for mobile scrolling
     }}>
