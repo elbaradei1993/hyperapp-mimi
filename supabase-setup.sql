@@ -267,3 +267,43 @@ drop trigger if exists votes_after_update on public.votes;
 create trigger votes_after_update
 after update of vote_type on public.votes
 for each row execute function public._votes_au_update_report_counts();
+
+-- Storage bucket policies for profile pictures
+-- Enable RLS on storage.objects
+alter table storage.objects enable row level security;
+
+-- Allow public access to view profile pictures
+drop policy if exists "Public Access" on storage.objects;
+create policy "Public Access" on storage.objects
+for select using (bucket_id = 'profile-pictures');
+
+-- Allow authenticated users to upload their own profile pictures
+drop policy if exists "Users can upload their own profile pictures" on storage.objects;
+create policy "Users can upload their own profile pictures" on storage.objects
+for insert with check (
+  bucket_id = 'profile-pictures'
+  and auth.role() = 'authenticated'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow users to update their own profile pictures
+drop policy if exists "Users can update their own profile pictures" on storage.objects;
+create policy "Users can update their own profile pictures" on storage.objects
+for update using (
+  bucket_id = 'profile-pictures'
+  and auth.role() = 'authenticated'
+  and (storage.foldername(name))[1] = auth.uid()::text
+) with check (
+  bucket_id = 'profile-pictures'
+  and auth.role() = 'authenticated'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow users to delete their own profile pictures
+drop policy if exists "Users can delete their own profile pictures" on storage.objects;
+create policy "Users can delete their own profile pictures" on storage.objects
+for delete using (
+  bucket_id = 'profile-pictures'
+  and auth.role() = 'authenticated'
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
