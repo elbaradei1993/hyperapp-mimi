@@ -25,6 +25,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* Smooth theme transitions */
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* Prevent horizontal scrolling on mobile */
+  overflow-x: hidden;
+}
+
+html {
+  /* Prevent horizontal scrolling on mobile */
+  overflow-x: hidden;
 }
 
 /* Global theme transitions for all elements using CSS variables */
@@ -220,4 +227,11 @@ select:active {
 /* RTL transforms for icons */
 .rtl .transform {
   transform: scaleX(-1);
+}
+
+/* Responsive modal grid for mobile */
+@media (max-width: 640px) {
+  .challenges-grid {
+    grid-template-columns: 1fr !important;
+  }
 }

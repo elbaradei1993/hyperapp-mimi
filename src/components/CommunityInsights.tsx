@@ -264,16 +264,17 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
         isOpen={showAllChallengesModal}
         onClose={() => setShowAllChallengesModal(false)}
         title="All Community Challenges"
-        size="xl"
+        size="lg"
       >
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '20px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '16px',
           maxHeight: '70vh',
           overflowY: 'auto',
           padding: '8px'
-        }}>
+        }}
+        className="challenges-grid">
           {(() => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
