@@ -352,12 +352,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ vibes, sosAlerts, center, z
           <Marker
             key={`vibe-${vibe.id}`}
             position={[vibe.latitude, vibe.longitude]}
-            icon={L.divIcon({
-              html: `<div class="vibe-marker"><i class="${getVibeIcon(vibe.vibe_type)}"></i></div>`,
-              className: 'vibe-marker',
-              iconSize: [30, 30],
-              iconAnchor: [15, 30]
-            })}
+            icon={getVibeIcon(vibe.vibe_type)}
           >
             <Popup>
               <div style={{ color: '#1f2937', maxWidth: '320px' }}>
