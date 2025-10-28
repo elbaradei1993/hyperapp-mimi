@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LoadingSpinner, Modal } from './shared';
 import { calculateDistance } from '../lib/clustering';
+import SafetyTrendChart from './SafetyTrendChart';
 import type { Report } from '../types';
 
 interface CommunityInsightsProps {
@@ -164,11 +165,11 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
         {/* Live Activity Feed */}
         <InteractiveCard
           title="Live Activity"
-          icon="fas fa-rss"
+          icon="fas fa-chart-line"
           color="#3b82f6"
           onClick={() => {}}
         >
-          <ActivityFeed reports={recentActivity.slice(0, 3)} />
+          <ActivityFeed reports={recentActivity} />
         </InteractiveCard>
 
         {/* Safety Overview */}
@@ -594,60 +595,161 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({ title, icon, color, o
   </div>
 );
 
-// Activity Feed Component
+// Activity Feed Component - Enhanced with Safety Trend Chart
 const ActivityFeed: React.FC<{ reports: Report[] }> = ({ reports }) => {
-  if (reports.length === 0) {
-    return (
-      <div style={{ textAlign: 'center', padding: '20px 0' }}>
-        <i className="fas fa-rss" style={{ fontSize: '24px', color: '#d1d5db', marginBottom: '8px' }}></i>
-        <div style={{ color: '#6b7280', fontSize: '14px' }}>No recent activity</div>
-      </div>
-    );
-  }
+  const [showRecentReports, setShowRecentReports] = useState(false);
+
+  const recentReports = reports.slice(0, 5); // Show up to 5 recent reports
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {reports.map((report, index) => (
-        <div key={report.id} style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '12px',
-          background: '#f8fafc',
-          borderRadius: '8px',
-          border: '1px solid #e5e7eb'
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Safety Trend Chart - Primary Feature */}
+      <div style={{
+        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+        borderRadius: '12px',
+        padding: '16px',
+        border: '1px solid #e5e7eb'
+      }}>
+        <SafetyTrendChart reports={reports} height={180} />
+      </div>
+
+      {/* Recent Reports Toggle */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 0',
+        borderTop: '1px solid #e5e7eb'
+      }}>
+        <div style={{
+          color: '#6b7280',
+          fontSize: '14px',
+          fontWeight: '500'
         }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: report.emergency ? '#ef4444' : '#3b82f6',
+          Recent Reports ({recentReports.length})
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowRecentReports(!showRecentReports);
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#3b82f6',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '14px'
-          }}>
-            {report.emergency ? '🚨' : '📍'}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              color: '#1f2937',
-              fontSize: '14px',
-              fontWeight: '600',
-              marginBottom: '2px'
-            }}>
-              {report.vibe_type} {report.emergency ? 'Emergency' : 'Report'}
+            gap: '6px',
+            padding: '4px 8px',
+            borderRadius: '6px',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#f0f9ff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'none';
+          }}
+        >
+          {showRecentReports ? 'Hide' : 'Show'}
+          <i className={`fas fa-chevron-${showRecentReports ? 'up' : 'down'}`} style={{ fontSize: '12px' }}></i>
+        </button>
+      </div>
+
+      {/* Recent Reports List - Expandable */}
+      {showRecentReports && (
+        <div style={{
+          animation: 'slideDown 0.3s ease-out',
+          borderTop: '1px solid #e5e7eb',
+          paddingTop: '16px'
+        }}>
+          {recentReports.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <i className="fas fa-rss" style={{ fontSize: '24px', color: '#d1d5db', marginBottom: '8px' }}></i>
+              <div style={{ color: '#6b7280', fontSize: '14px' }}>No recent activity</div>
             </div>
-            <div style={{
-              color: '#6b7280',
-              fontSize: '12px'
-            }}>
-              {new Date(report.created_at).toLocaleTimeString()}
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {recentReports.map((report, index) => (
+                <div key={report.id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px',
+                  background: '#f8fafc',
+                  borderRadius: '6px',
+                  border: '1px solid #e5e7eb',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f0f9ff';
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#f8fafc';
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                }}
+                >
+                  <div style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '6px',
+                    background: report.emergency ? '#ef4444' : '#3b82f6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '12px'
+                  }}>
+                    {report.emergency ? '🚨' : '📍'}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      color: '#1f2937',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      marginBottom: '1px'
+                    }}>
+                      {report.vibe_type} {report.emergency ? 'Emergency' : 'Report'}
+                    </div>
+                    <div style={{
+                      color: '#6b7280',
+                      fontSize: '11px'
+                    }}>
+                      {new Date(report.created_at).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
-      ))}
+      )}
+
+      {/* Add CSS animation */}
+      <style>
+        {`
+          @keyframes slideDown {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
