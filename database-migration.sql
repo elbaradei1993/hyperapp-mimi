@@ -46,3 +46,10 @@ CHECK (vibe_type IN ('safe', 'calm', 'lively', 'festive', 'quiet', 'noisy', 'cro
 
 -- Add comments for new fields
 COMMENT ON COLUMN public.reports.emergency IS 'Whether this report is an emergency (SOS) or regular vibe report';
+
+-- Add profile picture support to users table
+ALTER TABLE public.users
+ADD COLUMN IF NOT EXISTS profile_picture_url TEXT;
+
+-- Add comment for profile picture field
+COMMENT ON COLUMN public.users.profile_picture_url IS 'URL of the user profile picture stored in Supabase storage';

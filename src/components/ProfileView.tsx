@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth';
 import { reportsService } from '../services/reports';
+import { uploadService } from '../services/upload';
 import { LoadingSpinner, EmptyState } from './shared';
 import type { User } from '../types';
 import { INTEREST_CATEGORIES } from '../types';
@@ -66,8 +67,12 @@ const ProfileView: React.FC = () => {
     lastName: '',
     phone: '',
     location: '',
-    interests: [] as string[]
+    interests: [] as string[],
+    profilePicture: null as File | null,
+    profilePicturePreview: ''
   });
+  const [uploadingPicture, setUploadingPicture] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -496,9 +501,23 @@ const ProfileView: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '32px',
-          color: 'var(--text-muted)'
+          color: 'var(--text-muted)',
+          overflow: 'hidden',
+          border: '3px solid var(--border-color)'
         }}>
-          <i className="fas fa-user"></i>
+          {user?.profile_picture_url ? (
+            <img
+              src={user.profile_picture_url}
+              alt="Profile"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+            />
+          ) : (
+            <i className="fas fa-user"></i>
+          )}
         </div>
 
         <div style={{ flex: 1 }}>
@@ -526,7 +545,9 @@ const ProfileView: React.FC = () => {
                         ? user.location
                         : (user.location.address || `${user.location.latitude.toFixed(4)}, ${user.location.longitude.toFixed(4)}`))
                     : '',
-                  interests: user?.interests || []
+                  interests: user?.interests || [],
+                  profilePicture: null,
+                  profilePicturePreview: user?.profile_picture_url || ''
                 });
                 setShowEditModal(true);
               }}
@@ -1246,6 +1267,147 @@ const ProfileView: React.FC = () => {
             {/* Form Content */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
+              {/* Profile Picture */}
+              <div>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#1f2937',
+                  marginBottom: '16px'
+                }}>
+                  Profile Picture
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  {/* Profile Picture Preview */}
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '50%',
+                    border: '3px solid #d1d5db',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#f9fafb'
+                  }}>
+                    {editForm.profilePicturePreview ? (
+                      <img
+                        src={editForm.profilePicturePreview}
+                        alt="Profile preview"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    ) : user?.profile_picture_url ? (
+                      <img
+                        src={user.profile_picture_url}
+                        alt="Current profile"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    ) : (
+                      <i className="fas fa-user" style={{ fontSize: '48px', color: '#9ca3af' }}></i>
+                    )}
+                  </div>
+
+                  {/* Upload Controls */}
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setEditForm(prev => ({ ...prev, profilePicture: file }));
+
+                          // Create preview
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            setEditForm(prev => ({
+                              ...prev,
+                              profilePicturePreview: e.target?.result as string
+                            }));
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      style={{ display: 'none' }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingPicture}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #d1d5db',
+                        backgroundColor: 'white',
+                        color: '#374151',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: uploadingPicture ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        opacity: uploadingPicture ? 0.5 : 1
+                      }}
+                    >
+                      <i className="fas fa-camera"></i>
+                      {editForm.profilePicture || user?.profile_picture_url ? 'Change Photo' : 'Upload Photo'}
+                    </button>
+
+                    {(editForm.profilePicture || user?.profile_picture_url) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditForm(prev => ({
+                            ...prev,
+                            profilePicture: null,
+                            profilePicturePreview: ''
+                          }));
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          border: '1px solid #dc2626',
+                          backgroundColor: 'white',
+                          color: '#dc2626',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <i className="fas fa-trash"></i>
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#6b7280',
+                    textAlign: 'center',
+                    margin: '8px 0 0 0'
+                  }}>
+                    Upload a profile picture (max 5MB, JPG/PNG/WebP/GIF)
+                  </p>
+                </div>
+              </div>
+
               {/* Personal Information */}
               <div>
                 <h3 style={{
@@ -1473,7 +1635,25 @@ const ProfileView: React.FC = () => {
 
                 <button
                   onClick={async () => {
+                    if (!user) return;
+
                     try {
+                      setUploadingPicture(true);
+
+                      let profilePictureUrl = user.profile_picture_url;
+
+                      // Upload profile picture if selected
+                      if (editForm.profilePicture) {
+                        const uploadResult = await uploadService.uploadProfilePicture(
+                          editForm.profilePicture,
+                          user.id
+                        );
+                        profilePictureUrl = uploadResult.url;
+                      } else if (!editForm.profilePicturePreview && user.profile_picture_url) {
+                        // User removed the profile picture
+                        profilePictureUrl = undefined;
+                      }
+
                       // Prepare location update - keep existing coordinates if available
                       const locationUpdate = editForm.location ? {
                         latitude: user?.location?.latitude || 0,
@@ -1485,28 +1665,35 @@ const ProfileView: React.FC = () => {
                         first_name: editForm.firstName,
                         last_name: editForm.lastName,
                         phone: editForm.phone,
+                        profile_picture_url: profilePictureUrl,
                         location: locationUpdate,
                         interests: editForm.interests
                       });
+
                       setShowEditModal(false);
                       // Reload profile data to reflect changes
                       loadProfileData();
                     } catch (error) {
                       console.error('Error updating profile:', error);
+                      alert(`Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    } finally {
+                      setUploadingPicture(false);
                     }
                   }}
+                  disabled={uploadingPicture}
                   style={{
                     padding: '12px 24px',
                     borderRadius: '8px',
                     border: 'none',
-                    backgroundColor: '#3b82f6',
+                    backgroundColor: uploadingPicture ? '#9ca3af' : '#3b82f6',
                     color: 'white',
                     fontSize: '16px',
                     fontWeight: '500',
-                    cursor: 'pointer'
+                    cursor: uploadingPicture ? 'not-allowed' : 'pointer',
+                    opacity: uploadingPicture ? 0.5 : 1
                   }}
                 >
-                  {t('profile.saveChanges')}
+                  {uploadingPicture ? 'Uploading...' : t('profile.saveChanges')}
                 </button>
               </div>
             </div>
