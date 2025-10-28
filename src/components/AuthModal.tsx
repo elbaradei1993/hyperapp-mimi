@@ -142,7 +142,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               border: 'none',
               fontSize: '16px',
               fontWeight: '500',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              minHeight: '44px' // Ensure minimum touch target
             }}
           >
             {t('auth.login')}
@@ -157,7 +158,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               border: 'none',
               fontSize: '16px',
               fontWeight: '500',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              minHeight: '44px' // Ensure minimum touch target
             }}
           >
             {t('auth.signup')}

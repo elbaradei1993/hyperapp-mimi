@@ -401,30 +401,31 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
         />
       </div>
 
-      {/* Action Buttons */}
-      <div style={{
-        display: 'flex',
-        gap: '16px',
-        justifyContent: 'flex-end',
-        marginTop: '32px'
-      }}>
-        {/* Cancel Button */}
-        <button
-          onClick={onClose}
-          disabled={isSubmitting}
-          style={{
-            padding: '14px 24px',
-            border: '2px solid #e5e7eb',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-            color: '#6b7280',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-            opacity: isSubmitting ? 0.6 : 1
-          }}
+        {/* Action Buttons */}
+        <div style={{
+          display: 'flex',
+          gap: '16px',
+          justifyContent: 'flex-end',
+          marginTop: '32px'
+        }}>
+          {/* Cancel Button */}
+          <button
+            onClick={onClose}
+            disabled={isSubmitting}
+            style={{
+              padding: '14px 24px',
+              border: '2px solid #e5e7eb',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+              color: '#6b7280',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+              opacity: isSubmitting ? 0.6 : 1,
+              minHeight: '44px' // Ensure minimum touch target
+            }}
           onMouseEnter={(e) => {
             if (!isSubmitting) {
               e.currentTarget.style.transform = 'translateY(-2px)';
@@ -476,7 +477,8 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
             alignItems: 'center',
             gap: '8px',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            minHeight: '44px' // Ensure minimum touch target
           }}
           onMouseEnter={(e) => {
             if (selectedEmergency && description.trim() && userLocation && !isSubmitting) {

@@ -386,7 +386,8 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-              opacity: isSubmitting ? 0.6 : 1
+              opacity: isSubmitting ? 0.6 : 1,
+              minHeight: '44px' // Ensure minimum touch target
             }}
             onMouseEnter={(e) => {
               if (!isSubmitting) {
