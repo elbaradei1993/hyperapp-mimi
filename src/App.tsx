@@ -7,12 +7,14 @@ import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
 import CommunityDashboard from './components/CommunityDashboard';
 import TabNavigation, { TabType } from './components/TabNavigation';
+import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import OnboardingModal from './components/OnboardingModal';
 import ReportTypeModal from './components/ReportTypeModal';
 import VibeReportModal from './components/VibeReportModal';
 import EmergencyReportModal from './components/EmergencyReportModal';
 import LocationOverrideModal from './components/LocationOverrideModal';
+
 import { LoadingSpinner, EmptyState } from './components/shared';
 import { reportsService } from './services/reports';
 import type { Vibe, SOS } from './types';
@@ -36,6 +38,7 @@ const AppContent: React.FC = () => {
   const [locationStatus, setLocationStatus] = useState<string>('Detecting location...');
   const [locationAccuracy, setLocationAccuracy] = useState<string>('Unknown');
   const [showGPSHelp, setShowGPSHelp] = useState<boolean>(false);
+
 
   // Default center (Cairo, Egypt)
   const center: [number, number] = [30.0444, 31.2357];
@@ -549,6 +552,8 @@ const AppContent: React.FC = () => {
 
 
 
+
+
   // Show loading screen while checking auth
   if (isLoading) {
     return (
@@ -709,10 +714,17 @@ const AppContent: React.FC = () => {
       {/* Main App Content - only show when authenticated and onboarded */}
       {isAuthenticated && checkOnboardingStatus() && (
         <>
+          {/* Premium Header */}
+          <Header
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+
           <div style={{
-            height: 'calc(var(--vh, 1vh) * 100 - 70px)', // Mobile-safe height accounting for bottom navigation
+            height: 'calc(var(--vh, 1vh) * 100 - 134px)', // Mobile-safe height accounting for header (64px) + bottom navigation (70px)
             width: '100vw',
-            overflow: (activeTab === 'profile' || activeTab === 'settings' || activeTab === 'reports') ? 'auto' : 'hidden'
+            overflow: (activeTab === 'profile' || activeTab === 'settings' || activeTab === 'reports') ? 'auto' : 'hidden',
+            marginTop: '64px' // Account for fixed header
           }}>
             {renderActiveView()}
           </div>

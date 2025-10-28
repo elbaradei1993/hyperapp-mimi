@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['logo.png', 'favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: 'HyperApp - Community Safety Platform',
         short_name: 'HyperApp',
@@ -20,13 +20,13 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: 'icon-192x192.png',
+            src: 'logo.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: 'icon-512x512.png',
+            src: 'logo.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
@@ -39,14 +39,14 @@ export default defineConfig({
             short_name: 'Report',
             description: 'Create a new safety report',
             url: '/?action=new-report',
-            icons: [{ src: 'icon-192x192.png', sizes: '192x192' }]
+            icons: [{ src: 'logo.png', sizes: '192x192' }]
           },
           {
             name: 'Emergency',
             short_name: 'SOS',
             description: 'Send emergency alert',
             url: '/?action=emergency',
-            icons: [{ src: 'icon-192x192.png', sizes: '192x192' }]
+            icons: [{ src: 'logo.png', sizes: '192x192' }]
           }
         ]
       },

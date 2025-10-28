@@ -19,20 +19,34 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
   ];
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: 'rgba(var(--bg-primary-rgb, 255, 255, 255), 0.85)',
-      backdropFilter: 'blur(16px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(16px) saturate(180%)', // Safari support
-      borderTop: '1px solid rgba(var(--border-color-rgb, 229, 231, 235), 0.4)',
-      boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.12), 0 -4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-      zIndex: 100,
-      display: 'flex',
-      alignItems: 'center'
-    }}>
+    <>
+      {/* Background context for glassmorphism effect */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '120px', // Extend beyond tab bar for blur context
+        background: 'linear-gradient(180deg, transparent 0%, rgba(var(--bg-secondary-rgb, 249, 250, 251), 0.3) 50%, rgba(var(--bg-primary-rgb, 255, 255, 255), 0.6) 100%)',
+        zIndex: 99,
+        pointerEvents: 'none'
+      }} />
+
+      {/* Tab Navigation with Glassmorphism */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(var(--bg-primary-rgb, 255, 255, 255), 0.85)',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(180%)', // Safari support
+        borderTop: '1px solid rgba(var(--border-color-rgb, 229, 231, 235), 0.4)',
+        boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.12), 0 -4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center'
+      }}>
       {/* Left tabs */}
       <div style={{ display: 'flex', flex: 1 }}>
         {tabs.slice(0, 2).map(tab => (
@@ -209,31 +223,32 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
         ))}
       </div>
 
-      {/* Add CSS animation for pulsing effect */}
-      <style>
-        {`
-          @keyframes pulse {
-            0%, 100% {
-              transform: scale(1);
-              box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8);
+        {/* Add CSS animation for pulsing effect */}
+        <style>
+          {`
+            @keyframes pulse {
+              0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8);
+              }
+              50% {
+                transform: scale(1.03);
+                box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8);
+              }
             }
-            50% {
-              transform: scale(1.03);
-              box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8);
-            }
-          }
 
-          /* Respect user's motion preferences */
-          @media (prefers-reduced-motion: reduce) {
-            * {
-              animation-duration: 0.01ms !important;
-              animation-iteration-count: 1 !important;
-              transition-duration: 0.01ms !important;
+            /* Respect user's motion preferences */
+            @media (prefers-reduced-motion: reduce) {
+              * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+              }
             }
-          }
-        `}
-      </style>
-    </div>
+          `}
+        </style>
+      </div>
+    </>
   );
 };
 
