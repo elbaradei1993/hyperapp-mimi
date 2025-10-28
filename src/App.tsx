@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
-import MapComponent from './components/MapComponent';
-import ProfileView from './components/ProfileView';
-import SettingsView from './components/SettingsView';
-import CommunityDashboard from './components/CommunityDashboard';
-import TabNavigation, { TabType } from './components/TabNavigation';
-import Header from './components/Header';
-import AuthModal from './components/AuthModal';
-import OnboardingModal from './components/OnboardingModal';
-import ReportTypeModal from './components/ReportTypeModal';
-import VibeReportModal from './components/VibeReportModal';
-import EmergencyReportModal from './components/EmergencyReportModal';
-import LocationOverrideModal from './components/LocationOverrideModal';
+import type { TabType } from './components/TabNavigation';
+
+// Lazy load components for better mobile performance
+const MapComponent = lazy(() => import('./components/MapComponent'));
+const ProfileView = lazy(() => import('./components/ProfileView'));
+const SettingsView = lazy(() => import('./components/SettingsView'));
+const CommunityDashboard = lazy(() => import('./components/CommunityDashboard'));
+const TabNavigation = lazy(() => import('./components/TabNavigation').then(module => ({ default: module.default })));
+const Header = lazy(() => import('./components/Header'));
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const OnboardingModal = lazy(() => import('./components/OnboardingModal'));
+const ReportTypeModal = lazy(() => import('./components/ReportTypeModal'));
+const VibeReportModal = lazy(() => import('./components/VibeReportModal'));
+const EmergencyReportModal = lazy(() => import('./components/EmergencyReportModal'));
+const LocationOverrideModal = lazy(() => import('./components/LocationOverrideModal'));
 
 import { LoadingSpinner, EmptyState } from './components/shared';
 import { reportsService } from './services/reports';
@@ -576,37 +579,57 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          <MapComponent
-            vibes={vibes}
-            sosAlerts={sosAlerts}
-            center={center}
-            zoom={zoom}
-            userLocation={userLocation}
-            isHeatmapVisible={isHeatmapVisible}
-            onToggleHeatmap={handleToggleHeatmap}
-            userId={user?.id || 'demo-user'}
-          />
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
+            <MapComponent
+              vibes={vibes}
+              sosAlerts={sosAlerts}
+              center={center}
+              zoom={zoom}
+              userLocation={userLocation}
+              isHeatmapVisible={isHeatmapVisible}
+              onToggleHeatmap={handleToggleHeatmap}
+              userId={user?.id || 'demo-user'}
+            />
+          </Suspense>
         );
       case 'profile':
-        return <ProfileView />;
+        return (
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
+            <ProfileView />
+          </Suspense>
+        );
       case 'reports':
         return (
-          <CommunityDashboard
-            vibes={vibes}
-            userLocation={userLocation}
-            isLoading={false}
-            onNewReport={handleNewReport}
-          />
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
+            <CommunityDashboard
+              vibes={vibes}
+              userLocation={userLocation}
+              isLoading={false}
+              onNewReport={handleNewReport}
+            />
+          </Suspense>
         );
       case 'settings':
-        return <SettingsView />;
+        return (
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
+            <SettingsView />
+          </Suspense>
+        );
       default:
         return null;
     }
   };
 
   return (
-    <div style={{ height: '100vh', width: '100vw', backgroundColor: 'var(--bg-secondary)' }}>
+    <div style={{
+      height: '100vh',
+      width: '100vw',
+      backgroundColor: 'var(--bg-secondary)',
+      paddingTop: 'env(safe-area-inset-top)',
+      paddingBottom: 'env(safe-area-inset-bottom)',
+      paddingLeft: 'env(safe-area-inset-left)',
+      paddingRight: 'env(safe-area-inset-right)'
+    }}>
       {/* GPS Help Notification - show when GPS accuracy is poor */}
       {isAuthenticated && checkOnboardingStatus() && activeTab === 'map' && showGPSHelp && (
         <div style={{
@@ -739,47 +762,59 @@ const AppContent: React.FC = () => {
       )}
 
       {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={handleAuthModalClose}
-      />
+      <Suspense fallback={null}>
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={handleAuthModalClose}
+        />
+      </Suspense>
 
       {/* Onboarding Modal */}
-      <OnboardingModal
-        isOpen={showOnboardingModal}
-        onComplete={handleOnboardingComplete}
-        onClose={handleOnboardingSkip}
-      />
+      <Suspense fallback={null}>
+        <OnboardingModal
+          isOpen={showOnboardingModal}
+          onComplete={handleOnboardingComplete}
+          onClose={handleOnboardingSkip}
+        />
+      </Suspense>
 
       {/* Report Type Selection Modal */}
-      <ReportTypeModal
-        isOpen={showReportTypeModal}
-        onClose={() => setShowReportTypeModal(false)}
-        onSelectVibe={handleSelectVibe}
-        onSelectEmergency={handleSelectEmergency}
-      />
+      <Suspense fallback={null}>
+        <ReportTypeModal
+          isOpen={showReportTypeModal}
+          onClose={() => setShowReportTypeModal(false)}
+          onSelectVibe={handleSelectVibe}
+          onSelectEmergency={handleSelectEmergency}
+        />
+      </Suspense>
 
       {/* Vibe Report Modal */}
-      <VibeReportModal
-        isOpen={showVibeReportModal}
-        onClose={() => setShowVibeReportModal(false)}
-        onSuccess={handleReportSuccess}
-      />
+      <Suspense fallback={null}>
+        <VibeReportModal
+          isOpen={showVibeReportModal}
+          onClose={() => setShowVibeReportModal(false)}
+          onSuccess={handleReportSuccess}
+        />
+      </Suspense>
 
       {/* Emergency Report Modal */}
-      <EmergencyReportModal
-        isOpen={showEmergencyReportModal}
-        onClose={() => setShowEmergencyReportModal(false)}
-        onSuccess={handleReportSuccess}
-      />
+      <Suspense fallback={null}>
+        <EmergencyReportModal
+          isOpen={showEmergencyReportModal}
+          onClose={() => setShowEmergencyReportModal(false)}
+          onSuccess={handleReportSuccess}
+        />
+      </Suspense>
 
       {/* Location Override Modal */}
-      <LocationOverrideModal
-        isOpen={showLocationOverride}
-        onClose={() => setShowLocationOverride(false)}
-        onLocationSet={setUserLocation}
-        currentLocation={userLocation}
-      />
+      <Suspense fallback={null}>
+        <LocationOverrideModal
+          isOpen={showLocationOverride}
+          onClose={() => setShowLocationOverride(false)}
+          onLocationSet={setUserLocation}
+          currentLocation={userLocation}
+        />
+      </Suspense>
     </div>
   );
 };

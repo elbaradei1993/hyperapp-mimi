@@ -363,7 +363,7 @@ const SettingsView: React.FC = () => {
                 {t('settings.switchTheme')}
               </div>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxWidth: '200px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', maxWidth: '200px' }}>
               <button
                 onClick={() => setTheme('light')}
                 style={{
@@ -634,7 +634,7 @@ const SettingsView: React.FC = () => {
           </div>
 
           {/* Support Links */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <button
               onClick={() => window.open('https://example.com/help', '_blank')}
               style={{
@@ -677,7 +677,7 @@ const SettingsView: React.FC = () => {
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <button
               onClick={() => window.open('https://example.com/terms', '_blank')}
               style={{
@@ -808,7 +808,7 @@ const SettingsView: React.FC = () => {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
                 <button
                   onClick={() => setShowPasswordModal(false)}
                   style={{
@@ -886,7 +886,7 @@ const SettingsView: React.FC = () => {
               This action cannot be undone. All your reports, votes, profile data, and account information will be permanently deleted.
             </p>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '16px' }}>
               <button
                 onClick={() => setShowDeleteModal(false)}
                 style={{

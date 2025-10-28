@@ -404,7 +404,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
       {/* Action Buttons */}
       <div style={{
         display: 'flex',
-        gap: '16px',
+        gap: '24px',
         justifyContent: 'flex-end',
         marginTop: '32px'
       }}>
