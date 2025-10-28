@@ -60,7 +60,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthState = async () => {
     try {
-      const { data: { session } } = await authService.getSession();
+      const { data: { session }, error } = await authService.getSession();
+
+      if (error) {
+        // Handle token refresh errors by clearing invalid tokens
+        if (error.message?.includes('Invalid Refresh Token') ||
+            error.message?.includes('Refresh Token Not Found') ||
+            error.status === 400) {
+          console.warn('Invalid refresh token detected, clearing auth state');
+          await authService.signOut(); // This will clear local storage
+          setAuthState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            onboardingCompleted: false
+          });
+          return;
+        }
+        throw error;
+      }
 
       if (session?.user) {
         const userProfile = await authService.syncUserWithProfile(session.user);
