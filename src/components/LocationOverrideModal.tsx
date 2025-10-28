@@ -206,7 +206,8 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
             gridTemplateColumns: '1fr 1fr',
             gap: '12px',
             marginBottom: '12px'
-          }}>
+          }}
+          className="location-coordinates-grid">
             <div>
               <label style={{
                 display: 'block',
@@ -305,5 +306,26 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
     </div>
   );
 };
+
+// Mobile styles for LocationOverrideModal
+const locationMobileStyles = `
+  @media (max-width: 768px) {
+    .location-coordinates-grid {
+      grid-template-columns: 1fr !important;
+      gap: 10px !important;
+    }
+
+    .location-coordinates-grid input {
+      padding: 10px !important;
+    }
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = locationMobileStyles;
+  document.head.appendChild(styleSheet);
+}
 
 export default LocationOverrideModal;
