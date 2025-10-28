@@ -182,25 +182,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
           <SafetyOverview data={safetyOverview} />
         </InteractiveCard>
 
-        {/* Community Highlights */}
-        <InteractiveCard
-          title="Highlights"
-          icon="fas fa-star"
-          color="#f59e0b"
-          onClick={() => {}}
-        >
-          <CommunityHighlights data={communityHighlights} />
-        </InteractiveCard>
 
-        {/* Activity Pulse */}
-        <InteractiveCard
-          title="Activity Pulse"
-          icon="fas fa-heartbeat"
-          color="#ef4444"
-          onClick={() => {}}
-        >
-          <ActivityPulse data={activityPulse} />
-        </InteractiveCard>
 
         {/* Community Stats */}
         <InteractiveCard

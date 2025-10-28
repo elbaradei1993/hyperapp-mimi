@@ -514,10 +514,39 @@ const ProfileView: React.FC = () => {
                 height: '100%',
                 objectFit: 'cover'
               }}
+              onError={(e) => {
+                // Fallback for failed image loads (common on mobile)
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallbackIcon = target.parentElement?.querySelector('.profile-fallback') as HTMLElement;
+                if (fallbackIcon) {
+                  fallbackIcon.style.display = 'flex';
+                }
+              }}
+              onLoad={(e) => {
+                // Ensure fallback is hidden when image loads successfully
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'block';
+                const fallbackIcon = target.parentElement?.querySelector('.profile-fallback') as HTMLElement;
+                if (fallbackIcon) {
+                  fallbackIcon.style.display = 'none';
+                }
+              }}
             />
-          ) : (
+          ) : null}
+          <div
+            className="profile-fallback"
+            style={{
+              display: user?.profile_picture_url ? 'none' : 'flex',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
             <i className="fas fa-user"></i>
-          )}
+          </div>
         </div>
 
         <div style={{ flex: 1 }}>
@@ -1436,6 +1465,7 @@ const ProfileView: React.FC = () => {
                       value={editForm.firstName}
                       onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
                       placeholder={t('profile.firstNamePlaceholder')}
+                      aria-label={t('profile.firstName')}
                       style={{
                         width: '100%',
                         padding: '12px',

@@ -281,19 +281,49 @@ class DataManager {
   }
 
   updateVoteUI(reportId, voteType, operation) {
-    // Find the report item in the DOM
-    const reportItem = document.querySelector(`.report-item[data-id="${reportId}"]`);
-    if (!reportItem) return;
+    // Find the report item in the DOM - try multiple selectors for better mobile compatibility
+    let reportItem = document.querySelector(`.report-item[data-id="${reportId}"]`);
 
-    // Find the vote buttons
-    const upvoteBtn = reportItem.querySelector('.upvote-btn');
-    const downvoteBtn = reportItem.querySelector('.downvote-btn');
+    // If not found, try alternative selectors that might work better on mobile
+    if (!reportItem) {
+      // Try finding by data attributes directly
+      const upvoteBtn = document.querySelector(`.upvote-btn[data-report-id="${reportId}"]`);
+      const downvoteBtn = document.querySelector(`.downvote-btn[data-report-id="${reportId}"]`);
 
-    if (!upvoteBtn || !downvoteBtn) return;
+      if (upvoteBtn && downvoteBtn) {
+        // Find common parent container
+        reportItem = upvoteBtn.closest('.report-item') || upvoteBtn.parentElement?.parentElement;
+      }
+    }
 
-    // Get current vote counts from the buttons
-    let upvotes = parseInt(upvoteBtn.textContent.match(/\d+/)[0]) || 0;
-    let downvotes = parseInt(downvoteBtn.textContent.match(/\d+/)[0]) || 0;
+    if (!reportItem) {
+      console.warn(`Report item with ID ${reportId} not found in DOM`);
+      return;
+    }
+
+    // Find the vote buttons - try multiple methods for better mobile compatibility
+    let upvoteBtn = reportItem.querySelector('.upvote-btn');
+    let downvoteBtn = reportItem.querySelector('.downvote-btn');
+
+    // If not found in report item, try global search with report ID
+    if (!upvoteBtn) {
+      upvoteBtn = document.querySelector(`.upvote-btn[data-report-id="${reportId}"]`);
+    }
+    if (!downvoteBtn) {
+      downvoteBtn = document.querySelector(`.downvote-btn[data-report-id="${reportId}"]`);
+    }
+
+    if (!upvoteBtn || !downvoteBtn) {
+      console.warn(`Vote buttons for report ${reportId} not found`);
+      return;
+    }
+
+    // Get current vote counts from the buttons - more robust parsing
+    const upvoteText = upvoteBtn.textContent || upvoteBtn.innerText || '';
+    const downvoteText = downvoteBtn.textContent || downvoteBtn.innerText || '';
+
+    let upvotes = parseInt(upvoteText.match(/\d+/)?.[0] || '0') || 0;
+    let downvotes = parseInt(downvoteText.match(/\d+/)?.[0] || '0') || 0;
 
     // Update vote counts based on operation
     if (operation === 'add') {
@@ -327,6 +357,10 @@ class DataManager {
         downvoteBtn.classList.remove('active');
       }
     }
+
+    // Ensure non-negative counts
+    upvotes = Math.max(0, upvotes);
+    downvotes = Math.max(0, downvotes);
 
     // Update button text with new counts
     upvoteBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${upvotes}`;

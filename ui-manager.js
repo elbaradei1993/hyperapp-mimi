@@ -860,15 +860,20 @@ class UIManager {
 
 
 
-    // Vote buttons (delegated event listener)
-    document.addEventListener('click', (e) => {
+    // Vote buttons (delegated event listener for both click and touch)
+    const handleVoteClick = (e) => {
       if (e.target.classList.contains('upvote-btn') || e.target.classList.contains('downvote-btn')) {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event bubbling
         const reportId = parseInt(e.target.getAttribute('data-report-id'));
         const voteType = e.target.getAttribute('data-vote-type');
         this.app.voteReport(reportId, voteType);
       }
-    });
+    };
+
+    // Add both click and touch event listeners for better mobile support
+    document.addEventListener('click', handleVoteClick);
+    document.addEventListener('touchend', handleVoteClick, { passive: false });
 
     // Modal close buttons
     document.querySelectorAll('.close').forEach(closeBtn => {
