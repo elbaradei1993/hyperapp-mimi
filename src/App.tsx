@@ -1,22 +1,19 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
-import type { TabType } from './components/TabNavigation';
-
-// Lazy load components for better mobile performance
-const MapComponent = lazy(() => import('./components/MapComponent'));
-const ProfileView = lazy(() => import('./components/ProfileView'));
-const SettingsView = lazy(() => import('./components/SettingsView'));
-const CommunityDashboard = lazy(() => import('./components/CommunityDashboard'));
-const TabNavigation = lazy(() => import('./components/TabNavigation').then(module => ({ default: module.default })));
-const Header = lazy(() => import('./components/Header'));
-const AuthModal = lazy(() => import('./components/AuthModal'));
-const OnboardingModal = lazy(() => import('./components/OnboardingModal'));
-const ReportTypeModal = lazy(() => import('./components/ReportTypeModal'));
-const VibeReportModal = lazy(() => import('./components/VibeReportModal'));
-const EmergencyReportModal = lazy(() => import('./components/EmergencyReportModal'));
-const LocationOverrideModal = lazy(() => import('./components/LocationOverrideModal'));
+import MapComponent from './components/MapComponent';
+import ProfileView from './components/ProfileView';
+import SettingsView from './components/SettingsView';
+import CommunityDashboard from './components/CommunityDashboard';
+import TabNavigation, { TabType } from './components/TabNavigation';
+import Header from './components/Header';
+import AuthModal from './components/AuthModal';
+import OnboardingModal from './components/OnboardingModal';
+import ReportTypeModal from './components/ReportTypeModal';
+import VibeReportModal from './components/VibeReportModal';
+import EmergencyReportModal from './components/EmergencyReportModal';
+import LocationOverrideModal from './components/LocationOverrideModal';
 
 import { LoadingSpinner, EmptyState } from './components/shared';
 import { reportsService } from './services/reports';
@@ -579,57 +576,37 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
-            <MapComponent
-              vibes={vibes}
-              sosAlerts={sosAlerts}
-              center={center}
-              zoom={zoom}
-              userLocation={userLocation}
-              isHeatmapVisible={isHeatmapVisible}
-              onToggleHeatmap={handleToggleHeatmap}
-              userId={user?.id || 'demo-user'}
-            />
-          </Suspense>
+          <MapComponent
+            vibes={vibes}
+            sosAlerts={sosAlerts}
+            center={center}
+            zoom={zoom}
+            userLocation={userLocation}
+            isHeatmapVisible={isHeatmapVisible}
+            onToggleHeatmap={handleToggleHeatmap}
+            userId={user?.id || 'demo-user'}
+          />
         );
       case 'profile':
-        return (
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
-            <ProfileView />
-          </Suspense>
-        );
+        return <ProfileView />;
       case 'reports':
         return (
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
-            <CommunityDashboard
-              vibes={vibes}
-              userLocation={userLocation}
-              isLoading={false}
-              onNewReport={handleNewReport}
-            />
-          </Suspense>
+          <CommunityDashboard
+            vibes={vibes}
+            userLocation={userLocation}
+            isLoading={false}
+            onNewReport={handleNewReport}
+          />
         );
       case 'settings':
-        return (
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
-            <SettingsView />
-          </Suspense>
-        );
+        return <SettingsView />;
       default:
         return null;
     }
   };
 
   return (
-    <div style={{
-      height: '100vh',
-      width: '100vw',
-      backgroundColor: 'var(--bg-secondary)',
-      paddingTop: 'env(safe-area-inset-top)',
-      paddingBottom: 'env(safe-area-inset-bottom)',
-      paddingLeft: 'env(safe-area-inset-left)',
-      paddingRight: 'env(safe-area-inset-right)'
-    }}>
+    <div style={{ height: '100vh', width: '100vw', backgroundColor: 'var(--bg-secondary)' }}>
       {/* GPS Help Notification - show when GPS accuracy is poor */}
       {isAuthenticated && checkOnboardingStatus() && activeTab === 'map' && showGPSHelp && (
         <div style={{
@@ -762,59 +739,47 @@ const AppContent: React.FC = () => {
       )}
 
       {/* Auth Modal */}
-      <Suspense fallback={null}>
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={handleAuthModalClose}
-        />
-      </Suspense>
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={handleAuthModalClose}
+      />
 
       {/* Onboarding Modal */}
-      <Suspense fallback={null}>
-        <OnboardingModal
-          isOpen={showOnboardingModal}
-          onComplete={handleOnboardingComplete}
-          onClose={handleOnboardingSkip}
-        />
-      </Suspense>
+      <OnboardingModal
+        isOpen={showOnboardingModal}
+        onComplete={handleOnboardingComplete}
+        onClose={handleOnboardingSkip}
+      />
 
       {/* Report Type Selection Modal */}
-      <Suspense fallback={null}>
-        <ReportTypeModal
-          isOpen={showReportTypeModal}
-          onClose={() => setShowReportTypeModal(false)}
-          onSelectVibe={handleSelectVibe}
-          onSelectEmergency={handleSelectEmergency}
-        />
-      </Suspense>
+      <ReportTypeModal
+        isOpen={showReportTypeModal}
+        onClose={() => setShowReportTypeModal(false)}
+        onSelectVibe={handleSelectVibe}
+        onSelectEmergency={handleSelectEmergency}
+      />
 
       {/* Vibe Report Modal */}
-      <Suspense fallback={null}>
-        <VibeReportModal
-          isOpen={showVibeReportModal}
-          onClose={() => setShowVibeReportModal(false)}
-          onSuccess={handleReportSuccess}
-        />
-      </Suspense>
+      <VibeReportModal
+        isOpen={showVibeReportModal}
+        onClose={() => setShowVibeReportModal(false)}
+        onSuccess={handleReportSuccess}
+      />
 
       {/* Emergency Report Modal */}
-      <Suspense fallback={null}>
-        <EmergencyReportModal
-          isOpen={showEmergencyReportModal}
-          onClose={() => setShowEmergencyReportModal(false)}
-          onSuccess={handleReportSuccess}
-        />
-      </Suspense>
+      <EmergencyReportModal
+        isOpen={showEmergencyReportModal}
+        onClose={() => setShowEmergencyReportModal(false)}
+        onSuccess={handleReportSuccess}
+      />
 
       {/* Location Override Modal */}
-      <Suspense fallback={null}>
-        <LocationOverrideModal
-          isOpen={showLocationOverride}
-          onClose={() => setShowLocationOverride(false)}
-          onLocationSet={setUserLocation}
-          currentLocation={userLocation}
-        />
-      </Suspense>
+      <LocationOverrideModal
+        isOpen={showLocationOverride}
+        onClose={() => setShowLocationOverride(false)}
+        onLocationSet={setUserLocation}
+        currentLocation={userLocation}
+      />
     </div>
   );
 };

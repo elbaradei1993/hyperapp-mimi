@@ -367,7 +367,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
         {/* Action Buttons */}
         <div style={{
           display: 'flex',
-          gap: '24px',
+          gap: '16px',
           justifyContent: 'flex-end',
           marginTop: '32px'
         }}>

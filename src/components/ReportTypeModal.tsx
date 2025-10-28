@@ -62,8 +62,7 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '20px'
-        }}
-        className="report-type-grid">
+        }}>
           {/* Vibe Report Button */}
           <button
             onClick={() => {
@@ -264,32 +263,3 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
 };
 
 export default React.memo(ReportTypeModal);
-
-// Mobile styles for ReportTypeModal
-const mobileStyles = `
-  @media (max-width: 768px) {
-    .report-type-grid {
-      grid-template-columns: 1fr !important;
-      gap: 20px !important;
-    }
-
-    .report-type-grid button {
-      padding: 36px 20px !important;
-    }
-
-    .report-type-grid button h3 {
-      font-size: 22px !important;
-    }
-
-    .report-type-grid button p {
-      font-size: 15px !important;
-    }
-  }
-`;
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = mobileStyles;
-  document.head.appendChild(styleSheet);
-}

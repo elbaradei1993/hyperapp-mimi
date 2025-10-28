@@ -243,7 +243,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="auth-submit-button"
               style={{
                 width: '100%',
                 padding: '12px',
@@ -422,22 +421,5 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     </div>
   );
 };
-
-// Mobile styles for AuthModal
-const authMobileStyles = `
-  @media (max-width: 768px) {
-    .auth-submit-button {
-      padding: 14px !important;
-      font-size: 17px !important;
-    }
-  }
-`;
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = authMobileStyles;
-  document.head.appendChild(styleSheet);
-}
 
 export default AuthModal;

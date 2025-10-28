@@ -204,7 +204,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
-          gap: '24px'
+          gap: '16px'
         }}>
           <button
             onClick={currentStep === 1 ? onClose : handlePrevious}
