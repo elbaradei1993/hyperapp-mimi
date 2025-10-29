@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -8,12 +8,14 @@ import SettingsView from './components/SettingsView';
 import CommunityDashboard from './components/CommunityDashboard';
 import TabNavigation, { TabType } from './components/TabNavigation';
 import Header from './components/Header';
-import AuthModal from './components/AuthModal';
-import OnboardingModal from './components/OnboardingModal';
-import ReportTypeModal from './components/ReportTypeModal';
-import VibeReportModal from './components/VibeReportModal';
-import EmergencyReportModal from './components/EmergencyReportModal';
-import LocationOverrideModal from './components/LocationOverrideModal';
+
+// Lazy load heavy components and modals
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const OnboardingModal = lazy(() => import('./components/OnboardingModal'));
+const ReportTypeModal = lazy(() => import('./components/ReportTypeModal'));
+const VibeReportModal = lazy(() => import('./components/VibeReportModal'));
+const EmergencyReportModal = lazy(() => import('./components/EmergencyReportModal'));
+const LocationOverrideModal = lazy(() => import('./components/LocationOverrideModal'));
 
 import { LoadingSpinner, EmptyState } from './components/shared';
 import { reportsService } from './services/reports';
@@ -738,48 +740,45 @@ const AppContent: React.FC = () => {
         </>
       )}
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={handleAuthModalClose}
-      />
+      {/* Lazy-loaded Modals with Suspense */}
+      <Suspense fallback={<LoadingSpinner size="lg" />}>
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={handleAuthModalClose}
+        />
 
-      {/* Onboarding Modal */}
-      <OnboardingModal
-        isOpen={showOnboardingModal}
-        onComplete={handleOnboardingComplete}
-        onClose={handleOnboardingSkip}
-      />
+        <OnboardingModal
+          isOpen={showOnboardingModal}
+          onComplete={handleOnboardingComplete}
+          onClose={handleOnboardingSkip}
+        />
 
-      {/* Report Type Selection Modal */}
-      <ReportTypeModal
-        isOpen={showReportTypeModal}
-        onClose={() => setShowReportTypeModal(false)}
-        onSelectVibe={handleSelectVibe}
-        onSelectEmergency={handleSelectEmergency}
-      />
+        <ReportTypeModal
+          isOpen={showReportTypeModal}
+          onClose={() => setShowReportTypeModal(false)}
+          onSelectVibe={handleSelectVibe}
+          onSelectEmergency={handleSelectEmergency}
+        />
 
-      {/* Vibe Report Modal */}
-      <VibeReportModal
-        isOpen={showVibeReportModal}
-        onClose={() => setShowVibeReportModal(false)}
-        onSuccess={handleReportSuccess}
-      />
+        <VibeReportModal
+          isOpen={showVibeReportModal}
+          onClose={() => setShowVibeReportModal(false)}
+          onSuccess={handleReportSuccess}
+        />
 
-      {/* Emergency Report Modal */}
-      <EmergencyReportModal
-        isOpen={showEmergencyReportModal}
-        onClose={() => setShowEmergencyReportModal(false)}
-        onSuccess={handleReportSuccess}
-      />
+        <EmergencyReportModal
+          isOpen={showEmergencyReportModal}
+          onClose={() => setShowEmergencyReportModal(false)}
+          onSuccess={handleReportSuccess}
+        />
 
-      {/* Location Override Modal */}
-      <LocationOverrideModal
-        isOpen={showLocationOverride}
-        onClose={() => setShowLocationOverride(false)}
-        onLocationSet={setUserLocation}
-        currentLocation={userLocation}
-      />
+        <LocationOverrideModal
+          isOpen={showLocationOverride}
+          onClose={() => setShowLocationOverride(false)}
+          onLocationSet={setUserLocation}
+          currentLocation={userLocation}
+        />
+      </Suspense>
     </div>
   );
 };

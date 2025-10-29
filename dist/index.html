@@ -9,10 +9,15 @@
   <link rel="manifest" href="/assets/manifest-RW6cXcEe.json">
   <link rel="apple-touch-icon" href="/logo.png">
   <title>HyperApp - Community Safety Platform</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script type="module" crossorigin src="/assets/index-rrYFkztq.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-bC-FVw8_.css">
+  <!-- Font Awesome - Load asynchronously to prevent render blocking -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
+  <!-- Leaflet CSS - Load asynchronously -->
+  <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
+  <script type="module" crossorigin src="/assets/index-Bj0A0uAO.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DFPA2s2R.css">
 <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
 <body>
   <div id="root"></div>

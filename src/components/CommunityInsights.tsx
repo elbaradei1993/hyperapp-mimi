@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LoadingSpinner, Modal } from './shared';
 import { calculateDistance } from '../lib/clustering';
-import SafetyTrendChart from './SafetyTrendChart';
+
+// Lazy load heavy chart component
+const SafetyTrendChart = lazy(() => import('./SafetyTrendChart'));
 import type { Report } from '../types';
 
 interface CommunityInsightsProps {
@@ -599,7 +601,9 @@ const ActivityFeed: React.FC<{ reports: Report[] }> = ({ reports }) => {
         padding: '16px',
         border: '1px solid #e5e7eb'
       }}>
-        <SafetyTrendChart reports={reports} height={180} />
+        <Suspense fallback={<div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LoadingSpinner size="sm" /></div>}>
+          <SafetyTrendChart reports={reports} height={180} />
+        </Suspense>
       </div>
 
       {/* Recent Reports Toggle */}
