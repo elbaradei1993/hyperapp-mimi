@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import Button from './shared/Button';
 
 export type TabType = 'map' | 'reports' | 'profile' | 'settings';
 

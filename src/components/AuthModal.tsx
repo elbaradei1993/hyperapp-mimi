@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from './shared';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -132,38 +133,30 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           overflow: 'hidden',
           border: '1px solid var(--border-color)'
         }}>
-          <button
+          <Button
             onClick={() => setActiveTab('login')}
+            variant={activeTab === 'login' ? 'primary' : 'secondary'}
+            className="flex-1 rounded-none border-none"
             style={{
-              flex: 1,
-              padding: '12px',
               backgroundColor: activeTab === 'login' ? 'var(--accent-primary)' : 'var(--bg-primary)',
               color: activeTab === 'login' ? 'white' : 'var(--text-primary)',
-              border: 'none',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              minHeight: '44px' // Ensure minimum touch target
+              borderRadius: 0
             }}
           >
             {t('auth.login')}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setActiveTab('signup')}
+            variant={activeTab === 'signup' ? 'primary' : 'secondary'}
+            className="flex-1 rounded-none border-none"
             style={{
-              flex: 1,
-              padding: '12px',
               backgroundColor: activeTab === 'signup' ? 'var(--accent-primary)' : 'var(--bg-primary)',
               color: activeTab === 'signup' ? 'white' : 'var(--text-primary)',
-              border: 'none',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              minHeight: '44px' // Ensure minimum touch target
+              borderRadius: 0
             }}
           >
             {t('auth.signup')}
-          </button>
+          </Button>
         </div>
 
         {/* Error Message */}
@@ -242,24 +235,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: 'var(--accent-primary)',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                opacity: isLoading ? 0.5 : 1
-              }}
+              loading={isLoading}
+              fullWidth
+              variant="primary"
             >
               {isLoading ? t('auth.loggingIn') : t('auth.login')}
-            </button>
+            </Button>
           </form>
         )}
 
@@ -382,24 +366,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: 'var(--success)',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                opacity: isLoading ? 0.5 : 1
-              }}
+              loading={isLoading}
+              fullWidth
+              variant="success"
             >
               {isLoading ? t('auth.creatingAccount') : t('auth.signup')}
-            </button>
+            </Button>
           </form>
         )}
 

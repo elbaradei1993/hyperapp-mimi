@@ -29,9 +29,9 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg'
+    sm: 'px-4 py-2 text-base sm:px-3 sm:py-1.5 sm:text-sm',
+    md: 'px-6 py-3 text-lg sm:px-4 sm:py-2 sm:text-base',
+    lg: 'px-8 py-4 text-xl sm:px-6 sm:py-3 sm:text-lg'
   };
 
   const widthClass = fullWidth ? 'w-full' : '';

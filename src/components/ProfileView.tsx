@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth';
 import { reportsService } from '../services/reports';
 import { uploadService } from '../services/upload';
-import { LoadingSpinner, EmptyState } from './shared';
+import { LoadingSpinner, EmptyState, Button } from './shared';
 import type { User } from '../types';
 import { INTEREST_CATEGORIES } from '../types';
 
@@ -563,7 +563,7 @@ const ProfileView: React.FC = () => {
                 : user?.username || 'User'
               }
             </h1>
-            <button
+            <Button
               onClick={() => {
                 setEditForm({
                   firstName: user?.first_name || '',
@@ -580,23 +580,11 @@ const ProfileView: React.FC = () => {
                 });
                 setShowEditModal(true);
               }}
-              style={{
-                backgroundColor: 'var(--accent-primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
+              size="sm"
             >
               <i className="fas fa-edit"></i>
               {t('profile.editProfile')}
-            </button>
+            </Button>
           </div>
 
           <div style={{
@@ -1649,23 +1637,14 @@ const ProfileView: React.FC = () => {
                 gap: '16px',
                 marginTop: '8px'
               }}>
-                <button
+                <Button
                   onClick={() => setShowEditModal(false)}
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: '8px',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: 'white',
-                    color: '#374151',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    cursor: 'pointer'
-                  }}
+                  variant="secondary"
                 >
                   {t('common.cancel')}
-                </button>
+                </Button>
 
-                <button
+                <Button
                   onClick={async () => {
                     if (!user) return;
 
@@ -1713,20 +1692,11 @@ const ProfileView: React.FC = () => {
                     }
                   }}
                   disabled={uploadingPicture}
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: uploadingPicture ? '#9ca3af' : '#3b82f6',
-                    color: 'white',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    cursor: uploadingPicture ? 'not-allowed' : 'pointer',
-                    opacity: uploadingPicture ? 0.5 : 1
-                  }}
+                  loading={uploadingPicture}
+                  variant="primary"
                 >
                   {uploadingPicture ? 'Uploading...' : t('profile.saveChanges')}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

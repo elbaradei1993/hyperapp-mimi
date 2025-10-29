@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import Button from './shared/Button';
 
 export type TabType = 'map' | 'reports' | 'profile' | 'settings';
 
