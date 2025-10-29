@@ -1,0 +1,24 @@
+# Exclude client-side JavaScript files from being treated as serverless functions
+*.js
+!api/**/*.js
+
+# Exclude other non-deployment files
+.git
+.gitignore
+README.md
+*.sql
+*.txt
+*.json
+!package.json
+!vercel.json
+!manifest.json
+
+# Exclude development files
+node_modules
+dist
+src
+public
+*.config.js
+tsconfig*.json
+postcss.config.js
+tailwind.config.js
