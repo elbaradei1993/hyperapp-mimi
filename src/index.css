@@ -250,3 +250,17 @@ select:active {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Responsive community grid for mobile */
+@media (max-width: 768px) {
+  .community-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .community-grid {
+    gap: 12px !important;
+  }
+}

@@ -156,11 +156,14 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
       </div>
 
       {/* Interactive Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '24px'
-      }}>
+      <div
+        className="community-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '24px'
+        }}
+      >
 
         {/* Live Activity Feed */}
         <InteractiveCard
