@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#3b82f6">
   <meta name="description" content="Real-time community safety platform with location-based reports and emergency alerts">
   <!-- Content Security Policy for XSS protection -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://nominatim.openstreetmap.org; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <link rel="icon" href="/logo.png" type="image/png">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/logo.png">
@@ -14,7 +14,6 @@
 
   <!-- Preload critical resources to reduce request chains -->
   <link rel="modulepreload" href="/src/main.tsx">
-  <link rel="preload" href="/src/index.css" as="style">
   <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
   <link rel="dns-prefetch" href="//unpkg.com">
   <!-- Font Awesome - Load asynchronously to prevent render blocking -->

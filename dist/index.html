@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#3b82f6">
   <meta name="description" content="Real-time community safety platform with location-based reports and emergency alerts">
   <!-- Content Security Policy for XSS protection -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://nominatim.openstreetmap.org; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <link rel="icon" href="/logo.png" type="image/png">
   <link rel="manifest" href="/assets/manifest-RW6cXcEe.json">
   <link rel="apple-touch-icon" href="/logo.png">
   <title>HyperApp - Community Safety Platform</title>
 
   <!-- Preload critical resources to reduce request chains -->
-  <link rel="modulepreload" href="data:application/octet-stream;base64,aW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JzsNCmltcG9ydCBSZWFjdERPTSBmcm9tICdyZWFjdC1kb20vY2xpZW50JzsNCmltcG9ydCBBcHAgZnJvbSAnLi9BcHAnOw0KaW1wb3J0IHsgVGhlbWVQcm92aWRlciB9IGZyb20gJy4vY29udGV4dHMvVGhlbWVDb250ZXh0JzsNCmltcG9ydCAnLi9pbmRleC5jc3MnOw0KaW1wb3J0ICcuL3RoZW1lcy5jc3MnOw0KaW1wb3J0ICcuL2kxOG4nOw0KDQovLyBNb2JpbGUgdmlld3BvcnQgaGVpZ2h0IGZpeA0KY29uc3Qgc2V0VkggPSAoKSA9PiB7DQogIGNvbnN0IHZoID0gd2luZG93LmlubmVySGVpZ2h0ICogMC4wMTsNCiAgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LnN0eWxlLnNldFByb3BlcnR5KCctLXZoJywgYCR7dmh9cHhgKTsNCn07DQoNCi8vIFNldCBpbml0aWFsIHZpZXdwb3J0IGhlaWdodA0Kc2V0VkgoKTsNCg0KLy8gVXBkYXRlIHZpZXdwb3J0IGhlaWdodCBvbiByZXNpemUvb3JpZW50YXRpb24gY2hhbmdlDQp3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigncmVzaXplJywgc2V0VkgpOw0Kd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ29yaWVudGF0aW9uY2hhbmdlJywgKCkgPT4gew0KICAvLyBEZWxheSB0byBhY2NvdW50IGZvciBtb2JpbGUgYnJvd3NlciBVSSBjaGFuZ2VzDQogIHNldFRpbWVvdXQoc2V0VkgsIDEwMCk7DQp9KTsNCg0KUmVhY3RET00uY3JlYXRlUm9vdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncm9vdCcpISkucmVuZGVyKA0KICA8UmVhY3QuU3RyaWN0TW9kZT4NCiAgICA8VGhlbWVQcm92aWRlcj4NCiAgICAgIDxBcHAgLz4NCiAgICA8L1RoZW1lUHJvdmlkZXI+DQogIDwvUmVhY3QuU3RyaWN0TW9kZT4sDQopOw0K">
+  <link rel="modulepreload" href="data:application/octet-stream;base64,aW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JzsNCmltcG9ydCBSZWFjdERPTSBmcm9tICdyZWFjdC1kb20vY2xpZW50JzsNCmltcG9ydCBBcHAgZnJvbSAnLi9BcHAnOw0KaW1wb3J0IHsgVGhlbWVQcm92aWRlciB9IGZyb20gJy4vY29udGV4dHMvVGhlbWVDb250ZXh0JzsNCmltcG9ydCAnLi9pbmRleC5jc3MnOw0KaW1wb3J0ICcuL3RoZW1lcy5jc3MnOw0KaW1wb3J0ICcuL2kxOG4nOw0KDQovLyBNb2JpbGUgdmlld3BvcnQgaGVpZ2h0IGZpeA0KY29uc3Qgc2V0VkggPSAoKSA9PiB7DQogIGNvbnN0IHZoID0gd2luZG93LmlubmVySGVpZ2h0ICogMC4wMTsNCiAgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LnN0eWxlLnNldFByb3BlcnR5KCctLXZoJywgYCR7dmh9cHhgKTsNCn07DQoNCi8vIFNldCBpbml0aWFsIHZpZXdwb3J0IGhlaWdodA0Kc2V0VkgoKTsNCg0KLy8gVXBkYXRlIHZpZXdwb3J0IGhlaWdodCBvbiByZXNpemUvb3JpZW50YXRpb24gY2hhbmdlDQp3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigncmVzaXplJywgc2V0VkgpOw0Kd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ29yaWVudGF0aW9uY2hhbmdlJywgKCkgPT4gew0KICAvLyBEZWxheSB0byBhY2NvdW50IGZvciBtb2JpbGUgYnJvd3NlciBVSSBjaGFuZ2VzDQogIHNldFRpbWVvdXQoc2V0VkgsIDEwMCk7DQp9KTsNCg0KUmVhY3RET00uY3JlYXRlUm9vdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncm9vdCcpISkucmVuZGVyKA0KICA8UmVhY3QuU3RyaWN0TW9kZT4NCiAgICA8VGhlbWVQcm92aWRlcj4NCiAgICAgIDxBcHAgLz4NCiAgICA8L1RoZW1lUHJvdmlkZXI+DQogIDwvUmVhY3QuU3RyaWN0TW9kZT4sDQopOw0K">
   <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
   <link rel="dns-prefetch" href="//unpkg.com">
   <!-- Font Awesome - Load asynchronously to prevent render blocking -->
@@ -23,12 +23,12 @@
   <!-- Leaflet CSS - Load asynchronously -->
   <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
-  <script type="module" crossorigin src="/assets/index-6gO_crSa.js"></script>
+  <script type="module" crossorigin src="/assets/index-BzACJCPE.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-Dcsd2E38.js">
   <link rel="modulepreload" crossorigin href="/assets/leaflet-CrbGgGRh.js">
   <link rel="modulepreload" crossorigin href="/assets/charts-CWR61UC3.js">
   <link rel="modulepreload" crossorigin href="/assets/utils-7NPCt5Al.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-D9bN4yNm.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-Dy0-s0YM.css">
 <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
 <body>
   <div id="root"></div>
