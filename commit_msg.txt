@@ -1,0 +1,6 @@
+Remove Vercel configuration files to ensure Netlify deployment
+
+- Deleted vercel.json (Vercel deployment config)
+- Deleted .vercelignore (Vercel ignore rules)
+- This prevents Vercel from intercepting deployments
+- Ensures Netlify handles all future deployments
