@@ -56,7 +56,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
         alignItems: 'center'
       }}>
       {/* Left tabs */}
-      <div style={{ display: 'flex', flex: 1 }}>
+      <div style={{ display: 'flex', flex: 1 }} role="tablist" aria-label={t('tabs.navigation')}>
         {tabs.slice(0, 2).map(tab => (
           <button
             className="tab-button"
@@ -77,6 +77,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
             onTouchEnd={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
             }}
+            aria-label={`${t('tabs.navigateTo')} ${tab.label}`}
+            aria-selected={activeTab === tab.id ? 'true' : 'false'}
+            role="tab"
+            tabIndex={activeTab === tab.id ? 0 : -1}
             style={{
               flex: 1,
               aspectRatio: '1', // Ensure square buttons
@@ -101,7 +105,8 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               userSelect: 'none',
               borderRadius: activeTab === tab.id ? '12px' : '0',
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              outline: 'none'
             }}
           >
             <i className={tab.icon} style={{

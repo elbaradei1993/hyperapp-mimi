@@ -133,30 +133,35 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           overflow: 'hidden',
           border: '1px solid var(--border-color)'
         }}>
-          <Button
+          <button
             onClick={() => setActiveTab('login')}
-            variant={activeTab === 'login' ? 'primary' : 'secondary'}
-            className="flex-1 rounded-none border-none"
+            className={`flex-1 px-4 py-2 text-base font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              activeTab === 'login'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
             style={{
-              backgroundColor: activeTab === 'login' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: activeTab === 'login' ? 'white' : 'var(--text-primary)',
-              borderRadius: 0
+              borderRadius: 0,
+              borderRight: '1px solid var(--border-color)',
+              minHeight: '44px'
             }}
           >
             {t('auth.login')}
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => setActiveTab('signup')}
-            variant={activeTab === 'signup' ? 'primary' : 'secondary'}
-            className="flex-1 rounded-none border-none"
+            className={`flex-1 px-4 py-2 text-base font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              activeTab === 'signup'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
             style={{
-              backgroundColor: activeTab === 'signup' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: activeTab === 'signup' ? 'white' : 'var(--text-primary)',
-              borderRadius: 0
+              borderRadius: 0,
+              minHeight: '44px'
             }}
           >
             {t('auth.signup')}
-          </Button>
+          </button>
         </div>
 
         {/* Error Message */}

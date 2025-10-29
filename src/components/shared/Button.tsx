@@ -28,37 +28,19 @@ const Button: React.FC<ButtonProps> = ({
     warning: 'bg-yellow-600 hover:bg-yellow-700 text-white focus:ring-yellow-500'
   };
 
+  const sizeClasses = {
+    sm: 'px-3 py-1.5 text-sm sm:px-4 sm:py-2 sm:text-base min-h-[44px] sm:min-h-[auto]',
+    md: 'px-4 py-2 text-base sm:px-6 sm:py-3 sm:text-lg min-h-[44px] sm:min-h-[auto]',
+    lg: 'px-6 py-3 text-lg sm:px-8 sm:py-4 sm:text-xl min-h-[44px] sm:min-h-[auto]'
+  };
+
   const widthClass = fullWidth ? 'w-full' : '';
 
-  const classes = `${baseClasses} ${variantClasses[variant]} ${widthClass} ${className}`.trim();
-
-  // Responsive sizing using inline styles to avoid Tailwind purging issues
-  const getResponsiveStyles = (size: 'sm' | 'md' | 'lg') => {
-    const styles: React.CSSProperties = {};
-
-    // Base sizes (desktop)
-    switch (size) {
-      case 'sm':
-        styles.padding = '0.5rem 1rem';
-        styles.fontSize = '1rem';
-        break;
-      case 'md':
-        styles.padding = '0.75rem 1.5rem';
-        styles.fontSize = '1.125rem';
-        break;
-      case 'lg':
-        styles.padding = '1rem 2rem';
-        styles.fontSize = '1.25rem';
-        break;
-    }
-
-    return styles;
-  };
+  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`.trim();
 
   return (
     <button
       className={classes}
-      style={getResponsiveStyles(size)}
       disabled={disabled || loading}
       {...props}
     >
