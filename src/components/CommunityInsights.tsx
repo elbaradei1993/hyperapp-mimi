@@ -938,99 +938,34 @@ const CommunityStats: React.FC<{ reports: Report[] }> = ({ reports }) => {
 // Quick Actions Component
 const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) => {
   return (
-    <>
-      <style>
-        {`
-          .mobile-quick-action-btn {
-            width: 100%;
-            padding: 16px;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-          }
-
-          .mobile-quick-action-btn:active,
-          .mobile-quick-action-btn:hover {
-            transform: scale(0.98);
-          }
-
-          .mobile-quick-action-btn .fa-plus,
-          .mobile-quick-action-btn .fa-phone {
-            font-size: 12px;
-          }
-
-          /* Mobile responsive styles */
-          @media (max-width: 480px) {
-            .mobile-quick-action-btn {
-              padding: 16px 20px;
-              border-radius: 8px;
-              font-size: 14px;
-              gap: 8px;
-              min-height: 48px; /* iOS touch target minimum with padding */
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            }
-
-            .mobile-quick-action-btn .fa-plus,
-            .mobile-quick-action-btn .fa-phone {
-              font-size: 12px;
-            }
-          }
-
-          /* Tablet styles */
-          @media (max-width: 768px) and (min-width: 481px) {
-            .mobile-quick-action-btn {
-              padding: 14px 16px;
-              font-size: 14px;
-              gap: 7px;
-            }
-          }
-        `}
-      </style>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onNewReport?.();
-          }}
-          className="mobile-quick-action-btn"
-          style={{
-            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
-          }}
-        >
-          <i className="fas fa-plus"></i>
-          Report Vibe
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            window.open('tel:911', '_self');
-          }}
-          className="mobile-quick-action-btn"
-          style={{
-            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
-          }}
-        >
-          <i className="fas fa-phone"></i>
-          Emergency Call
-        </button>
-      </div>
-    </>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onNewReport?.();
+        }}
+        className="mobile-quick-action-btn"
+        style={{
+          background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+        }}
+      >
+        <i className="fas fa-plus"></i>
+        Report Vibe
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          window.open('tel:911', '_self');
+        }}
+        className="mobile-quick-action-btn"
+        style={{
+          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+        }}
+      >
+        <i className="fas fa-phone"></i>
+        Emergency Call
+      </button>
+    </div>
   );
 };
 
