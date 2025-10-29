@@ -28,19 +28,37 @@ const Button: React.FC<ButtonProps> = ({
     warning: 'bg-yellow-600 hover:bg-yellow-700 text-white focus:ring-yellow-500'
   };
 
-  const sizeClasses = {
-    sm: 'px-4 py-2 text-base sm:px-3 sm:py-1.5 sm:text-sm',
-    md: 'px-6 py-3 text-lg sm:px-4 sm:py-2 sm:text-base',
-    lg: 'px-8 py-4 text-xl sm:px-6 sm:py-3 sm:text-lg'
-  };
-
   const widthClass = fullWidth ? 'w-full' : '';
 
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`.trim();
+  const classes = `${baseClasses} ${variantClasses[variant]} ${widthClass} ${className}`.trim();
+
+  // Responsive sizing using inline styles to avoid Tailwind purging issues
+  const getResponsiveStyles = (size: 'sm' | 'md' | 'lg') => {
+    const styles: React.CSSProperties = {};
+
+    // Base sizes (desktop)
+    switch (size) {
+      case 'sm':
+        styles.padding = '0.5rem 1rem';
+        styles.fontSize = '1rem';
+        break;
+      case 'md':
+        styles.padding = '0.75rem 1.5rem';
+        styles.fontSize = '1.125rem';
+        break;
+      case 'lg':
+        styles.padding = '1rem 2rem';
+        styles.fontSize = '1.25rem';
+        break;
+    }
+
+    return styles;
+  };
 
   return (
     <button
       className={classes}
+      style={getResponsiveStyles(size)}
       disabled={disabled || loading}
       {...props}
     >

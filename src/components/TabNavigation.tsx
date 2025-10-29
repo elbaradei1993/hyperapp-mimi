@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Button from './shared/Button';
+import { Button } from './shared';
 
 export type TabType = 'map' | 'reports' | 'profile' | 'settings';
 
@@ -21,6 +21,13 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
 
   return (
     <>
+      {/* Hidden Button to force Tailwind to include responsive classes */}
+      <div style={{ display: 'none' }}>
+        <Button size="sm">Hidden</Button>
+        <Button size="md">Hidden</Button>
+        <Button size="lg">Hidden</Button>
+      </div>
+
       {/* Background context for glassmorphism effect */}
       <div style={{
         position: 'fixed',
@@ -74,7 +81,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               flex: 1,
               aspectRatio: '1', // Ensure square buttons
               maxWidth: '80px', // Limit max width on larger screens
-              padding: '8px 4px',
+              padding: '12px 6px', // Increased padding for better mobile touch
               border: 'none',
               backgroundColor: activeTab === tab.id ? 'var(--accent-primary)' : 'transparent',
               color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
@@ -85,9 +92,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               gap: '2px',
               cursor: 'pointer',
               transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontSize: '11px',
+              fontSize: '12px', // Slightly larger font for mobile
               fontWeight: activeTab === tab.id ? '600' : '500',
-              minHeight: '60px', // Ensure minimum touch target
+              minHeight: '64px', // Increased minimum touch target for mobile
+              minWidth: '64px', // Ensure minimum width for touch
               transform: 'scale(1)',
               WebkitTapHighlightColor: 'transparent',
               userSelect: 'none',
@@ -196,7 +204,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               flex: 1,
               aspectRatio: '1', // Ensure square buttons
               maxWidth: '80px', // Limit max width on larger screens
-              padding: '8px 4px',
+              padding: '12px 6px', // Increased padding for better mobile touch
               border: 'none',
               backgroundColor: activeTab === tab.id ? 'var(--accent-primary)' : 'transparent',
               color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
@@ -207,9 +215,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               gap: '2px',
               cursor: 'pointer',
               transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontSize: '11px',
+              fontSize: '12px', // Slightly larger font for mobile
               fontWeight: activeTab === tab.id ? '600' : '500',
-              minHeight: '60px', // Ensure minimum touch target
+              minHeight: '64px', // Increased minimum touch target for mobile
+              minWidth: '64px', // Ensure minimum width for touch
               transform: 'scale(1)',
               WebkitTapHighlightColor: 'transparent',
               userSelect: 'none',
