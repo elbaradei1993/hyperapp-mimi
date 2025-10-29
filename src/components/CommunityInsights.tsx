@@ -937,6 +937,44 @@ const CommunityStats: React.FC<{ reports: Report[] }> = ({ reports }) => {
 
 // Quick Actions Component
 const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) => {
+  // Responsive button styles based on screen size
+  const getButtonStyle = (background: string) => {
+    const isMobile = window.innerWidth <= 480;
+    const isTablet = window.innerWidth <= 768 && window.innerWidth > 480;
+
+    return {
+      width: '100%',
+      padding: isMobile ? '12px 16px' : isTablet ? '14px 16px' : '16px',
+      background: background,
+      color: 'white',
+      border: 'none',
+      borderRadius: isMobile ? '8px' : '12px',
+      fontSize: isMobile ? '13px' : '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: isMobile ? '6px' : '8px',
+      minHeight: isMobile ? '44px' : 'auto', // iOS touch target minimum
+      transition: 'all 0.2s ease',
+      boxShadow: isMobile ? '0 2px 8px rgba(0, 0, 0, 0.15)' : '0 4px 12px rgba(0, 0, 0, 0.15)',
+      WebkitTapHighlightColor: 'transparent', // Remove iOS tap highlight
+      WebkitTouchCallout: 'none', // Disable iOS callouts
+      WebkitUserSelect: 'none', // Disable text selection
+      MozUserSelect: 'none',
+      msUserSelect: 'none',
+      userSelect: 'none'
+    };
+  };
+
+  const getIconStyle = () => {
+    const isMobile = window.innerWidth <= 480;
+    return {
+      fontSize: isMobile ? '11px' : '12px'
+    };
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <button
@@ -944,23 +982,25 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
           e.stopPropagation();
           onNewReport?.();
         }}
-        style={{
-          width: '100%',
-          padding: '16px',
-          background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '12px',
-          fontSize: '14px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px'
+        style={getButtonStyle('linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)')}
+        onTouchStart={(e) => {
+          // Add active state for mobile touch
+          e.currentTarget.style.transform = 'scale(0.98)';
+        }}
+        onTouchEnd={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        onMouseDown={(e) => {
+          e.currentTarget.style.transform = 'scale(0.98)';
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
         }}
       >
-        <i className="fas fa-plus" style={{ fontSize: '12px' }}></i>
+        <i className="fas fa-plus" style={getIconStyle()}></i>
         Report Vibe
       </button>
       <button
@@ -968,23 +1008,24 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
           e.stopPropagation();
           window.open('tel:911', '_self');
         }}
-        style={{
-          width: '100%',
-          padding: '16px',
-          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '12px',
-          fontSize: '14px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px'
+        style={getButtonStyle('linear-gradient(135deg, #ef4444 0%, #dc2626 100%)')}
+        onTouchStart={(e) => {
+          e.currentTarget.style.transform = 'scale(0.98)';
+        }}
+        onTouchEnd={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        onMouseDown={(e) => {
+          e.currentTarget.style.transform = 'scale(0.98)';
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
         }}
       >
-        <i className="fas fa-phone" style={{ fontSize: '12px' }}></i>
+        <i className="fas fa-phone" style={getIconStyle()}></i>
         Emergency Call
       </button>
     </div>
