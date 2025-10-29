@@ -977,17 +977,17 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
           /* Mobile responsive styles */
           @media (max-width: 480px) {
             .mobile-quick-action-btn {
-              padding: 12px 16px;
+              padding: 16px 20px;
               border-radius: 8px;
-              font-size: 13px;
-              gap: 6px;
-              min-height: 44px; /* iOS touch target minimum */
+              font-size: 14px;
+              gap: 8px;
+              min-height: 48px; /* iOS touch target minimum with padding */
               box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             }
 
             .mobile-quick-action-btn .fa-plus,
             .mobile-quick-action-btn .fa-phone {
-              font-size: 11px;
+              font-size: 12px;
             }
           }
 
