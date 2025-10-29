@@ -632,8 +632,8 @@ const ActivityFeed: React.FC<{ reports: Report[] }> = ({ reports }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '4px 8px',
-            borderRadius: '6px',
+            padding: '8px 12px',
+            borderRadius: '10px',
             transition: 'all 0.2s ease'
           }}
           onMouseEnter={(e) => {
@@ -946,11 +946,11 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
         }}
         style={{
           width: '100%',
-          padding: '12px',
+          padding: '16px',
           background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
           color: 'white',
           border: 'none',
-          borderRadius: '8px',
+          borderRadius: '12px',
           fontSize: '14px',
           fontWeight: '600',
           cursor: 'pointer',
@@ -970,11 +970,11 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
         }}
         style={{
           width: '100%',
-          padding: '12px',
+          padding: '16px',
           background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
           color: 'white',
           border: 'none',
-          borderRadius: '8px',
+          borderRadius: '12px',
           fontSize: '14px',
           fontWeight: '600',
           cursor: 'pointer',
@@ -1248,11 +1248,11 @@ const CommunityChallenges: React.FC<{
                 onClick={(e) => handleAcceptChallenge(activeChallenge.id, e)}
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
+                  padding: '10px 16px',
                   background: '#f59e0b',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '6px',
+                  borderRadius: '10px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer'
@@ -1266,11 +1266,11 @@ const CommunityChallenges: React.FC<{
                 onClick={(e) => handleCompleteChallenge(activeChallenge.id, e)}
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
+                  padding: '10px 16px',
                   background: '#10b981',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '6px',
+                  borderRadius: '10px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer'
@@ -1287,11 +1287,11 @@ const CommunityChallenges: React.FC<{
                   return newSet;
                 })}
                 style={{
-                  padding: '8px 12px',
+                  padding: '10px 16px',
                   background: '#ef4444',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '6px',
+                  borderRadius: '10px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer'
