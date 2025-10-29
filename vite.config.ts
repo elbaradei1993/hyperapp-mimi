@@ -60,6 +60,18 @@ export default defineConfig({
     open: true
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    sourcemap: true, // Enable source maps for debugging
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          vendor: ['react', 'react-dom'],
+          leaflet: ['leaflet', 'react-leaflet'],
+          charts: ['recharts'],
+          utils: ['i18next', 'react-i18next']
+        }
+      }
+    }
   }
 })

@@ -63,7 +63,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             onMouseDown={(e) => {
-              e.currentTarget.style.transform = 'scale(0.95)';
+              e.currentTarget.style.transform = 'scale(0.98)';
             }}
             onMouseUp={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
@@ -72,7 +72,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               e.currentTarget.style.transform = 'scale(1)';
             }}
             onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'scale(0.95)';
+              e.currentTarget.style.transform = 'scale(0.98)';
             }}
             onTouchEnd={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
