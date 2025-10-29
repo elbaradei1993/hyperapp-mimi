@@ -1,6 +1,17 @@
 # Exclude client-side JavaScript files from being treated as serverless functions
-*.js
-!api/**/*.js
+app.js
+auth-manager.js
+check-reports.js
+config.js
+core.js
+data-manager.js
+db-validation.js
+geofence-manager.js
+leaflet-heat.js
+map-manager.js
+supabase-client.js
+temp_check.js
+ui-manager.js
 
 # Exclude other non-deployment files
 .git
@@ -8,6 +19,7 @@
 README.md
 *.sql
 *.txt
+commit_msg.txt
 *.json
 !package.json
 !vercel.json
