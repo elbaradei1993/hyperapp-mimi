@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   loading?: boolean;
@@ -18,20 +18,90 @@ const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = `
+    inline-flex items-center justify-center
+    font-semibold rounded-xl
+    transition-all duration-200 ease-in-out
+    focus:outline-none focus:ring-2 focus:ring-offset-2
+    disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none
+    active:scale-[0.98]
+    shadow-sm hover:shadow-md
+    border border-transparent
+  `;
 
   const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-900 focus:ring-gray-500',
-    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
-    success: 'bg-green-600 hover:bg-green-700 text-white focus:ring-green-500',
-    warning: 'bg-yellow-600 hover:bg-yellow-700 text-white focus:ring-yellow-500'
+    primary: `
+      bg-gradient-to-r from-blue-500 to-blue-600
+      hover:from-blue-600 hover:to-blue-700
+      text-white
+      focus:ring-blue-500
+      shadow-blue-500/25 hover:shadow-blue-500/40
+      border-blue-600/20
+    `,
+    secondary: `
+      bg-gradient-to-r from-gray-100 to-gray-200
+      hover:from-gray-200 hover:to-gray-300
+      text-gray-900
+      focus:ring-gray-500
+      shadow-gray-500/25 hover:shadow-gray-500/40
+      border-gray-300/50
+      dark:from-gray-700 dark:to-gray-600
+      dark:hover:from-gray-600 dark:hover:to-gray-500
+      dark:text-white
+      dark:border-gray-600/50
+    `,
+    outline: `
+      bg-transparent
+      hover:bg-blue-50
+      text-blue-600
+      focus:ring-blue-500
+      border-blue-300
+      hover:border-blue-400
+      dark:hover:bg-blue-900/20
+      dark:text-blue-400
+      dark:border-blue-600
+      dark:hover:border-blue-500
+    `,
+    ghost: `
+      bg-transparent hover:bg-gray-100
+      text-gray-700
+      focus:ring-gray-500
+      hover:text-gray-900
+      dark:hover:bg-gray-800
+      dark:text-gray-300
+      dark:hover:text-white
+      shadow-none hover:shadow-none
+    `,
+    danger: `
+      bg-gradient-to-r from-red-500 to-red-600
+      hover:from-red-600 hover:to-red-700
+      text-white
+      focus:ring-red-500
+      shadow-red-500/25 hover:shadow-red-500/40
+      border-red-600/20
+    `,
+    success: `
+      bg-gradient-to-r from-green-500 to-green-600
+      hover:from-green-600 hover:to-green-700
+      text-white
+      focus:ring-green-500
+      shadow-green-500/25 hover:shadow-green-500/40
+      border-green-600/20
+    `,
+    warning: `
+      bg-gradient-to-r from-yellow-500 to-orange-500
+      hover:from-yellow-600 hover:to-orange-600
+      text-white
+      focus:ring-yellow-500
+      shadow-yellow-500/25 hover:shadow-yellow-500/40
+      border-yellow-600/20
+    `
   };
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm sm:px-4 sm:py-2 sm:text-base min-h-[44px] sm:min-h-[auto]',
-    md: 'px-4 py-2 text-base sm:px-6 sm:py-3 sm:text-lg min-h-[44px] sm:min-h-[auto]',
-    lg: 'px-6 py-3 text-lg sm:px-8 sm:py-4 sm:text-xl min-h-[44px] sm:min-h-[auto]'
+    sm: 'px-4 py-2 text-sm min-h-[44px] gap-2',
+    md: 'px-6 py-3 text-base min-h-[48px] gap-2',
+    lg: 'px-8 py-4 text-lg min-h-[56px] gap-3'
   };
 
   const widthClass = fullWidth ? 'w-full' : '';
@@ -46,7 +116,7 @@ const Button: React.FC<ButtonProps> = ({
     >
       {loading && (
         <svg
-          className="animate-spin -ml-1 mr-2 h-4 w-4"
+          className="animate-spin h-4 w-4 flex-shrink-0"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"

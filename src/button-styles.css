@@ -1,26 +1,76 @@
-/* Force include responsive button classes to prevent Tailwind purging */
-.px-4 { padding-left: 1rem; padding-right: 1rem; }
-.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-.text-base { font-size: 1rem; line-height: 1.5rem; }
-.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-.py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
-.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-.px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-.px-8 { padding-left: 2rem; padding-right: 2rem; }
-.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+/* Enhanced Button Styles - Professional and Sleek */
 
-/* Responsive variants */
-@media (min-width: 640px) {
-  .sm\:px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-  .sm\:py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
-  .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-  .sm\:px-4 { padding-left: 1rem; padding-right: 1rem; }
-  .sm\:py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-  .sm\:text-base { font-size: 1rem; line-height: 1.5rem; }
-  .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-  .sm\:py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-  .sm\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+/* Force include responsive button classes to prevent Tailwind purging */
+.px-4, .py-2, .text-base, .px-3, .py-1\.5, .text-sm,
+.px-6, .py-3, .text-lg, .px-8, .py-4, .text-xl,
+.min-h-\[44px\], .min-h-\[48px\], .min-h-\[56px\],
+.gap-2, .gap-3, .rounded-xl,
+.bg-gradient-to-r, .from-blue-500, .to-blue-600,
+.hover\:from-blue-600, .hover\:to-blue-700,
+.shadow-blue-500\/25, .hover\:shadow-blue-500\/40,
+.from-gray-100, .to-gray-200, .hover\:from-gray-200, .hover\:to-gray-300,
+.shadow-gray-500\/25, .hover\:shadow-gray-500\/40,
+.dark\:from-gray-700, .dark\:to-gray-600, .dark\:hover\:from-gray-600, .dark\:hover\:to-gray-500,
+.from-red-500, .to-red-600, .hover\:from-red-600, .hover\:to-red-700,
+.shadow-red-500\/25, .hover\:shadow-red-500\/40,
+.from-green-500, .to-green-600, .hover\:from-green-600, .hover\:to-green-700,
+.shadow-green-500\/25, .hover\:shadow-green-500\/40,
+.from-yellow-500, .to-orange-500, .hover\:from-yellow-600, .hover\:to-orange-600,
+.shadow-yellow-500\/25, .hover\:shadow-yellow-500\/40,
+.hover\:bg-blue-50, .dark\:hover\:bg-blue-900\/20,
+.hover\:bg-gray-100, .dark\:hover\:bg-gray-800,
+.shadow-sm, .hover\:shadow-md, .shadow-none, .hover\:shadow-none,
+.active\:scale-\[0\.98\], .disabled\:transform-none,
+.transition-all, .duration-200, .ease-in-out,
+.focus\:ring-2, .focus\:ring-offset-2,
+.disabled\:opacity-60, .disabled\:cursor-not-allowed {
+  /* These classes are used in the Button component */
+}
+
+/* Button hover and active state enhancements */
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Enhanced focus states for better accessibility */
+button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Loading spinner animation enhancement */
+@keyframes button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: button-spin 1s linear infinite;
+}
+
+/* Subtle button glow effect for primary buttons */
+button.bg-gradient-to-r:not(:disabled):hover {
+  filter: brightness(1.05);
+}
+
+/* Enhanced disabled state */
+button:disabled {
+  filter: grayscale(0.3);
+  -webkit-backdrop-filter: blur(0.5px);
+  backdrop-filter: blur(0.5px);
+}
+
+/* Mobile touch feedback */
+@media (hover: none) and (pointer: coarse) {
+  button:active {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
 }

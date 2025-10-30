@@ -167,84 +167,25 @@ const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange }) => {
 
         {/* Right Section: Logout Button */}
         <div>
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleLogout}
-            onMouseEnter={() => setIsLogoutHovered(true)}
-            onMouseLeave={() => setIsLogoutHovered(false)}
-            onMouseDown={(e) => {
-              e.currentTarget.style.transform = 'scale(0.95)';
-            }}
-            onMouseUp={(e) => {
-              e.currentTarget.style.transform = isLogoutHovered ? 'scale(1.02)' : 'scale(1)';
-            }}
-            onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'scale(0.95)';
-            }}
-            onTouchEnd={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+            className="flex items-center gap-2"
             style={{
-              padding: '12px 20px',
-              borderRadius: '24px',
-              border: 'none',
-              background: isLogoutHovered
-                ? 'linear-gradient(135deg, var(--danger) 0%, rgba(239, 68, 68, 0.9) 100%)'
-                : `
-                  linear-gradient(
-                    135deg,
-                    rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8) 0%,
-                    rgba(var(--bg-primary-rgb, 255, 255, 255), 0.6) 100%
-                  )
-                `,
+              background: 'rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
-              color: isLogoutHovered ? 'white' : 'var(--text-primary)',
+              border: '1px solid rgba(var(--border-color-rgb, 229, 231, 235), 0.3)',
+              color: 'var(--text-primary)',
               fontSize: '14px',
               fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: isLogoutHovered
-                ? '0 4px 16px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-                : `
-                  0 4px 16px rgba(0, 0, 0, 0.1),
-                  inset 0 1px 0 rgba(255, 255, 255, 0.3)
-                `,
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              transform: 'scale(1)',
-              WebkitTapHighlightColor: 'transparent',
-              userSelect: 'none',
-              minHeight: '44px',
-              position: 'relative',
-              overflow: 'hidden'
+              minHeight: '44px'
             }}
-            aria-label={t('auth.logout')}
           >
-            <i
-              className="fas fa-sign-out-alt"
-              style={{
-                fontSize: '16px',
-                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                transform: isLogoutHovered ? 'translateX(2px) scale(1.1)' : 'translateX(0) scale(1)'
-              }}
-            />
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>{t('auth.logout')}</span>
-
-            {/* Danger glow effect on hover */}
-            {isLogoutHovered && (
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'linear-gradient(45deg, rgba(239, 68, 68, 0.1), transparent)',
-                borderRadius: '24px',
-                animation: 'buttonGlow 1.5s ease-in-out infinite alternate'
-              }} />
-            )}
-          </button>
+            <i className="fas fa-sign-out-alt" style={{ fontSize: '16px' }} />
+            <span className="hidden sm:inline">{t('auth.logout')}</span>
+          </Button>
         </div>
       </div>
 

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Testing Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Simulate the button styles from our app */
+        .test-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: background-color 200ms, color 200ms;
+            outline: none;
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        .test-button:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+
+        .test-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Enhanced Button Styles for Testing */
+        .test-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+            outline: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            gap: 0.5rem;
+        }
+
+        .test-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .test-button:active:not(:disabled) {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Test responsive classes */
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; min-height: 44px; }
+        .btn-md { padding: 0.75rem 1.5rem; font-size: 1rem; min-height: 48px; }
+        .btn-lg { padding: 1rem 2rem; font-size: 1.125rem; min-height: 56px; }
+
+        /* Variant styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: #374151;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .btn-outline:hover:not(:disabled) {
+            background: #eff6ff;
+            border-color: #2563eb;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #374151;
+            border-color: transparent;
+            box-shadow: none;
+        }
+        .btn-ghost:hover:not(:disabled) {
+            background: #f9fafb;
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+        }
+        .btn-danger:hover:not(:disabled) {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .breakpoint-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="breakpoint-indicator" id="breakpoint">Breakpoint: <span id="size">Unknown</span></div>
+
+    <div class="test-container">
+        <h1 class="text-3xl font-bold mb-8">Button Responsiveness Test</h1>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4">Size Variants</h2>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Small Button (sm)</p>
+                    <button class="test-button btn-sm btn-primary">Small Button</button>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Medium Button (md)</p>
+                    <button class="test-button btn-md btn-primary">Medium Button</button>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Large Button (lg)</p>
+                    <button class="test-button btn-lg btn-primary">Large Button</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4">Touch Target Test (Mobile)</h2>
+            <p class="text-sm text-gray-600 mb-4">On mobile, all buttons should be at least 44px tall</p>
+            <div class="grid grid-cols-1 gap-4">
+                <button class="test-button btn-sm btn-primary w-full">Mobile Touch Test - Small</button>
+                <button class="test-button btn-md btn-primary w-full">Mobile Touch Test - Medium</button>
+                <button class="test-button btn-lg btn-primary w-full">Mobile Touch Test - Large</button>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4">State Tests</h2>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Normal State</p>
+                    <button class="test-button btn-md btn-primary">Normal Button</button>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Hover State (hover over button)</p>
+                    <button class="test-button btn-md btn-primary">Hover Me</button>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Focus State (tab to button)</p>
+                    <button class="test-button btn-md btn-primary">Tab to Me</button>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 mb-2">Disabled State</p>
+                    <button class="test-button btn-md btn-primary" disabled>Disabled Button</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4">Button Variants</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-700">Primary</p>
+                    <button class="test-button btn-md btn-primary w-full">Primary Button</button>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-700">Secondary</p>
+                    <button class="test-button btn-md btn-secondary w-full">Secondary Button</button>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-700">Outline</p>
+                    <button class="test-button btn-md btn-outline w-full">Outline Button</button>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-700">Ghost</p>
+                    <button class="test-button btn-md btn-ghost w-full">Ghost Button</button>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-700">Danger</p>
+                    <button class="test-button btn-md btn-danger w-full">Danger Button</button>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-700">With Loading</p>
+                    <button class="test-button btn-md btn-primary w-full" disabled>
+                        <svg class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                        Loading...
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Responsive Grid Test</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button class="test-button btn-md btn-primary w-full">Grid Item 1</button>
+                <button class="test-button btn-md btn-primary w-full">Grid Item 2</button>
+                <button class="test-button btn-md btn-primary w-full">Grid Item 3</button>
+                <button class="test-button btn-md btn-primary w-full">Grid Item 4</button>
+                <button class="test-button btn-md btn-primary w-full">Grid Item 5</button>
+                <button class="test-button btn-md btn-primary w-full">Grid Item 6</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Breakpoint indicator
+        function updateBreakpoint() {
+            const width = window.innerWidth;
+            let size = 'Unknown';
+
+            if (width < 640) size = 'Mobile (< 640px)';
+            else if (width < 768) size = 'Tablet (640px - 768px)';
+            else if (width < 1024) size = 'Desktop (768px - 1024px)';
+            else size = 'Large Desktop (1024px+)';
+
+            document.getElementById('size').textContent = size;
+        }
+
+        window.addEventListener('resize', updateBreakpoint);
+        updateBreakpoint();
+
+        // Test button interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.test-button');
+
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    console.log('Button clicked:', this.textContent.trim());
+                });
+
+                button.addEventListener('focus', function() {
+                    console.log('Button focused:', this.textContent.trim());
+                });
+            });
+        });
+    </script>
+</body>
+</html>
