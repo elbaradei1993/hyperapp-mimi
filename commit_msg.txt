@@ -1,10 +1,11 @@
-fix: Improve mobile button layout and prevent text cutoff
+fix: Correct mobile button text wrapping - remove truncation
 
-- Add responsive padding classes: buttons now have more horizontal padding on mobile (sm: breakpoint)
-- Implement text overflow protection with ellipsis and word wrapping
-- Allow text wrapping on very small screens (480px and below) for better readability
-- Set minimum button widths (120px) to prevent cramped appearance
-- Add forced padding overrides for better mobile proportions
-- Update Tailwind safelist to include new responsive classes
+- Remove white-space: nowrap and text-overflow: ellipsis that were causing text truncation
+- Add white-space: normal to allow natural text wrapping on mobile
+- Use min-width: min-content so buttons adapt to their content instead of fixed widths
+- Set consistent 16px padding on mobile for better text spacing
+- Improve line-height (1.2) for better readability of wrapped text
+- Add specific handling for very small screens (360px and below) with smaller font size
+- Fix quick action buttons with appropriate min-width and padding
 
-Buttons now display properly on mobile with adequate padding, no text cutoff, and better visual proportions across all screen sizes.
+Buttons now properly wrap text on mobile instead of truncating it, with adaptive sizing and consistent spacing.
