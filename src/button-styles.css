@@ -19,11 +19,12 @@
 .shadow-yellow-500\/25, .hover\:shadow-yellow-500\/40,
 .hover\:bg-blue-50, .dark\:hover\:bg-blue-900\/20,
 .hover\:bg-gray-100, .dark\:hover\:bg-gray-800,
-.shadow-sm, .hover\:shadow-md, .shadow-none, .hover\:shadow-none,
-.active\:scale-\[0\.98\], .disabled\:transform-none,
-.transition-all, .duration-200, .ease-in-out,
+.shadow-sm, .hover\:shadow-lg, .shadow-none, .hover\:shadow-none,
+.active\:scale-\[0\.96\], .disabled\:transform-none,
+.transition-all, .duration-300, .ease-out,
 .focus\:ring-2, .focus\:ring-offset-2,
-.disabled\:opacity-60, .disabled\:cursor-not-allowed {
+.disabled\:opacity-50, .disabled\:cursor-not-allowed,
+.select-none, .overflow-hidden {
   /* These classes are used in the Button component */
 }
 
@@ -152,5 +153,131 @@ button:disabled {
     font-size: 0.875rem; /* Slightly smaller text on very small screens */
     padding-left: 12px !important;
     padding-right: 12px !important;
+  }
+}
+
+/* Professional Mobile Enhancements */
+@media (max-width: 768px) {
+  /* Enhanced button depth and shadows for mobile */
+  button:not(:disabled):not(.mobile-quick-action-btn) {
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.12),
+      0 1px 3px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  button:not(:disabled):not(.mobile-quick-action-btn):hover {
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.15),
+      0 2px 6px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  button:not(:disabled):not(.mobile-quick-action-btn):active {
+    box-shadow:
+      0 1px 4px rgba(0, 0, 0, 0.2),
+      inset 0 1px 2px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Better typography for mobile buttons */
+  button {
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    line-height: 1.5;
+  }
+
+  /* Enhanced focus states for mobile accessibility */
+  button:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, 0.6);
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 6px rgba(59, 130, 246, 0.2),
+      0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Improved disabled state styling */
+  button:disabled {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border: 1px solid #d1d5db;
+    color: #9ca3af;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* Better button group spacing */
+  .button-group button:not(:last-child) {
+    margin-right: 8px;
+  }
+
+  .button-group-vertical button:not(:last-child) {
+    margin-bottom: 8px;
+  }
+}
+
+/* Enhanced button variants for mobile */
+@media (max-width: 768px) {
+  /* Primary buttons - more prominent on mobile */
+  button[class*="bg-gradient-to-r"][class*="from-blue-"]:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow:
+      0 4px 16px rgba(37, 99, 235, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  button[class*="bg-gradient-to-r"][class*="from-blue-"]:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    box-shadow:
+      0 6px 20px rgba(37, 99, 235, 0.4),
+      0 3px 10px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+
+  /* Secondary buttons - subtle but professional */
+  button[class*="from-gray-100"]:not(:disabled) {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border: 1px solid #e5e7eb;
+    color: #374151;
+  }
+
+  button[class*="from-gray-100"]:hover:not(:disabled) {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-color: #d1d5db;
+  }
+
+  /* Outline buttons - cleaner appearance */
+  button[class*="border-blue-300"]:not(:disabled) {
+    border-width: 2px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  button[class*="border-blue-300"]:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: #3b82f6;
+  }
+}
+
+/* Smooth animations for better mobile experience */
+@media (prefers-reduced-motion: no-preference) {
+  button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  button:active {
+    transition-duration: 0.1s;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  button {
+    border-width: 2px;
+  }
+
+  button:focus-visible {
+    outline-width: 4px;
   }
 }

@@ -171,19 +171,9 @@ const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange }) => {
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="flex items-center gap-2"
-            style={{
-              background: 'rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid rgba(var(--border-color-rgb, 229, 231, 235), 0.3)',
-              color: 'var(--text-primary)',
-              fontSize: '14px',
-              fontWeight: '600',
-              minHeight: '44px'
-            }}
+            className="flex items-center gap-2 bg-white/80 backdrop-blur-md border-white/30 text-gray-700 hover:bg-white/90 hover:border-white/50"
           >
-            <i className="fas fa-sign-out-alt" style={{ fontSize: '16px' }} />
+            <i className="fas fa-sign-out-alt text-base" />
             <span className="hidden sm:inline">{t('auth.logout')}</span>
           </Button>
         </div>

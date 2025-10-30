@@ -126,39 +126,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Tab Navigation */}
-        <div style={{
-          display: 'flex',
-          marginBottom: '24px',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          border: '1px solid var(--border-color)'
-        }}>
+        <div className="flex mb-6 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
           <button
             onClick={() => setActiveTab('login')}
-            className={`flex-1 px-4 py-2 text-base font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+            className={`flex-1 px-6 py-3 text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[48px] ${
               activeTab === 'login'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
+                : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900'
             }`}
-            style={{
-              borderRadius: 0,
-              borderRight: '1px solid var(--border-color)',
-              minHeight: '44px'
-            }}
           >
             {t('auth.login')}
           </button>
           <button
             onClick={() => setActiveTab('signup')}
-            className={`flex-1 px-4 py-2 text-base font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+            className={`flex-1 px-6 py-3 text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[48px] ${
               activeTab === 'signup'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
+                : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900'
             }`}
-            style={{
-              borderRadius: 0,
-              minHeight: '44px'
-            }}
           >
             {t('auth.signup')}
           </button>
