@@ -107,9 +107,15 @@ button:disabled {
 /* Additional mobile optimizations */
 @media (max-width: 768px) {
   /* Ensure minimum touch targets */
-  button:not(.map-control-button) {
+  button {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* Override minimum sizes for map control buttons */
+  button.map-control-button {
+    min-height: auto;
+    min-width: auto;
   }
 
   /* Better button spacing on mobile */
