@@ -942,7 +942,7 @@ const CommunityStats: React.FC<{ reports: Report[] }> = ({ reports }) => {
 // Quick Actions Component
 const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -950,11 +950,40 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
         }}
         className="mobile-quick-action-btn"
         style={{
-          background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+          background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+          minHeight: '52px',
+          padding: '12px 16px',
+          fontSize: '16px',
+          fontWeight: '600',
+          borderRadius: '12px',
+          border: 'none',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1)',
+          WebkitTapHighlightColor: 'transparent'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-1px)';
+          e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1)';
+        }}
+        onTouchStart={(e) => {
+          e.currentTarget.style.transform = 'scale(0.98)';
+        }}
+        onTouchEnd={(e) => {
+          e.currentTarget.style.transform = 'translateY(-1px)';
         }}
       >
-        <i className="fas fa-plus"></i>
-        Report Vibe
+        <i className="fas fa-plus" style={{ fontSize: '18px' }}></i>
+        <span>Report Vibe</span>
       </button>
       <button
         onClick={(e) => {
@@ -963,11 +992,40 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
         }}
         className="mobile-quick-action-btn"
         style={{
-          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+          minHeight: '52px',
+          padding: '12px 16px',
+          fontSize: '16px',
+          fontWeight: '600',
+          borderRadius: '12px',
+          border: 'none',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1)',
+          WebkitTapHighlightColor: 'transparent'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-1px)';
+          e.currentTarget.style.boxShadow = '0 4px 16px rgba(239, 68, 68, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1)';
+        }}
+        onTouchStart={(e) => {
+          e.currentTarget.style.transform = 'scale(0.98)';
+        }}
+        onTouchEnd={(e) => {
+          e.currentTarget.style.transform = 'translateY(-1px)';
         }}
       >
-        <i className="fas fa-phone"></i>
-        Emergency Call
+        <i className="fas fa-phone" style={{ fontSize: '18px' }}></i>
+        <span>Emergency Call</span>
       </button>
     </div>
   );
