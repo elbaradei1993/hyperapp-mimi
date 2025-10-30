@@ -4,6 +4,7 @@ import App from './App';
 import { ThemeProvider } from './contexts/ThemeContext';
 import './index.css';
 import './themes.css';
+import './button-styles.css';
 import './i18n';
 
 // Mobile viewport height fix
