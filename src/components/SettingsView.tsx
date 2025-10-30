@@ -554,21 +554,13 @@ const SettingsView: React.FC = () => {
                 {t('settings.downloadData')}
               </div>
             </div>
-            <button
+            <Button
               onClick={handleExportData}
-              style={{
-                backgroundColor: 'var(--accent-secondary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
+              size="mobile-sm"
+              variant="secondary"
             >
               {t('common.export')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -610,95 +602,40 @@ const SettingsView: React.FC = () => {
           </div>
 
           {/* Support Links */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <button
+          <ButtonGroup layout="grid-2" gap="sm">
+            <Button
+              variant="outline"
+              size="mobile-sm"
               onClick={() => window.open('https://example.com/help', '_blank')}
-              style={{
-                padding: '12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                minHeight: '44px' // Ensure minimum touch target
-              }}
             >
               <i className="fas fa-question-circle"></i>
               {t('settings.help')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="mobile-sm"
               onClick={() => window.open('https://example.com/privacy', '_blank')}
-              style={{
-                padding: '12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                minHeight: '44px' // Ensure minimum touch target
-              }}
             >
               <i className="fas fa-file-contract"></i>
               {t('settings.privacy')}
-            </button>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="mobile-sm"
               onClick={() => window.open('https://example.com/terms', '_blank')}
-              style={{
-                padding: '12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                minHeight: '44px' // Ensure minimum touch target
-              }}
             >
               <i className="fas fa-gavel"></i>
               {t('settings.terms')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="mobile-sm"
               onClick={() => window.open('mailto:support@example.com', '_blank')}
-              style={{
-                padding: '12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                minHeight: '44px' // Ensure minimum touch target
-              }}
             >
               <i className="fas fa-envelope"></i>
               {t('settings.contact')}
-            </button>
-          </div>
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
 

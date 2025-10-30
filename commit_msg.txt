@@ -1,7 +1,9 @@
-fix: Correct map control button sizes on mobile devices
+feat: Fix button layout and mobile responsiveness across the app
 
-- Add map-control-button class to map control buttons (recenter and heatmap toggle)
-- Update CSS to exclude map control buttons from global minimum size rules
-- Map control buttons now display at intended 34px × 34px instead of forced 44px × 44px
-- Maintains proper touch targets for all other buttons in the application
-- Fixes oversized appearance of map control buttons on mobile devices
+- Enhanced Button component with better mobile text handling and touch targets
+- Fixed text wrapping issues by replacing forced single-line with flexible text handling
+- Standardized button usage across AuthModal and SettingsView components
+- Improved mobile CSS with better grid button handling and responsive sizing
+- Replaced inline-styled buttons with proper Button components using mobile-optimized sizes
+- Ensured consistent 44px minimum touch targets for all interactive elements
+- Made app fully responsive for both mobile and desktop devices

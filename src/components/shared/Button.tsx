@@ -113,10 +113,10 @@ const Button: React.FC<ButtonProps> = ({
     sm: 'px-4 sm:px-6 py-2 text-sm min-h-[44px] gap-2',
     md: 'px-6 sm:px-8 py-3 text-base min-h-[48px] gap-2',
     lg: 'px-8 sm:px-10 py-4 text-lg min-h-[56px] gap-3',
-    // Mobile-optimized sizes with better touch targets
-    'mobile-sm': 'px-3 py-2 text-sm min-h-[36px] gap-1.5',
-    'mobile-md': 'px-4 py-3 text-base min-h-[44px] gap-2',
-    'mobile-lg': 'px-5 py-4 text-lg min-h-[52px] gap-2.5'
+    // Mobile-optimized sizes with better touch targets and responsive text
+    'mobile-sm': 'px-3 py-2 text-sm min-h-[44px] gap-1.5',
+    'mobile-md': 'px-4 py-3 text-base min-h-[48px] gap-2',
+    'mobile-lg': 'px-5 py-4 text-lg min-h-[56px] gap-2.5'
   };
 
   // Mobile layout classes for responsive behavior

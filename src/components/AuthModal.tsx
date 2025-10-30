@@ -129,20 +129,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         <div className="flex mb-6 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
           <button
             onClick={() => setActiveTab('login')}
-            className={`flex-1 px-6 py-3 text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[48px] ${
+            className={`flex-1 px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px] touch-manipulation ${
               activeTab === 'login'
                 ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
-                : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
             }`}
           >
             {t('auth.login')}
           </button>
           <button
             onClick={() => setActiveTab('signup')}
-            className={`flex-1 px-6 py-3 text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[48px] ${
+            className={`flex-1 px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px] touch-manipulation ${
               activeTab === 'signup'
                 ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
-                : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
             }`}
           >
             {t('auth.signup')}
