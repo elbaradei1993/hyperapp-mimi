@@ -289,7 +289,7 @@
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 class="text-xl font-semibold mb-4">Responsive Grid Test</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <button class="test-button btn-md btn-primary w-full">Grid Item 1</button>
@@ -298,6 +298,51 @@
                 <button class="test-button btn-md btn-primary w-full">Grid Item 4</button>
                 <button class="test-button btn-md btn-primary w-full">Grid Item 5</button>
                 <button class="test-button btn-md btn-primary w-full">Grid Item 6</button>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">New Mobile Components Test</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-medium mb-3">ButtonGroup - Grid 2</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="test-button btn-md btn-primary w-full">Action 1</button>
+                        <button class="test-button btn-md btn-secondary w-full">Action 2</button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium mb-3">ButtonGroup - Grid 3</h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="test-button btn-sm btn-primary w-full">A</button>
+                        <button class="test-button btn-sm btn-secondary w-full">B</button>
+                        <button class="test-button btn-sm btn-outline w-full">C</button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium mb-3">ButtonGroup - Stack</h3>
+                    <div class="flex flex-col gap-3">
+                        <button class="test-button btn-md btn-primary w-full">Primary Action</button>
+                        <button class="test-button btn-md btn-secondary w-full">Secondary Action</button>
+                        <button class="test-button btn-md btn-outline w-full">Cancel</button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium mb-3">Quick Actions Grid</h3>
+                    <div class="grid grid-cols-2 gap-4 p-4">
+                        <button class="quick-action-btn flex flex-col items-center justify-center min-h-[80px] p-3 rounded-xl font-semibold text-center bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transition-all duration-300 hover:scale-105 active:scale-95">
+                            <span class="text-2xl mb-1">🚨</span>
+                            <span class="text-xs">Emergency</span>
+                        </button>
+                        <button class="quick-action-btn flex flex-col items-center justify-center min-h-[80px] p-3 rounded-xl font-semibold text-center bg-gradient-to-r from-gray-100 to-gray-200 text-gray-900 shadow-lg transition-all duration-300 hover:scale-105 active:scale-95">
+                            <span class="text-2xl mb-1">📋</span>
+                            <span class="text-xs">Community</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -322,6 +367,7 @@
         // Test button interactions
         document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('.test-button');
+            const quickActionButtons = document.querySelectorAll('.quick-action-btn');
 
             buttons.forEach(button => {
                 button.addEventListener('click', function() {
@@ -330,6 +376,19 @@
 
                 button.addEventListener('focus', function() {
                     console.log('Button focused:', this.textContent.trim());
+                });
+            });
+
+            // Quick Actions Grid click handlers
+            quickActionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const label = this.querySelector('.text-xs').textContent;
+                    console.log('Quick Action clicked:', label);
+                    alert(`Quick Action "${label}" clicked!`);
+                });
+
+                button.addEventListener('focus', function() {
+                    console.log('Quick Action focused:', this.querySelector('.text-xs').textContent);
                 });
             });
         });

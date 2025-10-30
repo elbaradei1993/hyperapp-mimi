@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { authService } from '../services/auth';
+import { Button, ButtonGroup } from './shared';
 import type { Theme } from '../contexts/ThemeContext';
 
 const SettingsView: React.FC = () => {
@@ -181,7 +182,7 @@ const SettingsView: React.FC = () => {
           {t('settings.accountManagement')}
         </h2>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <ButtonGroup layout="stack" gap="md">
           {/* Change Password */}
           <div style={{
             display: 'flex',
@@ -199,22 +200,12 @@ const SettingsView: React.FC = () => {
                 {t('settings.updatePassword')}
               </div>
             </div>
-            <button
+            <Button
+              size="mobile-md"
               onClick={() => setShowPasswordModal(true)}
-              style={{
-                backgroundColor: 'var(--accent-primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                minHeight: '44px' // Ensure minimum touch target
-              }}
             >
               {t('settings.change')}
-            </button>
+            </Button>
           </div>
 
           {/* Logout */}
@@ -234,22 +225,13 @@ const SettingsView: React.FC = () => {
                 {t('settings.signOut')}
               </div>
             </div>
-            <button
+            <Button
+              variant="warning"
+              size="mobile-md"
               onClick={handleLogout}
-              style={{
-                backgroundColor: 'var(--warning)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                minHeight: '44px' // Ensure minimum touch target
-              }}
             >
               {t('auth.logout')}
-            </button>
+            </Button>
           </div>
 
           {/* Delete Account */}
@@ -270,23 +252,15 @@ const SettingsView: React.FC = () => {
                 {t('settings.deleteAccountDesc')}
               </div>
             </div>
-            <button
+            <Button
+              variant="danger"
+              size="mobile-md"
               onClick={() => setShowDeleteModal(true)}
-              style={{
-                backgroundColor: 'var(--danger)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
             >
               {t('settings.deleteAccount')}
-            </button>
+            </Button>
           </div>
-        </div>
+        </ButtonGroup>
       </div>
 
       {/* App Preferences Section */}
@@ -815,38 +789,22 @@ const SettingsView: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                <button
+                <Button
+                  variant="secondary"
+                  size="mobile-md"
                   onClick={() => setShowPasswordModal(false)}
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                    fontSize: '16px',
-                    cursor: 'pointer'
-                  }}
+                  style={{ flex: 1 }}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  size="mobile-md"
                   onClick={handlePasswordChange}
-                  disabled={loading}
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--accent-primary)',
-                    color: 'white',
-                    fontSize: '16px',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.6 : 1
-                  }}
+                  loading={loading}
+                  style={{ flex: 1 }}
                 >
                   {loading ? 'Updating...' : 'Update Password'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -893,40 +851,23 @@ const SettingsView: React.FC = () => {
             </p>
 
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button
+              <Button
+                variant="secondary"
+                size="mobile-md"
                 onClick={() => setShowDeleteModal(false)}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  minHeight: '44px' // Ensure minimum touch target
-                }}
+                style={{ flex: 1 }}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                size="mobile-md"
                 onClick={handleDeleteAccount}
-                disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  border: 'none',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--danger)',
-                  color: 'white',
-                  fontSize: '16px',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.6 : 1,
-                  minHeight: '44px' // Ensure minimum touch target
-                }}
+                loading={loading}
+                style={{ flex: 1 }}
               >
                 {loading ? 'Deleting...' : 'Delete Account'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -2,7 +2,8 @@ import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'mobile-sm' | 'mobile-md' | 'mobile-lg';
+  mobileLayout?: 'full-width' | 'grid-2' | 'grid-3' | 'stack';
   fullWidth?: boolean;
   loading?: boolean;
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
+  mobileLayout,
   fullWidth = false,
   loading = false,
   disabled,
@@ -110,12 +112,25 @@ const Button: React.FC<ButtonProps> = ({
   const sizeClasses = {
     sm: 'px-4 sm:px-6 py-2 text-sm min-h-[44px] gap-2',
     md: 'px-6 sm:px-8 py-3 text-base min-h-[48px] gap-2',
-    lg: 'px-8 sm:px-10 py-4 text-lg min-h-[56px] gap-3'
+    lg: 'px-8 sm:px-10 py-4 text-lg min-h-[56px] gap-3',
+    // Mobile-optimized sizes with better touch targets
+    'mobile-sm': 'px-3 py-2 text-sm min-h-[36px] gap-1.5',
+    'mobile-md': 'px-4 py-3 text-base min-h-[44px] gap-2',
+    'mobile-lg': 'px-5 py-4 text-lg min-h-[52px] gap-2.5'
+  };
+
+  // Mobile layout classes for responsive behavior
+  const mobileLayoutClasses = {
+    'full-width': 'w-full',
+    'grid-2': 'flex-1 min-w-0', // Used within ButtonGroup
+    'grid-3': 'flex-1 min-w-0', // Used within ButtonGroup
+    'stack': 'w-full' // Used within ButtonGroup
   };
 
   const widthClass = fullWidth ? 'w-full' : '';
+  const mobileClass = mobileLayout ? mobileLayoutClasses[mobileLayout] : '';
 
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`.trim();
+  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${mobileClass} ${className}`.trim();
 
   return (
     <button

@@ -281,3 +281,93 @@ button:disabled {
     outline-width: 4px;
   }
 }
+
+/* Enhanced mobile button layouts and quick actions */
+@media (max-width: 768px) {
+  /* Button group enhancements */
+  .grid.grid-cols-2 button,
+  .grid.grid-cols-3 button {
+    min-width: 0; /* Allow flex shrinking */
+    flex: 1;
+  }
+
+  /* Quick action button enhancements */
+  button[class*="min-h-[80px]"] {
+    min-height: 80px;
+    padding: 12px 8px;
+    border-radius: 12px;
+  }
+
+  button[class*="min-h-[80px]"] .text-xs {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  /* Enhanced button spacing in groups */
+  .grid.grid-cols-2 {
+    gap: 8px;
+  }
+
+  .grid.grid-cols-3 {
+    gap: 6px;
+  }
+
+  /* Better button shadows for mobile groups */
+  .grid button:not(:disabled) {
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.12),
+      0 1px 3px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .grid button:hover:not(:disabled) {
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.15),
+      0 2px 6px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Extra small screen adjustments */
+@media (max-width: 480px) {
+  /* Quick actions grid adjustment */
+  .grid.grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  /* Smaller quick action buttons on very small screens */
+  button[class*="min-h-[80px]"] {
+    min-height: 70px;
+    padding: 10px 6px;
+  }
+
+  button[class*="min-h-[80px]"] .text-xs {
+    font-size: 0.7rem;
+  }
+}
+
+/* Utility classes for consistent mobile behavior */
+.mobile-full-width {
+  width: 100%;
+}
+
+.mobile-text-balance {
+  text-wrap: balance;
+}
+
+.mobile-break-words {
+  word-break: break-word;
+}
+
+.mobile-min-touch {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Safe area padding for devices with notches */
+.mobile-safe-padding {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
