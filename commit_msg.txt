@@ -1,11 +1,10 @@
-fix: Correct mobile button text wrapping - remove truncation
+fix: Single-line button text on mobile with clean truncation
 
-- Remove white-space: nowrap and text-overflow: ellipsis that were causing text truncation
-- Add white-space: normal to allow natural text wrapping on mobile
-- Use min-width: min-content so buttons adapt to their content instead of fixed widths
-- Set consistent 16px padding on mobile for better text spacing
-- Improve line-height (1.2) for better readability of wrapped text
-- Add specific handling for very small screens (360px and below) with smaller font size
-- Fix quick action buttons with appropriate min-width and padding
+- Implement white-space: nowrap to keep button text on single line
+- Add text-overflow: ellipsis for clean truncation with "..." when needed
+- Increase min-width to 140px to minimize unnecessary truncation
+- Use 20px padding on mobile for better text spacing and visual balance
+- Maintain touch targets (44px min-height) while optimizing text display
+- Keep quick action buttons flexible with normal text wrapping
 
-Buttons now properly wrap text on mobile instead of truncating it, with adaptive sizing and consistent spacing.
+Buttons now display clean single-line text on mobile with minimal truncation and proper spacing.

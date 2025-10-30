@@ -121,20 +121,20 @@ button:disabled {
     transform: scale(0.98);
   }
 
-  /* FIXED: Proper text handling for mobile - Allow natural text wrapping */
+  /* Single-line text with clean truncation for mobile */
   button {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal; /* ← Allow text to wrap naturally */
+    white-space: nowrap; /* ← Keep text on single line */
+    overflow: hidden;
+    text-overflow: ellipsis; /* ← Clean truncation with "..." */
     text-align: center;
-    line-height: 1.2;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
+    line-height: 1.4;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
   }
 
-  /* Ensure buttons adapt to their content */
+  /* Ensure adequate button width to minimize truncation */
   button:not([class*="w-full"]) {
-    min-width: min-content; /* ← Adapt to content instead of fixed width */
+    min-width: 140px; /* ← Wider minimum to reduce truncation */
   }
 
   /* Specific fix for quick action buttons */
