@@ -68,9 +68,56 @@ button:disabled {
   backdrop-filter: blur(0.5px);
 }
 
-/* Mobile touch feedback */
+/* Mobile touch feedback and enhancements */
 @media (hover: none) and (pointer: coarse) {
-  button:active {
-    background-color: rgba(0, 0, 0, 0.1);
+  /* Enhanced touch feedback for all buttons */
+  button:active:not(:disabled) {
+    transform: translateY(0) scale(0.96);
+    transition: all 0.1s ease-out;
+  }
+
+  /* Prevent text selection on touch */
+  button {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Enhanced button shadows for touch devices */
+  button:not(:disabled):not(:active) {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  button:active:not(:disabled) {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Better focus states for touch devices */
+  button:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 768px) {
+  /* Ensure minimum touch targets */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better button spacing on mobile */
+  button:not(.mobile-quick-action-btn) {
+    margin: 2px;
+  }
+
+  /* Enhanced button responsiveness */
+  button:active:not(:disabled) {
+    transform: scale(0.98);
   }
 }

@@ -27,73 +27,80 @@ const Button: React.FC<ButtonProps> = ({
     active:scale-[0.98]
     shadow-sm hover:shadow-md
     border border-transparent
+    touch-manipulation
   `;
 
   const variantClasses = {
     primary: `
       bg-gradient-to-r from-blue-500 to-blue-600
       hover:from-blue-600 hover:to-blue-700
+      active:from-blue-700 active:to-blue-800
       text-white
       focus:ring-blue-500
-      shadow-blue-500/25 hover:shadow-blue-500/40
+      shadow-blue-500/25 hover:shadow-blue-500/40 active:shadow-blue-500/50
       border-blue-600/20
     `,
     secondary: `
       bg-gradient-to-r from-gray-100 to-gray-200
       hover:from-gray-200 hover:to-gray-300
+      active:from-gray-300 active:to-gray-400
       text-gray-900
       focus:ring-gray-500
-      shadow-gray-500/25 hover:shadow-gray-500/40
+      shadow-gray-500/25 hover:shadow-gray-500/40 active:shadow-gray-500/50
       border-gray-300/50
       dark:from-gray-700 dark:to-gray-600
       dark:hover:from-gray-600 dark:hover:to-gray-500
+      dark:active:from-gray-500 dark:active:to-gray-400
       dark:text-white
       dark:border-gray-600/50
     `,
     outline: `
       bg-transparent
-      hover:bg-blue-50
+      hover:bg-blue-50 active:bg-blue-100
       text-blue-600
       focus:ring-blue-500
       border-blue-300
-      hover:border-blue-400
-      dark:hover:bg-blue-900/20
+      hover:border-blue-400 active:border-blue-500
+      dark:hover:bg-blue-900/20 dark:active:bg-blue-900/30
       dark:text-blue-400
       dark:border-blue-600
-      dark:hover:border-blue-500
+      dark:hover:border-blue-500 dark:active:border-blue-400
     `,
     ghost: `
-      bg-transparent hover:bg-gray-100
+      bg-transparent hover:bg-gray-100 active:bg-gray-200
       text-gray-700
       focus:ring-gray-500
-      hover:text-gray-900
-      dark:hover:bg-gray-800
+      hover:text-gray-900 active:text-gray-900
+      dark:hover:bg-gray-800 dark:active:bg-gray-700
       dark:text-gray-300
-      dark:hover:text-white
+      dark:hover:text-white dark:active:text-white
       shadow-none hover:shadow-none
     `,
     danger: `
       bg-gradient-to-r from-red-500 to-red-600
       hover:from-red-600 hover:to-red-700
+      active:from-red-700 active:to-red-800
       text-white
       focus:ring-red-500
-      shadow-red-500/25 hover:shadow-red-500/40
+      shadow-red-500/25 hover:shadow-red-500/40 active:shadow-red-500/50
       border-red-600/20
     `,
     success: `
       bg-gradient-to-r from-green-500 to-green-600
       hover:from-green-600 hover:to-green-700
+      active:from-green-700 active:to-green-800
       text-white
       focus:ring-green-500
-      shadow-green-500/25 hover:shadow-green-500/40
+      shadow-green-500/25 hover:shadow-green-500/40 active:shadow-green-500/50
       border-green-600/20
     `,
     warning: `
       bg-gradient-to-r from-yellow-500 to-orange-500
       hover:from-yellow-600 hover:to-orange-600
+      active:from-orange-500 active:to-red-500
       text-white
       focus:ring-yellow-500
-      shadow-yellow-500/25 hover:shadow-yellow-500/40
+      shadow-yellow-500/25 hover:shadow-yellow-500/40 active:shadow-yellow-500/50
       border-yellow-600/20
     `
   };
