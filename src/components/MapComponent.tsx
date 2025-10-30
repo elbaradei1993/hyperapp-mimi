@@ -49,6 +49,7 @@ const ControlButton: React.FC<{ children: React.ReactNode; onClick: () => void; 
   <div className="leaflet-top leaflet-right">
     <div className="leaflet-control leaflet-bar mr-[10px]" style={{ marginTop: top }}>
       <button
+        className="map-control-button"
         onClick={onClick}
         title={title}
         style={{

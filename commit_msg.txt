@@ -1,11 +1,7 @@
-feat: Enhance button styling for professional mobile appearance
+fix: Correct map control button sizes on mobile devices
 
-- Improve Button component with better transitions, shadows, and mobile optimizations
-- Add professional mobile enhancements with enhanced depth, typography, and animations
-- Standardize button usage across Header and AuthModal components
-- Implement multi-layered shadows with inset highlights for premium appearance
-- Enhance focus states, disabled styling, and accessibility features
-- Update button-test.html with comprehensive testing and improved styles
-- Maintain touch targets while providing polished, professional mobile experience
-
-Buttons now have a much more professional and polished appearance on mobile devices.
+- Add map-control-button class to map control buttons (recenter and heatmap toggle)
+- Update CSS to exclude map control buttons from global minimum size rules
+- Map control buttons now display at intended 34px × 34px instead of forced 44px × 44px
+- Maintains proper touch targets for all other buttons in the application
+- Fixes oversized appearance of map control buttons on mobile devices

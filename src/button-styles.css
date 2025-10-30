@@ -107,7 +107,7 @@ button:disabled {
 /* Additional mobile optimizations */
 @media (max-width: 768px) {
   /* Ensure minimum touch targets */
-  button {
+  button:not(.map-control-button) {
     min-height: 44px;
     min-width: 44px;
   }
