@@ -120,4 +120,38 @@ button:disabled {
   button:active:not(:disabled) {
     transform: scale(0.98);
   }
+
+  /* Prevent text overflow and ensure proper text display */
+  button {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  /* Allow text wrapping for longer button text on very small screens */
+  @media (max-width: 480px) {
+    button {
+      white-space: normal;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* Ensure buttons don't become too cramped */
+    button:not([class*="w-full"]) {
+      min-width: 120px;
+    }
+  }
+
+  /* Improve button proportions for better mobile appearance */
+  button[class*="px-4"] {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  button[class*="px-6"] {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
 }

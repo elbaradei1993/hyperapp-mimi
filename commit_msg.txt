@@ -1,10 +1,10 @@
-fix: Complete mobile button functionality with touch feedback and animations
+fix: Improve mobile button layout and prevent text cutoff
 
-- Remove CSS rule that disabled button:active transitions in index.css
-- Add active: states to all button variants for proper touch feedback
-- Enhance button-styles.css with comprehensive mobile touch optimizations
-- Add touch-manipulation, prevent text selection, and improve focus states on mobile
-- Ensure minimum touch targets (44px) and proper button spacing on mobile devices
-- Fix button animations that were broken on touch devices
+- Add responsive padding classes: buttons now have more horizontal padding on mobile (sm: breakpoint)
+- Implement text overflow protection with ellipsis and word wrapping
+- Allow text wrapping on very small screens (480px and below) for better readability
+- Set minimum button widths (120px) to prevent cramped appearance
+- Add forced padding overrides for better mobile proportions
+- Update Tailwind safelist to include new responsive classes
 
-Buttons now provide proper visual feedback on mobile with scaling, shadow changes, and smooth transitions when tapped.
+Buttons now display properly on mobile with adequate padding, no text cutoff, and better visual proportions across all screen sizes.

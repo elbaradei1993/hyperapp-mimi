@@ -11,9 +11,12 @@ export default {
     'px-3', 'py-1.5', 'text-sm',
     'px-6', 'py-3', 'text-lg',
     'px-8', 'py-4', 'text-xl',
+    'px-10', 'py-4', 'text-xl',
     'sm:px-3', 'sm:py-1.5', 'sm:text-sm',
     'sm:px-4', 'sm:py-2', 'sm:text-base',
     'sm:px-6', 'sm:py-3', 'sm:text-lg',
+    'sm:px-8', 'sm:py-4', 'sm:text-xl',
+    'sm:px-10', 'sm:py-4', 'sm:text-xl',
     // Button variants
     'bg-blue-600', 'hover:bg-blue-700', 'text-white', 'focus:ring-blue-500',
     'bg-gray-200', 'hover:bg-gray-300', 'text-gray-900', 'focus:ring-gray-500',
@@ -28,7 +31,9 @@ export default {
     // Loading spinner
     'animate-spin', '-ml-1', 'mr-2', 'h-4', 'w-4',
     // Mobile touch targets
-    'min-h-[44px]', 'sm:min-h-[auto]'
+    'min-h-[44px]', 'sm:min-h-[auto]',
+    // Touch manipulation
+    'touch-manipulation'
   ],
   theme: {
     extend: {},
