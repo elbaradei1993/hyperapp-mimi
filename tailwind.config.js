@@ -26,7 +26,9 @@ export default {
     'font-medium', 'rounded-lg', 'transition-colors', 'duration-200',
     'focus:outline-none', 'focus:ring-2', 'focus:ring-offset-2',
     // Loading spinner
-    'animate-spin', '-ml-1', 'mr-2', 'h-4', 'w-4'
+    'animate-spin', '-ml-1', 'mr-2', 'h-4', 'w-4',
+    // Mobile touch targets
+    'min-h-[44px]', 'sm:min-h-[auto]'
   ],
   theme: {
     extend: {},
