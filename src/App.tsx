@@ -25,7 +25,7 @@ const AppContent: React.FC = () => {
   const [vibes, setVibes] = useState<Vibe[]>([]);
   const [sosAlerts, setSosAlerts] = useState<SOS[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [isHeatmapVisible, setIsHeatmapVisible] = useState(false);
+  const [isHeatmapVisible, setIsHeatmapVisible] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showReportTypeModal, setShowReportTypeModal] = useState(false);
