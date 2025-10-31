@@ -1,9 +1,6 @@
-feat: Fix button layout and mobile responsiveness across the app
+feat: Remove Quick Actions buttons from community dashboard
 
-- Enhanced Button component with better mobile text handling and touch targets
-- Fixed text wrapping issues by replacing forced single-line with flexible text handling
-- Standardized button usage across AuthModal and SettingsView components
-- Improved mobile CSS with better grid button handling and responsive sizing
-- Replaced inline-styled buttons with proper Button components using mobile-optimized sizes
-- Ensured consistent 44px minimum touch targets for all interactive elements
-- Made app fully responsive for both mobile and desktop devices
+- Removed Quick Actions card from CommunityInsights component grid
+- Removed local QuickActions component definition
+- Community dashboard now shows 5 cards: Live Activity, Safety Check, Community Stats, Community Challenges, and Achievements
+- Maintained responsive grid layout and functionality
