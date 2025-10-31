@@ -113,10 +113,8 @@
   "modals": {
     "reportType": {
       "title": "¿Qué te gustaría reportar?",
-      "vibe": "Reportar Ambiente",
-      "vibeDesc": "Comparte tu estado de ánimo o atmósfera actual",
-      "emergency": "Reporte de Emergencia",
-      "emergencyDesc": "Reportar una preocupación de seguridad urgente"
+      "vibe": "Ambiente",
+      "emergency": "Emergencia"
     },
     "vibeReport": {
       "title": "Reporta Tu Ambiente",

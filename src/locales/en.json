@@ -133,10 +133,8 @@
   "modals": {
     "reportType": {
       "title": "What would you like to report?",
-      "vibe": "Report a Vibe",
-      "vibeDesc": "Share your current mood or atmosphere",
-      "emergency": "Emergency Report",
-      "emergencyDesc": "Report an urgent safety concern"
+      "vibe": "Vibe",
+      "emergency": "Emergency"
     },
     "vibeReport": {
       "title": "Report Your Vibe",

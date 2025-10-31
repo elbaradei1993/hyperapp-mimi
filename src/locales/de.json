@@ -113,10 +113,8 @@
   "modals": {
     "reportType": {
       "title": "Was möchten Sie melden?",
-      "vibe": "Stimmung melden",
-      "vibeDesc": "Teilen Sie Ihre aktuelle Stimmung oder Atmosphäre",
-      "emergency": "Notfallbericht",
-      "emergencyDesc": "Dringende Sicherheitsbedenken melden"
+      "vibe": "Stimmung",
+      "emergency": "Notfall"
     },
     "vibeReport": {
       "title": "Melden Sie Ihre Stimmung",

@@ -113,10 +113,8 @@
   "modals": {
     "reportType": {
       "title": "ماذا تريد الإبلاغ عنه؟",
-      "vibe": "الإبلاغ عن جو",
-      "vibeDesc": "شارك مزاجك أو أجواءك الحالية",
-      "emergency": "تقرير طوارئ",
-      "emergencyDesc": "الإبلاغ عن مخاوف أمنية عاجلة"
+      "vibe": "جو",
+      "emergency": "طوارئ"
     },
     "vibeReport": {
       "title": "أبلغ عن جوك",

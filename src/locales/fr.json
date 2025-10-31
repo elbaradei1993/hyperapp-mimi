@@ -113,10 +113,8 @@
   "modals": {
     "reportType": {
       "title": "Que souhaitez-vous signaler ?",
-      "vibe": "Signaler une Ambiance",
-      "vibeDesc": "Partagez votre humeur ou atmosphère actuelle",
-      "emergency": "Rapport d'Urgence",
-      "emergencyDesc": "Signaler une préoccupation de sécurité urgente"
+      "vibe": "Ambiance",
+      "emergency": "Urgence"
     },
     "vibeReport": {
       "title": "Signalez Votre Ambiance",
