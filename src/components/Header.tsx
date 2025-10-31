@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useVibe } from '../contexts/VibeContext';
 
 // Header component with professional design matching the HTML
 const Header: React.FC = () => {
   const { signOut } = useAuth();
-  const [currentVibe, setCurrentVibe] = useState('calm');
+  const { currentLocationVibe } = useVibe();
 
   const handleLogout = async () => {
     try {
@@ -13,19 +14,6 @@ const Header: React.FC = () => {
       console.error('Error signing out:', error);
     }
   };
-
-  // Auto-cycle through vibes for demo
-  useEffect(() => {
-    const vibes = ['calm', 'safe', 'lively', 'festive', 'noisy', 'dangerous'];
-    let currentIndex = 0;
-
-    const interval = setInterval(() => {
-      currentIndex = (currentIndex + 1) % vibes.length;
-      setCurrentVibe(vibes[currentIndex]);
-    }, 4000); // Change every 4 seconds
-
-    return () => clearInterval(interval);
-  }, []);
 
   // Inject styles on component mount
   useEffect(() => {
@@ -210,7 +198,7 @@ const Header: React.FC = () => {
           paddingLeft: '100px', // Start after "HyperApp" text
           paddingRight: '120px', // End before far right logout button
         }}>
-          <div className={`pulse-track vibe-${currentVibe}`} style={{
+          <div className={`pulse-track vibe-${currentLocationVibe?.type || 'calm'}`} style={{
             position: 'relative',
             height: '100%',
             width: '100%',

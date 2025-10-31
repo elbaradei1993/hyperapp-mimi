@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { VibeProvider } from './contexts/VibeContext';
 import MapComponent from './components/MapComponent';
 import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
@@ -780,7 +781,9 @@ const App: React.FC = () => {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <AppContent />
+        <VibeProvider>
+          <AppContent />
+        </VibeProvider>
       </AuthProvider>
     </LanguageProvider>
   );

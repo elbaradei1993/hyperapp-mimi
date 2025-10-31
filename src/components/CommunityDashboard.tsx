@@ -5,6 +5,7 @@ import { clusterReports, formatDistance, analyzeClusterVibes, calculateDistance,
 import { reportsService } from '../services/reports';
 import { reverseGeocode } from '../lib/geocoding';
 import { VIBE_CONFIG, VibeType } from '../constants/vibes';
+import { useVibe } from '../contexts/VibeContext';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Vibe, Report } from '../types';
 
@@ -636,9 +637,10 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   onNewReport
 }) => {
   const { t } = useTranslation();
+  const { setCurrentLocationVibe } = useVibe();
   const [clusters, setClusters] = useState<LocationCluster[]>([]);
   const [currentLocationAddress, setCurrentLocationAddress] = useState<string>('');
-  const [currentLocationVibe, setCurrentLocationVibe] = useState<{
+  const [localCurrentLocationVibe, setLocalCurrentLocationVibe] = useState<{
     type: string;
     percentage: number;
     count: number;
@@ -748,7 +750,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   useEffect(() => {
     if (!userLocation || vibes.length === 0) {
       setCurrentLocationAddress('');
-      setCurrentLocationVibe(null);
+      setLocalCurrentLocationVibe(null);
       setCurrentLocationVibeDistribution([]);
       return;
     }
@@ -766,15 +768,27 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
         if (!cancelled) {
           setCurrentLocationAddress(address);
-          setCurrentLocationVibe(vibeAnalysis.dominantVibe);
+          setLocalCurrentLocationVibe(vibeAnalysis.dominantVibe);
           setCurrentLocationVibeDistribution(vibeAnalysis.distribution);
+
+          // Update the global context with the current location vibe
+          if (vibeAnalysis.dominantVibe) {
+            setCurrentLocationVibe({
+              type: vibeAnalysis.dominantVibe.type,
+              percentage: vibeAnalysis.dominantVibe.percentage,
+              count: vibeAnalysis.dominantVibe.count,
+              color: getVibeColor(vibeAnalysis.dominantVibe.type)
+            });
+          } else {
+            setCurrentLocationVibe(null);
+          }
         }
       } catch (error) {
         if (!cancelled) {
           console.error('Error processing location data:', error);
           setError('Failed to load location data');
           setCurrentLocationAddress('');
-          setCurrentLocationVibe(null);
+          setLocalCurrentLocationVibe(null);
           setCurrentLocationVibeDistribution([]);
         }
       } finally {
@@ -793,7 +807,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   const communityMetrics = useMemo(() => {
     const totalReports = vibes.length;
     const uniqueUsers = new Set(vibes.map(v => v.user_id)).size;
-    const safetyScore = currentLocationVibe ? Math.round((currentLocationVibe.percentage / 100) * 94) : 85;
+    const safetyScore = localCurrentLocationVibe ? Math.round((localCurrentLocationVibe.percentage / 100) * 94) : 85;
     const liveReports = Math.floor(totalReports * 0.1); // Estimate live reports
 
     return {
@@ -802,7 +816,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       safetyScore,
       liveReports
     };
-  }, [vibes, currentLocationVibe]);
+  }, [vibes, localCurrentLocationVibe]);
 
   // Generate sample activity feed - always called before any conditional returns
   const activityFeed = useMemo(() => {
@@ -918,35 +932,35 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                 </div>
 
                 {/* Vibe Analysis */}
-                {currentLocationVibe ? (
+                {localCurrentLocationVibe ? (
                   <div style={styles.vibeAnalysis}>
                     <div style={styles.vibeAnalysisHeader}>
                       <div style={styles.vibeTitle}>Area Sentiment Analysis</div>
-                      <div style={styles.vibeCount}>{currentLocationVibe.count} Active Reports</div>
+                      <div style={styles.vibeCount}>{localCurrentLocationVibe.count} Active Reports</div>
                     </div>
 
                     <div style={styles.vibeContent}>
                       <div style={styles.vibeVisual}>
                         <div style={styles.vibeIconContainer}>
                           <div style={styles.vibeIcon}>
-                            {getVibeIcon(currentLocationVibe.type)}
+                            {getVibeIcon(localCurrentLocationVibe.type)}
                           </div>
                           <div style={styles.vibeIconGlow}></div>
                         </div>
                         <div style={styles.vibeStats}>
-                          <div style={styles.vibePercentage}>{currentLocationVibe.percentage}%</div>
+                          <div style={styles.vibePercentage}>{localCurrentLocationVibe.percentage}%</div>
                           <div style={styles.vibeLabel}>Dominant</div>
                         </div>
                       </div>
 
                       <div style={styles.vibeDescription}>
-                        <div style={styles.vibeType}>{t(`vibes.${currentLocationVibe.type}`, currentLocationVibe.type)}</div>
+                        <div style={styles.vibeType}>{t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}</div>
                         <div style={styles.vibeSubtitle}>
-                          The area is currently experiencing {currentLocationVibe.type.toLowerCase()} conditions.
-                          {currentLocationVibe.type === 'calm' && ' Ideal for focused work and relaxed social interactions. Safety metrics remain consistently high.'}
-                          {currentLocationVibe.type === 'safe' && ' High safety metrics with visible security presence and community trust.'}
-                          {currentLocationVibe.type === 'lively' && ' Energetic environment with moderate social activity and engagement.'}
-                          {currentLocationVibe.type === 'festive' && ' Celebratory mood with events and gatherings creating positive energy.'}
+                          The area is currently experiencing {localCurrentLocationVibe.type.toLowerCase()} conditions.
+                          {localCurrentLocationVibe.type === 'calm' && ' Ideal for focused work and relaxed social interactions. Safety metrics remain consistently high.'}
+                          {localCurrentLocationVibe.type === 'safe' && ' High safety metrics with visible security presence and community trust.'}
+                          {localCurrentLocationVibe.type === 'lively' && ' Energetic environment with moderate social activity and engagement.'}
+                          {localCurrentLocationVibe.type === 'festive' && ' Celebratory mood with events and gatherings creating positive energy.'}
                         </div>
                       </div>
                     </div>
