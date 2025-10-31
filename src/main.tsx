@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import SplashScreen from './components/SplashScreen';
 import { ThemeProvider } from './contexts/ThemeContext';
 import './index.css';
 import './themes.css';
@@ -22,10 +23,24 @@ window.addEventListener('orientationchange', () => {
   setTimeout(setVH, 100);
 });
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
-  </React.StrictMode>,
-);
+const RootApp: React.FC = () => {
+  const [showSplash, setShowSplash] = useState(true);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
+  return (
+    <React.StrictMode>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </React.StrictMode>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<RootApp />);
