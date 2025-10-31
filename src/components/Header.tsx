@@ -75,12 +75,6 @@ const Header: React.FC = () => {
             gap: 24px !important;
           }
 
-          .logo-icon {
-            width: 40px !important;
-            height: 40px !important;
-            font-size: 1.125rem !important;
-          }
-
           .logo-text {
             font-size: 1.5rem !important;
           }
@@ -93,10 +87,6 @@ const Header: React.FC = () => {
 
           .logout-text {
             display: inline !important;
-          }
-
-          .ecg-line {
-            width: calc(100% - 160px) !important;
           }
         }
 
@@ -139,64 +129,35 @@ const Header: React.FC = () => {
         margin: '0 auto',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
         height: '60px',
-        position: 'relative',
         gap: '16px',
       }}>
-        {/* App Logo - Left Side */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
+        {/* App Name - Left Side */}
+        <div className="logo-text" style={{
+          fontSize: '1.25rem',
+          fontWeight: 800,
+          background: 'linear-gradient(135deg, #0f172a 0%, #475569 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          letterSpacing: '-0.025em',
+          whiteSpace: 'nowrap',
           zIndex: 2,
           flexShrink: 0,
-        }}>
-          <div className="logo-icon" style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 700,
-            fontSize: '1rem',
-            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-          }}>
-            <i className="fas fa-wave-square"></i>
-          </div>
-          <div className="logo-text" style={{
-            fontSize: '1.25rem',
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, #0f172a 0%, #475569 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.025em',
-            whiteSpace: 'nowrap',
-          }}>HyperApp</div>
-        </div>
+        }}>HyperApp</div>
 
-        {/* ECG Animation */}
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '0',
-          right: '0',
-          transform: 'translateY(-50%)',
+        {/* ECG Animation - Spans from text to logout button */}
+        <div className="ecg-container" style={{
+          flex: 1,
           height: '3px',
           pointerEvents: 'none',
           zIndex: 1,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
         }}>
           <div className="ecg-line" style={{
             position: 'relative',
             height: '100%',
-            width: 'calc(100% - 120px)',
-            maxWidth: '600px',
+            width: '100%',
           }}>
             <svg className="ecg-path" viewBox="0 0 500 10" preserveAspectRatio="none" style={{
               width: '100%',
