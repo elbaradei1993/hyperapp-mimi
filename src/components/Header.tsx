@@ -90,8 +90,8 @@ const Header: React.FC = () => {
           }
 
           .ecg-container {
-            padding-left: 140px !important;
-            padding-right: 120px !important;
+            padding-left: 130px !important;
+            padding-right: 30px !important;
           }
         }
 
@@ -151,7 +151,7 @@ const Header: React.FC = () => {
           marginRight: '16px',
         }}>HyperApp</div>
 
-        {/* ECG Animation - Flows from app name to logout button */}
+        {/* ECG Animation - Connects app name to logout button */}
         <div className="ecg-container" style={{
           position: 'absolute',
           left: '0',
@@ -161,8 +161,8 @@ const Header: React.FC = () => {
           height: '3px',
           pointerEvents: 'none',
           zIndex: 1,
-          paddingLeft: '120px', // Start after the "HyperApp" text
-          paddingRight: '100px', // End before the logout button
+          paddingLeft: '110px', // Start right after "HyperApp" text
+          paddingRight: '20px', // End close to logout button
         }}>
           <div className="ecg-line" style={{
             position: 'relative',
