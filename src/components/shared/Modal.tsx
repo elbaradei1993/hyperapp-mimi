@@ -57,98 +57,26 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)'
-      }}
-      onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleBackdropClick}>
       <div
-        style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderRadius: '8px',
-          boxShadow: 'var(--shadow-color)',
-          width: '100%',
-          maxWidth: sizeClasses[size] === 'max-w-md' ? '28rem' :
-                    sizeClasses[size] === 'max-w-lg' ? '32rem' :
-                    sizeClasses[size] === 'max-w-2xl' ? '42rem' :
-                    sizeClasses[size] === 'max-w-4xl' ? '56rem' : '32rem',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          overflowX: 'hidden'
-        }}
+        className={`bg-[var(--bg-primary)] rounded-2xl shadow-[0_8px_32px_var(--shadow-color)] border border-[var(--border-color)]/20 w-full max-h-[90vh] overflow-y-auto overflow-x-hidden ${sizeClasses[size]}`}
         onClick={(e) => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '24px',
-            borderBottom: '1px solid var(--border-color)'
-          }}>
+          <div className="flex items-center justify-between p-6 border-b border-[var(--border-color)]">
             {title && (
-              <h2 style={{
-                fontSize: '20px',
-                fontWeight: '600',
-                color: 'var(--text-primary)'
-              }}>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">
                 {title}
               </h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: 'var(--bg-tertiary)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: 'var(--shadow-color)',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.1)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-color)';
-                  e.currentTarget.style.background = 'var(--bg-primary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-color)';
-                  e.currentTarget.style.background = 'var(--bg-tertiary)';
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.transform = 'scale(0.95)';
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.1)';
-                }}
+                className="w-9 h-9 rounded-full bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_2px_8px_var(--shadow-color)]"
                 aria-label={t('common.closeModal')}
               >
                 <svg
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    color: 'var(--text-muted)',
-                    filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
-                  }}
+                  className="w-4 h-4 text-[var(--text-muted)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -160,7 +88,7 @@ const Modal: React.FC<ModalProps> = ({
           </div>
         )}
 
-        <div style={{ padding: '24px' }}>
+        <div className="p-6">
           {children}
         </div>
       </div>

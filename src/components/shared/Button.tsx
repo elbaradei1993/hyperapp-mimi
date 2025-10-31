@@ -36,76 +36,64 @@ const Button: React.FC<ButtonProps> = ({
 
   const variantClasses = {
     primary: `
-      bg-gradient-to-r from-blue-500 to-blue-600
-      hover:from-blue-600 hover:to-blue-700
-      active:from-blue-700 active:to-blue-800
+      bg-gradient-to-r from-[var(--accent-primary)] to-[color-mix(in srgb, var(--accent-primary) 90%, black)]
+      hover:from-[color-mix(in srgb, var(--accent-primary) 95%, black)] hover:to-[color-mix(in srgb, var(--accent-primary) 85%, black)]
+      active:from-[color-mix(in srgb, var(--accent-primary) 90%, black)] active:to-[color-mix(in srgb, var(--accent-primary) 80%, black)]
       text-white
-      focus:ring-blue-500
-      shadow-blue-500/25 hover:shadow-blue-500/40 active:shadow-blue-500/50
-      border-blue-600/20
+      focus:ring-[var(--accent-primary)]
+      shadow-[0_2px_8px_var(--shadow-color)] hover:shadow-[0_4px_12px_var(--shadow-color)] active:shadow-[0_1px_4px_var(--shadow-color)]
+      border-[color-mix(in srgb, var(--accent-primary) 80%, white)]/30
     `,
     secondary: `
-      bg-gradient-to-r from-gray-100 to-gray-200
-      hover:from-gray-200 hover:to-gray-300
-      active:from-gray-300 active:to-gray-400
-      text-gray-900
-      focus:ring-gray-500
-      shadow-gray-500/25 hover:shadow-gray-500/40 active:shadow-gray-500/50
-      border-gray-300/50
-      dark:from-gray-700 dark:to-gray-600
-      dark:hover:from-gray-600 dark:hover:to-gray-500
-      dark:active:from-gray-500 dark:active:to-gray-400
-      dark:text-white
-      dark:border-gray-600/50
+      bg-gradient-to-r from-[var(--bg-tertiary)] to-[color-mix(in srgb, var(--bg-tertiary) 110%, white)]
+      hover:from-[color-mix(in srgb, var(--bg-tertiary) 110%, white)] hover:to-[color-mix(in srgb, var(--bg-tertiary) 120%, white)]
+      active:from-[color-mix(in srgb, var(--bg-tertiary) 120%, white)] active:to-[color-mix(in srgb, var(--bg-tertiary) 130%, white)]
+      text-[var(--text-primary)]
+      focus:ring-[var(--border-color)]
+      shadow-[0_1px_3px_var(--shadow-color)] hover:shadow-[0_2px_6px_var(--shadow-color)] active:shadow-[0_1px_2px_var(--shadow-color)]
+      border-[var(--border-color)]/40
     `,
     outline: `
       bg-transparent
-      hover:bg-blue-50 active:bg-blue-100
-      text-blue-600
-      focus:ring-blue-500
-      border-blue-300
-      hover:border-blue-400 active:border-blue-500
-      dark:hover:bg-blue-900/20 dark:active:bg-blue-900/30
-      dark:text-blue-400
-      dark:border-blue-600
-      dark:hover:border-blue-500 dark:active:border-blue-400
+      hover:bg-[color-mix(in srgb, var(--accent-primary) 95%, white)] active:bg-[color-mix(in srgb, var(--accent-primary) 90%, white)]
+      text-[var(--accent-primary)]
+      focus:ring-[var(--accent-primary)]
+      border-[var(--border-color)]
+      hover:border-[var(--accent-primary)] active:border-[color-mix(in srgb, var(--accent-primary) 90%, black)]
     `,
     ghost: `
-      bg-transparent hover:bg-gray-100 active:bg-gray-200
-      text-gray-700
-      focus:ring-gray-500
-      hover:text-gray-900 active:text-gray-900
-      dark:hover:bg-gray-800 dark:active:bg-gray-700
-      dark:text-gray-300
-      dark:hover:text-white dark:active:text-white
+      bg-transparent hover:bg-[var(--bg-tertiary)] active:bg-[color-mix(in srgb, var(--bg-tertiary) 110%, white)]
+      text-[var(--text-secondary)]
+      focus:ring-[var(--border-color)]
+      hover:text-[var(--text-primary)] active:text-[var(--text-primary)]
       shadow-none hover:shadow-none
     `,
     danger: `
-      bg-gradient-to-r from-red-500 to-red-600
-      hover:from-red-600 hover:to-red-700
-      active:from-red-700 active:to-red-800
+      bg-gradient-to-r from-[var(--danger)] to-[color-mix(in srgb, var(--danger) 90%, black)]
+      hover:from-[color-mix(in srgb, var(--danger) 95%, black)] hover:to-[color-mix(in srgb, var(--danger) 85%, black)]
+      active:from-[color-mix(in srgb, var(--danger) 90%, black)] active:to-[color-mix(in srgb, var(--danger) 80%, black)]
       text-white
-      focus:ring-red-500
-      shadow-red-500/25 hover:shadow-red-500/40 active:shadow-red-500/50
-      border-red-600/20
+      focus:ring-[var(--danger)]
+      shadow-[0_2px_8px_var(--shadow-color)] hover:shadow-[0_4px_12px_var(--shadow-color)] active:shadow-[0_1px_4px_var(--shadow-color)]
+      border-[color-mix(in srgb, var(--danger) 80%, white)]/30
     `,
     success: `
-      bg-gradient-to-r from-green-500 to-green-600
-      hover:from-green-600 hover:to-green-700
-      active:from-green-700 active:to-green-800
+      bg-gradient-to-r from-[var(--success)] to-[color-mix(in srgb, var(--success) 90%, black)]
+      hover:from-[color-mix(in srgb, var(--success) 95%, black)] hover:to-[color-mix(in srgb, var(--success) 85%, black)]
+      active:from-[color-mix(in srgb, var(--success) 90%, black)] active:to-[color-mix(in srgb, var(--success) 80%, black)]
       text-white
-      focus:ring-green-500
-      shadow-green-500/25 hover:shadow-green-500/40 active:shadow-green-500/50
-      border-green-600/20
+      focus:ring-[var(--success)]
+      shadow-[0_2px_8px_var(--shadow-color)] hover:shadow-[0_4px_12px_var(--shadow-color)] active:shadow-[0_1px_4px_var(--shadow-color)]
+      border-[color-mix(in srgb, var(--success) 80%, white)]/30
     `,
     warning: `
-      bg-gradient-to-r from-yellow-500 to-orange-500
-      hover:from-yellow-600 hover:to-orange-600
-      active:from-orange-500 active:to-red-500
-      text-white
-      focus:ring-yellow-500
-      shadow-yellow-500/25 hover:shadow-yellow-500/40 active:shadow-yellow-500/50
-      border-yellow-600/20
+      bg-gradient-to-r from-[var(--warning)] to-[color-mix(in srgb, var(--warning) 90%, black)]
+      hover:from-[color-mix(in srgb, var(--warning) 95%, black)] hover:to-[color-mix(in srgb, var(--warning) 85%, black)]
+      active:from-[color-mix(in srgb, var(--warning) 90%, black)] active:to-[color-mix(in srgb, var(--warning) 80%, black)]
+      text-[var(--text-primary)]
+      focus:ring-[var(--warning)]
+      shadow-[0_2px_8px_var(--shadow-color)] hover:shadow-[0_4px_12px_var(--shadow-color)] active:shadow-[0_1px_4px_var(--shadow-color)]
+      border-[color-mix(in srgb, var(--warning) 80%, white)]/30
     `
   };
 
