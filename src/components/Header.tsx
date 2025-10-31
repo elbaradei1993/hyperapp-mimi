@@ -90,8 +90,8 @@ const Header: React.FC = () => {
           }
 
           .ecg-container {
-            padding-left: 130px !important;
-            padding-right: 30px !important;
+            padding-left: 120px !important;
+            padding-right: 140px !important;
           }
         }
 
@@ -148,7 +148,6 @@ const Header: React.FC = () => {
           whiteSpace: 'nowrap',
           zIndex: 2,
           flexShrink: 0,
-          marginRight: '16px',
         }}>HyperApp</div>
 
         {/* ECG Animation - Connects app name to logout button */}
@@ -161,8 +160,8 @@ const Header: React.FC = () => {
           height: '3px',
           pointerEvents: 'none',
           zIndex: 1,
-          paddingLeft: '110px', // Start right after "HyperApp" text
-          paddingRight: '20px', // End close to logout button
+          paddingLeft: '100px', // Start after "HyperApp" text
+          paddingRight: '120px', // End before far right logout button
         }}>
           <div className="ecg-line" style={{
             position: 'relative',
@@ -185,8 +184,12 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Logout Button - Right Side */}
+        {/* Logout Button - Far Right Side */}
         <button className="logout-btn" onClick={handleLogout} style={{
+          position: 'absolute',
+          right: '0',
+          top: '50%',
+          transform: 'translateY(-50%)',
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
@@ -201,8 +204,6 @@ const Header: React.FC = () => {
           transition: 'all 0.3s ease',
           boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
           zIndex: 2,
-          flexShrink: 0,
-          marginLeft: '16px',
         }}>
           <i className="fas fa-sign-out-alt"></i>
           <span className="logout-text" style={{
