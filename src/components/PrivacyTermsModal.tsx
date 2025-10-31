@@ -576,7 +576,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Privacy Policy & Terms of Service"
-      size="xl"
+      size="lg"
     >
       <div style={{ marginBottom: '24px' }}>
         <div style={{
