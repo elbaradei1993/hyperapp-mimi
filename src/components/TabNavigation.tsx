@@ -36,7 +36,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
     }
   }, [activeTab]);
 
-  // Handle window resize
+  // Handle window resize and orientation change
   useEffect(() => {
     const handleResize = () => {
       if (navRef.current) {
@@ -53,7 +53,14 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleResize, 300);
+    });
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
   }, [activeTab]);
 
   return (
@@ -70,8 +77,8 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
         pointerEvents: 'none'
       }} />
 
-      {/* Professional Tab Navigation */}
-      <div
+      {/* Mobile-Optimized Tab Navigation */}
+      <nav
         ref={navRef}
         style={{
           position: 'fixed',
@@ -79,28 +86,29 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
           left: 0,
           right: 0,
           backgroundColor: 'var(--bg-primary)',
-          backdropFilter: 'blur(16px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
           borderTop: '1px solid rgba(var(--border-color-rgb, 229, 231, 235), 0.4)',
-          boxShadow: '0 -10px 15px -3px rgba(0, 0, 0, 0.1), 0 -4px 6px -2px rgba(0, 0, 0, 0.05)',
-          zIndex: 100,
+          zIndex: 1000,
           display: 'flex',
           alignItems: 'center',
-          padding: '8px',
-          borderRadius: '16px 16px 0 0'
+          padding: '8px 12px',
+          paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',
+          minHeight: '70px'
         }}
       >
         {/* Sliding Tab Indicator */}
         <div
+          className="tab-indicator"
           style={{
             position: 'absolute',
+            top: '8px',
             height: 'calc(100% - 16px)',
             backgroundColor: 'var(--bg-secondary)',
-            borderRadius: '12px',
+            borderRadius: '10px',
             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
             border: '1px solid rgba(var(--border-color-rgb, 229, 231, 235), 0.4)',
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            zIndex: 0,
+            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: -1,
             ...indicatorStyle
           }}
         />
@@ -113,7 +121,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               onClick={() => onTabChange(tab.id)}
               style={{
                 flex: 1,
-                padding: '16px 20px',
+                padding: '10px 8px',
                 border: 'none',
                 background: 'transparent',
                 color: activeTab === tab.id ? 'var(--accent-primary)' : 'var(--text-secondary)',
@@ -121,15 +129,22 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px',
+                gap: '4px',
                 cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                fontSize: '0.875rem',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                fontSize: '0.75rem',
                 fontWeight: activeTab === tab.id ? '600' : '500',
                 borderRadius: '10px',
                 position: 'relative',
                 zIndex: 1,
-                minHeight: '70px'
+                minHeight: '54px',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.96)';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = '';
               }}
               onMouseEnter={(e) => {
                 if (activeTab !== tab.id) {
@@ -145,15 +160,16 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               <i
                 className={tab.icon}
                 style={{
-                  fontSize: '1.25rem',
-                  transition: 'all 0.3s ease',
+                  fontSize: '1.125rem',
+                  transition: 'all 0.25s ease',
                   opacity: activeTab === tab.id ? 1 : 0.8,
                   transform: activeTab === tab.id ? 'translateY(-2px)' : 'translateY(0)'
                 }}
               />
               <span style={{
-                transition: 'all 0.3s ease',
-                fontWeight: activeTab === tab.id ? '600' : '500'
+                transition: 'all 0.25s ease',
+                fontWeight: activeTab === tab.id ? '600' : '500',
+                fontSize: '0.7rem'
               }}>
                 {tab.label}
               </span>
@@ -178,7 +194,14 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   zIndex: 2,
                   position: 'relative',
-                  margin: '0 8px'
+                  margin: '0 8px',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+                onTouchStart={(e) => {
+                  e.currentTarget.style.transform = 'scale(0.92)';
+                }}
+                onTouchEnd={(e) => {
+                  e.currentTarget.style.transform = '';
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-3px)';
@@ -193,7 +216,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
                 <i
                   className="fas fa-plus"
                   style={{
-                    fontSize: '1.5rem',
+                    fontSize: '1.375rem',
                     fontWeight: '600',
                     transition: 'transform 0.3s ease'
                   }}
@@ -215,11 +238,19 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               }
             }
 
+            /* Touch-friendly hover states */
+            @media (hover: hover) {
+              button[data-tab]:hover {
+                background: rgba(37, 99, 235, 0.05);
+              }
+            }
+
             /* Responsive design */
             @media (max-width: 768px) {
               button[data-tab] {
-                padding: 14px 12px !important;
-                min-height: 64px !important;
+                padding: 12px 8px !important;
+                min-height: 58px !important;
+                font-size: 0.75rem !important;
               }
 
               button[data-tab] i {
@@ -227,29 +258,70 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               }
 
               button[data-tab] span {
-                font-size: 0.8rem !important;
+                font-size: 0.7rem !important;
               }
             }
 
-            @media (max-width: 480px) {
-              div[ref] {
-                flex-direction: column !important;
-                padding: 16px 12px !important;
-                gap: 8px !important;
+            /* Larger phone screens */
+            @media (min-width: 400px) {
+              button[data-tab] {
+                padding: 14px 8px !important;
+                min-height: 62px !important;
+              }
+
+              button[data-tab] i {
+                font-size: 1.25rem !important;
+              }
+
+              button[data-tab] span {
+                font-size: 0.75rem !important;
+              }
+            }
+
+            /* Tablet and desktop */
+            @media (min-width: 768px) {
+              nav[ref] {
+                position: relative !important;
+                border-radius: 16px !important;
+                margin-top: 40px !important;
+                padding: 12px !important;
+                min-height: 80px !important;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+                border: 1px solid rgba(var(--border-color-rgb, 229, 231, 235), 0.4) !important;
               }
 
               button[data-tab] {
-                flex-direction: row !important;
-                justify-content: flex-start !important;
-                width: 100% !important;
-                padding: 14px 16px !important;
-                gap: 12px !important;
-                min-height: auto !important;
+                min-height: 64px !important;
+                font-size: 0.875rem !important;
+              }
+
+              button[data-tab] i {
+                font-size: 1.375rem !important;
+              }
+            }
+
+            /* Landscape orientation adjustments */
+            @media (max-height: 500px) and (orientation: landscape) {
+              nav[ref] {
+                min-height: 60px !important;
+              }
+
+              button[data-tab] {
+                min-height: 48px !important;
+                padding: 6px 4px !important;
+              }
+
+              button[data-tab] i {
+                font-size: 1rem !important;
+              }
+
+              button[data-tab] span {
+                font-size: 0.65rem !important;
               }
             }
           `}
         </style>
-      </div>
+      </nav>
     </>
   );
 };
