@@ -7,6 +7,7 @@ import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
 import CommunityDashboard from './components/CommunityDashboard';
 import TabNavigation, { TabType } from './components/TabNavigation';
+import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import OnboardingModal from './components/OnboardingModal';
 import ReportTypeModal from './components/ReportTypeModal';
@@ -709,8 +710,11 @@ const AppContent: React.FC = () => {
       {/* Main App Content - only show when authenticated and onboarded */}
       {isAuthenticated && checkOnboardingStatus() && (
         <>
+          {/* Header */}
+          <Header />
+
           <div style={{
-            height: 'calc(var(--vh, 1vh) * 100 - 70px)', // Mobile-safe height accounting for bottom navigation
+            height: 'calc(var(--vh, 1vh) * 100 - 130px)', // Mobile-safe height accounting for header (60px) + bottom navigation (70px)
             width: '100vw',
             overflow: (activeTab === 'profile' || activeTab === 'settings' || activeTab === 'reports') ? 'auto' : 'hidden'
           }}>

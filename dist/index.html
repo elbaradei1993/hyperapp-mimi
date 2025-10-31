@@ -5,30 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#3b82f6">
   <meta name="description" content="Real-time community safety platform with location-based reports and emergency alerts">
-  <!-- Content Security Policy for XSS protection -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://nominatim.openstreetmap.org; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
-  <link rel="icon" href="/logo.png" type="image/png">
-  <link rel="manifest" href="/assets/manifest-RW6cXcEe.json">
-  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="icon" href="/icon-192x192.png" type="image/png">
+  <link rel="manifest" href="/assets/manifest-CUlqJZJb.json">
+  <link rel="apple-touch-icon" href="/icon-192x192.png">
   <title>HyperApp - Community Safety Platform</title>
-
-  <!-- Preload critical resources to reduce request chains -->
-  <link rel="modulepreload" href="data:application/octet-stream;base64,aW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JzsNCmltcG9ydCBSZWFjdERPTSBmcm9tICdyZWFjdC1kb20vY2xpZW50JzsNCmltcG9ydCBBcHAgZnJvbSAnLi9BcHAnOw0KaW1wb3J0IHsgVGhlbWVQcm92aWRlciB9IGZyb20gJy4vY29udGV4dHMvVGhlbWVDb250ZXh0JzsNCmltcG9ydCAnLi9pbmRleC5jc3MnOw0KaW1wb3J0ICcuL3RoZW1lcy5jc3MnOw0KaW1wb3J0ICcuL2J1dHRvbi1zdHlsZXMuY3NzJzsNCmltcG9ydCAnLi9pMThuJzsNCg0KLy8gTW9iaWxlIHZpZXdwb3J0IGhlaWdodCBmaXgNCmNvbnN0IHNldFZIID0gKCkgPT4gew0KICBjb25zdCB2aCA9IHdpbmRvdy5pbm5lckhlaWdodCAqIDAuMDE7DQogIGRvY3VtZW50LmRvY3VtZW50RWxlbWVudC5zdHlsZS5zZXRQcm9wZXJ0eSgnLS12aCcsIGAke3ZofXB4YCk7DQp9Ow0KDQovLyBTZXQgaW5pdGlhbCB2aWV3cG9ydCBoZWlnaHQNCnNldFZIKCk7DQoNCi8vIFVwZGF0ZSB2aWV3cG9ydCBoZWlnaHQgb24gcmVzaXplL29yaWVudGF0aW9uIGNoYW5nZQ0Kd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ3Jlc2l6ZScsIHNldFZIKTsNCndpbmRvdy5hZGRFdmVudExpc3RlbmVyKCdvcmllbnRhdGlvbmNoYW5nZScsICgpID0+IHsNCiAgLy8gRGVsYXkgdG8gYWNjb3VudCBmb3IgbW9iaWxlIGJyb3dzZXIgVUkgY2hhbmdlcw0KICBzZXRUaW1lb3V0KHNldFZILCAxMDApOw0KfSk7DQoNClJlYWN0RE9NLmNyZWF0ZVJvb3QoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3Jvb3QnKSEpLnJlbmRlcigNCiAgPFJlYWN0LlN0cmljdE1vZGU+DQogICAgPFRoZW1lUHJvdmlkZXI+DQogICAgICA8QXBwIC8+DQogICAgPC9UaGVtZVByb3ZpZGVyPg0KICA8L1JlYWN0LlN0cmljdE1vZGU+LA0KKTsNCg==">
-  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-  <link rel="dns-prefetch" href="//unpkg.com">
-  <!-- Font Awesome - Load asynchronously to prevent render blocking -->
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-
-  <!-- Leaflet CSS - Load asynchronously -->
-  <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
-  <script type="module" crossorigin src="/assets/index-CYrQnZii.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/vendor-Dcsd2E38.js">
-  <link rel="modulepreload" crossorigin href="/assets/leaflet-CrbGgGRh.js">
-  <link rel="modulepreload" crossorigin href="/assets/charts-CWR61UC3.js">
-  <link rel="modulepreload" crossorigin href="/assets/utils-7NPCt5Al.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-CSQ3VGKy.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script type="module" crossorigin src="/assets/index-giAbrwuq.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-QdlO2Yeo.css">
 <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
 <body>
   <div id="root"></div>
