@@ -1,20 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from './shared/Modal';
 
 interface PrivacyTermsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'privacy' | 'terms';
 }
 
 const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
   isOpen,
-  onClose,
-  initialTab = 'privacy'
+  onClose
 }) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'privacy' | 'terms'>(initialTab);
 
   const privacyContent = (
     <div style={{ lineHeight: '1.6', color: 'var(--text-primary)' }}>
@@ -575,54 +572,21 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Privacy Policy & Terms of Service"
-      size="lg"
+      title="Terms of Service"
+      size="md"
     >
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{
-          display: 'flex',
-          borderBottom: '1px solid var(--border-color)',
-          marginBottom: '20px'
-        }}>
-          <button
-            onClick={() => setActiveTab('privacy')}
-            style={{
-              padding: '12px 24px',
-              border: 'none',
-              backgroundColor: activeTab === 'privacy' ? 'var(--accent-primary)' : 'transparent',
-              color: activeTab === 'privacy' ? 'white' : 'var(--text-primary)',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              borderRadius: '8px 8px 0 0'
-            }}
-          >
-            Privacy Policy
-          </button>
-          <button
-            onClick={() => setActiveTab('terms')}
-            style={{
-              padding: '12px 24px',
-              border: 'none',
-              backgroundColor: activeTab === 'terms' ? 'var(--accent-primary)' : 'transparent',
-              color: activeTab === 'terms' ? 'white' : 'var(--text-primary)',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              borderRadius: '8px 8px 0 0'
-            }}
-          >
-            Terms of Service
-          </button>
-        </div>
-
-        <div style={{
-          maxHeight: '60vh',
-          overflowY: 'auto',
-          padding: '0 4px'
-        }}>
-          {activeTab === 'privacy' ? privacyContent : termsContent}
-        </div>
+      <div style={{
+        maxHeight: '70vh',
+        overflowY: 'auto',
+        padding: '0 4px'
+      }}>
+        {privacyContent}
+        <hr style={{
+          border: 'none',
+          borderTop: '1px solid var(--border-color)',
+          margin: '30px 0'
+        }} />
+        {termsContent}
       </div>
     </Modal>
   );

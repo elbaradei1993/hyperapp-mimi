@@ -49,11 +49,27 @@ const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
-  const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl'
+  const getResponsiveMaxWidth = () => {
+    // On mobile (max-width: 640px), use 95% of screen width
+    // On tablet (641px-1024px), use 85% of screen width
+    // On desktop, use the original sizes
+    const isMobile = window.innerWidth <= 640;
+    const isTablet = window.innerWidth <= 1024 && window.innerWidth > 640;
+
+    if (isMobile) {
+      return '95vw';
+    } else if (isTablet) {
+      return '85vw';
+    } else {
+      // Desktop sizes
+      switch (size) {
+        case 'sm': return '28rem';
+        case 'md': return '32rem';
+        case 'lg': return '42rem';
+        case 'xl': return '56rem';
+        default: return '32rem';
+      }
+    }
   };
 
   return (
@@ -79,10 +95,7 @@ const Modal: React.FC<ModalProps> = ({
           borderRadius: '8px',
           boxShadow: 'var(--shadow-color)',
           width: '100%',
-          maxWidth: sizeClasses[size] === 'max-w-md' ? '28rem' :
-                    sizeClasses[size] === 'max-w-lg' ? '32rem' :
-                    sizeClasses[size] === 'max-w-2xl' ? '42rem' :
-                    sizeClasses[size] === 'max-w-4xl' ? '56rem' : '32rem',
+          maxWidth: getResponsiveMaxWidth(),
           maxHeight: '90vh',
           overflowY: 'auto',
           overflowX: 'hidden'

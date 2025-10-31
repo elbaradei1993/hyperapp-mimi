@@ -275,7 +275,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
       <PrivacyTermsModal
         isOpen={showPrivacyTermsModal}
         onClose={() => setShowPrivacyTermsModal(false)}
-        initialTab="privacy"
       />
     </div>
   );

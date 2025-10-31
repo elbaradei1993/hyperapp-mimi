@@ -23,7 +23,6 @@ const SettingsView: React.FC = () => {
   const [locationSharing, setLocationSharing] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPrivacyTermsModal, setShowPrivacyTermsModal] = useState(false);
-  const [privacyTermsTab, setPrivacyTermsTab] = useState<'privacy' | 'terms'>('privacy');
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -639,10 +638,7 @@ const SettingsView: React.FC = () => {
           {/* Support Links */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <button
-              onClick={() => {
-                setPrivacyTermsTab('privacy');
-                setShowPrivacyTermsModal(true);
-              }}
+              onClick={() => setShowPrivacyTermsModal(true)}
               style={{
                 padding: '12px',
                 border: '1px solid var(--border-color)',
@@ -659,29 +655,6 @@ const SettingsView: React.FC = () => {
               }}
             >
               <i className="fas fa-file-contract"></i>
-              {t('settings.privacy')}
-            </button>
-            <button
-              onClick={() => {
-                setPrivacyTermsTab('terms');
-                setShowPrivacyTermsModal(true);
-              }}
-              style={{
-                padding: '12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <i className="fas fa-gavel"></i>
               {t('settings.terms')}
             </button>
           </div>
@@ -894,7 +867,6 @@ const SettingsView: React.FC = () => {
       <PrivacyTermsModal
         isOpen={showPrivacyTermsModal}
         onClose={() => setShowPrivacyTermsModal(false)}
-        initialTab={privacyTermsTab}
       />
     </div>
   );
