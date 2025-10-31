@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { Button } from './shared';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -88,37 +87,78 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--bg-primary)] rounded-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-auto shadow-[0_8px_32px_var(--shadow-color)] border border-[var(--border-color)]/20">
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        backgroundColor: 'var(--bg-primary)',
+        borderRadius: '12px',
+        padding: '32px',
+        maxWidth: '400px',
+        width: '90%',
+        maxHeight: '90vh',
+        overflow: 'auto',
+        boxShadow: 'var(--shadow-color)'
+      }}>
         {/* Header */}
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: 'var(--text-primary)',
+            marginBottom: '8px'
+          }}>
             {t('auth.welcome')}
           </h2>
-          <p className="text-[var(--text-muted)] text-base">
+          <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>
             {t('auth.joinCommunity')}
           </p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex mb-6 rounded-xl overflow-hidden border border-[var(--border-color)] shadow-[0_2px_8px_var(--shadow-color)]">
+        <div style={{
+          display: 'flex',
+          marginBottom: '24px',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          border: '1px solid var(--border-color)'
+        }}>
           <button
             onClick={() => setActiveTab('login')}
-            className={`flex-1 px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 min-h-[44px] touch-manipulation ${
-              activeTab === 'login'
-                ? 'bg-gradient-to-r from-[var(--accent-primary)] to-[color-mix(in srgb, var(--accent-primary) 90%, black)] text-white shadow-[0_4px_12px_var(--shadow-color)]'
-                : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[color-mix(in srgb, var(--bg-tertiary) 110%, white)] hover:text-[var(--text-primary)]'
-            }`}
+            style={{
+              flex: 1,
+              padding: '12px',
+              backgroundColor: activeTab === 'login' ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: activeTab === 'login' ? 'white' : 'var(--text-primary)',
+              border: 'none',
+              fontSize: '16px',
+              fontWeight: '500',
+              cursor: 'pointer'
+            }}
           >
             {t('auth.login')}
           </button>
           <button
             onClick={() => setActiveTab('signup')}
-            className={`flex-1 px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 min-h-[44px] touch-manipulation ${
-              activeTab === 'signup'
-                ? 'bg-gradient-to-r from-[var(--accent-primary)] to-[color-mix(in srgb, var(--accent-primary) 90%, black)] text-white shadow-[0_4px_12px_var(--shadow-color)]'
-                : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[color-mix(in srgb, var(--bg-tertiary) 110%, white)] hover:text-[var(--text-primary)]'
-            }`}
+            style={{
+              flex: 1,
+              padding: '12px',
+              backgroundColor: activeTab === 'signup' ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: activeTab === 'signup' ? 'white' : 'var(--text-primary)',
+              border: 'none',
+              fontSize: '16px',
+              fontWeight: '500',
+              cursor: 'pointer'
+            }}
           >
             {t('auth.signup')}
           </button>
@@ -126,20 +166,30 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         {/* Error Message */}
         {error && (
-          <div className={`p-3 mb-4 rounded-lg border text-sm ${
-            error.includes('successful')
-              ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300'
-              : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300'
-          }`}>
+          <div style={{
+            padding: '12px',
+            marginBottom: '16px',
+            borderRadius: '8px',
+            backgroundColor: error.includes('successful') ? '#d1fae5' : '#fee2e2',
+            border: `1px solid ${error.includes('successful') ? '#a7f3d0' : '#fecaca'}`,
+            color: error.includes('successful') ? '#065f46' : '#991b1b',
+            fontSize: '14px'
+          }}>
             {error}
           </div>
         )}
 
         {/* Login Form */}
         {activeTab === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+          <form onSubmit={handleLogin}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--text-secondary)',
+                marginBottom: '4px'
+              }}>
                 {t('auth.email')}
               </label>
               <input
@@ -148,12 +198,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => handleInputChange('loginEmail', e.target.value)}
                 placeholder={t('auth.enterEmail')}
                 required
-                className="w-full px-3 py-3 border border-[var(--border-color)] rounded-lg text-base bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-colors"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)'
+                }}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--text-secondary)',
+                marginBottom: '4px'
+              }}>
                 {t('auth.password')}
               </label>
               <input
@@ -162,28 +227,51 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => handleInputChange('loginPassword', e.target.value)}
                 placeholder={t('auth.enterPassword')}
                 required
-                className="w-full px-3 py-3 border border-[var(--border-color)] rounded-lg text-base bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-colors"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)'
+                }}
               />
             </div>
 
-            <Button
+            <button
               type="submit"
               disabled={isLoading}
-              loading={isLoading}
-              fullWidth
-              variant="primary"
-              size="mobile-md"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: 'var(--accent-primary)',
+                color: 'white',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                opacity: isLoading ? 0.5 : 1
+              }}
             >
               {isLoading ? t('auth.loggingIn') : t('auth.login')}
-            </Button>
+            </button>
           </form>
         )}
 
         {/* Signup Form */}
         {activeTab === 'signup' && (
-          <form onSubmit={handleSignup} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+          <form onSubmit={handleSignup}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--text-secondary)',
+                marginBottom: '4px'
+              }}>
                 {t('auth.username')}
               </label>
               <input
@@ -192,12 +280,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => handleInputChange('signupUsername', e.target.value)}
                 placeholder={t('auth.chooseUsername')}
                 required
-                className="w-full px-3 py-3 border border-[var(--border-color)] rounded-lg text-base bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-colors"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)'
+                }}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--text-secondary)',
+                marginBottom: '4px'
+              }}>
                 {t('auth.email')}
               </label>
               <input
@@ -206,12 +309,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => handleInputChange('signupEmail', e.target.value)}
                 placeholder={t('auth.enterEmail')}
                 required
-                className="w-full px-3 py-3 border border-[var(--border-color)] rounded-lg text-base bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-colors"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)'
+                }}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--text-secondary)',
+                marginBottom: '4px'
+              }}>
                 {t('auth.password')}
               </label>
               <input
@@ -220,12 +338,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => handleInputChange('signupPassword', e.target.value)}
                 placeholder={t('auth.createPassword')}
                 required
-                className="w-full px-3 py-3 border border-[var(--border-color)] rounded-lg text-base bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-colors"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)'
+                }}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--text-secondary)',
+                marginBottom: '4px'
+              }}>
                 {t('auth.confirmPassword')}
               </label>
               <input
@@ -234,27 +367,53 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => handleInputChange('signupPasswordConfirm', e.target.value)}
                 placeholder={t('auth.confirmPasswordPlaceholder')}
                 required
-                className="w-full px-3 py-3 border border-[var(--border-color)] rounded-lg text-base bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-colors"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)'
+                }}
               />
             </div>
 
-            <Button
+            <button
               type="submit"
               disabled={isLoading}
-              loading={isLoading}
-              fullWidth
-              variant="success"
-              size="mobile-md"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: 'var(--success)',
+                color: 'white',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                opacity: isLoading ? 0.5 : 1
+              }}
             >
               {isLoading ? t('auth.creatingAccount') : t('auth.signup')}
-            </Button>
+            </button>
           </form>
         )}
 
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors text-xl"
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'none',
+            border: 'none',
+            fontSize: '24px',
+            cursor: 'pointer',
+            color: 'var(--text-muted)'
+          }}
         >
           ×
         </button>

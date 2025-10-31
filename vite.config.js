@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo.png', 'favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: 'HyperApp - Community Safety Platform',
         short_name: 'HyperApp',
@@ -20,13 +20,13 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: 'logo.png',
+            src: 'icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: 'logo.png',
+            src: 'icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
@@ -39,14 +39,14 @@ export default defineConfig({
             short_name: 'Report',
             description: 'Create a new safety report',
             url: '/?action=new-report',
-            icons: [{ src: 'logo.png', sizes: '192x192' }]
+            icons: [{ src: 'icon-192x192.png', sizes: '192x192' }]
           },
           {
             name: 'Emergency',
             short_name: 'SOS',
             description: 'Send emergency alert',
             url: '/?action=emergency',
-            icons: [{ src: 'logo.png', sizes: '192x192' }]
+            icons: [{ src: 'icon-192x192.png', sizes: '192x192' }]
           }
         ]
       },
@@ -60,18 +60,6 @@ export default defineConfig({
     open: true
   },
   build: {
-    outDir: 'dist',
-    sourcemap: true, // Enable source maps for debugging
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Separate vendor chunks for better caching
-          vendor: ['react', 'react-dom'],
-          leaflet: ['leaflet', 'react-leaflet'],
-          charts: ['recharts'],
-          utils: ['i18next', 'react-i18next']
-        }
-      }
-    }
+    outDir: 'dist'
   }
 })

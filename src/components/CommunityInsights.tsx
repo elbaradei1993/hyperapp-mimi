@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LoadingSpinner, Modal } from './shared';
 import { calculateDistance } from '../lib/clustering';
-
-// Lazy load heavy chart component
-const SafetyTrendChart = lazy(() => import('./SafetyTrendChart'));
+import SafetyTrendChart from './SafetyTrendChart';
 import type { Report } from '../types';
 
 interface CommunityInsightsProps {
@@ -158,14 +156,11 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
       </div>
 
       {/* Interactive Grid */}
-      <div
-        className="community-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '24px'
-        }}
-      >
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '24px'
+      }}>
 
         {/* Live Activity Feed */}
         <InteractiveCard
@@ -197,6 +192,16 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
           onClick={() => {}}
         >
           <CommunityStats reports={nearbyReports} />
+        </InteractiveCard>
+
+        {/* Quick Actions */}
+        <InteractiveCard
+          title="Quick Actions"
+          icon="fas fa-bolt"
+          color="#06b6d4"
+          onClick={() => {}}
+        >
+          <QuickActions onNewReport={onNewReport} />
         </InteractiveCard>
 
         {/* Community Challenges */}
@@ -591,9 +596,7 @@ const ActivityFeed: React.FC<{ reports: Report[] }> = ({ reports }) => {
         padding: '16px',
         border: '1px solid #e5e7eb'
       }}>
-        <Suspense fallback={<div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LoadingSpinner size="sm" /></div>}>
-          <SafetyTrendChart reports={reports} height={180} />
-        </Suspense>
+        <SafetyTrendChart reports={reports} height={180} />
       </div>
 
       {/* Recent Reports Toggle */}
@@ -626,8 +629,8 @@ const ActivityFeed: React.FC<{ reports: Report[] }> = ({ reports }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '8px 12px',
-            borderRadius: '10px',
+            padding: '4px 8px',
+            borderRadius: '6px',
             transition: 'all 0.2s ease'
           }}
           onMouseEnter={(e) => {
@@ -929,6 +932,62 @@ const CommunityStats: React.FC<{ reports: Report[] }> = ({ reports }) => {
   );
 };
 
+// Quick Actions Component
+const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) => {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onNewReport?.();
+        }}
+        style={{
+          width: '100%',
+          padding: '12px',
+          background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
+        }}
+      >
+        <i className="fas fa-plus" style={{ fontSize: '12px' }}></i>
+        Report Vibe
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          window.open('tel:911', '_self');
+        }}
+        style={{
+          width: '100%',
+          padding: '12px',
+          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
+        }}
+      >
+        <i className="fas fa-phone" style={{ fontSize: '12px' }}></i>
+        Emergency Call
+      </button>
+    </div>
+  );
+};
+
 // Community Challenges Component
 const CommunityChallenges: React.FC<{
   reports: Report[],
@@ -1186,11 +1245,11 @@ const CommunityChallenges: React.FC<{
                 onClick={(e) => handleAcceptChallenge(activeChallenge.id, e)}
                 style={{
                   flex: 1,
-                  padding: '10px 16px',
+                  padding: '8px 12px',
                   background: '#f59e0b',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '10px',
+                  borderRadius: '6px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer'
@@ -1204,11 +1263,11 @@ const CommunityChallenges: React.FC<{
                 onClick={(e) => handleCompleteChallenge(activeChallenge.id, e)}
                 style={{
                   flex: 1,
-                  padding: '10px 16px',
+                  padding: '8px 12px',
                   background: '#10b981',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '10px',
+                  borderRadius: '6px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer'
@@ -1225,11 +1284,11 @@ const CommunityChallenges: React.FC<{
                   return newSet;
                 })}
                 style={{
-                  padding: '10px 16px',
+                  padding: '8px 12px',
                   background: '#ef4444',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '10px',
+                  borderRadius: '6px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer'

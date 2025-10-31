@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from './shared';
 
 export type TabType = 'map' | 'reports' | 'profile' | 'settings';
 
@@ -21,13 +20,6 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
 
   return (
     <>
-      {/* Hidden Button to force Tailwind to include responsive classes */}
-      <div style={{ display: 'none' }}>
-        <Button size="sm">Hidden</Button>
-        <Button size="md">Hidden</Button>
-        <Button size="lg">Hidden</Button>
-      </div>
-
       {/* Background context for glassmorphism effect */}
       <div style={{
         position: 'fixed',
@@ -56,14 +48,13 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
         alignItems: 'center'
       }}>
       {/* Left tabs */}
-      <div style={{ display: 'flex', flex: 1 }} role="tablist" aria-label={t('tabs.navigation')}>
+      <div style={{ display: 'flex', flex: 1 }}>
         {tabs.slice(0, 2).map(tab => (
           <button
-            className="tab-button"
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             onMouseDown={(e) => {
-              e.currentTarget.style.transform = 'scale(0.98)';
+              e.currentTarget.style.transform = 'scale(0.95)';
             }}
             onMouseUp={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
@@ -72,20 +63,16 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               e.currentTarget.style.transform = 'scale(1)';
             }}
             onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'scale(0.98)';
+              e.currentTarget.style.transform = 'scale(0.95)';
             }}
             onTouchEnd={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
             }}
-            aria-label={`${t('tabs.navigateTo')} ${tab.label}`}
-            aria-selected={activeTab === tab.id ? 'true' : 'false'}
-            role="tab"
-            tabIndex={activeTab === tab.id ? 0 : -1}
             style={{
               flex: 1,
               aspectRatio: '1', // Ensure square buttons
               maxWidth: '80px', // Limit max width on larger screens
-              padding: '12px 6px', // Increased padding for better mobile touch
+              padding: '8px 4px',
               border: 'none',
               backgroundColor: activeTab === tab.id ? 'var(--accent-primary)' : 'transparent',
               color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
@@ -96,17 +83,15 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               gap: '2px',
               cursor: 'pointer',
               transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontSize: '12px', // Slightly larger font for mobile
+              fontSize: '11px',
               fontWeight: activeTab === tab.id ? '600' : '500',
-              minHeight: '64px', // Increased minimum touch target for mobile
-              minWidth: '64px', // Ensure minimum width for touch
+              minHeight: '60px', // Ensure minimum touch target
               transform: 'scale(1)',
               WebkitTapHighlightColor: 'transparent',
               userSelect: 'none',
               borderRadius: activeTab === tab.id ? '12px' : '0',
               position: 'relative',
-              overflow: 'hidden',
-              outline: 'none'
+              overflow: 'hidden'
             }}
           >
             <i className={tab.icon} style={{
@@ -128,18 +113,16 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
           justifyContent: 'center'
         }}>
           <button
-            className="floating-report-button"
             onClick={() => {
               onNewReport();
             }}
             style={{
               width: '48px',
               height: '48px',
-              aspectRatio: '1',
               borderRadius: '50%',
               background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
               border: 'none',
-              boxShadow: '0 0 14px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8)',
+              boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8)',
               color: 'white',
               display: 'flex',
               alignItems: 'center',
@@ -153,24 +136,24 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               userSelect: 'none'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)';
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.6), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8)';
+              e.currentTarget.style.transform = 'scale(1.1) translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.6), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 0 14px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8)';
+              e.currentTarget.style.transform = 'scale(1) translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8)';
             }}
             onMouseDown={(e) => {
-              e.currentTarget.style.transform = 'scale(0.95)';
+              e.currentTarget.style.transform = 'scale(0.95) translateY(0)';
             }}
             onMouseUp={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.transform = 'scale(1.1) translateY(-2px)';
             }}
             onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'scale(0.95)';
+              e.currentTarget.style.transform = 'scale(0.95) translateY(0)';
             }}
             onTouchEnd={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.transform = 'scale(1.1) translateY(-2px)';
             }}
             title={t('app.newReport')}
           >
@@ -187,7 +170,6 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
       <div style={{ display: 'flex', flex: 1 }}>
         {tabs.slice(2).map(tab => (
           <button
-            className="tab-button"
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             onMouseDown={(e) => {
@@ -209,7 +191,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               flex: 1,
               aspectRatio: '1', // Ensure square buttons
               maxWidth: '80px', // Limit max width on larger screens
-              padding: '12px 6px', // Increased padding for better mobile touch
+              padding: '8px 4px',
               border: 'none',
               backgroundColor: activeTab === tab.id ? 'var(--accent-primary)' : 'transparent',
               color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
@@ -220,10 +202,9 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               gap: '2px',
               cursor: 'pointer',
               transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontSize: '12px', // Slightly larger font for mobile
+              fontSize: '11px',
               fontWeight: activeTab === tab.id ? '600' : '500',
-              minHeight: '64px', // Increased minimum touch target for mobile
-              minWidth: '64px', // Ensure minimum width for touch
+              minHeight: '60px', // Ensure minimum touch target
               transform: 'scale(1)',
               WebkitTapHighlightColor: 'transparent',
               userSelect: 'none',
@@ -248,31 +229,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
             @keyframes pulse {
               0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 0 14px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8);
+                box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8);
               }
               50% {
                 transform: scale(1.03);
-                box-shadow: 0 0 18px rgba(59, 130, 246, 0.5), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8);
-              }
-            }
-
-            /* Mobile optimizations */
-            @media (max-width: 768px) {
-              .floating-report-button {
-                width: 48px !important;
-                height: 48px !important;
-                min-width: 48px !important;
-                min-height: 48px !important;
-                max-width: 48px !important;
-                max-height: 48px !important;
-              }
-
-              .tab-button span {
-                display: none !important;
-              }
-
-              .tab-button {
-                justify-content: center !important;
+                box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5), 0 0 0 4px rgba(var(--bg-primary-rgb, 255, 255, 255), 0.8);
               }
             }
 

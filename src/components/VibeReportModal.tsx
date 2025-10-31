@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, LoadingSpinner } from './shared';
-import Button from './shared/Button';
+import { Modal, Button, LoadingSpinner } from './shared';
 import { VibeType } from '../types';
 import { reportsService } from '../services/reports';
 import { reverseGeocode, formatCoordinates } from '../lib/geocoding';
@@ -373,28 +372,110 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
           marginTop: '32px'
         }}>
           {/* Cancel Button */}
-          <Button
+          <button
             onClick={onClose}
             disabled={isSubmitting}
-            variant="secondary"
+            style={{
+              padding: '14px 24px',
+              border: '2px solid #e5e7eb',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+              color: '#6b7280',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+              opacity: isSubmitting ? 0.6 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (!isSubmitting) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.borderColor = '#d1d5db';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isSubmitting) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+                e.currentTarget.style.borderColor = '#e5e7eb';
+              }
+            }}
+            onMouseDown={(e) => {
+              if (!isSubmitting) {
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
+            onMouseUp={(e) => {
+              if (!isSubmitting) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }
+            }}
           >
             {t('common.cancel')}
-          </Button>
+          </button>
 
           {/* Report Vibe Button */}
-          <Button
+          <button
             onClick={handleSubmit}
             disabled={!selectedVibe || !userLocation || isSubmitting}
-            loading={isSubmitting}
-            variant="primary"
+            style={{
+              padding: '14px 28px',
+              border: 'none',
+              borderRadius: '12px',
+              background: (!selectedVibe || !userLocation || isSubmitting)
+                ? 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)'
+                : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '700',
+              cursor: (!selectedVibe || !userLocation || isSubmitting) ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: (!selectedVibe || !userLocation || isSubmitting)
+                ? '0 2px 8px rgba(0, 0, 0, 0.04)'
+                : '0 6px 20px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(59, 130, 246, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            onMouseEnter={(e) => {
+              if (selectedVibe && userLocation && !isSubmitting) {
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 12px 32px rgba(59, 130, 246, 0.4), 0 4px 12px rgba(59, 130, 246, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedVibe && userLocation && !isSubmitting) {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(59, 130, 246, 0.1)';
+              }
+            }}
+            onMouseDown={(e) => {
+              if (selectedVibe && userLocation && !isSubmitting) {
+                e.currentTarget.style.transform = 'translateY(-1px) scale(0.98)';
+              }
+            }}
+            onMouseUp={(e) => {
+              if (selectedVibe && userLocation && !isSubmitting) {
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+              }
+            }}
           >
-            {isSubmitting ? t('modals.vibeReport.submitting') : (
+            {isSubmitting ? (
+              <>
+                <LoadingSpinner size="sm" />
+                {t('modals.vibeReport.submitting')}
+              </>
+            ) : (
               <>
                 <i className="fas fa-paper-plane" style={{ fontSize: '16px' }}></i>
                 {t('modals.vibeReport.submitReport')}
               </>
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </Modal>

@@ -49,38 +49,19 @@ const ControlButton: React.FC<{ children: React.ReactNode; onClick: () => void; 
   <div className="leaflet-top leaflet-right">
     <div className="leaflet-control leaflet-bar mr-[10px]" style={{ marginTop: top }}>
       <button
-        className="map-control-button"
         onClick={onClick}
         title={title}
         style={{
-          width: '48px',
-          height: '48px',
-          minWidth: '48px',
-          minHeight: '48px',
+          width: '34px',
+          height: '34px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: '#fff',
           border: 'none',
           cursor: 'pointer',
-          borderRadius: '8px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1)',
-          transition: 'all 0.2s ease',
-          fontSize: '18px'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)';
-          e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1)';
-        }}
-        onTouchStart={(e) => {
-          e.currentTarget.style.transform = 'scale(0.95)';
-        }}
-        onTouchEnd={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)';
+          borderRadius: '4px',
+          boxShadow: '0 1px 5px rgba(0,0,0,0.65)'
         }}
       >
         {children}
@@ -371,7 +352,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ vibes, sosAlerts, center, z
           <Marker
             key={`vibe-${vibe.id}`}
             position={[vibe.latitude, vibe.longitude]}
-            icon={getVibeIcon(vibe.vibe_type)}
+            icon={L.divIcon({
+              html: `<div class="vibe-marker"><i class="${getVibeIcon(vibe.vibe_type)}"></i></div>`,
+              className: 'vibe-marker',
+              iconSize: [30, 30],
+              iconAnchor: [15, 30]
+            })}
           >
             <Popup>
               <div style={{ color: '#1f2937', maxWidth: '320px' }}>

@@ -1,41 +1,41 @@
-/* Light Theme - Premium Mobile Professional */
+/* Light Theme */
 [data-theme="light"] {
   --bg-primary: #ffffff;
   --bg-primary-rgb: 255, 255, 255;
-  --bg-secondary: #fafbfc;
-  --bg-secondary-rgb: 250, 251, 252;
-  --bg-tertiary: #f1f3f4;
-  --text-primary: #1a1d1f; /* Premium dark gray */
-  --text-secondary: #3c4043; /* Professional medium gray */
-  --text-muted: #5f6368; /* Subtle muted text */
-  --border-color: #dadce0;
-  --border-color-rgb: 218, 220, 224;
-  --shadow-color: rgba(60, 64, 67, 0.15);
-  --accent-primary: #1a73e8; /* Professional Google Blue */
-  --accent-secondary: #34a853; /* Professional Green */
-  --danger: #ea4335; /* Professional Red */
-  --warning: #fbbc04; /* Professional Yellow */
-  --success: #34a853; /* Professional Green */
+  --bg-secondary: #f9fafb;
+  --bg-secondary-rgb: 249, 250, 251;
+  --bg-tertiary: #f3f4f6;
+  --text-primary: #1f2937;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --border-color-rgb: 229, 231, 235;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --accent-primary: #3b82f6;
+  --accent-secondary: #10b981;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --success: #28a745;
 }
 
-/* Dark Theme - Premium Mobile Professional */
+/* Dark Theme */
 [data-theme="dark"] {
-  --bg-primary: #0f1419; /* Deep premium dark */
-  --bg-primary-rgb: 15, 20, 25;
-  --bg-secondary: #1c1f23; /* Professional dark gray */
-  --bg-secondary-rgb: 28, 31, 35;
-  --bg-tertiary: #2d3136; /* Elevated surfaces */
-  --text-primary: #e8eaed; /* Premium light text */
-  --text-secondary: #bdc1c6; /* Professional medium text */
-  --text-muted: #9aa0a6; /* Subtle muted text */
-  --border-color: #3c4043;
-  --border-color-rgb: 60, 64, 67;
-  --shadow-color: rgba(0, 0, 0, 0.4);
-  --accent-primary: #8ab4f8; /* Professional light blue for dark mode */
-  --accent-secondary: #81c995; /* Professional light green */
-  --danger: #f28b82; /* Professional light red */
-  --warning: #fdd663; /* Professional light yellow */
-  --success: #81c995; /* Professional light green */
+  --bg-primary: #1f2937;
+  --bg-primary-rgb: 31, 41, 55;
+  --bg-secondary: #374151;
+  --bg-secondary-rgb: 55, 65, 81;
+  --bg-tertiary: #4b5563;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --border-color: #4b5563;
+  --border-color-rgb: 75, 85, 99;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --accent-primary: #3b82f6;
+  --accent-secondary: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #10b981;
 }
 
 /* High Contrast Theme */
@@ -61,22 +61,22 @@
 /* System Theme - Automatically follows OS preference */
 @media (prefers-color-scheme: dark) {
   [data-theme="system"] {
-    --bg-primary: #0f1419; /* Deep premium dark */
-    --bg-primary-rgb: 15, 20, 25;
-    --bg-secondary: #1c1f23; /* Professional dark gray */
-    --bg-secondary-rgb: 28, 31, 35;
-    --bg-tertiary: #2d3136; /* Elevated surfaces */
-    --text-primary: #e8eaed; /* Premium light text */
-    --text-secondary: #bdc1c6; /* Professional medium text */
-    --text-muted: #9aa0a6; /* Subtle muted text */
-    --border-color: #3c4043;
-    --border-color-rgb: 60, 64, 67;
-    --shadow-color: rgba(0, 0, 0, 0.4);
-    --accent-primary: #8ab4f8; /* Professional light blue for dark mode */
-    --accent-secondary: #81c995; /* Professional light green */
-    --danger: #f28b82; /* Professional light red */
-    --warning: #fdd663; /* Professional light yellow */
-    --success: #81c995; /* Professional light green */
+    --bg-primary: #1f2937;
+    --bg-primary-rgb: 31, 41, 55;
+    --bg-secondary: #374151;
+    --bg-secondary-rgb: 55, 65, 81;
+    --bg-tertiary: #4b5563;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --border-color: #4b5563;
+    --border-color-rgb: 75, 85, 99;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --accent-primary: #3b82f6;
+    --accent-secondary: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --success: #10b981;
   }
 }
 
@@ -84,19 +84,19 @@
   [data-theme="system"] {
     --bg-primary: #ffffff;
     --bg-primary-rgb: 255, 255, 255;
-    --bg-secondary: #fafbfc;
-    --bg-secondary-rgb: 250, 251, 252;
-    --bg-tertiary: #f1f3f4;
-    --text-primary: #1a1d1f; /* Premium dark gray */
-    --text-secondary: #3c4043; /* Professional medium gray */
-    --text-muted: #5f6368; /* Subtle muted text */
-    --border-color: #dadce0;
-    --border-color-rgb: 218, 220, 224;
-    --shadow-color: rgba(60, 64, 67, 0.15);
-    --accent-primary: #1a73e8; /* Professional Google Blue */
-    --accent-secondary: #34a853; /* Professional Green */
-    --danger: #ea4335; /* Professional Red */
-    --warning: #fbbc04; /* Professional Yellow */
-    --success: #34a853; /* Professional Green */
+    --bg-secondary: #f9fafb;
+    --bg-secondary-rgb: 249, 250, 251;
+    --bg-tertiary: #f3f4f6;
+    --text-primary: #1f2937;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+    --border-color-rgb: 229, 231, 235;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --accent-primary: #3b82f6;
+    --accent-secondary: #10b981;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --success: #28a745;
   }
 }

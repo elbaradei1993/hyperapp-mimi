@@ -127,9 +127,7 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
   if (chartData.length === 0) {
     return (
       <div style={{
-        width: '100%',
         height: height,
-        minHeight: '180px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -146,7 +144,7 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
   }
 
   return (
-    <div style={{ width: '100%', height: height, minHeight: '180px' }}>
+    <div style={{ width: '100%', height: height }}>
       {/* Trend indicator */}
       <div style={{
         display: 'flex',

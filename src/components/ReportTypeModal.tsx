@@ -20,6 +20,43 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('modals.reportType.title')}>
       <div style={{ padding: '20px 0' }}>
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '32px'
+        }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.3)'
+          }}>
+            <i className="fas fa-plus" style={{
+              fontSize: '28px',
+              color: 'white'
+            }}></i>
+          </div>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: '700',
+            color: '#1f2937',
+            margin: '0 0 8px 0'
+          }}>
+            {t('modals.reportType.title')}
+          </h2>
+          <p style={{
+            color: '#6b7280',
+            fontSize: '16px',
+            margin: 0,
+            lineHeight: '1.5'
+          }}>
+            {t('modals.reportType.title')}
+          </p>
+        </div>
 
         <div style={{
           display: 'grid',
@@ -107,11 +144,20 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
               fontSize: '20px',
               fontWeight: '700',
               color: '#1f2937',
-              margin: '0',
+              margin: '0 0 8px 0',
               letterSpacing: '-0.025em'
             }}>
               {t('modals.reportType.vibe')}
             </h3>
+            <p style={{
+              fontSize: '14px',
+              color: '#6b7280',
+              margin: 0,
+              lineHeight: '1.5',
+              fontWeight: '500'
+            }}>
+              {t('modals.reportType.vibeDesc')}
+            </p>
           </button>
 
           {/* Emergency Report Button */}
@@ -195,11 +241,20 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
               fontSize: '20px',
               fontWeight: '700',
               color: '#1f2937',
-              margin: '0',
+              margin: '0 0 8px 0',
               letterSpacing: '-0.025em'
             }}>
               {t('modals.reportType.emergency')}
             </h3>
+            <p style={{
+              fontSize: '14px',
+              color: '#6b7280',
+              margin: 0,
+              lineHeight: '1.5',
+              fontWeight: '500'
+            }}>
+              {t('modals.reportType.emergencyDesc')}
+            </p>
           </button>
         </div>
       </div>

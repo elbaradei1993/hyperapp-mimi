@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { authService } from '../services/auth';
-import { Button, ButtonGroup } from './shared';
 import type { Theme } from '../contexts/ThemeContext';
 
 const SettingsView: React.FC = () => {
@@ -182,7 +181,7 @@ const SettingsView: React.FC = () => {
           {t('settings.accountManagement')}
         </h2>
 
-        <ButtonGroup layout="stack" gap="md">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Change Password */}
           <div style={{
             display: 'flex',
@@ -200,12 +199,21 @@ const SettingsView: React.FC = () => {
                 {t('settings.updatePassword')}
               </div>
             </div>
-            <Button
-              size="mobile-md"
+            <button
               onClick={() => setShowPasswordModal(true)}
+              style={{
+                backgroundColor: 'var(--accent-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
             >
               {t('settings.change')}
-            </Button>
+            </button>
           </div>
 
           {/* Logout */}
@@ -225,13 +233,21 @@ const SettingsView: React.FC = () => {
                 {t('settings.signOut')}
               </div>
             </div>
-            <Button
-              variant="warning"
-              size="mobile-md"
+            <button
               onClick={handleLogout}
+              style={{
+                backgroundColor: 'var(--warning)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
             >
               {t('auth.logout')}
-            </Button>
+            </button>
           </div>
 
           {/* Delete Account */}
@@ -252,15 +268,23 @@ const SettingsView: React.FC = () => {
                 {t('settings.deleteAccountDesc')}
               </div>
             </div>
-            <Button
-              variant="danger"
-              size="mobile-md"
+            <button
               onClick={() => setShowDeleteModal(true)}
+              style={{
+                backgroundColor: 'var(--danger)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
             >
               {t('settings.deleteAccount')}
-            </Button>
+            </button>
           </div>
-        </ButtonGroup>
+        </div>
       </div>
 
       {/* App Preferences Section */}
@@ -554,13 +578,21 @@ const SettingsView: React.FC = () => {
                 {t('settings.downloadData')}
               </div>
             </div>
-            <Button
+            <button
               onClick={handleExportData}
-              size="mobile-sm"
-              variant="secondary"
+              style={{
+                backgroundColor: 'var(--accent-secondary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
             >
               {t('common.export')}
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -602,40 +634,91 @@ const SettingsView: React.FC = () => {
           </div>
 
           {/* Support Links */}
-          <ButtonGroup layout="grid-2" gap="sm">
-            <Button
-              variant="outline"
-              size="mobile-sm"
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <button
               onClick={() => window.open('https://example.com/help', '_blank')}
+              style={{
+                padding: '12px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
             >
               <i className="fas fa-question-circle"></i>
               {t('settings.help')}
-            </Button>
-            <Button
-              variant="outline"
-              size="mobile-sm"
+            </button>
+            <button
               onClick={() => window.open('https://example.com/privacy', '_blank')}
+              style={{
+                padding: '12px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
             >
               <i className="fas fa-file-contract"></i>
               {t('settings.privacy')}
-            </Button>
-            <Button
-              variant="outline"
-              size="mobile-sm"
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <button
               onClick={() => window.open('https://example.com/terms', '_blank')}
+              style={{
+                padding: '12px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
             >
               <i className="fas fa-gavel"></i>
               {t('settings.terms')}
-            </Button>
-            <Button
-              variant="outline"
-              size="mobile-sm"
+            </button>
+            <button
               onClick={() => window.open('mailto:support@example.com', '_blank')}
+              style={{
+                padding: '12px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
             >
               <i className="fas fa-envelope"></i>
               {t('settings.contact')}
-            </Button>
-          </ButtonGroup>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -726,22 +809,38 @@ const SettingsView: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                <Button
-                  variant="secondary"
-                  size="mobile-md"
+                <button
                   onClick={() => setShowPasswordModal(false)}
-                  style={{ flex: 1 }}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '16px',
+                    cursor: 'pointer'
+                  }}
                 >
                   Cancel
-                </Button>
-                <Button
-                  size="mobile-md"
+                </button>
+                <button
                   onClick={handlePasswordChange}
-                  loading={loading}
-                  style={{ flex: 1 }}
+                  disabled={loading}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    backgroundColor: 'var(--accent-primary)',
+                    color: 'white',
+                    fontSize: '16px',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    opacity: loading ? 0.6 : 1
+                  }}
                 >
                   {loading ? 'Updating...' : 'Update Password'}
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -788,23 +887,38 @@ const SettingsView: React.FC = () => {
             </p>
 
             <div style={{ display: 'flex', gap: '12px' }}>
-              <Button
-                variant="secondary"
-                size="mobile-md"
+              <button
                 onClick={() => setShowDeleteModal(false)}
-                style={{ flex: 1 }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '16px',
+                  cursor: 'pointer'
+                }}
               >
                 Cancel
-              </Button>
-              <Button
-                variant="danger"
-                size="mobile-md"
+              </button>
+              <button
                 onClick={handleDeleteAccount}
-                loading={loading}
-                style={{ flex: 1 }}
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--danger)',
+                  color: 'white',
+                  fontSize: '16px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.6 : 1
+                }}
               >
                 {loading ? 'Deleting...' : 'Delete Account'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
