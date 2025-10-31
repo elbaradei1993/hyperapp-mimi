@@ -782,8 +782,7 @@ const ProfileView: React.FC = () => {
       {/* Edit Profile Modal */}
       {showEditModal && (
         <div
-          className="modal-overlay"
-          style={{ display: 'flex' }}
+          className={`modal-overlay ${showEditModal ? 'active' : ''}`}
           onClick={() => setShowEditModal(false)}
         >
           <div
@@ -808,56 +807,29 @@ const ProfileView: React.FC = () => {
               {/* Form Content */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {/* Profile Picture Section */}
-                <div>
-                  <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '16px'
-                  }}>
-                    Profile Picture
-                  </h3>
+                <div className="form-section">
+                  <h3>Profile Picture</h3>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  <div className="profile-picture-section">
                     {/* Profile Picture Preview */}
-                    <div style={{
-                      width: '120px',
-                      height: '120px',
-                      borderRadius: '50%',
-                      border: '3px solid #d1d5db',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#f9fafb'
-                    }}>
+                    <div className="profile-picture-preview">
                       {editForm.profilePicturePreview ? (
                         <img
                           src={editForm.profilePicturePreview}
                           alt="Profile preview"
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
                         />
                       ) : user?.profile_picture_url ? (
                         <img
                           src={user.profile_picture_url}
                           alt="Current profile"
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
                         />
                       ) : (
-                        <i className="fas fa-user" style={{ fontSize: '48px', color: '#9ca3af' }}></i>
+                        <i className="fas fa-user"></i>
                       )}
                     </div>
 
                     {/* Upload Controls */}
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <div className="upload-controls">
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -883,22 +855,9 @@ const ProfileView: React.FC = () => {
 
                       <button
                         type="button"
+                        className="upload-btn"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadingPicture}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: '8px',
-                          border: '1px solid #d1d5db',
-                          backgroundColor: 'white',
-                          color: '#374151',
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          cursor: uploadingPicture ? 'not-allowed' : 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          opacity: uploadingPicture ? 0.5 : 1
-                        }}
                       >
                         <i className="fas fa-camera"></i>
                         {editForm.profilePicture || user?.profile_picture_url ? 'Change Photo' : 'Upload Photo'}
@@ -907,6 +866,7 @@ const ProfileView: React.FC = () => {
                       {(editForm.profilePicture || user?.profile_picture_url) && (
                         <button
                           type="button"
+                          className="upload-btn remove"
                           onClick={() => {
                             setEditForm(prev => ({
                               ...prev,
@@ -917,19 +877,6 @@ const ProfileView: React.FC = () => {
                               fileInputRef.current.value = '';
                             }
                           }}
-                          style={{
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            border: '1px solid #dc2626',
-                            backgroundColor: 'white',
-                            color: '#dc2626',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                          }}
                         >
                           <i className="fas fa-trash"></i>
                           Remove
@@ -937,141 +884,72 @@ const ProfileView: React.FC = () => {
                       )}
                     </div>
 
-                    <p style={{
-                      fontSize: '12px',
-                      color: '#6b7280',
-                      textAlign: 'center',
-                      margin: '8px 0 0 0'
-                    }}>
+                    <p className="upload-hint">
                       Upload a profile picture (max 5MB, JPG/PNG/WebP/GIF)
                     </p>
                   </div>
                 </div>
 
                 {/* Personal Information */}
-                <div>
-                  <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '16px'
-                  }}>
-                    Personal Information
-                  </h3>
+                <div className="form-section">
+                  <h3>Personal Information</h3>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
                     {/* First Name */}
-                    <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '4px'
-                      }}>
+                    <div className="form-group">
+                      <label className="form-label">
                         {t('profile.firstName')} *
                       </label>
                       <input
                         type="text"
+                        className="form-input"
                         value={editForm.firstName}
                         onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
                         placeholder={t('profile.firstNamePlaceholder')}
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '8px',
-                          fontSize: '16px',
-                          outline: 'none'
-                        }}
                       />
                     </div>
 
                     {/* Last Name */}
-                    <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '4px'
-                      }}>
+                    <div className="form-group">
+                      <label className="form-label">
                         {t('profile.lastName')} *
                       </label>
                       <input
                         type="text"
+                        className="form-input"
                         value={editForm.lastName}
                         onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
                         placeholder={t('profile.lastNamePlaceholder')}
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '8px',
-                          fontSize: '16px',
-                          outline: 'none'
-                        }}
                       />
                     </div>
 
                     {/* Phone */}
-                    <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '4px'
-                      }}>
+                    <div className="form-group">
+                      <label className="form-label">
                         {t('profile.phone')}
                       </label>
                       <input
                         type="tel"
+                        className="form-input"
                         value={editForm.phone}
                         onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
                         placeholder="+1 (555) 123-4567"
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '8px',
-                          fontSize: '16px',
-                          outline: 'none'
-                        }}
                       />
                     </div>
 
                     {/* Location */}
-                    <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#374151',
-                        marginBottom: '4px'
-                      }}>
+                    <div className="form-group">
+                      <label className="form-label">
                         {t('profile.location')}
                       </label>
                       <input
                         type="text"
+                        className="form-input"
                         value={editForm.location}
                         onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
                         placeholder="Enter your location"
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '8px',
-                          fontSize: '16px',
-                          outline: 'none'
-                        }}
                       />
-                      <p style={{
-                        fontSize: '12px',
-                        color: '#6b7280',
-                        marginTop: '4px',
-                        marginBottom: '0'
-                      }}>
+                      <p className="form-hint">
                         Your location was automatically detected during onboarding, but you can update it here
                       </p>
                     </div>
@@ -1079,15 +957,8 @@ const ProfileView: React.FC = () => {
                 </div>
 
                 {/* Community Interests */}
-                <div>
-                  <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '16px'
-                  }}>
-                    {t('profile.communityInterests')}
-                  </h3>
+                <div className="form-section">
+                  <h3>{t('profile.communityInterests')}</h3>
 
                   <p style={{
                     color: '#6b7280',
@@ -1097,30 +968,20 @@ const ProfileView: React.FC = () => {
                     Select your interests to connect with like-minded people
                   </p>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div>
                     {Object.entries(INTEREST_CATEGORIES).map(([key, category]) => (
-                      <div key={key}>
-                        <h4 style={{
-                          fontSize: '16px',
-                          fontWeight: '600',
-                          color: 'var(--text-primary)',
-                          marginBottom: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}>
+                      <div key={key} className="interest-category">
+                        <h4>
                           <span>{category.icon}</span>
                           {category.label}
                         </h4>
 
-                        <div style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: '10px'
-                        }}>
+                        <div className="interest-options">
                           {category.items.map((item) => (
                             <button
                               key={item}
+                              type="button"
+                              className={`interest-option ${editForm.interests.includes(item) ? 'selected' : ''}`}
                               onClick={() => {
                                 setEditForm(prev => ({
                                   ...prev,
@@ -1128,17 +989,6 @@ const ProfileView: React.FC = () => {
                                     ? prev.interests.filter(i => i !== item)
                                     : [...prev.interests, item]
                                 }));
-                              }}
-                              style={{
-                                padding: '10px 18px',
-                                borderRadius: '20px',
-                                border: editForm.interests.includes(item) ? '2px solid #3b82f6' : '2px solid #d1d5db',
-                                backgroundColor: editForm.interests.includes(item) ? '#eff6ff' : 'white',
-                                color: editForm.interests.includes(item) ? '#1d4ed8' : '#374151',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
                               }}
                             >
                               {item}
