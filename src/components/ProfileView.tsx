@@ -62,6 +62,7 @@ const ProfileView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [editForm, setEditForm] = useState({
     firstName: '',
     lastName: '',
@@ -73,6 +74,22 @@ const ProfileView: React.FC = () => {
   });
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Check if we're on mobile initially
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -580,7 +597,9 @@ const ProfileView: React.FC = () => {
                 });
                 setShowEditModal(true);
               }}
-              size="sm"
+              size="md"
+              variant="outline"
+              className="font-semibold shadow-sm hover:shadow-md transition-all duration-200 border-2 hover:border-blue-400"
             >
               <i className="fas fa-edit"></i>
               {t('profile.editProfile')}
@@ -1110,44 +1129,66 @@ const ProfileView: React.FC = () => {
                 </div>
 
                 {/* Vote Buttons */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  flexShrink: 0,
+                  width: isMobile ? '80px' : '60px'
+                }}>
                   <button
                     onClick={() => voteOnReport(report.id, 'upvote')}
+                    className="vote-button"
                     style={{
                       backgroundColor: report.user_vote === 'upvote' ? 'var(--success)' : 'transparent',
                       color: report.user_vote === 'upvote' ? 'white' : 'var(--text-muted)',
                       border: `1px solid ${report.user_vote === 'upvote' ? 'var(--success)' : 'var(--border-color)'}`,
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      fontSize: '12px',
+                      borderRadius: '8px',
+                      padding: isMobile ? '8px 12px' : '4px 8px',
+                      fontSize: isMobile ? '14px' : '12px',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '4px',
-                      minHeight: '32px' // Ensure minimum touch target for small buttons
+                      minHeight: isMobile ? '44px' : '32px',
+                      minWidth: isMobile ? '44px' : '32px',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      flexDirection: 'column'
                     }}
                   >
                     <i className="fas fa-thumbs-up"></i>
-                    {report.upvotes || 0}
+                    <span style={{ fontSize: isMobile ? '12px' : '10px', lineHeight: '1' }}>
+                      {report.upvotes || 0}
+                    </span>
                   </button>
                   <button
                     onClick={() => voteOnReport(report.id, 'downvote')}
+                    className="vote-button"
                     style={{
                       backgroundColor: report.user_vote === 'downvote' ? 'var(--danger)' : 'transparent',
                       color: report.user_vote === 'downvote' ? 'white' : 'var(--text-muted)',
                       border: `1px solid ${report.user_vote === 'downvote' ? 'var(--danger)' : 'var(--border-color)'}`,
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      fontSize: '12px',
+                      borderRadius: '8px',
+                      padding: isMobile ? '8px 12px' : '4px 8px',
+                      fontSize: isMobile ? '14px' : '12px',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '4px',
-                      minHeight: '32px' // Ensure minimum touch target for small buttons
+                      minHeight: isMobile ? '44px' : '32px',
+                      minWidth: isMobile ? '44px' : '32px',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      flexDirection: 'column'
                     }}
                   >
                     <i className="fas fa-thumbs-down"></i>
-                    {report.downvotes || 0}
+                    <span style={{ fontSize: isMobile ? '12px' : '10px', lineHeight: '1' }}>
+                      {report.downvotes || 0}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -1441,21 +1482,24 @@ const ProfileView: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {/* First Name */}
                   <div>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '4px'
-                    }}>
+                    <label
+                      htmlFor="firstName"
+                      style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '4px'
+                      }}
+                    >
                       {t('profile.firstName')}
                     </label>
                     <input
+                      id="firstName"
                       type="text"
                       value={editForm.firstName}
                       onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
                       placeholder={t('profile.firstNamePlaceholder')}
-                      aria-label={t('profile.firstName')}
                       style={{
                         width: '100%',
                         padding: '12px',
@@ -1469,16 +1513,20 @@ const ProfileView: React.FC = () => {
 
                   {/* Last Name */}
                   <div>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '4px'
-                    }}>
+                    <label
+                      htmlFor="lastName"
+                      style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '4px'
+                      }}
+                    >
                       {t('profile.lastName')}
                     </label>
                     <input
+                      id="lastName"
                       type="text"
                       value={editForm.lastName}
                       onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
@@ -1496,16 +1544,20 @@ const ProfileView: React.FC = () => {
 
                   {/* Phone */}
                   <div>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '4px'
-                    }}>
+                    <label
+                      htmlFor="phone"
+                      style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '4px'
+                      }}
+                    >
                       {t('profile.phone')}
                     </label>
                     <input
+                      id="phone"
                       type="tel"
                       value={editForm.phone}
                       onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
@@ -1523,16 +1575,20 @@ const ProfileView: React.FC = () => {
 
                   {/* Location */}
                   <div>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '4px'
-                    }}>
+                    <label
+                      htmlFor="location"
+                      style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '4px'
+                      }}
+                    >
                       {t('profile.location')}
                     </label>
                     <input
+                      id="location"
                       type="text"
                       value={editForm.location}
                       onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
