@@ -579,6 +579,7 @@ const ProfileView: React.FC = () => {
           <button
             className="btn btn-primary btn-full"
             onClick={() => {
+              console.log('Edit Profile button clicked');
               setEditForm({
                 firstName: user?.first_name || '',
                 lastName: user?.last_name || '',
@@ -592,6 +593,7 @@ const ProfileView: React.FC = () => {
                 profilePicture: null,
                 profilePicturePreview: user?.profile_picture_url || ''
               });
+              console.log('Setting showEditModal to true');
               setShowEditModal(true);
             }}
           >
@@ -779,24 +781,438 @@ const ProfileView: React.FC = () => {
 
       {/* Edit Profile Modal */}
       {showEditModal && (
-        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
-                {t('profile.editProfile')}
-              </h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-                Update your personal information
-              </p>
+        <div
+          className="modal-overlay"
+          style={{ display: 'flex' }}
+          onClick={() => setShowEditModal(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="modal-header">
+              <h2>{t('profile.editProfile')}</h2>
+              <p>Update your personal information</p>
+              <button
+                className="modal-close-btn"
+                onClick={() => setShowEditModal(false)}
+                aria-label="Close modal"
+              >
+                <i className="fas fa-times"></i>
+              </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowEditModal(false)}>
+            {/* Modal Body */}
+            <div className="modal-body">
+              {/* Form Content */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Profile Picture Section */}
+              <div>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  marginBottom: '16px'
+                }}>
+                  Profile Picture
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  {/* Profile Picture Preview */}
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '50%',
+                    border: '3px solid #d1d5db',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#f9fafb'
+                  }}>
+                    {editForm.profilePicturePreview ? (
+                      <img
+                        src={editForm.profilePicturePreview}
+                        alt="Profile preview"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    ) : user?.profile_picture_url ? (
+                      <img
+                        src={user.profile_picture_url}
+                        alt="Current profile"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    ) : (
+                      <i className="fas fa-user" style={{ fontSize: '48px', color: '#9ca3af' }}></i>
+                    )}
+                  </div>
+
+                  {/* Upload Controls */}
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setEditForm(prev => ({ ...prev, profilePicture: file }));
+
+                          // Create preview
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            setEditForm(prev => ({
+                              ...prev,
+                              profilePicturePreview: e.target?.result as string
+                            }));
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      style={{ display: 'none' }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingPicture}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #d1d5db',
+                        backgroundColor: 'white',
+                        color: '#374151',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: uploadingPicture ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        opacity: uploadingPicture ? 0.5 : 1
+                      }}
+                    >
+                      <i className="fas fa-camera"></i>
+                      {editForm.profilePicture || user?.profile_picture_url ? 'Change Photo' : 'Upload Photo'}
+                    </button>
+
+                    {(editForm.profilePicture || user?.profile_picture_url) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditForm(prev => ({
+                            ...prev,
+                            profilePicture: null,
+                            profilePicturePreview: ''
+                          }));
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          border: '1px solid #dc2626',
+                          backgroundColor: 'white',
+                          color: '#dc2626',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <i className="fas fa-trash"></i>
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#6b7280',
+                    textAlign: 'center',
+                    margin: '8px 0 0 0'
+                  }}>
+                    Upload a profile picture (max 5MB, JPG/PNG/WebP/GIF)
+                  </p>
+                </div>
+              </div>
+
+              {/* Personal Information */}
+              <div>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  marginBottom: '16px'
+                }}>
+                  Personal Information
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* First Name */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '4px'
+                    }}>
+                      {t('profile.firstName')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.firstName}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+                      placeholder={t('profile.firstNamePlaceholder')}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  {/* Last Name */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '4px'
+                    }}>
+                      {t('profile.lastName')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.lastName}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
+                      placeholder={t('profile.lastNamePlaceholder')}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '4px'
+                    }}>
+                      {t('profile.phone')}
+                    </label>
+                    <input
+                      type="tel"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="+1 (555) 123-4567"
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '4px'
+                    }}>
+                      {t('profile.location')}
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.location}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="Enter your location"
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#6b7280',
+                      marginTop: '4px',
+                      marginBottom: '0'
+                    }}>
+                      Your location was automatically detected during onboarding, but you can update it here
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Community Interests */}
+              <div>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  marginBottom: '16px'
+                }}>
+                  {t('profile.communityInterests')}
+                </h3>
+
+                <p style={{
+                  color: '#6b7280',
+                  marginBottom: '24px',
+                  fontSize: '14px'
+                }}>
+                  Select your interests to connect with like-minded people
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {Object.entries(INTEREST_CATEGORIES).map(([key, category]) => (
+                    <div key={key}>
+                      <h4 style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: 'var(--text-primary)',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span>{category.icon}</span>
+                        {category.label}
+                      </h4>
+
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '10px'
+                      }}>
+                        {category.items.map((item) => (
+                          <button
+                            key={item}
+                            onClick={() => {
+                              setEditForm(prev => ({
+                                ...prev,
+                                interests: prev.interests.includes(item)
+                                  ? prev.interests.filter(i => i !== item)
+                                  : [...prev.interests, item]
+                              }));
+                            }}
+                            style={{
+                              padding: '10px 18px',
+                              borderRadius: '20px',
+                              border: editForm.interests.includes(item) ? '2px solid #3b82f6' : '2px solid #d1d5db',
+                              backgroundColor: editForm.interests.includes(item) ? '#eff6ff' : 'white',
+                              color: editForm.interests.includes(item) ? '#1d4ed8' : '#374151',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            {item}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+
+              </div>
+
+              {/* Modal Actions */}
+              <div className="modal-actions">
+                <button
+                  className="btn-cancel"
+                  onClick={() => setShowEditModal(false)}
+                >
                   {t('common.cancel')}
                 </button>
-                <button className="btn btn-primary" style={{ flex: 1 }}>
-                  {t('profile.saveChanges')}
+
+                <button
+                  className="btn-save"
+                  onClick={async () => {
+                    if (!user) return;
+
+                    try {
+                      setUploadingPicture(true);
+
+                      let profilePictureUrl = user.profile_picture_url;
+
+                      // Upload profile picture if selected
+                      if (editForm.profilePicture) {
+                        const uploadResult = await uploadService.uploadProfilePicture(
+                          editForm.profilePicture,
+                          user.id
+                        );
+                        profilePictureUrl = uploadResult.url;
+                      } else if (!editForm.profilePicturePreview && user.profile_picture_url) {
+                        // User removed the profile picture
+                        profilePictureUrl = undefined;
+                      }
+
+                      // Prepare location update - keep existing coordinates if available
+                      const locationUpdate = editForm.location ? {
+                        latitude: user?.location?.latitude || 0,
+                        longitude: user?.location?.longitude || 0,
+                        address: editForm.location
+                      } : undefined;
+
+                      await updateProfile({
+                        first_name: editForm.firstName,
+                        last_name: editForm.lastName,
+                        phone: editForm.phone,
+                        profile_picture_url: profilePictureUrl,
+                        location: locationUpdate,
+                        interests: editForm.interests
+                      });
+
+                      setShowEditModal(false);
+                      // Reload profile data to reflect changes
+                      loadProfileData();
+                    } catch (error) {
+                      console.error('Error updating profile:', error);
+                      alert(`Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    } finally {
+                      setUploadingPicture(false);
+                    }
+                  }}
+                  disabled={uploadingPicture}
+                >
+                  {uploadingPicture ? 'Uploading...' : t('profile.saveChanges')}
                 </button>
               </div>
             </div>

@@ -509,12 +509,104 @@
 .modal-content {
   background: var(--bg-primary);
   border-radius: var(--border-radius);
-  padding: 24px;
   width: 100%;
   max-width: 500px;
   box-shadow: var(--shadow-lg);
-  max-height: 90vh;
+  position: relative;
+}
+
+/* Modal Header */
+.modal-header {
+  padding: 24px 24px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.modal-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.modal-header p {
+  color: var(--text-muted);
+  font-size: 16px;
+  margin: 0;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-height: 70vh;
   overflow-y: auto;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-cancel {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: white;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  flex: 1;
+}
+
+.btn-save {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--accent-primary);
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  flex: 1;
+  transition: background-color 0.2s ease;
+}
+
+.btn-save:disabled {
+  background-color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.btn-save:not(:disabled):hover {
+  background-color: var(--accent-primary-dark);
 }
 
 /* Responsive Breakpoints */
@@ -608,6 +700,92 @@
 
   .report-item, .badge-card {
     cursor: pointer;
+  }
+
+  /* Mobile Modal Styles */
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+    margin-top: 20px;
+  }
+
+  .modal-header {
+    padding: 20px 20px 16px;
+  }
+
+  .modal-header h2 {
+    font-size: 22px;
+    padding-right: 30px;
+  }
+
+  .modal-body {
+    padding: 20px;
+    gap: 20px;
+    max-height: 75vh;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel, .btn-save {
+    padding: 14px 24px;
+  }
+
+  .profile-picture-preview {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-picture-preview i {
+    font-size: 40px;
+  }
+
+  .upload-controls {
+    flex-direction: column;
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .upload-controls button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .interest-options {
+    gap: 6px;
+  }
+
+  .interest-option {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header h2 {
+    font-size: 20px;
+  }
+
+  .modal-header p {
+    font-size: 14px;
+  }
+
+  .form-section h3 {
+    font-size: 16px;
+  }
+
+  .interest-category h4 {
+    font-size: 15px;
+  }
+
+  .interest-option {
+    padding: 7px 12px;
+    font-size: 12px;
   }
 }
 
