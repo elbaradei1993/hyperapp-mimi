@@ -4,6 +4,7 @@ import type { OnboardingData } from '../types';
 import { INTEREST_CATEGORIES } from '../types';
 import { authService } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
+import PrivacyTermsModal from './PrivacyTermsModal';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
   const { user, refreshProfile } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [showPrivacyTermsModal, setShowPrivacyTermsModal] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     firstName: '',
     lastName: '',
@@ -85,6 +88,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
 
   const handleComplete = async () => {
     if (!user) return;
+
+    if (!privacyAccepted) {
+      alert('Please accept the Privacy Policy and Terms of Service to continue.');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -196,6 +204,9 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
           {currentStep === 4 && (
             <Step4Welcome
               data={onboardingData}
+              privacyAccepted={privacyAccepted}
+              onPrivacyAcceptedChange={setPrivacyAccepted}
+              onShowPrivacyTerms={() => setShowPrivacyTermsModal(true)}
             />
           )}
         </div>
@@ -259,6 +270,13 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
           )}
         </div>
       </div>
+
+      {/* Privacy & Terms Modal */}
+      <PrivacyTermsModal
+        isOpen={showPrivacyTermsModal}
+        onClose={() => setShowPrivacyTermsModal(false)}
+        initialTab="privacy"
+      />
     </div>
   );
 };
@@ -550,7 +568,10 @@ const Step3Interests: React.FC<{
 
 const Step4Welcome: React.FC<{
   data: OnboardingData;
-}> = ({ data }) => {
+  privacyAccepted: boolean;
+  onPrivacyAcceptedChange: (accepted: boolean) => void;
+  onShowPrivacyTerms: () => void;
+}> = ({ data, privacyAccepted, onPrivacyAcceptedChange, onShowPrivacyTerms }) => {
   const { t } = useTranslation();
   return (
     <div style={{ textAlign: 'center' }}>
@@ -583,7 +604,8 @@ const Step4Welcome: React.FC<{
         padding: '16px',
         borderRadius: '8px',
         border: '1px solid #bae6fd',
-        textAlign: 'left'
+        textAlign: 'left',
+        marginBottom: '24px'
       }}>
         <h4 style={{
           fontSize: '16px',
@@ -604,6 +626,79 @@ const Step4Welcome: React.FC<{
           <li>{t('onboarding.connectPeople')}</li>
           <li>{t('onboarding.earnReputation')}</li>
         </ul>
+      </div>
+
+      {/* Privacy & Terms Acceptance */}
+      <div style={{
+        backgroundColor: '#f9fafb',
+        padding: '16px',
+        borderRadius: '8px',
+        border: '1px solid #e5e7eb',
+        textAlign: 'left',
+        marginBottom: '16px'
+      }}>
+        <label style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '12px',
+          fontSize: '14px',
+          color: '#374151',
+          cursor: 'pointer',
+          lineHeight: '1.4'
+        }}>
+          <input
+            type="checkbox"
+            checked={privacyAccepted}
+            onChange={(e) => onPrivacyAcceptedChange(e.target.checked)}
+            style={{
+              width: '16px',
+              height: '16px',
+              marginTop: '2px',
+              flexShrink: 0
+            }}
+          />
+          <span>
+            I agree to the{' '}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                onShowPrivacyTerms();
+              }}
+              style={{
+                color: '#3b82f6',
+                textDecoration: 'underline',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                padding: 0,
+                fontWeight: '500'
+              }}
+            >
+              Privacy Policy
+            </button>
+            {' '}and{' '}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                onShowPrivacyTerms();
+              }}
+              style={{
+                color: '#3b82f6',
+                textDecoration: 'underline',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                padding: 0,
+                fontWeight: '500'
+              }}
+            >
+              Terms of Service
+            </button>
+            *
+          </span>
+        </label>
       </div>
     </div>
   );

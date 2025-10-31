@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { authService } from '../services/auth';
+import PrivacyTermsModal from './PrivacyTermsModal';
 import type { Theme } from '../contexts/ThemeContext';
 
 const SettingsView: React.FC = () => {
@@ -21,6 +22,8 @@ const SettingsView: React.FC = () => {
   const [notifications, setNotifications] = useState(true);
   const [locationSharing, setLocationSharing] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPrivacyTermsModal, setShowPrivacyTermsModal] = useState(false);
+  const [privacyTermsTab, setPrivacyTermsTab] = useState<'privacy' | 'terms'>('privacy');
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -636,27 +639,10 @@ const SettingsView: React.FC = () => {
           {/* Support Links */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <button
-              onClick={() => window.open('https://example.com/help', '_blank')}
-              style={{
-                padding: '12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
+              onClick={() => {
+                setPrivacyTermsTab('privacy');
+                setShowPrivacyTermsModal(true);
               }}
-            >
-              <i className="fas fa-question-circle"></i>
-              {t('settings.help')}
-            </button>
-            <button
-              onClick={() => window.open('https://example.com/privacy', '_blank')}
               style={{
                 padding: '12px',
                 border: '1px solid var(--border-color)',
@@ -675,11 +661,11 @@ const SettingsView: React.FC = () => {
               <i className="fas fa-file-contract"></i>
               {t('settings.privacy')}
             </button>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <button
-              onClick={() => window.open('https://example.com/terms', '_blank')}
+              onClick={() => {
+                setPrivacyTermsTab('terms');
+                setShowPrivacyTermsModal(true);
+              }}
               style={{
                 padding: '12px',
                 border: '1px solid var(--border-color)',
@@ -697,26 +683,6 @@ const SettingsView: React.FC = () => {
             >
               <i className="fas fa-gavel"></i>
               {t('settings.terms')}
-            </button>
-            <button
-              onClick={() => window.open('mailto:support@example.com', '_blank')}
-              style={{
-                padding: '12px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <i className="fas fa-envelope"></i>
-              {t('settings.contact')}
             </button>
           </div>
         </div>
@@ -923,6 +889,13 @@ const SettingsView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Privacy & Terms Modal */}
+      <PrivacyTermsModal
+        isOpen={showPrivacyTermsModal}
+        onClose={() => setShowPrivacyTermsModal(false)}
+        initialTab={privacyTermsTab}
+      />
     </div>
   );
 };
