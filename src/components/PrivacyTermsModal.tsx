@@ -14,38 +14,50 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
   const { t } = useTranslation();
 
   const privacyContent = (
-    <div style={{ lineHeight: '1.6', color: 'var(--text-primary)' }}>
-      <h3 style={{
-        fontSize: '18px',
-        fontWeight: 'bold',
-        color: 'var(--text-primary)',
-        marginBottom: '16px',
-        borderBottom: '2px solid var(--accent-primary)',
-        paddingBottom: '8px'
-      }}>
-        Privacy Policy
-      </h3>
-
-      <div style={{ marginBottom: '20px' }}>
-        <p style={{ fontSize: '14px', marginBottom: '12px' }}>
+    <div style={{
+      lineHeight: '1.6',
+      color: 'var(--text-primary)',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif'
+    }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{
+          fontSize: '18px',
+          fontWeight: '700',
+          color: 'var(--text-primary)',
+          marginBottom: '12px',
+          paddingBottom: '8px',
+          borderBottom: '2px solid var(--primary-color, #4361ee)'
+        }}>
+          Privacy Policy
+        </h3>
+        <p style={{
+          fontSize: '14px',
+          marginBottom: '12px',
+          color: 'var(--text-secondary, #666666)'
+        }}>
           <strong>Last Updated:</strong> October 31, 2025
         </p>
-        <p style={{ fontSize: '14px', marginBottom: '16px' }}>
+        <p style={{
+          fontSize: '14px',
+          marginBottom: '16px',
+          color: 'var(--text-primary)'
+        }}>
           This Privacy Policy describes how HyperApp ("we," "us," or "our") collects, uses, discloses, and safeguards your information when you use our community safety and vibe mapping platform (the "Service").
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           1. Information We Collect
         </h4>
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px'
@@ -69,10 +81,11 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </ul>
 
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '8px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           1.2 Automatically Collected Information
         </h5>
@@ -92,12 +105,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </ul>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           2. How We Use Your Information
         </h4>
@@ -120,12 +134,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </ul>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           3. Information Sharing and Disclosure
         </h4>
@@ -146,12 +161,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </ul>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           4. Data Security
         </h4>
@@ -160,12 +176,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           5. Your Rights and Choices
         </h4>
@@ -187,12 +204,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </ul>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           6. Data Retention
         </h4>
@@ -201,12 +219,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           7. International Data Transfers
         </h4>
@@ -215,12 +234,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           8. Children's Privacy
         </h4>
@@ -229,12 +249,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           9. Changes to This Privacy Policy
         </h4>
@@ -243,12 +264,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           10. Contact Us
         </h4>
@@ -264,33 +286,45 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
   );
 
   const termsContent = (
-    <div style={{ lineHeight: '1.6', color: 'var(--text-primary)' }}>
-      <h3 style={{
-        fontSize: '18px',
-        fontWeight: 'bold',
-        color: 'var(--text-primary)',
-        marginBottom: '16px',
-        borderBottom: '2px solid var(--accent-primary)',
-        paddingBottom: '8px'
-      }}>
-        Terms of Service
-      </h3>
-
-      <div style={{ marginBottom: '20px' }}>
-        <p style={{ fontSize: '14px', marginBottom: '12px' }}>
+    <div style={{
+      lineHeight: '1.6',
+      color: 'var(--text-primary)',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif'
+    }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{
+          fontSize: '18px',
+          fontWeight: '700',
+          color: 'var(--text-primary)',
+          marginBottom: '12px',
+          paddingBottom: '8px',
+          borderBottom: '2px solid var(--primary-color, #4361ee)'
+        }}>
+          Terms of Service
+        </h3>
+        <p style={{
+          fontSize: '14px',
+          marginBottom: '12px',
+          color: 'var(--text-secondary, #666666)'
+        }}>
           <strong>Last Updated:</strong> October 31, 2025
         </p>
-        <p style={{ fontSize: '14px', marginBottom: '16px' }}>
+        <p style={{
+          fontSize: '14px',
+          marginBottom: '16px',
+          color: 'var(--text-primary)'
+        }}>
           These Terms of Service ("Terms") govern your use of HyperApp, a community safety and vibe mapping platform ("Service") operated by HyperApp ("we," "us," or "our").
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           1. Acceptance of Terms
         </h4>
@@ -299,12 +333,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           2. Description of Service
         </h4>
@@ -325,17 +360,18 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </ul>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           3. User Accounts
         </h4>
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px'
@@ -358,10 +394,11 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </ul>
 
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '8px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           3.2 Account Termination
         </h5>
@@ -370,17 +407,18 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           4. User Conduct and Content
         </h4>
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px'
@@ -406,10 +444,11 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </ul>
 
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '8px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           4.2 Content Ownership
         </h5>
@@ -418,12 +457,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           5. Emergency Reporting
         </h4>
@@ -432,12 +472,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           6. Privacy and Data
         </h4>
@@ -446,17 +487,18 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           7. Disclaimers and Limitations
         </h4>
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px'
@@ -468,10 +510,11 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
 
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '8px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           7.2 Accuracy of Information
         </h5>
@@ -480,10 +523,11 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
 
         <h5 style={{
-          fontSize: '14px',
+          fontSize: '15px',
           fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '8px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           7.3 Limitation of Liability
         </h5>
@@ -492,12 +536,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           8. Indemnification
         </h4>
@@ -506,12 +551,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           9. Termination
         </h4>
@@ -520,12 +566,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           10. Governing Law
         </h4>
@@ -534,12 +581,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           11. Changes to Terms
         </h4>
@@ -548,12 +596,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         </p>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <h4 style={{
           fontSize: '16px',
-          fontWeight: 'bold',
+          fontWeight: '600',
           color: 'var(--text-primary)',
-          marginBottom: '12px'
+          marginBottom: '8px',
+          marginTop: '16px'
         }}>
           12. Contact Information
         </h4>
