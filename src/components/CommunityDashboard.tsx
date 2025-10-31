@@ -6,6 +6,7 @@ import { reportsService } from '../services/reports';
 import { reverseGeocode } from '../lib/geocoding';
 import { VIBE_CONFIG, VibeType } from '../constants/vibes';
 import { useVibe } from '../contexts/VibeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Vibe, Report } from '../types';
 
@@ -630,6 +631,10 @@ interface CommunityDashboardProps {
   onNewReport?: () => void;
 }
 
+interface ReportWithVote extends Report {
+  user_vote?: 'upvote' | 'downvote' | null;
+}
+
 const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   vibes,
   userLocation,
@@ -638,6 +643,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 }) => {
   const { t } = useTranslation();
   const { setCurrentLocationVibe } = useVibe();
+  const { user } = useAuth();
   const [clusters, setClusters] = useState<LocationCluster[]>([]);
   const [currentLocationAddress, setCurrentLocationAddress] = useState<string>('');
   const [localCurrentLocationVibe, setLocalCurrentLocationVibe] = useState<{
@@ -653,6 +659,10 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   }>>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userReports, setUserReports] = useState<Report[]>([]);
+  const [userReportsLoading, setUserReportsLoading] = useState(false);
+  const [nearbyReports, setNearbyReports] = useState<ReportWithVote[]>([]);
+  const [nearbyReportsLoading, setNearbyReportsLoading] = useState(false);
 
   // Ref for subscription cleanup
   const subscriptionsRef = useRef<{ reports?: any; votes?: any }>({});
@@ -727,6 +737,102 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
     setError(null);
     // Trigger re-fetch by updating dependencies or using a ref
   }, []);
+
+  // Load user reports for recent activity
+  const loadUserReports = useCallback(async (): Promise<Report[]> => {
+    try {
+      setUserReportsLoading(true);
+      // For now, load recent reports from database
+      // In a full implementation, this would filter by current user
+      const reports = await reportsService.getReports({ limit: 10 });
+      return reports;
+    } catch (error) {
+      console.error("Error loading user reports:", error);
+      return [];
+    } finally {
+      setUserReportsLoading(false);
+    }
+  }, []);
+
+  // Load nearby reports for community activity
+  const loadNearbyReports = useCallback(async (): Promise<Report[]> => {
+    try {
+      setNearbyReportsLoading(true);
+      // For now, load recent reports from database
+      // In a full implementation, this would filter by location
+      const reports = await reportsService.getReports({ limit: 10 });
+
+      // Add user vote information for each report
+      const reportsWithVotes = await Promise.all(
+        reports.map(async (report) => {
+          try {
+            const voteType = await reportsService.getUserVote(report.id, user!.id);
+            return {
+              ...report,
+              user_vote: voteType
+            };
+          } catch (error) {
+            return {
+              ...report,
+              user_vote: null
+            };
+          }
+        })
+      );
+
+      return reportsWithVotes;
+    } catch (error) {
+      console.error("Error loading nearby reports:", error);
+      return [];
+    } finally {
+      setNearbyReportsLoading(false);
+    }
+  }, [user]);
+
+  // Vote on report
+  const voteOnReport = useCallback(async (reportId: number, voteType: 'upvote' | 'downvote') => {
+    if (!user) return;
+
+    try {
+      await reportsService.vote(reportId, user.id, voteType);
+
+      // Update local state optimistically
+      setNearbyReports(prevReports =>
+        prevReports.map(report => {
+          if (report.id === reportId) {
+            const currentVote = report.user_vote;
+            let newUpvotes = report.upvotes || 0;
+            let newDownvotes = report.downvotes || 0;
+
+            // Remove previous vote if exists
+            if (currentVote === 'upvote') {
+              newUpvotes--;
+            } else if (currentVote === 'downvote') {
+              newDownvotes--;
+            }
+
+            // Add new vote
+            if (voteType === 'upvote') {
+              newUpvotes++;
+            } else {
+              newDownvotes++;
+            }
+
+            return {
+              ...report,
+              upvotes: newUpvotes,
+              downvotes: newDownvotes,
+              user_vote: voteType
+            };
+          }
+          return report;
+        })
+      );
+
+    } catch (error) {
+      console.error("Error voting on report:", error);
+    }
+  }, [user]);
 
   // Memoize processed clusters to avoid re-computation on every render
   const processedClusters = useMemo(() => {
@@ -837,6 +943,24 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
     }));
   }, [vibes]);
 
+  // Load user reports on component mount
+  useEffect(() => {
+    const loadReports = async () => {
+      const reports = await loadUserReports();
+      setUserReports(reports);
+    };
+    loadReports();
+  }, [loadUserReports]);
+
+  // Load nearby reports for community activity
+  useEffect(() => {
+    const loadNearby = async () => {
+      const reports = await loadNearbyReports();
+      setNearbyReports(reports as ReportWithVote[]);
+    };
+    loadNearby();
+  }, [loadNearbyReports]);
+
   // Set up real-time subscriptions
   useEffect(() => {
     subscriptionsRef.current.reports = reportsService.subscribeToReports((newReport) => {
@@ -914,20 +1038,6 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                   </div>
                   <div style={styles.locationInfo}>
                     <div style={styles.locationAddress}>{currentLocationAddress}</div>
-                    <div style={styles.locationMeta}>
-                      <div style={styles.metaItem}>
-                        <i className="fas fa-map-marker-alt"></i>
-                        Your Current Location
-                      </div>
-                      <div style={styles.metaItem}>
-                        <i className="fas fa-clock"></i>
-                        Updated 2 min ago
-                      </div>
-                      <div style={styles.metaItem}>
-                        <i className="fas fa-signal"></i>
-                        Strong Signal
-                      </div>
-                    </div>
                   </div>
                 </div>
 
@@ -1012,38 +1122,6 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                       </ResponsiveContainer>
                     </div>
                   </div>
-
-                  {/* Activity Trends Chart */}
-                  <div style={styles.chartCard}>
-                    <div style={styles.chartHeader}>
-                      <div style={styles.chartTitle}>Activity Trends</div>
-                    </div>
-                    <div style={styles.chartContainer}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={[
-                          { day: 'Mon', reports: 65 },
-                          { day: 'Tue', reports: 59 },
-                          { day: 'Wed', reports: 80 },
-                          { day: 'Thu', reports: 81 },
-                          { day: 'Fri', reports: 76 },
-                          { day: 'Sat', reports: 75 },
-                          { day: 'Sun', reports: 90 }
-                        ]}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="day" />
-                          <YAxis />
-                          <Tooltip />
-                          <Line
-                            type="monotone"
-                            dataKey="reports"
-                            stroke="#10b981"
-                            strokeWidth={3}
-                            dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -1069,98 +1147,128 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
         {/* Sidebar */}
         <div style={styles.sidebar}>
-          {/* Stats Card */}
-          <div style={styles.statsCard}>
-            <div style={styles.statsHeader}>
-              <div style={styles.statsTitle}>Community Metrics</div>
-            </div>
-            <div style={styles.statsGrid}>
-              <div style={styles.statItem}>
-                <div style={styles.statIcon}>
-                  <i className="fas fa-users"></i>
-                </div>
-                <div style={styles.statContent}>
-                  <div style={styles.statValue}>{communityMetrics.activeMembers}</div>
-                  <div style={styles.statLabel}>Active Members</div>
-                </div>
-                <div style={styles.statTrend}>
-                  <i className="fas fa-arrow-up"></i>
-                  12%
-                </div>
-              </div>
-
-              <div style={styles.statItem}>
-                <div style={styles.statIcon}>
-                  <i className="fas fa-map-marked-alt"></i>
-                </div>
-                <div style={styles.statContent}>
-                  <div style={styles.statValue}>{communityMetrics.areasMonitored}</div>
-                  <div style={styles.statLabel}>Areas Monitored</div>
-                </div>
-                <div style={styles.statTrend}>
-                  <i className="fas fa-arrow-up"></i>
-                  8%
-                </div>
-              </div>
-
-              <div style={styles.statItem}>
-                <div style={styles.statIcon}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <div style={styles.statContent}>
-                  <div style={styles.statValue}>{communityMetrics.safetyScore}%</div>
-                  <div style={styles.statLabel}>Safety Score</div>
-                </div>
-                <div style={styles.statTrend}>
-                  <i className="fas fa-arrow-up"></i>
-                  5%
-                </div>
-              </div>
-
-              <div style={styles.statItem}>
-                <div style={styles.statIcon}>
-                  <i className="fas fa-bolt"></i>
-                </div>
-                <div style={styles.statContent}>
-                  <div style={styles.statValue}>{communityMetrics.liveReports}</div>
-                  <div style={styles.statLabel}>Live Reports</div>
-                </div>
-                <div style={styles.statTrend}>
-                  <i className="fas fa-arrow-up"></i>
-                  15%
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Activity Feed */}
+          {/* Community Activity */}
           <div style={styles.activityCard}>
             <div style={styles.activityHeader}>
-              <div style={styles.activityTitle}>Recent Activity</div>
+              <div style={styles.activityTitle}>Community Activity</div>
             </div>
             <div style={styles.activityContent}>
-              {activityFeed.map((activity, index) => (
-                <div key={activity.id} style={styles.activityItem}>
-                  <div style={styles.activityAvatar}>{activity.user}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={styles.activityMessage}>{activity.message}</div>
-                    <div style={styles.activityMeta}>
-                      <span>{activity.time}</span>
-                      <span style={
-                        activity.type === 'safe' ? styles.badgeSafe :
-                        activity.type === 'calm' ? styles.badgeCalm :
-                        activity.type === 'lively' ? styles.badgeLively :
-                        styles.badgeFestive
-                      }>
-                        {activity.type}
-                      </span>
+              {nearbyReportsLoading ? (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '40px 20px'
+                }}>
+                  <LoadingSpinner size="md" />
+                </div>
+              ) : nearbyReports.length === 0 ? (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: '#64748b'
+                }}>
+                  <i className="fas fa-users" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
+                  <p>No nearby reports</p>
+                </div>
+              ) : (
+                nearbyReports.slice(0, 5).map(report => (
+                  <div key={report.id} style={{
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      backgroundColor: getVibeColor(report.vibe_type),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '16px'
+                    }}>
+                      <i className={getVibeIcon(report.vibe_type)}></i>
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        marginBottom: '2px'
+                      }}>
+                        {t(`vibes.${report.vibe_type}`)} {t('profile.report')}
+                      </div>
+                      <div style={{
+                        color: '#64748b',
+                        fontSize: '14px',
+                        marginBottom: '4px'
+                      }}>
+                        {report.location || t('profile.unknownLocation')}
+                      </div>
+                      {report.notes && (
+                        <div style={{
+                          color: '#475569',
+                          fontSize: '14px',
+                          marginBottom: '4px'
+                        }}>
+                          {report.notes}
+                        </div>
+                      )}
+                      <div style={{
+                        color: '#64748b',
+                        fontSize: '12px'
+                      }}>
+                        {new Date(report.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    {/* Vote Buttons */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <button
+                        onClick={() => voteOnReport(report.id, 'upvote')}
+                        style={{
+                          backgroundColor: report.user_vote === 'upvote' ? '#10b981' : 'transparent',
+                          color: report.user_vote === 'upvote' ? 'white' : '#64748b',
+                          border: `1px solid ${report.user_vote === 'upvote' ? '#10b981' : '#e2e8f0'}`,
+                          borderRadius: '6px',
+                          padding: '4px 8px',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <i className="fas fa-thumbs-up"></i>
+                        {report.upvotes || 0}
+                      </button>
+                      <button
+                        onClick={() => voteOnReport(report.id, 'downvote')}
+                        style={{
+                          backgroundColor: report.user_vote === 'downvote' ? '#ef4444' : 'transparent',
+                          color: report.user_vote === 'downvote' ? 'white' : '#64748b',
+                          border: `1px solid ${report.user_vote === 'downvote' ? '#ef4444' : '#e2e8f0'}`,
+                          borderRadius: '6px',
+                          padding: '4px 8px',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <i className="fas fa-thumbs-down"></i>
+                        {report.downvotes || 0}
+                      </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

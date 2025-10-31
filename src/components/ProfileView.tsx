@@ -62,6 +62,7 @@ const ProfileView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showMyReports, setShowMyReports] = useState(false);
   const [editForm, setEditForm] = useState({
     firstName: '',
     lastName: '',
@@ -87,7 +88,28 @@ const ProfileView: React.FC = () => {
       });
 
       const votesSubscription = reportsService.subscribeToVotes((update) => {
-        // Refresh data when votes change (affects user stats)
+        // Immediately update vote counts for user's reports if this report belongs to them
+        const isUserReport = myReports.some(report => report.id === update.reportId);
+        if (isUserReport) {
+          setMyReports(prevReports =>
+            prevReports.map(report =>
+              report.id === update.reportId
+                ? { ...report, upvotes: update.upvotes, downvotes: update.downvotes }
+                : report
+            )
+          );
+
+          // Also update recent activity data
+          setRecentActivity(prevActivity =>
+            prevActivity.map(activity =>
+              activity.id === update.reportId
+                ? { ...activity, upvotes: update.upvotes, downvotes: update.downvotes }
+                : activity
+            )
+          );
+        }
+
+        // Also refresh full data to ensure consistency (as fallback)
         loadProfileData();
         loadReportsData();
       });
@@ -607,9 +629,10 @@ const ProfileView: React.FC = () => {
           }}>
             <i className="fas fa-star" style={{ color: 'var(--warning)' }}></i>
             <span style={{
-              fontSize: '18px',
+              fontSize: 'clamp(14px, 4vw, 18px)',
               fontWeight: '600',
-              color: stats.reputation > 50 ? 'var(--success)' : 'var(--text-primary)'
+              color: stats.reputation > 50 ? 'var(--success)' : 'var(--text-primary)',
+              whiteSpace: 'nowrap'
             }}>
               {stats.reputation} {t('profile.reputationPoints')}
             </span>
@@ -925,18 +948,43 @@ const ProfileView: React.FC = () => {
         marginBottom: '24px',
         boxShadow: '0 1px 3px var(--shadow-color)'
       }}>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: 'bold',
-          color: 'var(--text-primary)',
-          marginBottom: '16px',
+        <div style={{
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '8px'
-        }}>
-          <i className="fas fa-list" style={{ color: 'var(--text-muted)' }}></i>
-          {t('profile.myReports')} ({myReports.length})
-        </h2>
+          marginBottom: '16px',
+          cursor: 'pointer'
+        }}
+        onClick={() => setShowMyReports(!showMyReports)}
+        >
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: 'var(--text-primary)',
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <i className="fas fa-list" style={{ color: 'var(--text-muted)' }}></i>
+            {t('profile.myReports')} ({myReports.length})
+          </h2>
+          <button style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: 'var(--text-muted)',
+            fontSize: '16px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '4px',
+            borderRadius: '4px',
+            transition: 'all 0.2s ease'
+          }}>
+            <i className={`fas fa-chevron-${showMyReports ? 'up' : 'down'}`}></i>
+          </button>
+        </div>
 
         {myReports.length === 0 ? (
           <div style={{
@@ -947,9 +995,9 @@ const ProfileView: React.FC = () => {
             <i className="fas fa-plus-circle" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
             <p>{t('profile.noReports')}</p>
           </div>
-        ) : (
+        ) : showMyReports && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {myReports.slice(0, 3).map(report => (
+            {myReports.map(report => (
               <div key={report.id} style={{
                 border: '1px solid var(--border-color)',
                 borderRadius: '8px',
@@ -1005,27 +1053,11 @@ const ProfileView: React.FC = () => {
                 </div>
               </div>
             ))}
-            {myReports.length > 3 && (
-              <button style={{
-                alignSelf: 'center',
-                backgroundColor: 'transparent',
-                color: 'var(--accent-primary)',
-                border: '1px solid var(--accent-primary)',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                marginTop: '8px'
-              }}>
-                {t('profile.viewAllReports')} ({myReports.length})
-              </button>
-            )}
           </div>
         )}
       </div>
 
-      {/* Community Activity Section */}
+      {/* Recent Activity Section */}
       <div style={{
         backgroundColor: 'var(--bg-primary)',
         borderRadius: '12px',
@@ -1042,8 +1074,8 @@ const ProfileView: React.FC = () => {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <i className="fas fa-users" style={{ color: 'var(--text-muted)' }}></i>
-          {t('profile.communityActivity')}
+          <i className="fas fa-clock" style={{ color: 'var(--text-muted)' }}></i>
+          {t('profile.recentActivity')}
         </h2>
 
         {reportsLoading ? (
@@ -1055,141 +1087,14 @@ const ProfileView: React.FC = () => {
           }}>
             <LoadingSpinner size="md" />
           </div>
-        ) : nearbyReports.length === 0 ? (
+        ) : myReports.length === 0 ? (
           <div style={{
             textAlign: 'center',
             padding: '40px 20px',
             color: 'var(--text-muted)'
           }}>
-            <i className="fas fa-users" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
-            <p>{t('profile.noNearbyReports')}</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {nearbyReports.slice(0, 5).map(report => (
-              <div key={report.id} style={{
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                padding: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-              }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  backgroundColor: getVibeColor(report.vibe_type),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '16px'
-                }}>
-                  <i className={getVibeIcon(report.vibe_type)}></i>
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '2px'
-                  }}>
-                    {t(`vibes.${report.vibe_type}`)} {t('profile.report')}
-                  </div>
-                  <div style={{
-                    color: 'var(--text-muted)',
-                    fontSize: '14px',
-                    marginBottom: '4px'
-                  }}>
-                    {report.location || t('profile.unknownLocation')}
-                  </div>
-                  {report.notes && (
-                    <div style={{
-                      color: 'var(--text-secondary)',
-                      fontSize: '14px',
-                      marginBottom: '4px'
-                    }}>
-                      {report.notes}
-                    </div>
-                  )}
-                  <div style={{
-                    color: 'var(--text-muted)',
-                    fontSize: '12px'
-                  }}>
-                    {formatTimeAgo(report.created_at)}
-                  </div>
-                </div>
-
-                {/* Vote Buttons */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <button
-                    onClick={() => voteOnReport(report.id, 'upvote')}
-                    style={{
-                      backgroundColor: report.user_vote === 'upvote' ? 'var(--success)' : 'transparent',
-                      color: report.user_vote === 'upvote' ? 'white' : 'var(--text-muted)',
-                      border: `1px solid ${report.user_vote === 'upvote' ? 'var(--success)' : 'var(--border-color)'}`,
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <i className="fas fa-thumbs-up"></i>
-                    {report.upvotes || 0}
-                  </button>
-                  <button
-                    onClick={() => voteOnReport(report.id, 'downvote')}
-                    style={{
-                      backgroundColor: report.user_vote === 'downvote' ? 'var(--danger)' : 'transparent',
-                      color: report.user_vote === 'downvote' ? 'white' : 'var(--text-muted)',
-                      border: `1px solid ${report.user_vote === 'downvote' ? 'var(--danger)' : 'var(--border-color)'}`,
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <i className="fas fa-thumbs-down"></i>
-                    {report.downvotes || 0}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Recent Activity */}
-      <div style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        padding: '24px',
-        boxShadow: '0 1px 3px var(--shadow-color)'
-      }}>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: 'bold',
-          color: 'var(--text-primary)',
-          marginBottom: '16px'
-        }}>
-          {t('profile.recentActivity')}
-        </h2>
-
-        {recentActivity.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: 'var(--text-muted)'
-          }}>
-            <i className="fas fa-plus-circle" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
-            <p>{t('profile.noRecentActivity')}</p>
+            <i className="fas fa-list" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
+            <p>{t('profile.noReports')}</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1244,7 +1149,7 @@ const ProfileView: React.FC = () => {
                     color: 'var(--text-muted)',
                     fontSize: '12px'
                   }}>
-                    {formatTimeAgo(activity.created_at)} • 👍 {activity.upvotes || 0} 👎 {activity.downvotes || 0}
+                    {new Date(activity.created_at).toLocaleDateString()} • 👍 {activity.upvotes || 0} 👎 {activity.downvotes || 0}
                   </div>
                 </div>
               </div>
@@ -1252,6 +1157,8 @@ const ProfileView: React.FC = () => {
           </div>
         )}
       </div>
+
+
 
       {/* Edit Profile Modal - Clean & Professional */}
       {showEditModal && (
