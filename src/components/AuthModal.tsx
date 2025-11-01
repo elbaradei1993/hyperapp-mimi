@@ -31,7 +31,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError('');
 
     if (!formData.loginEmail || !formData.loginPassword) {
-      setError(t('auth.fillAllFields'));
+      setError(t('auth.fillAllFields') as string);
       return;
     }
 
@@ -42,7 +42,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setFormData(prev => ({ ...prev, loginEmail: '', loginPassword: '' }));
     } catch (error: any) {
       console.error('Login error:', error);
-      setError(error.message || t('auth.loginFailed'));
+
+      // Provide more specific error messages
+      let errorMessage: string = t('auth.loginFailed') as string;
+      if (error.message) {
+        if (error.message.includes('Invalid login credentials') ||
+            error.message.includes('Email not confirmed') ||
+            error.message.includes('User not found')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = (t('auth.tooManyRequests') as string) || 'Too many login attempts. Please try again later.';
+        } else if (error.message.includes('Email rate limit exceeded')) {
+          errorMessage = (t('auth.emailRateLimit') as string) || 'Too many emails sent. Please try again later.';
+        }
+      }
+
+      setError(errorMessage);
     }
   };
 
@@ -51,23 +66,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError('');
 
     if (!formData.signupUsername || !formData.signupEmail || !formData.signupPassword || !formData.signupPasswordConfirm) {
-      setError(t('auth.fillAllFields'));
+      setError(t('auth.fillAllFields') as string);
       return;
     }
 
     if (formData.signupPassword !== formData.signupPasswordConfirm) {
-      setError(t('auth.passwordsNotMatch'));
+      setError(t('auth.passwordsNotMatch') as string);
       return;
     }
 
     if (formData.signupPassword.length < 6) {
-      setError(t('auth.passwordTooShort'));
+      setError(t('auth.passwordTooShort') as string);
       return;
     }
 
     try {
       await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername);
-      setError(t('auth.signupSuccessful'));
+      setError(t('auth.signupSuccessful') as string);
       // Switch to login tab
       setActiveTab('login');
       // Reset form
@@ -80,7 +95,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       }));
     } catch (error: any) {
       console.error('Signup error:', error);
-      setError(error.message || t('auth.signupFailed'));
+      setError(error.message || (t('auth.signupFailed') as string));
     }
   };
 
@@ -117,10 +132,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             color: 'var(--text-primary)',
             marginBottom: '8px'
           }}>
-            {t('auth.welcome')}
+            {t('auth.welcome') as string}
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>
-            {t('auth.joinCommunity')}
+            {t('auth.joinCommunity') as string}
           </p>
         </div>
 
@@ -145,7 +160,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               cursor: 'pointer'
             }}
           >
-            {t('auth.login')}
+            {t('auth.login') as string}
           </button>
           <button
             onClick={() => setActiveTab('signup')}
@@ -160,7 +175,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               cursor: 'pointer'
             }}
           >
-            {t('auth.signup')}
+            {t('auth.signup') as string}
           </button>
         </div>
 
@@ -190,13 +205,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 color: 'var(--text-secondary)',
                 marginBottom: '4px'
               }}>
-                {t('auth.email')}
+                {t('auth.email') as string}
               </label>
               <input
                 type="email"
                 value={formData.loginEmail}
                 onChange={(e) => handleInputChange('loginEmail', e.target.value)}
-                placeholder={t('auth.enterEmail')}
+                placeholder={t('auth.enterEmail') as string}
                 required
                 style={{
                   width: '100%',
@@ -219,13 +234,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 color: 'var(--text-secondary)',
                 marginBottom: '4px'
               }}>
-                {t('auth.password')}
+                {t('auth.password') as string}
               </label>
               <input
                 type="password"
                 value={formData.loginPassword}
                 onChange={(e) => handleInputChange('loginPassword', e.target.value)}
-                placeholder={t('auth.enterPassword')}
+                placeholder={t('auth.enterPassword') as string}
                 required
                 style={{
                   width: '100%',
@@ -256,7 +271,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 opacity: isLoading ? 0.5 : 1
               }}
             >
-              {isLoading ? t('auth.loggingIn') : t('auth.login')}
+              {isLoading ? (t('auth.loggingIn') as string) : (t('auth.login') as string)}
             </button>
           </form>
         )}
@@ -272,13 +287,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 color: 'var(--text-secondary)',
                 marginBottom: '4px'
               }}>
-                {t('auth.username')}
+                {t('auth.username') as string}
               </label>
               <input
                 type="text"
                 value={formData.signupUsername}
                 onChange={(e) => handleInputChange('signupUsername', e.target.value)}
-                placeholder={t('auth.chooseUsername')}
+                placeholder={t('auth.chooseUsername') as string}
                 required
                 style={{
                   width: '100%',
@@ -301,13 +316,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 color: 'var(--text-secondary)',
                 marginBottom: '4px'
               }}>
-                {t('auth.email')}
+                {t('auth.email') as string}
               </label>
               <input
                 type="email"
                 value={formData.signupEmail}
                 onChange={(e) => handleInputChange('signupEmail', e.target.value)}
-                placeholder={t('auth.enterEmail')}
+                placeholder={t('auth.enterEmail') as string}
                 required
                 style={{
                   width: '100%',
@@ -330,13 +345,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 color: 'var(--text-secondary)',
                 marginBottom: '4px'
               }}>
-                {t('auth.password')}
+                {t('auth.password') as string}
               </label>
               <input
                 type="password"
                 value={formData.signupPassword}
                 onChange={(e) => handleInputChange('signupPassword', e.target.value)}
-                placeholder={t('auth.createPassword')}
+                placeholder={t('auth.createPassword') as string}
                 required
                 style={{
                   width: '100%',
@@ -359,13 +374,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 color: 'var(--text-secondary)',
                 marginBottom: '4px'
               }}>
-                {t('auth.confirmPassword')}
+                {t('auth.confirmPassword') as string}
               </label>
               <input
                 type="password"
                 value={formData.signupPasswordConfirm}
                 onChange={(e) => handleInputChange('signupPasswordConfirm', e.target.value)}
-                placeholder={t('auth.confirmPasswordPlaceholder')}
+                placeholder={t('auth.confirmPasswordPlaceholder') as string}
                 required
                 style={{
                   width: '100%',
@@ -396,7 +411,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 opacity: isLoading ? 0.5 : 1
               }}
             >
-              {isLoading ? t('auth.creatingAccount') : t('auth.signup')}
+              {isLoading ? (t('auth.creatingAccount') as string) : (t('auth.signup') as string)}
             </button>
           </form>
         )}
