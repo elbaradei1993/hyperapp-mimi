@@ -713,20 +713,25 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
     const vibeAnalysis = analyzeClusterVibes(nearbyReports);
 
-    // Calculate distribution
+    // Calculate distribution - include all vibes from VIBE_CONFIG
     const vibeCounts: Record<string, number> = {};
     nearbyReports.forEach(report => {
       vibeCounts[report.vibe_type] = (vibeCounts[report.vibe_type] || 0) + 1;
     });
 
     const totalReports = nearbyReports.length;
-    const distribution = Object.entries(vibeCounts)
-      .map(([type, count]) => ({
-        type,
-        count,
-        percentage: Math.round((count / totalReports) * 100),
-        color: getVibeColor(type)
-      }))
+    const distribution = Object.keys(VIBE_CONFIG)
+      .map((type) => {
+        const count = vibeCounts[type] || 0;
+        const percentage = count > 0 ? Math.round((count / totalReports) * 100) : 0;
+        const color = count > 0 ? getVibeColor(type) : '#ffffff'; // White for vibes with no reports
+        return {
+          type,
+          count,
+          percentage,
+          color
+        };
+      })
       .sort((a, b) => b.percentage - a.percentage);
 
     return { dominantVibe: vibeAnalysis.dominantVibe, distribution };
@@ -1115,8 +1120,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                             ))}
                           </Pie>
                           <Tooltip
-                            formatter={(value: number) => [`${value}%`, 'Percentage']}
-                            labelFormatter={(label) => `${label} Vibe`}
+                            formatter={(value: number, name: string) => [`${name}: ${value}%`, '']}
                           />
                         </PieChart>
                       </ResponsiveContainer>
