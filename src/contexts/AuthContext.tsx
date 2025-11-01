@@ -26,53 +26,75 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   });
 
   useEffect(() => {
-    // Check initial auth state
-    checkAuthState();
+    let subscription: any = null;
 
-    // Listen for auth changes
-    const { data: { subscription } } = authService.onAuthStateChange(async (authUser) => {
-      if (authUser) {
-        // User is signed in, sync with profile
-        const userProfile = await authService.syncUserWithProfile(authUser);
-        if (userProfile) {
-          setAuthState({
-            user: userProfile,
-            isAuthenticated: true,
-            isLoading: false,
-            onboardingCompleted: userProfile.onboarding_completed || false
-          });
-        } else {
-          // Profile sync failed - create basic user object and continue
-          console.warn('Profile sync failed, using basic auth user');
-          const basicUser = {
-            id: authUser.id,
-            email: authUser.email!,
-            username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
-            reputation: 0,
-            language: 'en',
-            onboarding_completed: false,
-            onboarding_step: 0
-          };
-          setAuthState({
-            user: basicUser,
-            isAuthenticated: true,
-            isLoading: false,
-            onboardingCompleted: false
-          });
-        }
-      } else {
-        // User is signed out
-        setAuthState({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-          onboardingCompleted: false
+    const initializeAuth = async () => {
+      try {
+        // Check initial auth state
+        await checkAuthState();
+
+        // Listen for auth changes
+        const { data: { subscription: authSubscription } } = authService.onAuthStateChange(async (authUser) => {
+          try {
+            if (authUser) {
+              // User is signed in, sync with profile
+              const userProfile = await authService.syncUserWithProfile(authUser);
+              if (userProfile) {
+                setAuthState({
+                  user: userProfile,
+                  isAuthenticated: true,
+                  isLoading: false,
+                  onboardingCompleted: userProfile.onboarding_completed || false
+                });
+              } else {
+                // Profile sync failed - create basic user object and continue
+                console.warn('Profile sync failed, using basic auth user');
+                const basicUser = {
+                  id: authUser.id,
+                  email: authUser.email!,
+                  username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
+                  reputation: 0,
+                  language: 'en',
+                  onboarding_completed: false,
+                  onboarding_step: 0
+                };
+                setAuthState({
+                  user: basicUser,
+                  isAuthenticated: true,
+                  isLoading: false,
+                  onboardingCompleted: false
+                });
+              }
+            } else {
+              // User is signed out
+              setAuthState({
+                user: null,
+                isAuthenticated: false,
+                isLoading: false,
+                onboardingCompleted: false
+              });
+            }
+          } catch (error) {
+            console.error('Error in auth state change listener:', error);
+            // Ensure loading state is reset even on error
+            setAuthState(prev => ({ ...prev, isLoading: false }));
+          }
         });
+
+        subscription = authSubscription;
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        // Ensure loading state is reset even on initialization error
+        setAuthState(prev => ({ ...prev, isLoading: false }));
       }
-    });
+    };
+
+    initializeAuth();
 
     return () => {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, []);
 
