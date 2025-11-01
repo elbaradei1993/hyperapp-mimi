@@ -106,16 +106,22 @@ class AuthService {
   // Sync user data between auth and profile
   async syncUserWithProfile(authUser: User): Promise<AppUser | null> {
     try {
+      console.log('Syncing user profile for:', authUser.email);
+
       // First check if profile exists
       const { data: profile, error } = await this.getUserProfile(authUser.id);
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', error);
-        return null;
+      if (error) {
+        // PGRST116 is "not found" error, which is expected for new users
+        if (error.code !== 'PGRST116') {
+          console.error('Error fetching user profile:', error);
+          return null;
+        }
       }
 
       if (profile) {
         // Profile exists, return combined data
+        console.log('Found existing profile for user:', authUser.email);
         return {
           id: authUser.id,
           email: authUser.email!,
@@ -123,6 +129,7 @@ class AuthService {
         };
       } else {
         // Profile doesn't exist, create it
+        console.log('Creating new profile for user:', authUser.email);
         const profileData = {
           username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
           email: authUser.email,
@@ -136,9 +143,11 @@ class AuthService {
 
         if (createError) {
           console.error('Error creating user profile:', createError);
+          // Don't return null - let the auth context handle the fallback
           return null;
         }
 
+        console.log('Successfully created profile for user:', authUser.email);
         return {
           id: authUser.id,
           email: authUser.email!,

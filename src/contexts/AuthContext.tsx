@@ -41,6 +41,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             isLoading: false,
             onboardingCompleted: userProfile.onboarding_completed || false
           });
+        } else {
+          // Profile sync failed - create basic user object and continue
+          console.warn('Profile sync failed, using basic auth user');
+          const basicUser = {
+            id: authUser.id,
+            email: authUser.email!,
+            username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
+            reputation: 0,
+            language: 'en',
+            onboarding_completed: false,
+            onboarding_step: 0
+          };
+          setAuthState({
+            user: basicUser,
+            isAuthenticated: true,
+            isLoading: false,
+            onboardingCompleted: false
+          });
         }
       } else {
         // User is signed out
@@ -89,6 +107,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             isLoading: false,
             onboardingCompleted: userProfile.onboarding_completed || false
           });
+        } else {
+          // Profile sync failed - create basic user object and continue
+          console.warn('Profile sync failed during initial check, using basic auth user');
+          const basicUser = {
+            id: session.user.id,
+            email: session.user.email!,
+            username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+            reputation: 0,
+            language: 'en',
+            onboarding_completed: false,
+            onboarding_step: 0
+          };
+          setAuthState({
+            user: basicUser,
+            isAuthenticated: true,
+            isLoading: false,
+            onboardingCompleted: false
+          });
         }
       } else {
         setAuthState(prev => ({ ...prev, isLoading: false }));
@@ -102,7 +138,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
-      const response = await authService.signIn(email, password);
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Authentication timeout')), 30000); // 30 second timeout
+      });
+
+      const authPromise = authService.signIn(email, password);
+      const response = await Promise.race([authPromise, timeoutPromise]);
+
+      // Note: Loading state will be reset by the auth state change listener
+      // If that fails, we have a fallback in checkAuthState
       return response;
     } catch (error) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
@@ -113,7 +159,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signUp = async (email: string, password: string, username: string) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
-      const response = await authService.signUp(email, password, username);
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Registration timeout')), 30000); // 30 second timeout
+      });
+
+      const authPromise = authService.signUp(email, password, username);
+      const response = await Promise.race([authPromise, timeoutPromise]);
+
       return response;
     } catch (error) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
