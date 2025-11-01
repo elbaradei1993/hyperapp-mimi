@@ -1114,13 +1114,14 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                             outerRadius={80}
                             paddingAngle={2}
                             dataKey="percentage"
+                            activeShape={false}
                           >
                             {currentLocationVibeDistribution.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
                           <Tooltip
-                            formatter={(value: number, name: string) => [`${name}: ${value}%`, '']}
+                            formatter={(value: number, name: string, props: any) => [`${props.payload.type}: ${value}%`, '']}
                           />
                         </PieChart>
                       </ResponsiveContainer>
