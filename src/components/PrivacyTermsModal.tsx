@@ -251,23 +251,27 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
     </div>
   );
 
+  // Check if we're on mobile for responsive sizing
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Terms of Service"
-      size="md"
+      size={isMobile ? 'sm' : 'md'}
     >
       <div style={{
-        maxHeight: '70vh',
+        maxHeight: isMobile ? '55vh' : '70vh',
         overflowY: 'auto',
-        padding: '0 4px'
+        padding: isMobile ? '0 8px 16px 8px' : '0 4px 8px 4px',
+        marginBottom: isMobile ? '8px' : '0'
       }}>
         {privacyContent}
         <hr style={{
           border: 'none',
           borderTop: '1px solid var(--border-color)',
-          margin: '30px 0'
+          margin: isMobile ? '20px 0' : '30px 0'
         }} />
         {termsContent}
       </div>
