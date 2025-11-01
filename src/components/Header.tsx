@@ -80,13 +80,17 @@ const Header: React.FC = () => {
           animation: pulseWave ease-in-out infinite;
         }
 
-        /* Vibe-specific colors */
-        .vibe-calm { color: #10b981; }
-        .vibe-safe { color: #3b82f6; }
+        /* Vibe-specific colors - synchronized with VIBE_CONFIG */
+        .vibe-safe { color: #10b981; }
+        .vibe-calm { color: #3b82f6; }
         .vibe-lively { color: #f59e0b; }
         .vibe-festive { color: #8b5cf6; }
-        .vibe-noisy { color: #ef4444; }
+        .vibe-crowded { color: #ef4444; }
+        .vibe-suspicious { color: #f97316; }
         .vibe-dangerous { color: #dc2626; }
+        .vibe-noisy { color: #eab308; }
+        .vibe-quiet { color: #06b6d4; }
+        .vibe-unknown { color: #6b7280; }
 
         /* Logout button hover effects */
         .logout-btn:hover {

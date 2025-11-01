@@ -290,6 +290,7 @@ const styles = {
   chartContainer: {
     position: 'relative' as const,
     height: '180px',
+    width: '100%',
   },
 
   // Sidebar
@@ -663,6 +664,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   const [userReportsLoading, setUserReportsLoading] = useState(false);
   const [nearbyReports, setNearbyReports] = useState<ReportWithVote[]>([]);
   const [nearbyReportsLoading, setNearbyReportsLoading] = useState(false);
+  const [isVibeBreakdownExpanded, setIsVibeBreakdownExpanded] = useState(false);
 
   // Ref for subscription cleanup
   const subscriptionsRef = useRef<{ reports?: any; votes?: any }>({});
@@ -1046,39 +1048,309 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                   </div>
                 </div>
 
-                {/* Vibe Analysis */}
+                {/* Enhanced Vibe Analysis */}
                 {localCurrentLocationVibe ? (
-                  <div style={styles.vibeAnalysis}>
-                    <div style={styles.vibeAnalysisHeader}>
-                      <div style={styles.vibeTitle}>Area Sentiment Analysis</div>
-                      <div style={styles.vibeCount}>{localCurrentLocationVibe.count} Active Reports</div>
-                    </div>
+                  <div style={{
+                    background: `linear-gradient(135deg, ${getVibeColor(localCurrentLocationVibe.type)}08 0%, ${getVibeColor(localCurrentLocationVibe.type)}04 100%)`,
+                    border: `1px solid ${getVibeColor(localCurrentLocationVibe.type)}20`,
+                    borderRadius: '20px',
+                    padding: '28px 24px',
+                    marginTop: '20px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    {/* Subtle background pattern */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      width: '120px',
+                      height: '120px',
+                      background: `radial-gradient(circle, ${getVibeColor(localCurrentLocationVibe.type)}10 0%, transparent 70%)`,
+                      borderRadius: '50%',
+                      transform: 'translate(40px, -40px)'
+                    }}></div>
 
-                    <div style={styles.vibeContent}>
-                      <div style={styles.vibeVisual}>
-                        <div style={styles.vibeIconContainer}>
-                          <div style={styles.vibeIcon}>
-                            {getVibeIcon(localCurrentLocationVibe.type)}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '24px',
+                      position: 'relative',
+                      zIndex: 1
+                    }}>
+                      {/* Header */}
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px'
+                      }}>
+                        <div style={{
+                          fontSize: '1.5rem',
+                          fontWeight: '800',
+                          color: '#0f172a',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px'
+                        }}>
+                          <i className="fas fa-chart-pie" style={{
+                            color: getVibeColor(localCurrentLocationVibe.type),
+                            fontSize: '1.25rem'
+                          }}></i>
+                          Area Sentiment Analysis
+                        </div>
+                        <div style={{
+                          color: '#64748b',
+                          fontSize: '0.875rem',
+                          fontWeight: '600',
+                          background: 'rgba(255, 255, 255, 0.8)',
+                          padding: '8px 16px',
+                          borderRadius: '12px',
+                          alignSelf: 'flex-start',
+                          backdropFilter: 'blur(8px)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)'
+                        }}>
+                          {localCurrentLocationVibe.count} Active Reports
+                        </div>
+                      </div>
+
+                      {/* Main Content */}
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '24px'
+                      }}>
+                        {/* Circular Progress Chart */}
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '16px'
+                        }}>
+                          <MultiSegmentCircularProgress
+                            segments={currentLocationVibeDistribution
+                              .filter(vibe => vibe.percentage > 0)
+                              .slice(0, 5)
+                              .map(vibe => ({
+                                percentage: vibe.percentage,
+                                color: vibe.color,
+                                label: t(`vibes.${vibe.type}`, vibe.type)
+                              }))
+                            }
+                            size={140}
+                            strokeWidth={12}
+                            centerContent={
+                              <div style={{
+                                textAlign: 'center',
+                                color: getVibeColor(localCurrentLocationVibe.type)
+                              }}>
+                                <div style={{
+                                  fontSize: '1.75rem',
+                                  fontWeight: '900',
+                                  lineHeight: 1,
+                                  marginBottom: '2px'
+                                }}>
+                                  {localCurrentLocationVibe.percentage}%
+                                </div>
+                                <div style={{
+                                  fontSize: '0.75rem',
+                                  fontWeight: '700',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.1em',
+                                  opacity: 0.8
+                                }}>
+                                  {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}
+                                </div>
+                              </div>
+                            }
+                          />
+                          <div style={{
+                            textAlign: 'center',
+                            color: '#64748b',
+                            fontSize: '0.875rem',
+                            fontWeight: '500'
+                          }}>
+                            Community sentiment distribution
                           </div>
-                          <div style={styles.vibeIconGlow}></div>
                         </div>
-                        <div style={styles.vibeStats}>
-                          <div style={styles.vibePercentage}>{localCurrentLocationVibe.percentage}%</div>
-                          <div style={styles.vibeLabel}>Dominant</div>
-                        </div>
-                      </div>
 
-                      <div style={styles.vibeDescription}>
-                        <div style={styles.vibeType}>{t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}</div>
-                        <div style={styles.vibeSubtitle}>
-                          The area is currently experiencing {localCurrentLocationVibe.type.toLowerCase()} conditions.
-                          {localCurrentLocationVibe.type === 'calm' && ' Ideal for focused work and relaxed social interactions. Safety metrics remain consistently high.'}
-                          {localCurrentLocationVibe.type === 'safe' && ' High safety metrics with visible security presence and community trust.'}
-                          {localCurrentLocationVibe.type === 'lively' && ' Energetic environment with moderate social activity and engagement.'}
-                          {localCurrentLocationVibe.type === 'festive' && ' Celebratory mood with events and gatherings creating positive energy.'}
+                        {/* Vibe Description */}
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.9)',
+                          backdropFilter: 'blur(12px)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          borderRadius: '16px',
+                          padding: '20px',
+                          textAlign: 'center'
+                        }}>
+                          <div style={{
+                            fontSize: '1.25rem',
+                            fontWeight: '800',
+                            color: getVibeColor(localCurrentLocationVibe.type),
+                            marginBottom: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                          }}>
+                            {getVibeIcon(localCurrentLocationVibe.type)}
+                            {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}
+                          </div>
+                          <div style={{
+                            color: '#475569',
+                            fontSize: '0.95rem',
+                            lineHeight: '1.6',
+                            maxWidth: '400px',
+                            margin: '0 auto'
+                          }}>
+                            The area is currently experiencing {localCurrentLocationVibe.type.toLowerCase()} conditions.
+                            {localCurrentLocationVibe.type === 'calm' && ' Ideal for focused work and relaxed social interactions. Safety metrics remain consistently high.'}
+                            {localCurrentLocationVibe.type === 'safe' && ' High safety metrics with visible security presence and community trust.'}
+                            {localCurrentLocationVibe.type === 'lively' && ' Energetic environment with moderate social activity and engagement.'}
+                            {localCurrentLocationVibe.type === 'festive' && ' Celebratory mood with events and gatherings creating positive energy.'}
+                          </div>
+                        </div>
+
+                        {/* Expandable Breakdown */}
+                        <div style={{
+                          borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+                          paddingTop: '20px'
+                        }}>
+                          <button
+                            onClick={() => setIsVibeBreakdownExpanded(!isVibeBreakdownExpanded)}
+                            style={{
+                              width: '100%',
+                              background: 'rgba(255, 255, 255, 0.9)',
+                              backdropFilter: 'blur(12px)',
+                              border: '1px solid rgba(255, 255, 255, 0.3)',
+                              borderRadius: '12px',
+                              padding: '16px 20px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              transition: 'all 0.2s ease',
+                              color: '#374151',
+                              fontSize: '0.95rem',
+                              fontWeight: '600'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <i className="fas fa-chart-bar" style={{ color: getVibeColor(localCurrentLocationVibe.type) }}></i>
+                              View Detailed Breakdown
+                            </span>
+                            <i className={`fas fa-chevron-${isVibeBreakdownExpanded ? 'up' : 'down'}`}
+                               style={{ color: '#6b7280', transition: 'transform 0.2s ease' }}></i>
+                          </button>
+
+                          {/* Expanded Content */}
+                          {isVibeBreakdownExpanded && (
+                            <div style={{
+                              marginTop: '16px',
+                              animation: 'slideDown 0.3s ease-out'
+                            }}>
+                              <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                                gap: '12px'
+                              }}>
+                                {currentLocationVibeDistribution
+                                  .filter(vibe => vibe.percentage > 0)
+                                  .map((vibe, index) => (
+                                    <div
+                                      key={vibe.type}
+                                      style={{
+                                        background: 'rgba(255, 255, 255, 0.9)',
+                                        backdropFilter: 'blur(12px)',
+                                        border: `1px solid ${vibe.color}30`,
+                                        borderRadius: '12px',
+                                        padding: '16px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        transition: 'all 0.2s ease',
+                                        animation: `fadeInUp 0.4s ease-out ${index * 0.1}s both`
+                                      }}
+                                    >
+                                      <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '8px',
+                                        background: `linear-gradient(135deg, ${vibe.color} 0%, ${vibe.color}cc 100%)`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '16px',
+                                        boxShadow: `0 2px 8px ${vibe.color}40`
+                                      }}>
+                                        {getVibeIcon(vibe.type)}
+                                      </div>
+                                      <div style={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: '700',
+                                        color: vibe.color,
+                                        textAlign: 'center'
+                                      }}>
+                                        {t(`vibes.${vibe.type}`, vibe.type)}
+                                      </div>
+                                      <div style={{
+                                        fontSize: '1.25rem',
+                                        fontWeight: '900',
+                                        color: vibe.color
+                                      }}>
+                                        {vibe.percentage}%
+                                      </div>
+                                      <div style={{
+                                        fontSize: '0.75rem',
+                                        color: '#6b7280',
+                                        textAlign: 'center'
+                                      }}>
+                                        {vibe.count} reports
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
+
+                    {/* CSS Animations */}
+                    <style>
+                      {`
+                        @keyframes slideDown {
+                          from {
+                            opacity: 0;
+                            transform: translateY(-10px);
+                          }
+                          to {
+                            opacity: 1;
+                            transform: translateY(0);
+                          }
+                        }
+                        @keyframes fadeInUp {
+                          from {
+                            opacity: 0;
+                            transform: translateY(20px);
+                          }
+                          to {
+                            opacity: 1;
+                            transform: translateY(0);
+                          }
+                        }
+                      `}
+                    </style>
                   </div>
                 ) : (
                   <div style={{
@@ -1095,39 +1367,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                   </div>
                 )}
 
-                {/* Charts */}
-                <div style={styles.chartsGrid}>
-                  {/* Vibe Distribution Chart */}
-                  <div style={styles.chartCard}>
-                    <div style={styles.chartHeader}>
-                      <div style={styles.chartTitle}>Vibe Distribution</div>
-                      <div style={styles.chartInstruction}>Tap segments for details</div>
-                    </div>
-                    <div style={styles.chartContainer}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={currentLocationVibeDistribution}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={2}
-                            dataKey="percentage"
-                            activeShape={false}
-                          >
-                            {currentLocationVibeDistribution.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            formatter={(value: number, name: string, props: any) => [`${props.payload.type}: ${value}%`, '']}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                </div>
+
               </div>
             </div>
           ) : (
@@ -1206,14 +1446,14 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                         color: '#0f172a',
                         marginBottom: '2px'
                       }}>
-                        {t(`vibes.${report.vibe_type}`)} {t('profile.report')}
+                        {String(t(`vibes.${report.vibe_type}`))} {String(t('profile.report'))}
                       </div>
                       <div style={{
                         color: '#64748b',
                         fontSize: '14px',
                         marginBottom: '4px'
                       }}>
-                        {report.location || t('profile.unknownLocation')}
+                        {report.location || String(t('profile.unknownLocation'))}
                       </div>
                       {report.notes && (
                         <div style={{

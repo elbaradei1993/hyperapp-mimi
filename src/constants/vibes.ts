@@ -6,7 +6,7 @@ export const VIBE_CONFIG = {
   crowded: { color: '#ef4444', icon: '👥', label: 'Crowded' },
   suspicious: { color: '#f97316', icon: '⚠️', label: 'Suspicious' },
   dangerous: { color: '#dc2626', icon: '🚨', label: 'Dangerous' },
-  noisy: { color: '#6b7280', icon: '🔊', label: 'Noisy' },
+  noisy: { color: '#eab308', icon: '🔊', label: 'Noisy' },
   quiet: { color: '#06b6d4', icon: '🤫', label: 'Quiet' },
   unknown: { color: '#6b7280', icon: '❓', label: 'Unknown' }
 } as const;
