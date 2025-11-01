@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
+import { authLogger } from '../lib/authLogger';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,6 +12,7 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
   const { signIn, signUp, isLoading } = useAuth();
+  const { addNotification } = useNotification();
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
   const [formData, setFormData] = useState({
     loginEmail: '',
@@ -30,34 +33,123 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
     setError('');
 
+    authLogger.logAuthAttempt('AuthModal.handleLogin: Form submission started', {
+      email: formData.loginEmail?.toLowerCase().trim(),
+      hasPassword: !!formData.loginPassword,
+      emailValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail || '')
+    });
+
     if (!formData.loginEmail || !formData.loginPassword) {
+      authLogger.logValidationError('AuthModal.handleLogin: Form validation failed - missing fields', {
+        hasEmail: !!formData.loginEmail,
+        hasPassword: !!formData.loginPassword
+      });
       setError(t('auth.fillAllFields') as string);
       return;
     }
 
     try {
-      await signIn(formData.loginEmail, formData.loginPassword);
+      authLogger.logAuthAttempt('AuthModal.handleLogin: Calling signIn method', {
+        email: formData.loginEmail.toLowerCase().trim()
+      });
+
+      const signInResponse = await signIn(formData.loginEmail, formData.loginPassword);
+
+      // Check if signIn returned an error (some auth methods return errors instead of throwing)
+      if (signInResponse?.error) {
+        console.error('Sign-in response error:', signInResponse.error);
+        throw new Error(signInResponse.error.message || 'Authentication failed');
+      }
+
+      authLogger.logAuthSuccess('AuthModal.handleLogin: Sign-in successful, closing modal', {
+        email: formData.loginEmail.toLowerCase().trim()
+      });
+
       onClose();
       // Reset form
       setFormData(prev => ({ ...prev, loginEmail: '', loginPassword: '' }));
     } catch (error: any) {
-      console.error('Login error:', error);
+      authLogger.logAuthError('AuthModal.handleLogin: Sign-in failed', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+        status: error.status
+      }, {
+        email: formData.loginEmail?.toLowerCase().trim()
+      });
 
-      // Provide more specific error messages
+      // Provide more specific error messages and show toast warnings
+      console.log('🔍 Error analysis - error object:', error);
+      console.log('🔍 Error message:', error.message);
+      console.log('🔍 Error name:', error.name);
+
       let errorMessage: string = t('auth.loginFailed') as string;
+      let showToastWarning = false;
+      let toastConfig: any = null;
+
       if (error.message) {
-        if (error.message.includes('Invalid login credentials') ||
-            error.message.includes('Email not confirmed') ||
-            error.message.includes('User not found')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('Too many requests')) {
-          errorMessage = (t('auth.tooManyRequests') as string) || 'Too many login attempts. Please try again later.';
-        } else if (error.message.includes('Email rate limit exceeded')) {
-          errorMessage = (t('auth.emailRateLimit') as string) || 'Too many emails sent. Please try again later.';
+        const message = error.message.toLowerCase();
+
+        if (message.includes('invalid login credentials') || message.includes('invalid_credentials')) {
+          console.log('✅ Detected invalid credentials error');
+          errorMessage = 'Please check your email and password.';
+          showToastWarning = true;
+          toastConfig = {
+            type: 'warning' as const,
+            title: 'Invalid Credentials',
+            message: 'Please double-check your email and password. Try resetting your password if you\'ve forgotten it.',
+            duration: 8000
+          };
+        } else if (message.includes('email not confirmed') || message.includes('email_confirmed_at')) {
+          console.log('✅ Detected email confirmation required error');
+          errorMessage = 'Please check your email for the confirmation link.';
+          showToastWarning = true;
+          toastConfig = {
+            type: 'warning' as const,
+            title: 'Email Confirmation Required',
+            message: 'Please check your email and click the confirmation link before logging in.',
+            duration: 10000,
+            action: {
+              label: 'Resend Email',
+              onClick: () => {
+                // TODO: Implement resend confirmation email functionality
+                addNotification({
+                  type: 'info',
+                  title: 'Resend Feature',
+                  message: 'Resend confirmation email feature will be implemented soon.',
+                  duration: 3000
+                });
+              }
+            }
+          };
+        } else if (message.includes('user not found') || message.includes('user_not_found')) {
+          errorMessage = 'Account not found. Please sign up first.';
+        } else if (message.includes('too many requests') || message.includes('rate limit')) {
+          errorMessage = 'Too many login attempts. Please wait a few minutes.';
+          showToastWarning = true;
+          toastConfig = {
+            type: 'warning' as const,
+            title: 'Too Many Attempts',
+            message: 'Please wait a few minutes before trying again.',
+            duration: 5000
+          };
+        } else if (message.includes('account is disabled') || message.includes('disabled')) {
+          errorMessage = 'Your account has been disabled. Please contact support.';
+        } else {
+          // Show the actual error message for debugging
+          console.log('⚠️ Unhandled error message:', error.message);
+          errorMessage = `Login failed: ${error.message}`;
         }
       }
 
       setError(errorMessage);
+
+      // Show toast warning for important authentication issues
+      if (showToastWarning && toastConfig) {
+        console.log('🔔 Showing toast warning:', toastConfig);
+        const notificationId = addNotification(toastConfig);
+        console.log('🔔 Notification added with ID:', notificationId);
+      }
     }
   };
 
@@ -66,25 +158,59 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError('');
 
     if (!formData.signupUsername || !formData.signupEmail || !formData.signupPassword || !formData.signupPasswordConfirm) {
+      authLogger.logValidationError('AuthModal.handleSignup: Form validation failed - missing fields', {
+        hasUsername: !!formData.signupUsername,
+        hasEmail: !!formData.signupEmail,
+        hasPassword: !!formData.signupPassword,
+        hasPasswordConfirm: !!formData.signupPasswordConfirm
+      });
       setError(t('auth.fillAllFields') as string);
       return;
     }
 
     if (formData.signupPassword !== formData.signupPasswordConfirm) {
+      authLogger.logValidationError('AuthModal.handleSignup: Password confirmation mismatch', {
+        passwordLength: formData.signupPassword.length,
+        confirmLength: formData.signupPasswordConfirm.length
+      });
       setError(t('auth.passwordsNotMatch') as string);
       return;
     }
 
     if (formData.signupPassword.length < 6) {
+      authLogger.logValidationError('AuthModal.handleSignup: Password too short', {
+        passwordLength: formData.signupPassword.length,
+        requiredLength: 6
+      });
       setError(t('auth.passwordTooShort') as string);
       return;
     }
 
     try {
-      await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername);
-      setError(t('auth.signupSuccessful') as string);
+      const response = await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername);
+
+      if (response.error) {
+        console.error('Sign-up response error:', response.error);
+        throw new Error(response.error.message || 'Signup failed');
+      }
+
+      // Check if email confirmation is required
+      if (response.data?.user && !response.data.user.email_confirmed_at) {
+        setError(t('auth.signupSuccessConfirmEmail') as string);
+        addNotification({
+          type: 'info',
+          title: t('auth.emailConfirmationRequired') as string,
+          message: t('auth.checkEmailForConfirmation') as string,
+          duration: 10000
+        });
+      } else {
+        // Show general success message if no confirmation is needed or already confirmed
+        setError(t('auth.signupSuccessful') as string);
+      }
+
       // Switch to login tab
       setActiveTab('login');
+
       // Reset form
       setFormData(prev => ({
         ...prev,
@@ -94,7 +220,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         signupPasswordConfirm: ''
       }));
     } catch (error: any) {
-      console.error('Signup error:', error);
+      authLogger.logAuthError('AuthModal.handleSignup: Sign-up failed', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+        status: error.status
+      }, {
+        email: formData.signupEmail?.toLowerCase().trim()
+      });
       setError(error.message || (t('auth.signupFailed') as string));
     }
   };

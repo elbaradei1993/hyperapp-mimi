@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const SplashScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
+const SplashScreen: React.FC = () => { // Removed onComplete prop
   const [currentIconIndex, setCurrentIconIndex] = useState(0);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
 
@@ -30,17 +30,11 @@ const SplashScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
       setCurrentTextIndex((prev) => (prev + 1) % loadingTexts.length);
     }, 1200);
 
-    // Auto-complete after 5 seconds
-    const completeTimeout = setTimeout(() => {
-      onComplete();
-    }, 5000);
-
     return () => {
       clearInterval(iconInterval);
       clearInterval(textInterval);
-      clearTimeout(completeTimeout);
     };
-  }, [onComplete]);
+  }, []);
 
   return (
     <div style={{

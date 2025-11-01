@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react'; // Removed useState as it's no longer needed in RootApp
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import SplashScreen from './components/SplashScreen';
+// SplashScreen will be handled inside App.tsx now
+// import SplashScreen from './components/SplashScreen';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import './index.css';
 import './themes.css';
 import './i18n';
@@ -23,24 +26,30 @@ window.addEventListener('orientationchange', () => {
   setTimeout(setVH, 100);
 });
 
+// Removed useAuth import as it's no longer used directly in RootApp
+// import { useAuth } from './contexts/AuthContext';
+
 const RootApp: React.FC = () => {
-  const [showSplash, setShowSplash] = useState(true);
-
-  const handleSplashComplete = () => {
-    setShowSplash(false);
-  };
-
-  if (showSplash) {
-    return <SplashScreen onComplete={handleSplashComplete} />;
-  }
+  // Removed isLoading check and SplashScreen rendering from here
+  // const { isLoading } = useAuth();
+  // if (isLoading) {
+  //   return <SplashScreen />;
+  // }
 
   return (
-    <React.StrictMode>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
-    </React.StrictMode>
+    // App component will now handle its own loading state and SplashScreen
+    <App />
   );
 };
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<RootApp />);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <NotificationProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <RootApp />
+        </ThemeProvider>
+      </AuthProvider>
+    </NotificationProvider>
+  </React.StrictMode>
+);

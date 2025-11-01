@@ -1,31 +1,111 @@
 import { AuthResponse, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { authLogger } from '../lib/authLogger';
 import type { User as AppUser, OnboardingData } from '../types';
 
 class AuthService {
 
   // Authentication methods
   async signUp(email: string, password: string, username: string): Promise<AuthResponse> {
-    return supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username,
-          reputation: 0,
-          language: 'en',
-          onboarding_completed: false,
-          onboarding_step: 0
+    console.log('📝 AuthService.signUp: Starting signup process', {
+      email: email.toLowerCase().trim(),
+      hasPassword: !!password,
+      username: username?.trim(),
+      timestamp: new Date().toISOString()
+    });
+
+    try {
+      const response = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+            reputation: 0,
+            language: 'en',
+            onboarding_completed: false,
+            onboarding_step: 0
+          }
+        }
+      });
+
+      if (response.error) {
+        console.error('❌ AuthService.signUp: Supabase signup failed', {
+          message: response.error.message,
+          status: response.error.status,
+          name: response.error.name,
+          details: response.error
+        });
+      } else {
+        console.log('✅ AuthService.signUp: Signup successful', {
+          userId: response.data.user?.id,
+          email: response.data.user?.email,
+          emailConfirmed: response.data.user?.email_confirmed_at ? true : false,
+          timestamp: new Date().toISOString()
+        });
+
+        // Note: In production, you might want to enable email confirmation
+        // For development, you can disable it in Supabase dashboard under Authentication > Settings
+        if (!response.data.user?.email_confirmed_at) {
+          console.warn('⚠️ AuthService.signUp: Email confirmation required. User must confirm email before logging in.');
         }
       }
-    });
+
+      return response;
+    } catch (networkError: any) {
+      console.error('🚨 AuthService.signUp: Network or unexpected error', {
+        message: networkError.message,
+        name: networkError.name,
+        stack: networkError.stack,
+        status: networkError.status
+      });
+      throw networkError;
+    }
   }
 
   async signIn(email: string, password: string): Promise<AuthResponse> {
-    return supabase.auth.signInWithPassword({
-      email,
-      password
+    authLogger.logAuthAttempt('AuthService.signIn: Starting authentication attempt', {
+      email: email.toLowerCase().trim(),
+      hasPassword: !!password,
+      supabaseUrl: 'https://nqwejzbayquzsvcodunl.supabase.co'
     });
+
+    try {
+      const response = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (response.error) {
+        authLogger.logAuthError('AuthService.signIn: Supabase authentication failed', {
+          message: response.error.message,
+          status: response.error.status,
+          name: response.error.name,
+          details: response.error
+        }, {
+          email: email.toLowerCase().trim(),
+          hasPassword: !!password
+        });
+      } else {
+        authLogger.logAuthSuccess('AuthService.signIn: Authentication successful', {
+          userId: response.data.user?.id,
+          email: response.data.user?.email
+        });
+      }
+
+      return response;
+    } catch (networkError: any) {
+      authLogger.logNetworkError('AuthService.signIn: Network or unexpected error', {
+        message: networkError.message,
+        name: networkError.name,
+        stack: networkError.stack,
+        status: networkError.status
+      }, {
+        email: email.toLowerCase().trim(),
+        hasPassword: !!password
+      });
+      throw networkError;
+    }
   }
 
   async signOut(): Promise<{ error: any }> {
@@ -105,58 +185,143 @@ class AuthService {
 
   // Sync user data between auth and profile
   async syncUserWithProfile(authUser: User): Promise<AppUser | null> {
+    console.log('🔄 AuthService.syncUserWithProfile: Starting profile sync', {
+      userId: authUser.id,
+      email: authUser.email,
+      timestamp: new Date().toISOString()
+    });
+
     try {
-      console.log('Syncing user profile for:', authUser.email);
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          console.error('⏰ AuthService.syncUserWithProfile: Profile sync timeout', {
+            userId: authUser.id,
+            timestamp: new Date().toISOString()
+          });
+          reject(new Error('Profile sync timeout'));
+        }, 15000); // 15 second timeout
+      });
 
-      // First check if profile exists
-      const { data: profile, error } = await this.getUserProfile(authUser.id);
+      const syncPromise = this.performProfileSync(authUser);
+      const result = await Promise.race([syncPromise, timeoutPromise]);
 
-      if (error) {
-        // PGRST116 is "not found" error, which is expected for new users
-        if (error.code !== 'PGRST116') {
-          console.error('Error fetching user profile:', error);
-          return null;
-        }
-      }
-
-      if (profile) {
-        // Profile exists, return combined data
-        console.log('Found existing profile for user:', authUser.email);
-        return {
-          id: authUser.id,
-          email: authUser.email!,
-          ...profile
-        };
-      } else {
-        // Profile doesn't exist, create it
-        console.log('Creating new profile for user:', authUser.email);
-        const profileData = {
-          username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
-          email: authUser.email,
-          reputation: 0,
-          language: 'en',
-          onboarding_completed: false,
-          onboarding_step: 0
-        };
-
-        const { data: newProfile, error: createError } = await this.createUserProfile(authUser.id, profileData);
-
-        if (createError) {
-          console.error('Error creating user profile:', createError);
-          // Don't return null - let the auth context handle the fallback
-          return null;
-        }
-
-        console.log('Successfully created profile for user:', authUser.email);
-        return {
-          id: authUser.id,
-          email: authUser.email!,
-          ...newProfile
-        };
-      }
-    } catch (error) {
-      console.error('Error syncing user with profile:', error);
+      return result;
+    } catch (error: any) {
+      console.error('🚨 AuthService.syncUserWithProfile: Sync failed or timed out', {
+        error: {
+          message: error.message,
+          name: error.name,
+          stack: error.stack,
+          status: error.status
+        },
+        userId: authUser.id,
+        email: authUser.email,
+        timestamp: new Date().toISOString()
+      });
       return null;
+    }
+  }
+
+  private async performProfileSync(authUser: User): Promise<AppUser | null> {
+    // First check if profile exists
+    console.log('🔍 AuthService.syncUserWithProfile: Checking for existing profile', {
+      userId: authUser.id,
+      timestamp: new Date().toISOString()
+    });
+
+    const { data: profile, error } = await this.getUserProfile(authUser.id);
+
+    if (error) {
+      console.log('⚠️ AuthService.syncUserWithProfile: Profile query error', {
+        error: {
+          message: error.message,
+          code: error.code,
+          status: error.status
+        },
+        userId: authUser.id,
+        timestamp: new Date().toISOString()
+      });
+
+      // PGRST116 is "not found" error, which is expected for new users
+      if (error.code !== 'PGRST116') {
+        console.error('❌ AuthService.syncUserWithProfile: Unexpected error fetching profile', {
+          error: {
+            message: error.message,
+            code: error.code,
+            status: error.status,
+            details: error
+          },
+          userId: authUser.id,
+          timestamp: new Date().toISOString()
+        });
+        return null;
+      }
+    }
+
+    if (profile) {
+      // Profile exists, return combined data
+      console.log('✅ AuthService.syncUserWithProfile: Found existing profile', {
+        userId: authUser.id,
+        email: authUser.email,
+        profileId: profile.user_id,
+        onboardingCompleted: profile.onboarding_completed,
+        timestamp: new Date().toISOString()
+      });
+
+      return {
+        id: authUser.id,
+        email: authUser.email!,
+        ...profile
+      };
+    } else {
+      // Profile doesn't exist, create it
+      console.log('🆕 AuthService.syncUserWithProfile: Creating new profile', {
+        userId: authUser.id,
+        email: authUser.email,
+        username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
+        timestamp: new Date().toISOString()
+      });
+
+      const profileData = {
+        username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
+        email: authUser.email,
+        reputation: 0,
+        language: 'en',
+        onboarding_completed: false,
+        onboarding_step: 0
+      };
+
+      const { data: newProfile, error: createError } = await this.createUserProfile(authUser.id, profileData);
+
+      if (createError) {
+        console.error('❌ AuthService.syncUserWithProfile: Error creating user profile', {
+          error: {
+            message: createError.message,
+            code: createError.code,
+            status: createError.status,
+            details: createError
+          },
+          userId: authUser.id,
+          profileData,
+          timestamp: new Date().toISOString()
+        });
+        // Don't return null - let the auth context handle the fallback
+        return null;
+      }
+
+      console.log('✅ AuthService.syncUserWithProfile: Successfully created profile', {
+        userId: authUser.id,
+        email: authUser.email,
+        profileId: newProfile?.user_id,
+        timestamp: new Date().toISOString()
+      });
+
+      return {
+        id: authUser.id,
+        email: authUser.email!,
+        ...newProfile
+      };
     }
   }
 

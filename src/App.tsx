@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContext';
+import { useNotification } from './contexts/NotificationContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { VibeProvider } from './contexts/VibeContext';
+import { NotificationManager } from './components/shared/Notification';
 import MapComponent from './components/MapComponent';
 import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
@@ -15,6 +17,7 @@ import ReportTypeModal from './components/ReportTypeModal';
 import VibeReportModal from './components/VibeReportModal';
 import EmergencyReportModal from './components/EmergencyReportModal';
 import LocationOverrideModal from './components/LocationOverrideModal';
+import SplashScreen from './components/SplashScreen'; // Add SplashScreen import
 import { LoadingSpinner, EmptyState } from './components/shared';
 import { reportsService } from './services/reports';
 import type { Vibe, SOS } from './types';
@@ -23,6 +26,7 @@ import { VibeType } from './types';
 const AppContent: React.FC = () => {
   const { t } = useTranslation();
   const { user, isAuthenticated, isLoading, checkOnboardingStatus, updateProfile } = useAuth();
+  const { notifications, removeNotification } = useNotification();
   const [activeTab, setActiveTab] = useState<TabType>('map');
   const [vibes, setVibes] = useState<Vibe[]>([]);
   const [sosAlerts, setSosAlerts] = useState<SOS[]>([]);
@@ -553,20 +557,7 @@ const AppContent: React.FC = () => {
 
   // Show loading screen while checking auth
   if (isLoading) {
-    return (
-      <div style={{
-        height: '100vh',
-        width: '100vw',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'var(--bg-secondary)',
-        flexDirection: 'column'
-      }}>
-        <LoadingSpinner size="lg" />
-        <p style={{ color: 'var(--text-muted)', fontSize: '16px', marginTop: '16px' }}>{t('app.loadingHyperApp')}</p>
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   const renderActiveView = () => {
@@ -773,6 +764,12 @@ const AppContent: React.FC = () => {
         onLocationSet={setUserLocation}
         currentLocation={userLocation}
       />
+
+      {/* Global Notifications */}
+      <NotificationManager
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
     </div>
   );
 };
@@ -780,11 +777,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <LanguageProvider>
-      <AuthProvider>
-        <VibeProvider>
-          <AppContent />
-        </VibeProvider>
-      </AuthProvider>
+      <VibeProvider>
+        <AppContent />
+      </VibeProvider>
     </LanguageProvider>
   );
 };

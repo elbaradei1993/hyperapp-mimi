@@ -67,6 +67,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   onboardingCompleted: boolean;
+  emailUnconfirmed?: boolean;
 }
 
 export interface OnboardingData {

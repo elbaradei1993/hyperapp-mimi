@@ -587,6 +587,8 @@ const ProfileView: React.FC = () => {
             </h1>
             <button
               onClick={() => {
+                console.log('Edit profile button clicked!');
+                console.log('User object:', user);
                 setEditForm({
                   firstName: user?.first_name || '',
                   lastName: user?.last_name || '',
@@ -601,6 +603,7 @@ const ProfileView: React.FC = () => {
                   profilePicturePreview: user?.profile_picture_url || ''
                 });
                 setShowEditModal(true);
+                console.log('Modal should now be open, showEditModal:', true);
               }}
               style={{
                 backgroundColor: 'var(--accent-primary)',
@@ -613,8 +616,13 @@ const ProfileView: React.FC = () => {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
+                gap: '6px',
+                zIndex: 10,
+                position: 'relative',
+                pointerEvents: 'auto'
               }}
+              onMouseEnter={() => console.log('Mouse entered button')}
+              onMouseLeave={() => console.log('Mouse left button')}
             >
               <i className="fas fa-edit"></i>
               {t('profile.editProfile')}
@@ -819,7 +827,7 @@ const ProfileView: React.FC = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            {t('profile.totalReports')}
+            {String(t('profile.totalReports'))}
           </div>
         </div>
 
@@ -843,7 +851,7 @@ const ProfileView: React.FC = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            {t('profile.communityUpvotes')}
+            {String(t('profile.communityUpvotes'))}
           </div>
         </div>
 
@@ -867,7 +875,7 @@ const ProfileView: React.FC = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            {t('profile.communityRank')}
+            {String(t('profile.communityRank'))}
           </div>
         </div>
       </div>
@@ -1057,106 +1065,7 @@ const ProfileView: React.FC = () => {
         )}
       </div>
 
-      {/* Recent Activity Section */}
-      <div style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        padding: '24px',
-        marginBottom: '24px',
-        boxShadow: '0 1px 3px var(--shadow-color)'
-      }}>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: 'bold',
-          color: 'var(--text-primary)',
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <i className="fas fa-clock" style={{ color: 'var(--text-muted)' }}></i>
-          {t('profile.recentActivity')}
-        </h2>
 
-        {reportsLoading ? (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '40px 20px'
-          }}>
-            <LoadingSpinner size="md" />
-          </div>
-        ) : myReports.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: 'var(--text-muted)'
-          }}>
-            <i className="fas fa-list" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
-            <p>{t('profile.noReports')}</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {recentActivity.map(activity => (
-              <div key={activity.id} style={{
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                padding: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-              }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  backgroundColor: getVibeColor(activity.vibe_type),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '16px'
-                }}>
-                  <i className={getVibeIcon(activity.vibe_type)}></i>
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '2px'
-                  }}>
-                    {t(`vibes.${activity.vibe_type}`)} {t('profile.report')}
-                  </div>
-                  <div style={{
-                    color: 'var(--text-muted)',
-                    fontSize: '14px',
-                    marginBottom: '4px'
-                  }}>
-                    {activity.location || t('profile.unknownLocation')}
-                  </div>
-                  {activity.notes && (
-                    <div style={{
-                      color: 'var(--text-secondary)',
-                      fontSize: '14px',
-                      marginBottom: '4px'
-                    }}>
-                      {activity.notes}
-                    </div>
-                  )}
-                  <div style={{
-                    color: 'var(--text-muted)',
-                    fontSize: '12px'
-                  }}>
-                    {new Date(activity.created_at).toLocaleDateString()} • 👍 {activity.upvotes || 0} 👎 {activity.downvotes || 0}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
 
 
