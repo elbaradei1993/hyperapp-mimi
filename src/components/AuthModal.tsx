@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
-import { authLogger } from '../lib/authLogger';
+import styles from './AuthModal.module.css';
+import Button from './shared/Button';
+import Input from './shared/Input';
+import Modal from './shared/Modal';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,145 +14,58 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
-  const { signIn, signUp, isLoading } = useAuth();
+  const { signIn, signUp, resetPassword, isLoading } = useAuth();
   const { addNotification } = useNotification();
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     loginEmail: '',
     loginPassword: '',
     signupUsername: '',
     signupEmail: '',
     signupPassword: '',
-    signupPasswordConfirm: ''
+    signupPasswordConfirm: '',
+    resetEmail: ''
   });
   const [error, setError] = useState('');
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setError(''); // Clear error when user types
+    setError('');
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    authLogger.logAuthAttempt('AuthModal.handleLogin: Form submission started', {
-      email: formData.loginEmail?.toLowerCase().trim(),
-      hasPassword: !!formData.loginPassword,
-      emailValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.loginEmail || '')
-    });
-
     if (!formData.loginEmail || !formData.loginPassword) {
-      authLogger.logValidationError('AuthModal.handleLogin: Form validation failed - missing fields', {
-        hasEmail: !!formData.loginEmail,
-        hasPassword: !!formData.loginPassword
-      });
       setError(t('auth.fillAllFields') as string);
       return;
     }
 
     try {
-      authLogger.logAuthAttempt('AuthModal.handleLogin: Calling signIn method', {
-        email: formData.loginEmail.toLowerCase().trim()
-      });
-
-      const signInResponse = await signIn(formData.loginEmail, formData.loginPassword);
-
-      // Check if signIn returned an error (some auth methods return errors instead of throwing)
-      if (signInResponse?.error) {
-        console.error('Sign-in response error:', signInResponse.error);
-        throw new Error(signInResponse.error.message || 'Authentication failed');
-      }
-
-      authLogger.logAuthSuccess('AuthModal.handleLogin: Sign-in successful, closing modal', {
-        email: formData.loginEmail.toLowerCase().trim()
-      });
-
+      console.log('Attempting login for:', formData.loginEmail);
+      await signIn(formData.loginEmail, formData.loginPassword);
+      console.log('Login successful');
       onClose();
-      // Reset form
       setFormData(prev => ({ ...prev, loginEmail: '', loginPassword: '' }));
     } catch (error: any) {
-      authLogger.logAuthError('AuthModal.handleLogin: Sign-in failed', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-        status: error.status
-      }, {
-        email: formData.loginEmail?.toLowerCase().trim()
-      });
+      console.error('Login error:', error);
 
-      // Provide more specific error messages and show toast warnings
-      console.log('🔍 Error analysis - error object:', error);
-      console.log('🔍 Error message:', error.message);
-      console.log('🔍 Error name:', error.name);
+      let errorMessage = 'Login failed. Please check your credentials.';
 
-      let errorMessage: string = t('auth.loginFailed') as string;
-      let showToastWarning = false;
-      let toastConfig: any = null;
-
-      if (error.message) {
-        const message = error.message.toLowerCase();
-
-        if (message.includes('invalid login credentials') || message.includes('invalid_credentials')) {
-          console.log('✅ Detected invalid credentials error');
-          errorMessage = 'Please check your email and password.';
-          showToastWarning = true;
-          toastConfig = {
-            type: 'warning' as const,
-            title: 'Invalid Credentials',
-            message: 'Please double-check your email and password. Try resetting your password if you\'ve forgotten it.',
-            duration: 8000
-          };
-        } else if (message.includes('email not confirmed') || message.includes('email_confirmed_at')) {
-          console.log('✅ Detected email confirmation required error');
-          errorMessage = 'Please check your email for the confirmation link.';
-          showToastWarning = true;
-          toastConfig = {
-            type: 'warning' as const,
-            title: 'Email Confirmation Required',
-            message: 'Please check your email and click the confirmation link before logging in.',
-            duration: 10000,
-            action: {
-              label: 'Resend Email',
-              onClick: () => {
-                // TODO: Implement resend confirmation email functionality
-                addNotification({
-                  type: 'info',
-                  title: 'Resend Feature',
-                  message: 'Resend confirmation email feature will be implemented soon.',
-                  duration: 3000
-                });
-              }
-            }
-          };
-        } else if (message.includes('user not found') || message.includes('user_not_found')) {
-          errorMessage = 'Account not found. Please sign up first.';
-        } else if (message.includes('too many requests') || message.includes('rate limit')) {
-          errorMessage = 'Too many login attempts. Please wait a few minutes.';
-          showToastWarning = true;
-          toastConfig = {
-            type: 'warning' as const,
-            title: 'Too Many Attempts',
-            message: 'Please wait a few minutes before trying again.',
-            duration: 5000
-          };
-        } else if (message.includes('account is disabled') || message.includes('disabled')) {
-          errorMessage = 'Your account has been disabled. Please contact support.';
-        } else {
-          // Show the actual error message for debugging
-          console.log('⚠️ Unhandled error message:', error.message);
-          errorMessage = `Login failed: ${error.message}`;
-        }
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = 'Please check your email and confirm your account.';
+      } else if (error.message?.includes('User not found')) {
+        errorMessage = 'Account not found. Please sign up first.';
+      } else {
+        // Show the actual error for debugging
+        errorMessage = `Login failed: ${error.message}`;
       }
 
       setError(errorMessage);
-
-      // Show toast warning for important authentication issues
-      if (showToastWarning && toastConfig) {
-        console.log('🔔 Showing toast warning:', toastConfig);
-        const notificationId = addNotification(toastConfig);
-        console.log('🔔 Notification added with ID:', notificationId);
-      }
     }
   };
 
@@ -158,60 +74,33 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError('');
 
     if (!formData.signupUsername || !formData.signupEmail || !formData.signupPassword || !formData.signupPasswordConfirm) {
-      authLogger.logValidationError('AuthModal.handleSignup: Form validation failed - missing fields', {
-        hasUsername: !!formData.signupUsername,
-        hasEmail: !!formData.signupEmail,
-        hasPassword: !!formData.signupPassword,
-        hasPasswordConfirm: !!formData.signupPasswordConfirm
-      });
       setError(t('auth.fillAllFields') as string);
       return;
     }
 
     if (formData.signupPassword !== formData.signupPasswordConfirm) {
-      authLogger.logValidationError('AuthModal.handleSignup: Password confirmation mismatch', {
-        passwordLength: formData.signupPassword.length,
-        confirmLength: formData.signupPasswordConfirm.length
-      });
       setError(t('auth.passwordsNotMatch') as string);
       return;
     }
 
     if (formData.signupPassword.length < 6) {
-      authLogger.logValidationError('AuthModal.handleSignup: Password too short', {
-        passwordLength: formData.signupPassword.length,
-        requiredLength: 6
-      });
       setError(t('auth.passwordTooShort') as string);
       return;
     }
 
     try {
-      const response = await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername);
+      console.log('Attempting signup for:', formData.signupEmail);
+      await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername);
+      console.log('Signup successful');
 
-      if (response.error) {
-        console.error('Sign-up response error:', response.error);
-        throw new Error(response.error.message || 'Signup failed');
-      }
+      addNotification({
+        type: 'success',
+        title: 'Account Created Successfully!',
+        message: 'You can now log in with your email and password.',
+        duration: 5000
+      });
 
-      // Check if email confirmation is required
-      if (response.data?.user && !response.data.user.email_confirmed_at) {
-        setError(t('auth.signupSuccessConfirmEmail') as string);
-        addNotification({
-          type: 'info',
-          title: t('auth.emailConfirmationRequired') as string,
-          message: t('auth.checkEmailForConfirmation') as string,
-          duration: 10000
-        });
-      } else {
-        // Show general success message if no confirmation is needed or already confirmed
-        setError(t('auth.signupSuccessful') as string);
-      }
-
-      // Switch to login tab
       setActiveTab('login');
-
-      // Reset form
       setFormData(prev => ({
         ...prev,
         signupUsername: '',
@@ -220,353 +109,198 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         signupPasswordConfirm: ''
       }));
     } catch (error: any) {
-      authLogger.logAuthError('AuthModal.handleSignup: Sign-up failed', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-        status: error.status
-      }, {
-        email: formData.signupEmail?.toLowerCase().trim()
-      });
-      setError(error.message || (t('auth.signupFailed') as string));
+      console.error('Signup error:', error);
+
+      let errorMessage = 'Signup failed. Please try again.';
+
+      if (error.message?.includes('User already registered')) {
+        errorMessage = 'An account with this email already exists. Please try logging in instead.';
+        setActiveTab('login');
+      } else {
+        // Show the actual error for debugging
+        errorMessage = `Signup failed: ${error.message}`;
+      }
+
+      setError(errorMessage);
     }
   };
 
-  if (!isOpen) return null;
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!formData.resetEmail?.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    try {
+      console.log('Attempting password reset for:', formData.resetEmail);
+      await resetPassword(formData.resetEmail);
+      console.log('Password reset email sent');
+
+      addNotification({
+        type: 'success',
+        title: 'Password Reset Email Sent',
+        message: 'Check your email for instructions to reset your password.',
+        duration: 8000
+      });
+
+      setShowForgotPassword(false);
+      setFormData(prev => ({ ...prev, resetEmail: '' }));
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      setError(`Failed to send reset email: ${error.message}`);
+    }
+  };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        padding: '32px',
-        maxWidth: '400px',
-        width: '90%',
-        maxHeight: '90vh',
-        overflow: 'auto',
-        boxShadow: 'var(--shadow-color)'
-      }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: 'var(--text-primary)',
-            marginBottom: '8px'
-          }}>
-            {t('auth.welcome') as string}
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>
-            {t('auth.joinCommunity') as string}
-          </p>
-        </div>
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>{t('auth.welcome') as string}</h2>
+        <p className={styles.subtitle}>{t('auth.joinCommunity') as string}</p>
+      </div>
 
-        {/* Tab Navigation */}
-        <div style={{
-          display: 'flex',
-          marginBottom: '24px',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          border: '1px solid var(--border-color)'
-        }}>
-          <button
-            onClick={() => setActiveTab('login')}
-            style={{
-              flex: 1,
-              padding: '12px',
-              backgroundColor: activeTab === 'login' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: activeTab === 'login' ? 'white' : 'var(--text-primary)',
-              border: 'none',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}
-          >
-            {t('auth.login') as string}
-          </button>
-          <button
-            onClick={() => setActiveTab('signup')}
-            style={{
-              flex: 1,
-              padding: '12px',
-              backgroundColor: activeTab === 'signup' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: activeTab === 'signup' ? 'white' : 'var(--text-primary)',
-              border: 'none',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}
-          >
-            {t('auth.signup') as string}
-          </button>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div style={{
-            padding: '12px',
-            marginBottom: '16px',
-            borderRadius: '8px',
-            backgroundColor: error.includes('successful') ? '#d1fae5' : '#fee2e2',
-            border: `1px solid ${error.includes('successful') ? '#a7f3d0' : '#fecaca'}`,
-            color: error.includes('successful') ? '#065f46' : '#991b1b',
-            fontSize: '14px'
-          }}>
-            {error}
-          </div>
-        )}
-
-        {/* Login Form */}
-        {activeTab === 'login' && (
-          <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: 'var(--text-secondary)',
-                marginBottom: '4px'
-              }}>
-                {t('auth.email') as string}
-              </label>
-              <input
-                type="email"
-                value={formData.loginEmail}
-                onChange={(e) => handleInputChange('loginEmail', e.target.value)}
-                placeholder={t('auth.enterEmail') as string}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: 'var(--text-secondary)',
-                marginBottom: '4px'
-              }}>
-                {t('auth.password') as string}
-              </label>
-              <input
-                type="password"
-                value={formData.loginPassword}
-                onChange={(e) => handleInputChange('loginPassword', e.target.value)}
-                placeholder={t('auth.enterPassword') as string}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)'
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: 'var(--accent-primary)',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                opacity: isLoading ? 0.5 : 1
-              }}
-            >
-              {isLoading ? (t('auth.loggingIn') as string) : (t('auth.login') as string)}
-            </button>
-          </form>
-        )}
-
-        {/* Signup Form */}
-        {activeTab === 'signup' && (
-          <form onSubmit={handleSignup}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: 'var(--text-secondary)',
-                marginBottom: '4px'
-              }}>
-                {t('auth.username') as string}
-              </label>
-              <input
-                type="text"
-                value={formData.signupUsername}
-                onChange={(e) => handleInputChange('signupUsername', e.target.value)}
-                placeholder={t('auth.chooseUsername') as string}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: 'var(--text-secondary)',
-                marginBottom: '4px'
-              }}>
-                {t('auth.email') as string}
-              </label>
-              <input
-                type="email"
-                value={formData.signupEmail}
-                onChange={(e) => handleInputChange('signupEmail', e.target.value)}
-                placeholder={t('auth.enterEmail') as string}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: 'var(--text-secondary)',
-                marginBottom: '4px'
-              }}>
-                {t('auth.password') as string}
-              </label>
-              <input
-                type="password"
-                value={formData.signupPassword}
-                onChange={(e) => handleInputChange('signupPassword', e.target.value)}
-                placeholder={t('auth.createPassword') as string}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: 'var(--text-secondary)',
-                marginBottom: '4px'
-              }}>
-                {t('auth.confirmPassword') as string}
-              </label>
-              <input
-                type="password"
-                value={formData.signupPasswordConfirm}
-                onChange={(e) => handleInputChange('signupPasswordConfirm', e.target.value)}
-                placeholder={t('auth.confirmPasswordPlaceholder') as string}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  outline: 'none',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)'
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: 'var(--success)',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                opacity: isLoading ? 0.5 : 1
-              }}
-            >
-              {isLoading ? (t('auth.creatingAccount') as string) : (t('auth.signup') as string)}
-            </button>
-          </form>
-        )}
-
-        {/* Close Button */}
+      <div className={styles.tabNav}>
         <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            background: 'none',
-            border: 'none',
-            fontSize: '24px',
-            cursor: 'pointer',
-            color: 'var(--text-muted)'
-          }}
+          onClick={() => setActiveTab('login')}
+          className={`${styles.tabButton} ${activeTab === 'login' ? styles.active : ''}`}
         >
-          ×
+          {t('auth.login') as string}
+        </button>
+        <button
+          onClick={() => setActiveTab('signup')}
+          className={`${styles.tabButton} ${activeTab === 'signup' ? styles.active : ''}`}
+        >
+          {t('auth.signup') as string}
         </button>
       </div>
-    </div>
+
+      {error && (
+        <div className={`${styles.errorMessage} ${error.includes('successful') ? styles.success : styles.error}`}>
+          {error}
+        </div>
+      )}
+
+      {showForgotPassword ? (
+        <form onSubmit={handleResetPassword} className={styles.form}>
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: '0 0 10px 0', color: 'var(--text-primary)' }}>Reset Password</h3>
+            <p style={{ margin: '0', fontSize: '14px', color: 'var(--text-secondary)' }}>
+              Enter your email address and we'll send you a link to reset your password.
+            </p>
+          </div>
+
+          <Input
+            id="resetEmail"
+            label="Email Address"
+            type="email"
+            value={formData.resetEmail}
+            onChange={(e) => handleInputChange('resetEmail', e.target.value)}
+            placeholder="Enter your email address"
+            required
+          />
+
+          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+            <Button
+              type="button"
+              onClick={() => setShowForgotPassword(false)}
+              style={{ flex: 1 }}
+            >
+              Back to Login
+            </Button>
+            <Button type="submit" disabled={isLoading} style={{ flex: 1 }}>
+              {isLoading ? 'Sending...' : 'Send Reset Link'}
+            </Button>
+          </div>
+        </form>
+      ) : activeTab === 'login' && (
+        <form onSubmit={handleLogin} className={styles.form}>
+          <Input
+            id="loginEmail"
+            label={t('auth.email') as string}
+            type="email"
+            value={formData.loginEmail}
+            onChange={(e) => handleInputChange('loginEmail', e.target.value)}
+            placeholder={t('auth.enterEmail') as string}
+            required
+          />
+          <Input
+            id="loginPassword"
+            label={t('auth.password') as string}
+            type="password"
+            value={formData.loginPassword}
+            onChange={(e) => handleInputChange('loginPassword', e.target.value)}
+            placeholder={t('auth.enterPassword') as string}
+            required
+          />
+          <Button type="submit" disabled={isLoading} fullWidth>
+            {isLoading ? (t('auth.loggingIn') as string) : (t('auth.login') as string)}
+          </Button>
+
+          <div style={{ textAlign: 'center', marginTop: '15px' }}>
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--primary-color)',
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Forgot your password?
+            </button>
+          </div>
+        </form>
+      )}
+
+      {activeTab === 'signup' && (
+        <form onSubmit={handleSignup} className={styles.form}>
+          <Input
+            id="signupUsername"
+            label={t('auth.username') as string}
+            type="text"
+            value={formData.signupUsername}
+            onChange={(e) => handleInputChange('signupUsername', e.target.value)}
+            placeholder={t('auth.chooseUsername') as string}
+            required
+          />
+          <Input
+            id="signupEmail"
+            label={t('auth.email') as string}
+            type="email"
+            value={formData.signupEmail}
+            onChange={(e) => handleInputChange('signupEmail', e.target.value)}
+            placeholder={t('auth.enterEmail') as string}
+            required
+          />
+          <Input
+            id="signupPassword"
+            label={t('auth.password') as string}
+            type="password"
+            value={formData.signupPassword}
+            onChange={(e) => handleInputChange('signupPassword', e.target.value)}
+            placeholder={t('auth.createPassword') as string}
+            required
+          />
+          <Input
+            id="signupPasswordConfirm"
+            label={t('auth.confirmPassword') as string}
+            type="password"
+            value={formData.signupPasswordConfirm}
+            onChange={(e) => handleInputChange('signupPasswordConfirm', e.target.value)}
+            placeholder={t('auth.confirmPasswordPlaceholder') as string}
+            required
+          />
+          <Button type="submit" variant="success" disabled={isLoading} fullWidth>
+            {isLoading ? (t('auth.creatingAccount') as string) : (t('auth.signup') as string)}
+          </Button>
+        </form>
+      )}
+    </Modal>
   );
 };
 

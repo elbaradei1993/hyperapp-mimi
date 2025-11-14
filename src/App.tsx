@@ -25,7 +25,7 @@ import { VibeType } from './types';
 
 const AppContent: React.FC = () => {
   const { t } = useTranslation();
-  const { user, isAuthenticated, isLoading, checkOnboardingStatus, updateProfile } = useAuth();
+  const { user, isAuthenticated, isLoading, updateProfile } = useAuth();
   const { notifications, removeNotification } = useNotification();
   const [activeTab, setActiveTab] = useState<TabType>('map');
   const [vibes, setVibes] = useState<Vibe[]>([]);
@@ -52,7 +52,7 @@ const AppContent: React.FC = () => {
     if (!isLoading) {
       if (!isAuthenticated) {
         setShowAuthModal(true);
-      } else if (!checkOnboardingStatus()) {
+      } else if (!user?.onboarding_completed) {
         setShowOnboardingModal(true);
       } else {
         // User is authenticated and onboarded, load app data
@@ -61,7 +61,7 @@ const AppContent: React.FC = () => {
     }
 
     // Only initialize location once
-    if (!locationInitialized && isAuthenticated && checkOnboardingStatus()) {
+    if (!locationInitialized && isAuthenticated && user?.onboarding_completed) {
       setLocationInitialized(true);
 
       // Get user location with aggressive GPS strategy
@@ -596,7 +596,7 @@ const AppContent: React.FC = () => {
   return (
     <div style={{ height: '100vh', width: '100vw', backgroundColor: 'var(--bg-secondary)' }}>
       {/* GPS Help Notification - show when GPS accuracy is poor */}
-      {isAuthenticated && checkOnboardingStatus() && activeTab === 'map' && showGPSHelp && (
+      {isAuthenticated && user?.onboarding_completed && activeTab === 'map' && showGPSHelp && (
         <div style={{
           position: 'absolute',
           top: '20px',
@@ -639,7 +639,7 @@ const AppContent: React.FC = () => {
       )}
 
       {/* Compact Location Controls - only show when authenticated and onboarded */}
-      {isAuthenticated && checkOnboardingStatus() && activeTab === 'map' && (
+      {isAuthenticated && user?.onboarding_completed && activeTab === 'map' && (
         <div style={{
           position: 'absolute',
           bottom: '90px',
@@ -700,7 +700,7 @@ const AppContent: React.FC = () => {
       )}
 
       {/* Main App Content - only show when authenticated and onboarded */}
-      {isAuthenticated && checkOnboardingStatus() && (
+      {isAuthenticated && user?.onboarding_completed && (
         <>
           {/* Header */}
           <Header />

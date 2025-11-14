@@ -1,111 +1,55 @@
 import { AuthResponse, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { authLogger } from '../lib/authLogger';
 import type { User as AppUser, OnboardingData } from '../types';
 
 class AuthService {
-
   // Authentication methods
   async signUp(email: string, password: string, username: string): Promise<AuthResponse> {
-    console.log('📝 AuthService.signUp: Starting signup process', {
-      email: email.toLowerCase().trim(),
-      hasPassword: !!password,
-      username: username?.trim(),
-      timestamp: new Date().toISOString()
-    });
+    // Validate inputs
+    if (!email?.trim()) throw new Error('Email is required');
+    if (!password || password.length < 6) throw new Error('Password must be at least 6 characters');
+    if (!username?.trim()) throw new Error('Username is required');
 
-    try {
-      const response = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-            reputation: 0,
-            language: 'en',
-            onboarding_completed: false,
-            onboarding_step: 0
-          }
-        }
-      });
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanUsername = username.trim();
 
-      if (response.error) {
-        console.error('❌ AuthService.signUp: Supabase signup failed', {
-          message: response.error.message,
-          status: response.error.status,
-          name: response.error.name,
-          details: response.error
-        });
-      } else {
-        console.log('✅ AuthService.signUp: Signup successful', {
-          userId: response.data.user?.id,
-          email: response.data.user?.email,
-          emailConfirmed: response.data.user?.email_confirmed_at ? true : false,
-          timestamp: new Date().toISOString()
-        });
-
-        // Note: In production, you might want to enable email confirmation
-        // For development, you can disable it in Supabase dashboard under Authentication > Settings
-        if (!response.data.user?.email_confirmed_at) {
-          console.warn('⚠️ AuthService.signUp: Email confirmation required. User must confirm email before logging in.');
+    const response = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        data: {
+          username: cleanUsername,
+          display_name: cleanUsername,
+          reputation: 0,
+          language: 'en',
+          onboarding_completed: false,
+          onboarding_step: 0,
+          signup_timestamp: new Date().toISOString()
         }
       }
+    });
 
-      return response;
-    } catch (networkError: any) {
-      console.error('🚨 AuthService.signUp: Network or unexpected error', {
-        message: networkError.message,
-        name: networkError.name,
-        stack: networkError.stack,
-        status: networkError.status
-      });
-      throw networkError;
+    if (response.error) {
+      throw new Error(response.error.message);
     }
+
+    return response;
   }
 
   async signIn(email: string, password: string): Promise<AuthResponse> {
-    authLogger.logAuthAttempt('AuthService.signIn: Starting authentication attempt', {
+    if (!email?.trim()) throw new Error('Email is required');
+    if (!password) throw new Error('Password is required');
+
+    const response = await supabase.auth.signInWithPassword({
       email: email.toLowerCase().trim(),
-      hasPassword: !!password,
-      supabaseUrl: 'https://nqwejzbayquzsvcodunl.supabase.co'
+      password
     });
 
-    try {
-      const response = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (response.error) {
-        authLogger.logAuthError('AuthService.signIn: Supabase authentication failed', {
-          message: response.error.message,
-          status: response.error.status,
-          name: response.error.name,
-          details: response.error
-        }, {
-          email: email.toLowerCase().trim(),
-          hasPassword: !!password
-        });
-      } else {
-        authLogger.logAuthSuccess('AuthService.signIn: Authentication successful', {
-          userId: response.data.user?.id,
-          email: response.data.user?.email
-        });
-      }
-
-      return response;
-    } catch (networkError: any) {
-      authLogger.logNetworkError('AuthService.signIn: Network or unexpected error', {
-        message: networkError.message,
-        name: networkError.name,
-        stack: networkError.stack,
-        status: networkError.status
-      }, {
-        email: email.toLowerCase().trim(),
-        hasPassword: !!password
-      });
-      throw networkError;
+    if (response.error) {
+      throw new Error(response.error.message);
     }
+
+    return response;
   }
 
   async signOut(): Promise<{ error: any }> {
@@ -113,12 +57,15 @@ class AuthService {
   }
 
   async getCurrentUser(): Promise<User | null> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
     return user;
   }
 
   async getSession() {
-    return supabase.auth.getSession();
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return data;
   }
 
   // User profile methods
@@ -184,144 +131,82 @@ class AuthService {
   }
 
   // Sync user data between auth and profile
-  async syncUserWithProfile(authUser: User): Promise<AppUser | null> {
-    console.log('🔄 AuthService.syncUserWithProfile: Starting profile sync', {
-      userId: authUser.id,
-      email: authUser.email,
-      timestamp: new Date().toISOString()
-    });
-
+  async syncUserWithProfile(authUser: User): Promise<AppUser> {
     try {
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          console.error('⏰ AuthService.syncUserWithProfile: Profile sync timeout', {
-            userId: authUser.id,
-            timestamp: new Date().toISOString()
-          });
-          reject(new Error('Profile sync timeout'));
-        }, 15000); // 15 second timeout
-      });
+      // First check if profile exists
+      const { data: profile, error } = await this.getUserProfile(authUser.id);
 
-      const syncPromise = this.performProfileSync(authUser);
-      const result = await Promise.race([syncPromise, timeoutPromise]);
-
-      return result;
-    } catch (error: any) {
-      console.error('🚨 AuthService.syncUserWithProfile: Sync failed or timed out', {
-        error: {
-          message: error.message,
-          name: error.name,
-          stack: error.stack,
-          status: error.status
-        },
-        userId: authUser.id,
-        email: authUser.email,
-        timestamp: new Date().toISOString()
-      });
-      return null;
-    }
-  }
-
-  private async performProfileSync(authUser: User): Promise<AppUser | null> {
-    // First check if profile exists
-    console.log('🔍 AuthService.syncUserWithProfile: Checking for existing profile', {
-      userId: authUser.id,
-      timestamp: new Date().toISOString()
-    });
-
-    const { data: profile, error } = await this.getUserProfile(authUser.id);
-
-    if (error) {
-      console.log('⚠️ AuthService.syncUserWithProfile: Profile query error', {
-        error: {
-          message: error.message,
-          code: error.code,
-          status: error.status
-        },
-        userId: authUser.id,
-        timestamp: new Date().toISOString()
-      });
-
-      // PGRST116 is "not found" error, which is expected for new users
-      if (error.code !== 'PGRST116') {
-        console.error('❌ AuthService.syncUserWithProfile: Unexpected error fetching profile', {
-          error: {
-            message: error.message,
-            code: error.code,
-            status: error.status,
-            details: error
-          },
-          userId: authUser.id,
-          timestamp: new Date().toISOString()
-        });
-        return null;
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is expected for new users
+        console.warn('Profile fetch error:', error);
+        // Continue to create profile instead of throwing
       }
-    }
 
-    if (profile) {
-      // Profile exists, return combined data
-      console.log('✅ AuthService.syncUserWithProfile: Found existing profile', {
-        userId: authUser.id,
-        email: authUser.email,
-        profileId: profile.user_id,
-        onboardingCompleted: profile.onboarding_completed,
-        timestamp: new Date().toISOString()
-      });
+      if (profile) {
+        // Profile exists, return combined data
+        console.log('Found existing profile for user:', authUser.id);
+        return {
+          id: authUser.id,
+          email: authUser.email!,
+          ...profile
+        };
+      } else {
+        // Profile doesn't exist, create it
+        console.log('Creating new profile for user:', authUser.id);
 
-      return {
+        const username = authUser.user_metadata?.username ||
+                        authUser.user_metadata?.display_name ||
+                        authUser.email?.split('@')[0] ||
+                        'User';
+
+        const profileData = {
+          username: username,
+          email: authUser.email,
+          reputation: 0,
+          language: authUser.user_metadata?.language || 'en',
+          onboarding_completed: false,
+          onboarding_step: 0
+        };
+
+        const { data: newProfile, error: createError } = await this.createUserProfile(authUser.id, profileData);
+
+        if (createError) {
+          console.error('Profile creation failed:', createError);
+          // For existing auth users without profiles, create a minimal profile
+          console.log('Creating minimal profile as fallback');
+          const minimalProfile: AppUser = {
+            id: authUser.id,
+            email: authUser.email!,
+            username: username,
+            reputation: 0,
+            language: 'en',
+            onboarding_completed: false,
+            onboarding_step: 0
+          };
+          return minimalProfile;
+        }
+
+        console.log('Profile created successfully');
+        return {
+          id: authUser.id,
+          email: authUser.email!,
+          ...newProfile
+        };
+      }
+    } catch (error) {
+      console.error('Profile sync failed:', error);
+      // Return minimal user object to prevent auth failure
+      const fallbackUser: AppUser = {
         id: authUser.id,
         email: authUser.email!,
-        ...profile
-      };
-    } else {
-      // Profile doesn't exist, create it
-      console.log('🆕 AuthService.syncUserWithProfile: Creating new profile', {
-        userId: authUser.id,
-        email: authUser.email,
         username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
-        timestamp: new Date().toISOString()
-      });
-
-      const profileData = {
-        username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
-        email: authUser.email,
         reputation: 0,
         language: 'en',
         onboarding_completed: false,
         onboarding_step: 0
       };
-
-      const { data: newProfile, error: createError } = await this.createUserProfile(authUser.id, profileData);
-
-      if (createError) {
-        console.error('❌ AuthService.syncUserWithProfile: Error creating user profile', {
-          error: {
-            message: createError.message,
-            code: createError.code,
-            status: createError.status,
-            details: createError
-          },
-          userId: authUser.id,
-          profileData,
-          timestamp: new Date().toISOString()
-        });
-        // Don't return null - let the auth context handle the fallback
-        return null;
-      }
-
-      console.log('✅ AuthService.syncUserWithProfile: Successfully created profile', {
-        userId: authUser.id,
-        email: authUser.email,
-        profileId: newProfile?.user_id,
-        timestamp: new Date().toISOString()
-      });
-
-      return {
-        id: authUser.id,
-        email: authUser.email!,
-        ...newProfile
-      };
+      console.log('Using fallback user profile');
+      return fallbackUser;
     }
   }
 
@@ -333,8 +218,10 @@ class AuthService {
   }
 
   // Password reset
-  async resetPassword(email: string): Promise<any> {
-    return supabase.auth.resetPasswordForEmail(email);
+  async resetPassword(email: string): Promise<{ error: any }> {
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    });
   }
 
   // Update password
