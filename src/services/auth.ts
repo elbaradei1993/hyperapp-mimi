@@ -53,8 +53,14 @@ class AuthService {
   }
 
   async signInWithGoogle(): Promise<{ data: { provider: string; url: string } | null; error: any }> {
+    // Get the current host (will be IP address when accessed from phone)
+    const redirectTo = `${window.location.protocol}//${window.location.host}`;
+
     const response = await supabase.auth.signInWithOAuth({
-      provider: 'google'
+      provider: 'google',
+      options: {
+        redirectTo: redirectTo
+      }
     });
 
     if (response.error) {
