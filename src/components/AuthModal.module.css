@@ -156,9 +156,9 @@
 /* Form Input Styling */
 .formInput {
   width: 100%;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border: 2px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 16px;
   font-weight: 500;
   outline: none;
