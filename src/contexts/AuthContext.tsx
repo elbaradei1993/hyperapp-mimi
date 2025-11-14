@@ -59,17 +59,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Listen for auth changes
     const { data: { subscription } } = authService.onAuthStateChange(async (authUser) => {
+      console.log('🔐 Auth state change detected:', !!authUser, authUser?.email);
       if (!isMounted) return;
 
       try {
         if (authUser) {
+          console.log('👤 Syncing user profile for:', authUser.email);
           const userProfile = await authService.syncUserWithProfile(authUser);
+          console.log('✅ User profile synced:', userProfile.username);
           setUser(userProfile);
         } else {
+          console.log('🚪 User signed out');
           setUser(null);
         }
       } catch (error) {
-        console.error('Auth state change error:', error);
+        console.error('❌ Auth state change error:', error);
         // If profile sync fails, sign out to prevent inconsistent state
         await authService.signOut();
         setUser(null);
