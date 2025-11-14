@@ -52,6 +52,21 @@ class AuthService {
     return response;
   }
 
+  async signInWithGoogle(): Promise<{ data: { provider: string; url: string } | null; error: any }> {
+    const response = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
+
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+
+    return response;
+  }
+
   async signOut(): Promise<{ error: any }> {
     return supabase.auth.signOut();
   }
