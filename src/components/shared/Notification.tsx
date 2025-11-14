@@ -100,32 +100,74 @@ const Notification: React.FC<NotificationProps> = ({
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 max-w-sm w-full ${typeClasses[type].bg} border ${typeClasses[type].border} rounded-lg p-4 shadow-lg transform transition-all duration-300 ${
-        isExiting ? 'translate-x-full opacity-0' : 'translate-x-0 opacity-100'
-      }`}
+      style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        zIndex: 9999,
+        maxWidth: '400px',
+        width: '100%',
+        backgroundColor: type === 'success' ? '#d1fae5' : type === 'error' ? '#fee2e2' : type === 'warning' ? '#fef3c7' : '#dbeafe',
+        border: `1px solid ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#3b82f6'}`,
+        borderRadius: '8px',
+        padding: '16px',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        transform: isExiting ? 'translateX(100%)' : 'translateX(0)',
+        opacity: isExiting ? 0 : 1,
+        transition: 'all 300ms ease-in-out',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}
     >
-      <div className="flex items-start">
-        <div className={`flex-shrink-0 ${typeClasses[type].iconBg} rounded-lg p-1`}>
-          <div className={typeClasses[type].icon}>
+      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+        <div style={{
+          flexShrink: 0,
+          backgroundColor: type === 'success' ? '#a7f3d0' : type === 'error' ? '#fecaca' : type === 'warning' ? '#fde68a' : '#bfdbfe',
+          borderRadius: '8px',
+          padding: '4px'
+        }}>
+          <div style={{
+            color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af'
+          }}>
             {icons[type]}
           </div>
         </div>
 
-        <div className="ml-3 w-0 flex-1">
-          <p className={`text-sm font-medium ${typeClasses[type].title}`}>
+        <div style={{ marginLeft: '12px', flex: 1 }}>
+          <p style={{
+            fontSize: '14px',
+            fontWeight: '500',
+            margin: '0 0 4px 0',
+            color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af'
+          }}>
             {title}
           </p>
           {message && (
-            <p className={`mt-1 text-sm ${typeClasses[type].message}`}>
+            <p style={{
+              fontSize: '14px',
+              margin: '4px 0 0 0',
+              color: type === 'success' ? '#047857' : type === 'error' ? '#dc2626' : type === 'warning' ? '#d97706' : '#1d4ed8'
+            }}>
               {message}
             </p>
           )}
         </div>
 
-        <div className="ml-4 flex-shrink-0 flex">
+        <div style={{ marginLeft: '16px', flexShrink: 0 }}>
           <button
             onClick={handleClose}
-            className={`inline-flex ${typeClasses[type].title} hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 rounded-md`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '4px',
+              borderRadius: '6px',
+              border: 'none',
+              background: 'transparent',
+              color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af',
+              cursor: 'pointer',
+              fontSize: '18px',
+              lineHeight: 1
+            }}
           >
             <span className="sr-only">{t('common.close')}</span>
             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -155,7 +197,15 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
   onRemove
 }) => {
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div style={{
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      zIndex: 9999,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px'
+    }}>
       {notifications.map((notification) => (
         <Notification
           key={notification.id}

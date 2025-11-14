@@ -43,7 +43,7 @@ alter table public.votes enable row level security;
 
 drop policy if exists users_insert_self on public.users;
 create policy users_insert_self on public.users
-  for insert to authenticated, service_role
+  for insert to authenticated, anon, service_role
   with check (user_id = auth.uid()::text);
 
 drop policy if exists users_select_self on public.users;
