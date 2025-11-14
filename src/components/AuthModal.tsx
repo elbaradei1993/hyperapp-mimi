@@ -247,88 +247,117 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </form>
       ) : activeTab === 'login' && (
         <form onSubmit={handleLogin} className={styles.form}>
-          <Input
-            id="loginEmail"
-            label={t('auth.email') as string}
-            type="email"
-            value={formData.loginEmail}
-            onChange={(e) => handleInputChange('loginEmail', e.target.value)}
-            placeholder={t('auth.enterEmail') as string}
-            required
-          />
-          <Input
-            id="loginPassword"
-            label={t('auth.password') as string}
-            type="password"
-            value={formData.loginPassword}
-            onChange={(e) => handleInputChange('loginPassword', e.target.value)}
-            placeholder={t('auth.enterPassword') as string}
-            required
-          />
-          <Button type="submit" disabled={isLoading} fullWidth>
-            {isLoading ? (t('auth.loggingIn') as string) : (t('auth.login') as string)}
-          </Button>
-
-          <div style={{ textAlign: 'center', marginTop: '15px' }}>
-            <button
-              type="button"
-              onClick={() => setShowForgotPassword(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--primary-color)',
-                textDecoration: 'underline',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Forgot your password?
-            </button>
+          <div>
+            <label htmlFor="loginEmail" className={styles.formLabel}>
+              {t('auth.email') as string}
+            </label>
+            <input
+              id="loginEmail"
+              type="email"
+              value={formData.loginEmail}
+              onChange={(e) => handleInputChange('loginEmail', e.target.value)}
+              placeholder={t('auth.enterEmail') as string}
+              className={styles.formInput}
+              required
+            />
           </div>
+          <div>
+            <label htmlFor="loginPassword" className={styles.formLabel}>
+              {t('auth.password') as string}
+            </label>
+            <input
+              id="loginPassword"
+              type="password"
+              value={formData.loginPassword}
+              onChange={(e) => handleInputChange('loginPassword', e.target.value)}
+              placeholder={t('auth.enterPassword') as string}
+              className={styles.formInput}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`${styles.submitButton} ${styles.loginButton}`}
+          >
+            {isLoading ? (t('auth.loggingIn') as string) : (t('auth.login') as string)}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowForgotPassword(true)}
+            className={styles.forgotPasswordLink}
+          >
+            Forgot your password?
+          </button>
         </form>
       )}
 
       {activeTab === 'signup' && (
         <form onSubmit={handleSignup} className={styles.form}>
-          <Input
-            id="signupUsername"
-            label={t('auth.username') as string}
-            type="text"
-            value={formData.signupUsername}
-            onChange={(e) => handleInputChange('signupUsername', e.target.value)}
-            placeholder={t('auth.chooseUsername') as string}
-            required
-          />
-          <Input
-            id="signupEmail"
-            label={t('auth.email') as string}
-            type="email"
-            value={formData.signupEmail}
-            onChange={(e) => handleInputChange('signupEmail', e.target.value)}
-            placeholder={t('auth.enterEmail') as string}
-            required
-          />
-          <Input
-            id="signupPassword"
-            label={t('auth.password') as string}
-            type="password"
-            value={formData.signupPassword}
-            onChange={(e) => handleInputChange('signupPassword', e.target.value)}
-            placeholder={t('auth.createPassword') as string}
-            required
-          />
-          <Input
-            id="signupPasswordConfirm"
-            label={t('auth.confirmPassword') as string}
-            type="password"
-            value={formData.signupPasswordConfirm}
-            onChange={(e) => handleInputChange('signupPasswordConfirm', e.target.value)}
-            placeholder={t('auth.confirmPasswordPlaceholder') as string}
-            required
-          />
-          <Button type="submit" variant="success" disabled={isLoading} fullWidth>
+          <div>
+            <label htmlFor="signupUsername" className={styles.formLabel}>
+              {t('auth.username') as string}
+            </label>
+            <input
+              id="signupUsername"
+              type="text"
+              value={formData.signupUsername}
+              onChange={(e) => handleInputChange('signupUsername', e.target.value)}
+              placeholder={t('auth.chooseUsername') as string}
+              className={styles.formInput}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="signupEmail" className={styles.formLabel}>
+              {t('auth.email') as string}
+            </label>
+            <input
+              id="signupEmail"
+              type="email"
+              value={formData.signupEmail}
+              onChange={(e) => handleInputChange('signupEmail', e.target.value)}
+              placeholder={t('auth.enterEmail') as string}
+              className={styles.formInput}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="signupPassword" className={styles.formLabel}>
+              {t('auth.password') as string}
+            </label>
+            <input
+              id="signupPassword"
+              type="password"
+              value={formData.signupPassword}
+              onChange={(e) => handleInputChange('signupPassword', e.target.value)}
+              placeholder={t('auth.createPassword') as string}
+              className={styles.formInput}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="signupPasswordConfirm" className={styles.formLabel}>
+              {t('auth.confirmPassword') as string}
+            </label>
+            <input
+              id="signupPasswordConfirm"
+              type="password"
+              value={formData.signupPasswordConfirm}
+              onChange={(e) => handleInputChange('signupPasswordConfirm', e.target.value)}
+              placeholder={t('auth.confirmPasswordPlaceholder') as string}
+              className={styles.formInput}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`${styles.submitButton} ${styles.signupButton}`}
+          >
             {isLoading ? (t('auth.creatingAccount') as string) : (t('auth.signup') as string)}
-          </Button>
+          </button>
         </form>
       )}
       </div>
