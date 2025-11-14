@@ -54,10 +54,7 @@ class AuthService {
 
   async signInWithGoogle(): Promise<{ data: { provider: string; url: string } | null; error: any }> {
     const response = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`
-      }
+      provider: 'google'
     });
 
     if (response.error) {
