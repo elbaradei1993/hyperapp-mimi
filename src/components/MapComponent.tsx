@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import type { Vibe, SOS } from '../types';
 import { VibeType } from '../types';
@@ -7,7 +7,7 @@ import { getVibeIcon, sosIcon, userLocationIcon } from './MapIcons';
 import { reportsService } from '../services/reports';
 import 'leaflet/dist/leaflet.css';
 // Import heatmap plugin
-import '../../leaflet-heat.js';
+import 'leaflet.heat';
 
 // Fix for default markers in react-leaflet
 import L from 'leaflet';
@@ -52,16 +52,26 @@ const ControlButton: React.FC<{ children: React.ReactNode; onClick: () => void; 
         onClick={onClick}
         title={title}
         style={{
-          width: '34px',
-          height: '34px',
+          width: '40px',
+          height: '40px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: '#fff',
           border: 'none',
           cursor: 'pointer',
-          borderRadius: '4px',
-          boxShadow: '0 1px 5px rgba(0,0,0,0.65)'
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          // Mobile touch improvements
+          WebkitTapHighlightColor: 'transparent',
+          WebkitAppearance: 'none',
+          touchAction: 'manipulation',
+          // Better accessibility
+          minWidth: '40px',
+          minHeight: '40px',
+          // Ensure proper touch target size
+          position: 'relative',
+          zIndex: 1000
         }}
       >
         {children}
@@ -115,29 +125,39 @@ const vibeColorsHex: Record<VibeType, string> = {
   [VibeType.Quiet]: '#2dd4bf'      // Soft teal
 };
 
-// Heatmap Layer Component - Multi-layered by vibe type
+// Memoized gradient calculation to avoid recalculation on every render
+const useVibeGradients = () => {
+  return useMemo(() => {
+    const gradients: Record<VibeType, { [key: number]: string }> = {} as Record<VibeType, { [key: number]: string }>;
+
+    Object.values(VibeType).forEach(vibeType => {
+      const hexColor = vibeColorsHex[vibeType];
+      const rgbColor = hexToRgb(hexColor);
+
+      if (rgbColor) {
+        const gradient: { [key: number]: string } = {};
+        const opacitySteps = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0];
+
+        opacitySteps.forEach(opacity => {
+          gradient[opacity] = `rgba(${rgbColor.r}, ${rgbColor.g}, ${rgbColor.b}, ${opacity})`;
+        });
+
+        gradients[vibeType] = gradient;
+      }
+    });
+
+    return gradients;
+  }, []);
+};
+
+// Optimized heatmap layer with memoized calculations
 const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo(({ vibes, isVisible }) => {
   const map = useMap();
   const layersRef = useRef<any[]>([]);
+  const gradients = useVibeGradients();
 
-  useEffect(() => {
-    const L = (window as any).L;
-    if (!L || !L.heatLayer) {
-      console.warn("Leaflet.heat plugin not found. Heatmap will not be rendered.");
-      return;
-    }
-
-    // Clear existing layers
-    layersRef.current.forEach(layer => {
-      if (map.hasLayer(layer)) {
-        map.removeLayer(layer);
-      }
-    });
-    layersRef.current = [];
-
-    if (!isVisible) return;
-
-    // Group vibes by type
+  // Memoize grouped vibes to avoid recalculation
+  const groupedVibes = useMemo(() => {
     const vibesByType: Record<VibeType, Vibe[]> = {
       [VibeType.Safe]: [],
       [VibeType.Calm]: [],
@@ -150,14 +170,39 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
       [VibeType.Quiet]: []
     };
 
-    // Group vibes by their type
     vibes.forEach(vibe => {
-      if (vibe.latitude && vibe.longitude && vibe.vibe_type) {
-        if (vibesByType[vibe.vibe_type]) {
-          vibesByType[vibe.vibe_type].push(vibe);
-        }
+      if (vibe.latitude && vibe.longitude && vibe.vibe_type && vibesByType[vibe.vibe_type]) {
+        vibesByType[vibe.vibe_type].push(vibe);
       }
     });
+
+    return vibesByType;
+  }, [vibes]);
+
+  useEffect(() => {
+    const L = (window as any).L;
+    if (!L || !L.heatLayer) {
+      console.warn("Leaflet.heat plugin not found. Heatmap will not be rendered.");
+      return;
+    }
+
+    // Clear existing layers with defensive error handling
+    try {
+      layersRef.current.forEach(layer => {
+        if (layer && map && typeof map.hasLayer === 'function' && map.hasLayer(layer)) {
+          try {
+            map.removeLayer(layer);
+          } catch (layerError) {
+            console.warn('Error removing heatmap layer:', layerError);
+          }
+        }
+      });
+    } catch (cleanupError) {
+      console.warn('Error during layer cleanup:', cleanupError);
+    }
+    layersRef.current = [];
+
+    if (!isVisible) return;
 
     // Define rendering order (safe vibes first, dangerous last for proper layering)
     const renderOrder: VibeType[] = [
@@ -172,66 +217,67 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
       VibeType.Dangerous
     ];
 
-    // Create heatmap layers for each vibe type
+    // Create heatmap layers for each vibe type with error handling
     renderOrder.forEach(vibeType => {
-      const typeVibes = vibesByType[vibeType];
-      if (typeVibes.length === 0) return;
+      try {
+        const typeVibes = groupedVibes[vibeType];
+        if (typeVibes.length === 0) return;
 
-      // Create points for this vibe type
-      const points = typeVibes.map(vibe => [
-        vibe.latitude,
-        vibe.longitude,
-        0.8 // Consistent intensity for all points of this type
-      ]);
+        const gradient = gradients[vibeType];
+        if (!gradient) {
+          console.warn(`No gradient available for ${vibeType}`);
+          return;
+        }
 
-      // Get hex color for this vibe type
-      const hexColor = vibeColorsHex[vibeType];
-      const rgbColor = hexToRgb(hexColor);
+        // Create points for this vibe type
+        const points = typeVibes.map(vibe => [
+          vibe.latitude!,
+          vibe.longitude!,
+          0.8 // Consistent intensity for all points of this type
+        ]);
 
-      if (!rgbColor) {
-        console.warn(`Invalid hex color for ${vibeType}: ${hexColor}`);
-        return;
+        // Create heatmap layer with memoized gradient
+        const heatLayer = L.heatLayer(points, {
+          radius: 25,
+          blur: 15,
+          maxZoom: 17,
+          minOpacity: 0.4,
+          maxOpacity: 0.9,
+          gradient: gradient
+        });
+
+        // Add layer to map with error handling
+        if (heatLayer && map && typeof map.addLayer === 'function') {
+          try {
+            map.addLayer(heatLayer);
+            layersRef.current.push(heatLayer);
+          } catch (addLayerError) {
+            console.warn(`Error adding heatmap layer for ${vibeType}:`, addLayerError);
+          }
+        }
+      } catch (vibeTypeError) {
+        console.warn(`Error creating heatmap layer for ${vibeType}:`, vibeTypeError);
       }
-
-      // Create gradient array for smooth color transition from transparent to full color
-      // The gradient array has 1024 elements (256 opacity levels * 4 values per level)
-      // Each set of 4 elements represents [r, g, b, unused] for that opacity level
-      const gradient = new Array(1024);
-      for (let i = 0; i < 256; i++) {
-        const alpha = i / 255; // Opacity level from 0.0 to 1.0
-        const index = i * 4;
-        gradient[index] = Math.round(rgbColor.r * alpha);     // Red
-        gradient[index + 1] = Math.round(rgbColor.g * alpha); // Green
-        gradient[index + 2] = Math.round(rgbColor.b * alpha); // Blue
-        // gradient[index + 3] is unused
-      }
-
-      // Create heatmap layer with proper RGB gradient array
-      const heatLayer = L.heatLayer(points, {
-        radius: 25,
-        blur: 15,
-        maxZoom: 17,
-        minOpacity: 0.4,
-        maxOpacity: 0.9,
-        // Use RGB gradient array - this is the format the leaflet-heat library expects
-        gradient: gradient
-      });
-
-      // Add layer to map
-      map.addLayer(heatLayer);
-      layersRef.current.push(heatLayer);
     });
 
-    // Cleanup function
+    // Cleanup function with defensive error handling
     return () => {
-      layersRef.current.forEach(layer => {
-        if (map.hasLayer(layer)) {
-          map.removeLayer(layer);
-        }
-      });
+      try {
+        layersRef.current.forEach(layer => {
+          if (layer && map && typeof map.hasLayer === 'function' && map.hasLayer(layer)) {
+            try {
+              map.removeLayer(layer);
+            } catch (layerError) {
+              console.warn('Error removing heatmap layer during cleanup:', layerError);
+            }
+          }
+        });
+      } catch (cleanupError) {
+        console.warn('Error during cleanup:', cleanupError);
+      }
       layersRef.current = [];
     };
-  }, [map, vibes, isVisible]);
+  }, [map, groupedVibes, isVisible, gradients]);
 
   return null;
 });
@@ -312,18 +358,115 @@ const BoostButton: React.FC<{
   );
 };
 
-const MapComponent: React.FC<MapComponentProps> = ({ vibes, sosAlerts, center, zoom, userLocation, isHeatmapVisible, onToggleHeatmap, userId }) => {
-  // Handle boost updates to refresh data
-  const handleBoostUpdate = (id: number, type: 'vibe' | 'sos', newCount: number, isBoosted: boolean) => {
+// Memoized marker components to prevent unnecessary re-renders
+const VibeMarker: React.FC<{
+  vibe: Vibe;
+  userId: string;
+  onBoostUpdate: (id: number, type: 'vibe' | 'sos', newCount: number, isBoosted: boolean) => void;
+}> = React.memo(({ vibe, userId, onBoostUpdate }) => (
+  <Marker
+    key={`vibe-${vibe.id}`}
+    position={[vibe.latitude!, vibe.longitude!]}
+    icon={L.divIcon({
+      html: `<div class="vibe-marker"><i class="${getVibeIcon(vibe.vibe_type)}"></i></div>`,
+      className: 'vibe-marker',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30]
+    })}
+  >
+    <Popup>
+      <div style={{ color: '#1f2937', maxWidth: '320px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+          <div>
+            <strong style={{ textTransform: 'capitalize' }}>{vibe.vibe_type}</strong> vibe reported by {vibe.profile?.username || 'anonymous'}.
+          </div>
+          <BoostButton
+            type="vibe"
+            id={vibe.id}
+            userId={userId}
+            initialBoosts={vibe.upvotes || 0}
+            onBoostUpdate={onBoostUpdate}
+          />
+        </div>
+        <small style={{ color: '#6b7280' }}>{new Date(vibe.created_at).toLocaleString()}</small>
+      </div>
+    </Popup>
+  </Marker>
+));
+
+const SOSMarker: React.FC<{
+  sos: SOS;
+  userId: string;
+  onBoostUpdate: (id: number, type: 'vibe' | 'sos', newCount: number, isBoosted: boolean) => void;
+}> = React.memo(({ sos, userId, onBoostUpdate }) => (
+  <React.Fragment key={`sos-${sos.id}`}>
+    <Marker
+      position={[sos.latitude!, sos.longitude!]}
+      icon={sosIcon}
+    >
+      <Popup>
+        <div style={{ color: '#1f2937', maxWidth: '320px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+            <div>
+              <strong>SOS Alert!</strong>
+              <p style={{ marginTop: '4px' }}>{sos.notes || 'No details provided.'}</p>
+            </div>
+            <BoostButton
+              type="sos"
+              id={sos.id}
+              userId={userId}
+              initialBoosts={sos.upvotes || 0}
+              onBoostUpdate={onBoostUpdate}
+            />
+          </div>
+          <small style={{ color: '#6b7280' }}>Reported by {sos.profile?.username || 'anonymous'} at {new Date(sos.created_at).toLocaleString()}</small>
+        </div>
+      </Popup>
+    </Marker>
+    <Circle
+      center={[sos.latitude!, sos.longitude!]}
+      radius={3000}
+      pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.1, weight: 1 }}
+    />
+  </React.Fragment>
+));
+
+// Memoized main component to prevent unnecessary re-renders
+const MapComponent: React.FC<MapComponentProps> = React.memo(({
+  vibes,
+  sosAlerts,
+  center,
+  zoom,
+  userLocation,
+  isHeatmapVisible,
+  onToggleHeatmap,
+  userId
+}) => {
+  // Memoize boost update handler
+  const handleBoostUpdate = useCallback((id: number, type: 'vibe' | 'sos', newCount: number, isBoosted: boolean) => {
     // The boost count will be updated in the database, and the component will re-render
     // with fresh data from the parent component's data fetching
-  };
+  }, []);
+
+  // Memoize filtered and validated vibes to avoid recalculation
+  const validVibes = useMemo(() =>
+    vibes.filter(vibe =>
+      vibe.latitude &&
+      vibe.longitude &&
+      Object.values(VibeType).includes(vibe.vibe_type)
+    ), [vibes]
+  );
+
+  // Memoize filtered and validated SOS alerts
+  const validSOSAlerts = useMemo(() =>
+    sosAlerts.filter(sos => sos.latitude && sos.longitude),
+    [sosAlerts]
+  );
 
   return (
     <MapContainer center={center} zoom={zoom} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
       <MapFlyController center={center} zoom={zoom} />
       <RecenterControl userLocation={userLocation} />
-      {/* Fix: Pass `isHeatmapVisible` prop to the control component instead of undefined `isVisible`. */}
       <HeatmapToggleControl isVisible={isHeatmapVisible} onToggle={onToggleHeatmap} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -335,91 +478,27 @@ const MapComponent: React.FC<MapComponentProps> = ({ vibes, sosAlerts, center, z
           icon={userLocationIcon}
         />
       )}
-      <HeatmapLayer vibes={vibes} isVisible={isHeatmapVisible} />
+      <HeatmapLayer vibes={validVibes} isVisible={isHeatmapVisible} />
 
-      {!isHeatmapVisible && vibes.map((vibe) => {
-        if (!vibe.latitude || !vibe.longitude) {
-          console.warn(`Vibe ${vibe.id} has missing location data and will not be rendered.`);
-          return null;
-        }
-        // Fix: Add a defensive check to ensure the vibe_type is valid before rendering.
-        // This prevents the app from crashing if it receives unexpected data from the DB.
-        if (!Object.values(VibeType).includes(vibe.vibe_type)) {
-          console.warn(`Vibe ${vibe.id} has an unrecognized vibe_type ('${vibe.vibe_type}') and will not be rendered.`);
-          return null;
-        }
-        return (
-          <Marker
-            key={`vibe-${vibe.id}`}
-            position={[vibe.latitude, vibe.longitude]}
-            icon={L.divIcon({
-              html: `<div class="vibe-marker"><i class="${getVibeIcon(vibe.vibe_type)}"></i></div>`,
-              className: 'vibe-marker',
-              iconSize: [30, 30],
-              iconAnchor: [15, 30]
-            })}
-          >
-            <Popup>
-              <div style={{ color: '#1f2937', maxWidth: '320px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <div>
-                    <strong style={{ textTransform: 'capitalize' }}>{vibe.vibe_type}</strong> vibe reported by {vibe.profile?.username || 'anonymous'}.
-                  </div>
-                  <BoostButton
-                    type="vibe"
-                    id={vibe.id}
-                    userId={userId}
-                    initialBoosts={vibe.upvotes || 0}
-                    onBoostUpdate={handleBoostUpdate}
-                  />
-                </div>
-                <small style={{ color: '#6b7280' }}>{new Date(vibe.created_at).toLocaleString()}</small>
-              </div>
-            </Popup>
-          </Marker>
-        );
-      })}
+      {!isHeatmapVisible && validVibes.map((vibe) => (
+        <VibeMarker
+          key={`vibe-${vibe.id}`}
+          vibe={vibe}
+          userId={userId}
+          onBoostUpdate={handleBoostUpdate}
+        />
+      ))}
 
-      {sosAlerts.map((sos) => {
-        if (!sos.latitude || !sos.longitude) {
-          console.warn(`SOS Alert ${sos.id} has missing location data and will not be rendered.`);
-          return null;
-        }
-        return (
-          <React.Fragment key={`sos-${sos.id}`}>
-            <Marker
-              position={[sos.latitude, sos.longitude]}
-              icon={sosIcon}
-            >
-              <Popup>
-                <div style={{ color: '#1f2937', maxWidth: '320px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <div>
-                      <strong>SOS Alert!</strong>
-                      <p style={{ marginTop: '4px' }}>{sos.notes || 'No details provided.'}</p>
-                    </div>
-                    <BoostButton
-                      type="sos"
-                      id={sos.id}
-                      userId={userId}
-                      initialBoosts={sos.upvotes || 0}
-                      onBoostUpdate={handleBoostUpdate}
-                    />
-                  </div>
-                  <small style={{ color: '#6b7280' }}>Reported by {sos.profile?.username || 'anonymous'} at {new Date(sos.created_at).toLocaleString()}</small>
-                </div>
-              </Popup>
-            </Marker>
-            <Circle
-              center={[sos.latitude, sos.longitude]}
-              radius={3000}
-              pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.1, weight: 1 }}
-            />
-          </React.Fragment>
-        );
-      })}
+      {validSOSAlerts.map((sos) => (
+        <SOSMarker
+          key={`sos-${sos.id}`}
+          sos={sos}
+          userId={userId}
+          onBoostUpdate={handleBoostUpdate}
+        />
+      ))}
     </MapContainer>
   );
-};
+});
 
 export default MapComponent;

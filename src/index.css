@@ -3,9 +3,70 @@
   --vh: 1vh;
 }
 
+/* Mobile-specific breakpoints and improvements */
 @media screen and (max-width: 768px) {
   :root {
     --vh: calc(1vh * 0.01);
+  }
+
+  /* Improve readability on small screens */
+  body {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* Better touch targets */
+  button, .btn, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent text selection issues on mobile */
+  * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in input fields */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+}
+
+/* Extra small screens (phones < 375px) */
+@media screen and (max-width: 375px) {
+  body {
+    font-size: 15px;
+  }
+
+  /* Reduce padding on very small screens */
+  .modal-content,
+  .card,
+  .container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+/* Small phones (375px - 480px) */
+@media screen and (min-width: 376px) and (max-width: 480px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+/* Large phones (481px - 768px) */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  body {
+    font-size: 17px;
   }
 }
 

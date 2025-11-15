@@ -167,6 +167,13 @@ const Header: React.FC = () => {
       top: 0,
       zIndex: 1000,
       padding: '0 16px',
+      // Mobile-specific improvements
+      WebkitBackdropFilter: 'blur(10px)',
+      backdropFilter: 'blur(10px)',
+      // Ensure header doesn't cause horizontal scrolling
+      minWidth: 0,
+      // Safe area for notched devices
+      paddingTop: 'env(safe-area-inset-top, 0px)',
     }}>
       <div className="header-content" style={{
         maxWidth: '1400px',
@@ -175,6 +182,10 @@ const Header: React.FC = () => {
         alignItems: 'center',
         height: '60px',
         position: 'relative',
+        // Mobile responsive height
+        minHeight: '60px',
+        // Ensure content doesn't overflow on small screens
+        overflow: 'hidden',
       }}>
         {/* App Name - Left Side */}
         <div className="logo-text" style={{

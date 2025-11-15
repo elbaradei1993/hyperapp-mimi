@@ -1,14 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect, Suspense, lazy, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import { useNotification } from './contexts/NotificationContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { VibeProvider } from './contexts/VibeContext';
 import { NotificationManager } from './components/shared/Notification';
-import MapComponent from './components/MapComponent';
-import ProfileView from './components/ProfileView';
-import SettingsView from './components/SettingsView';
-import CommunityDashboard from './components/CommunityDashboard';
 import TabNavigation, { TabType } from './components/TabNavigation';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
@@ -17,14 +12,36 @@ import ReportTypeModal from './components/ReportTypeModal';
 import VibeReportModal from './components/VibeReportModal';
 import EmergencyReportModal from './components/EmergencyReportModal';
 import LocationOverrideModal from './components/LocationOverrideModal';
-import SplashScreen from './components/SplashScreen'; // Add SplashScreen import
-import { LoadingSpinner, EmptyState } from './components/shared';
+import SplashScreen from './components/SplashScreen';
+import ErrorBoundary from './components/ErrorBoundary';
+import { LoadingSpinner } from './components/shared';
 import { reportsService } from './services/reports';
 import type { Vibe, SOS } from './types';
-import { VibeType } from './types';
+
+// Lazy load heavy components for code splitting
+const MapComponent = lazy(() => import('./components/MapComponent'));
+const ProfileView = lazy(() => import('./components/ProfileView'));
+const SettingsView = lazy(() => import('./components/SettingsView'));
+const CommunityDashboard = lazy(() => import('./components/CommunityDashboard'));
+
+// Debounce utility for performance optimization
+const useDebounce = (value: any, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 const AppContent: React.FC = () => {
-  const { t } = useTranslation();
   const { user, isAuthenticated, isLoading, updateProfile } = useAuth();
   const { notifications, removeNotification } = useNotification();
   const [activeTab, setActiveTab] = useState<TabType>('map');
@@ -39,8 +56,6 @@ const AppContent: React.FC = () => {
   const [showEmergencyReportModal, setShowEmergencyReportModal] = useState(false);
   const [showLocationOverride, setShowLocationOverride] = useState(false);
   const [locationInitialized, setLocationInitialized] = useState(false);
-  const [locationStatus, setLocationStatus] = useState<string>('Detecting location...');
-  const [locationAccuracy, setLocationAccuracy] = useState<string>('Unknown');
   const [showGPSHelp, setShowGPSHelp] = useState<boolean>(false);
 
   // Default center (Cairo, Egypt)
@@ -79,8 +94,6 @@ const AppContent: React.FC = () => {
         if (!forceFresh && cachedLocation && cacheTime && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) { // 24 hours
           const location = JSON.parse(cachedLocation);
           setUserLocation(location);
-          setLocationStatus('Using cached location');
-          setLocationAccuracy('IP-based (~city level)');
           console.log(`📍 Using cached IP location: ${location[0]}, ${location[1]}`);
           return;
         }
@@ -154,8 +167,6 @@ const AppContent: React.FC = () => {
                 localStorage.setItem('ipLocationTime', now.toString());
 
                 setUserLocation(location);
-                setLocationStatus('IP-based location');
-                setLocationAccuracy('~city level');
                 console.log(`📍 IP Location set: ${parsed.lat}, ${parsed.lng} (${parsed.city || 'Unknown'})`);
                 return; // Success, exit the loop
               }
@@ -231,32 +242,26 @@ const AppContent: React.FC = () => {
             currentLocation = [latitude, longitude];
             currentAccuracy = accuracy;
             setUserLocation(currentLocation);
-            setLocationStatus('GPS (excellent)');
-            setLocationAccuracy(`< ${Math.round(accuracy)}m`);
             console.log(`🎯 Location set with excellent accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
             startLocationWatching();
           } else if (accuracy <= goodAccuracy) {
             currentLocation = [latitude, longitude];
             currentAccuracy = accuracy;
             setUserLocation(currentLocation);
-            setLocationStatus('GPS (good)');
-            setLocationAccuracy(`< ${Math.round(accuracy)}m`);
             console.log(`✅ Location set with good accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
             startLocationWatching();
           } else if (accuracy <= acceptableAccuracy) {
             currentLocation = [latitude, longitude];
             currentAccuracy = accuracy;
             setUserLocation(currentLocation);
-            setLocationStatus('GPS (acceptable)');
-            setLocationAccuracy(`~${Math.round(accuracy)}m`);
+
             console.log(`⚠️ Location set with acceptable accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
             startLocationWatching();
           } else if (accuracy <= poorAccuracy) {
             currentLocation = [latitude, longitude];
             currentAccuracy = accuracy;
             setUserLocation(currentLocation);
-            setLocationStatus('GPS (poor)');
-            setLocationAccuracy(`~${Math.round(accuracy)}m`);
+
             console.log(`📍 Location set with poor accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
             startLocationWatching();
           } else if (accuracy <= veryPoorAccuracy) {
@@ -453,55 +458,83 @@ const AppContent: React.FC = () => {
     }
   }, [isAuthenticated, isLoading, locationInitialized]);
 
-  const loadData = async () => {
-    try {
-      // Load vibes and SOS alerts from Supabase with error handling
-      // Increased limits to show historical reports from user's location
-      const [vibesData, sosData] = await Promise.all([
-        reportsService.getVibes({ limit: 1000 }),    // Load 1000 vibes for historical data
-        reportsService.getSOSAlerts({ limit: 500 })  // Load 500 SOS alerts for historical data
-      ]);
+  // Memoize subscriptions ref to prevent recreation
+  const subscriptionsRef = useRef<{ reports?: any; votes?: any }>({});
 
-      setVibes(vibesData || []);
-      setSosAlerts(sosData || []);
+  // Debounced data loading to prevent excessive API calls
+  const debouncedLoadData = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(async () => {
+          try {
+            // Load vibes and SOS alerts from Supabase with error handling
+            const [vibesData, sosData] = await Promise.all([
+              reportsService.getVibes({ limit: 1000 }),    // Load 1000 vibes for historical data
+              reportsService.getSOSAlerts({ limit: 500 })  // Load 500 SOS alerts for historical data
+            ]);
 
-      // Set up real-time subscriptions (only if data loaded successfully)
-      if (vibesData && sosData) {
-        const reportsSubscription = reportsService.subscribeToReports((newReport) => {
-          if (newReport.emergency) {
-            setSosAlerts(prev => [newReport, ...prev]);
-          } else {
-            setVibes(prev => [newReport, ...prev]);
+            setVibes(vibesData || []);
+            setSosAlerts(sosData || []);
+          } catch (error) {
+            console.error('Error loading data:', error);
+            // Fallback to empty arrays if loading fails - app still works
+            setVibes([]);
+            setSosAlerts([]);
           }
-        });
+        }, 300); // 300ms debounce
+      };
+    })(),
+    []
+  );
 
-        const votesSubscription = reportsService.subscribeToVotes((update) => {
-          // Update vote counts in real-time
-          setVibes(prev => prev.map(vibe =>
-            vibe.id === update.reportId
-              ? { ...vibe, upvotes: update.upvotes, downvotes: update.downvotes }
-              : vibe
-          ));
-          setSosAlerts(prev => prev.map(sos =>
-            sos.id === update.reportId
-              ? { ...sos, upvotes: update.upvotes, downvotes: update.downvotes }
-              : sos
-          ));
-        });
+  const loadData = useCallback(async () => {
+    debouncedLoadData();
+  }, [debouncedLoadData]);
 
-        // Store subscriptions for cleanup
-        return () => {
-          reportsSubscription.unsubscribe();
-          votesSubscription.unsubscribe();
-        };
+  // Optimized subscription setup with proper cleanup
+  useEffect(() => {
+    if (!isAuthenticated || !user?.onboarding_completed) return;
+
+    // Clean up existing subscriptions
+    Object.values(subscriptionsRef.current).forEach(subscription => {
+      subscription?.unsubscribe?.();
+    });
+    subscriptionsRef.current = {};
+
+    // Set up optimized real-time subscriptions
+    subscriptionsRef.current.reports = reportsService.subscribeToReports((newReport) => {
+      // Use functional updates to avoid stale closure issues
+      if (newReport.emergency) {
+        setSosAlerts(prev => [newReport, ...prev.slice(0, 499)]); // Limit to prevent memory issues
+      } else {
+        setVibes(prev => [newReport, ...prev.slice(0, 999)]); // Limit to prevent memory issues
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      // Fallback to empty arrays if loading fails - app still works
-      setVibes([]);
-      setSosAlerts([]);
-    }
-  };
+    });
+
+    subscriptionsRef.current.votes = reportsService.subscribeToVotes((update) => {
+      // Batch updates for better performance
+      setVibes(prev => prev.map(vibe =>
+        vibe.id === update.reportId
+          ? { ...vibe, upvotes: update.upvotes, downvotes: update.downvotes }
+          : vibe
+      ));
+      setSosAlerts(prev => prev.map(sos =>
+        sos.id === update.reportId
+          ? { ...sos, upvotes: update.upvotes, downvotes: update.downvotes }
+          : sos
+      ));
+    });
+
+    // Cleanup function
+    return () => {
+      Object.values(subscriptionsRef.current).forEach(subscription => {
+        subscription?.unsubscribe?.();
+      });
+      subscriptionsRef.current = {};
+    };
+  }, [isAuthenticated, user?.onboarding_completed]);
 
   const handleToggleHeatmap = () => {
     setIsHeatmapVisible(!isHeatmapVisible);
@@ -561,41 +594,75 @@ const AppContent: React.FC = () => {
   }
 
   const renderActiveView = () => {
+    const LoadingFallback = () => (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+        flexDirection: 'column',
+        gap: '16px'
+      }}>
+        <LoadingSpinner />
+        <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Loading...</span>
+      </div>
+    );
+
     switch (activeTab) {
       case 'map':
         return (
-          <MapComponent
-            vibes={vibes}
-            sosAlerts={sosAlerts}
-            center={center}
-            zoom={zoom}
-            userLocation={userLocation}
-            isHeatmapVisible={isHeatmapVisible}
-            onToggleHeatmap={handleToggleHeatmap}
-            userId={user?.id || 'demo-user'}
-          />
+          <Suspense fallback={<LoadingFallback />}>
+            <MapComponent
+              vibes={vibes}
+              sosAlerts={sosAlerts}
+              center={center}
+              zoom={zoom}
+              userLocation={userLocation}
+              isHeatmapVisible={isHeatmapVisible}
+              onToggleHeatmap={handleToggleHeatmap}
+              userId={user?.id || 'demo-user'}
+            />
+          </Suspense>
         );
       case 'profile':
-        return <ProfileView />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <ProfileView />
+          </Suspense>
+        );
       case 'reports':
         return (
-          <CommunityDashboard
-            vibes={vibes}
-            userLocation={userLocation}
-            isLoading={false}
-            onNewReport={handleNewReport}
-          />
+          <Suspense fallback={<LoadingFallback />}>
+            <CommunityDashboard
+              vibes={vibes}
+              userLocation={userLocation}
+              isLoading={false}
+              onNewReport={handleNewReport}
+            />
+          </Suspense>
         );
       case 'settings':
-        return <SettingsView />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <SettingsView />
+          </Suspense>
+        );
       default:
         return null;
     }
   };
 
   return (
-    <div style={{ height: '100vh', width: '100vw', backgroundColor: 'var(--bg-secondary)' }}>
-      {/* GPS Help Notification - show when GPS accuracy is poor */}
+    <div style={{
+      height: '100vh',
+      width: '100vw',
+      backgroundColor: 'var(--bg-secondary)',
+      // Prevent horizontal scrolling on mobile
+      overflowX: 'hidden',
+      // Ensure proper mobile viewport handling
+      WebkitOverflowScrolling: 'touch'
+    }}>
+      {/* GPS Help Notification - Mobile optimized */}
       {isAuthenticated && user?.onboarding_completed && activeTab === 'map' && showGPSHelp && (
         <div style={{
           position: 'absolute',
@@ -604,16 +671,19 @@ const AppContent: React.FC = () => {
           transform: 'translateX(-50%)',
           background: '#fef3c7',
           border: '1px solid #f59e0b',
-          padding: '12px',
-          borderRadius: '8px',
+          padding: '12px 16px',
+          borderRadius: '12px',
           zIndex: 2000,
           fontSize: '14px',
           color: '#92400e',
-          maxWidth: '300px',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          maxWidth: 'calc(100vw - 32px)',
+          width: '320px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          // Mobile-specific improvements
+          WebkitTapHighlightColor: 'transparent'
         }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>📍 Improve GPS Accuracy</div>
-          <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '15px' }}>📍 Improve GPS Accuracy</div>
+          <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
             For better location accuracy:
             <br/>• Go outdoors with clear sky view
             <br/>• Wait 1-2 minutes for GPS lock
@@ -626,11 +696,15 @@ const AppContent: React.FC = () => {
               background: '#f59e0b',
               color: 'white',
               border: 'none',
-              borderRadius: '3px',
-              padding: '4px 8px',
-              fontSize: '11px',
+              borderRadius: '6px',
+              padding: '6px 12px',
+              fontSize: '12px',
               cursor: 'pointer',
-              marginTop: '8px'
+              marginTop: '10px',
+              minHeight: '32px',
+              // Mobile touch target
+              WebkitTapHighlightColor: 'transparent',
+              WebkitAppearance: 'none'
             }}
           >
             Dismiss
@@ -638,24 +712,28 @@ const AppContent: React.FC = () => {
         </div>
       )}
 
-      {/* Compact Location Controls - only show when authenticated and onboarded */}
+      {/* Compact Location Controls - Mobile optimized */}
       {isAuthenticated && user?.onboarding_completed && activeTab === 'map' && (
         <div style={{
           position: 'absolute',
-          bottom: '90px',
-          right: '10px',
+          bottom: 'calc(70px + env(safe-area-inset-bottom, 0px) + 16px)',
+          right: '16px',
           zIndex: 1000,
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px'
+          gap: '12px',
+          // Mobile-specific positioning
+          transform: 'translateX(0)',
+          // Ensure controls don't interfere with tab navigation
+          maxWidth: 'calc(100vw - 32px)'
         }}>
           <button
             onClick={() => setShowLocationOverride(true)}
             title="Set Location Manually"
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '8px',
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
               background: 'var(--bg-primary)',
               border: '1px solid var(--border-color)',
               color: 'var(--text-primary)',
@@ -664,7 +742,14 @@ const AppContent: React.FC = () => {
               justifyContent: 'center',
               cursor: 'pointer',
               boxShadow: '0 2px 8px var(--shadow-color)',
-              fontSize: '16px'
+              fontSize: '18px',
+              // Mobile touch improvements
+              WebkitTapHighlightColor: 'transparent',
+              WebkitAppearance: 'none',
+              touchAction: 'manipulation',
+              // Better accessibility
+              minWidth: '44px',
+              minHeight: '44px'
             }}
           >
             <i className="fas fa-map-marker-alt"></i>
@@ -674,15 +759,14 @@ const AppContent: React.FC = () => {
               // Force fresh location detection
               localStorage.removeItem('ipLocation');
               localStorage.removeItem('ipLocationTime');
-              setLocationStatus('Refreshing location...');
-              setLocationAccuracy('Unknown');
+
               window.location.reload();
             }}
             title="Refresh Location"
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '8px',
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
               background: 'var(--bg-primary)',
               border: '1px solid var(--border-color)',
               color: 'var(--text-primary)',
@@ -691,7 +775,14 @@ const AppContent: React.FC = () => {
               justifyContent: 'center',
               cursor: 'pointer',
               boxShadow: '0 2px 8px var(--shadow-color)',
-              fontSize: '14px'
+              fontSize: '16px',
+              // Mobile touch improvements
+              WebkitTapHighlightColor: 'transparent',
+              WebkitAppearance: 'none',
+              touchAction: 'manipulation',
+              // Better accessibility
+              minWidth: '44px',
+              minHeight: '44px'
             }}
           >
             <i className="fas fa-sync-alt"></i>
@@ -699,16 +790,23 @@ const AppContent: React.FC = () => {
         </div>
       )}
 
-      {/* Main App Content - only show when authenticated and onboarded */}
+      {/* Main App Content - Mobile optimized */}
       {isAuthenticated && user?.onboarding_completed && (
         <>
           {/* Header */}
           <Header />
 
           <div style={{
-            height: 'calc(var(--vh, 1vh) * 100 - 130px)', // Mobile-safe height accounting for header (60px) + bottom navigation (70px)
+            // Improved mobile height calculation
+            height: 'calc(var(--vh, 1vh) * 100 - 130px - env(safe-area-inset-bottom, 0px))',
             width: '100vw',
-            overflow: (activeTab === 'profile' || activeTab === 'settings' || activeTab === 'reports') ? 'auto' : 'hidden'
+            overflow: (activeTab === 'profile' || activeTab === 'settings' || activeTab === 'reports') ? 'auto' : 'hidden',
+            // Mobile scrolling improvements
+            WebkitOverflowScrolling: 'touch',
+            // Prevent horizontal overflow
+            overflowX: 'hidden',
+            // Ensure proper stacking context
+            position: 'relative'
           }}>
             {renderActiveView()}
           </div>
