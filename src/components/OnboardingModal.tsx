@@ -4,6 +4,7 @@ import type { OnboardingData } from '../types';
 import { INTEREST_CATEGORIES } from '../types';
 import { authService } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import PrivacyTermsModal from './PrivacyTermsModal';
 
 interface OnboardingModalProps {
@@ -15,6 +16,7 @@ interface OnboardingModalProps {
 const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, onClose }) => {
   const { t } = useTranslation();
   const { user, refreshProfile } = useAuth();
+  const { changeLanguage } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -112,6 +114,12 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
     setOnboardingData(prev => ({ ...prev, ...updates }));
   };
 
+  const handleLanguageChange = async (newLanguage: string) => {
+    updateOnboardingData({ language: newLanguage });
+    // Immediately change the app language for real-time translation
+    await changeLanguage(newLanguage, refreshProfile, user);
+  };
+
   const toggleInterest = (interest: string) => {
     setOnboardingData(prev => ({
       ...prev,
@@ -123,6 +131,25 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
 
   if (!isOpen) return null;
 
+  const styles = {
+    // CSS Variables as JavaScript object
+    primary: '#0066ff',
+    'primary-dark': '#0052d4',
+    'primary-light': '#3385ff',
+    surface: '#ffffff',
+    'surface-secondary': '#f8fafc',
+    'text-primary': '#0f172a',
+    'text-secondary': '#475569',
+    'text-muted': '#64748b',
+    border: '#e2e8f0',
+    'accent-green': '#10b981',
+    'accent-purple': '#8b5cf6',
+    'shadow-sm': '0 1px 3px rgba(0, 0, 0, 0.1)',
+    shadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+    radius: '8px',
+    'radius-lg': '16px'
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -130,75 +157,126 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      background: 'rgba(0, 0, 0, 0.5)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 1000
+      zIndex: 1000,
+      padding: '20px'
     }}>
       <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '32px',
-        maxWidth: '500px',
-        width: '90%',
+        background: styles.surface,
+        borderRadius: styles['radius-lg'],
+        width: '100%',
+        maxWidth: '440px',
         maxHeight: '90vh',
-        overflow: 'auto',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+        overflow: 'hidden',
+        boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        {/* Modal Header */}
+        <div style={{
+          padding: '32px 24px 0',
+          textAlign: 'center',
+          background: `linear-gradient(135deg, ${styles.surface} 0%, ${styles['surface-secondary']} 100%)`
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: `linear-gradient(135deg, ${styles.primary} 0%, ${styles['primary-dark']} 100%)`,
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontWeight: 700,
+              fontSize: '1.125rem'
+            }}>
+              H
+            </div>
+            <div style={{
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              color: styles['text-primary']
+            }}>
+              HyperApp
+            </div>
+          </div>
           <h2 style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: '#1f2937',
-            marginBottom: '8px'
+            fontSize: '1.375rem',
+            fontWeight: 700,
+            color: styles['text-primary'],
+            marginBottom: '8px',
+            lineHeight: '1.2'
           }}>
             {t('modals.onboarding.welcome')}
           </h2>
-          <p style={{ color: '#6b7280', fontSize: '16px' }}>
+          <p style={{
+            fontSize: '1rem',
+            color: styles['text-secondary'],
+            marginBottom: '24px'
+          }}>
             {t('modals.onboarding.welcomeDesc')}
           </p>
+
+          {/* Progress Indicator */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px',
+            marginBottom: '24px'
+          }}>
+            {[1, 2, 3, 4].map(step => (
+              <div
+                key={step}
+                style={{
+                  width: '40px',
+                  height: '4px',
+                  borderRadius: '2px',
+                  background: step <= currentStep ? styles.primary : styles.border,
+                  transition: 'all 0.3s ease',
+                  transform: step <= currentStep ? 'scale(1.1)' : 'scale(1)'
+                }}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Progress Indicator */}
+        {/* Modal Content */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: '32px',
-          gap: '8px'
+          padding: '0 24px',
+          flex: 1,
+          overflowY: 'auto',
+          maxHeight: '50vh'
         }}>
-          {[1, 2, 3, 4].map(step => (
-            <div
-              key={step}
-              style={{
-                width: '40px',
-                height: '4px',
-                borderRadius: '2px',
-                backgroundColor: step <= currentStep ? '#3b82f6' : '#e5e7eb'
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Step Content */}
-        <div style={{ marginBottom: '32px' }}>
           {currentStep === 1 && (
             <Step1PersonalInfo
               data={onboardingData}
               onUpdate={updateOnboardingData}
+              styles={styles}
             />
           )}
           {currentStep === 2 && (
             <Step2Location
               data={onboardingData}
               onUpdate={updateOnboardingData}
+              onLanguageChange={handleLanguageChange}
+              styles={styles}
             />
           )}
           {currentStep === 3 && (
             <Step3Interests
               data={onboardingData}
               onToggleInterest={toggleInterest}
+              styles={styles}
             />
           )}
           {currentStep === 4 && (
@@ -207,27 +285,45 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
               privacyAccepted={privacyAccepted}
               onPrivacyAcceptedChange={setPrivacyAccepted}
               onShowPrivacyTerms={() => setShowPrivacyTermsModal(true)}
+              styles={styles}
             />
           )}
         </div>
 
-        {/* Navigation Buttons */}
+        {/* Modal Footer */}
         <div style={{
+          padding: '20px 24px 24px',
+          borderTop: `1px solid ${styles.border}`,
           display: 'flex',
           justifyContent: 'space-between',
-          gap: '16px'
+          gap: '12px',
+          background: styles.surface
         }}>
           <button
             onClick={currentStep === 1 ? onClose : handlePrevious}
             style={{
-              padding: '12px 24px',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              backgroundColor: 'white',
-              color: '#374151',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer'
+              padding: '14px 20px',
+              borderRadius: styles.radius,
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              border: `1px solid ${styles.border}`,
+              background: styles.surface,
+              color: styles['text-primary'],
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = styles['surface-secondary'];
+              e.currentTarget.style.borderColor = styles['primary-light'];
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = styles.surface;
+              e.currentTarget.style.borderColor = styles.border;
             }}
           >
             {currentStep === 1 ? t('modals.onboarding.skip') : t('common.previous')}
@@ -237,14 +333,30 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
             <button
               onClick={handleNext}
               style={{
-                padding: '12px 24px',
-                borderRadius: '8px',
+                padding: '14px 20px',
+                borderRadius: styles.radius,
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                cursor: 'pointer',
                 border: 'none',
-                backgroundColor: '#3b82f6',
+                background: styles.primary,
                 color: 'white',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: 'pointer'
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = styles['primary-dark'];
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = styles.shadow;
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = styles.primary;
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
               {t('common.next')}
@@ -254,15 +366,35 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
               onClick={handleComplete}
               disabled={isLoading}
               style={{
-                padding: '12px 24px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: '#10b981',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: '500',
+                padding: '14px 20px',
+                borderRadius: styles.radius,
+                fontSize: '0.875rem',
+                fontWeight: 600,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
-                opacity: isLoading ? 0.5 : 1
+                border: 'none',
+                background: styles['accent-green'],
+                color: 'white',
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.2s ease',
+                opacity: isLoading ? 0.6 : 1
+              }}
+              onMouseOver={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.background = '#0da271';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = styles.shadow;
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.background = styles['accent-green'];
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
               }}
             >
               {isLoading ? t('common.loading') : t('modals.onboarding.getStarted')}
@@ -284,15 +416,15 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
 const Step1PersonalInfo: React.FC<{
   data: OnboardingData;
   onUpdate: (updates: Partial<OnboardingData>) => void;
-}> = ({ data, onUpdate }) => {
+  styles: any;
+}> = ({ data, onUpdate, styles }) => {
   const { t } = useTranslation();
   return (
     <div>
       <h3 style={{
-        fontSize: '20px',
-        fontWeight: '600',
-        color: '#1f2937',
-        marginBottom: '16px'
+        fontSize: '1.125rem',
+        fontWeight: 600,
+        marginBottom: '20px'
       }}>
         {t('onboarding.personalInfo')}
       </h3>
@@ -301,10 +433,10 @@ const Step1PersonalInfo: React.FC<{
         <div>
           <label style={{
             display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#374151',
-            marginBottom: '4px'
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            color: styles['text-primary'],
+            marginBottom: '8px'
           }}>
             {t('onboarding.firstName')} *
           </label>
@@ -315,11 +447,21 @@ const Step1PersonalInfo: React.FC<{
             placeholder={t('onboarding.enterFirstName')}
             style={{
               width: '100%',
-              padding: '12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              fontSize: '16px',
-              outline: 'none'
+              padding: '14px 16px',
+              border: `1px solid ${styles.border}`,
+              borderRadius: styles.radius,
+              fontSize: '1rem',
+              background: styles.surface,
+              outline: 'none',
+              transition: 'all 0.2s ease'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = styles.primary;
+              e.currentTarget.style.boxShadow = `0 0 0 3px rgba(0, 102, 255, 0.1)`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = styles.border;
+              e.currentTarget.style.boxShadow = 'none';
             }}
           />
         </div>
@@ -327,10 +469,10 @@ const Step1PersonalInfo: React.FC<{
         <div>
           <label style={{
             display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#374151',
-            marginBottom: '4px'
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            color: styles['text-primary'],
+            marginBottom: '8px'
           }}>
             {t('onboarding.lastName')} *
           </label>
@@ -341,11 +483,21 @@ const Step1PersonalInfo: React.FC<{
             placeholder={t('onboarding.enterLastName')}
             style={{
               width: '100%',
-              padding: '12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              fontSize: '16px',
-              outline: 'none'
+              padding: '14px 16px',
+              border: `1px solid ${styles.border}`,
+              borderRadius: styles.radius,
+              fontSize: '1rem',
+              background: styles.surface,
+              outline: 'none',
+              transition: 'all 0.2s ease'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = styles.primary;
+              e.currentTarget.style.boxShadow = `0 0 0 3px rgba(0, 102, 255, 0.1)`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = styles.border;
+              e.currentTarget.style.boxShadow = 'none';
             }}
           />
         </div>
@@ -353,10 +505,10 @@ const Step1PersonalInfo: React.FC<{
         <div>
           <label style={{
             display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#374151',
-            marginBottom: '4px'
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            color: styles['text-primary'],
+            marginBottom: '8px'
           }}>
             {t('onboarding.phoneNumber')}
           </label>
@@ -367,11 +519,21 @@ const Step1PersonalInfo: React.FC<{
             placeholder="+1 (555) 123-4567"
             style={{
               width: '100%',
-              padding: '12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              fontSize: '16px',
-              outline: 'none'
+              padding: '14px 16px',
+              border: `1px solid ${styles.border}`,
+              borderRadius: styles.radius,
+              fontSize: '1rem',
+              background: styles.surface,
+              outline: 'none',
+              transition: 'all 0.2s ease'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = styles.primary;
+              e.currentTarget.style.boxShadow = `0 0 0 3px rgba(0, 102, 255, 0.1)`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = styles.border;
+              e.currentTarget.style.boxShadow = 'none';
             }}
           />
         </div>
@@ -383,14 +545,16 @@ const Step1PersonalInfo: React.FC<{
 const Step2Location: React.FC<{
   data: OnboardingData;
   onUpdate: (updates: Partial<OnboardingData>) => void;
-}> = ({ data, onUpdate }) => {
+  onLanguageChange: (language: string) => void;
+  styles: any;
+}> = ({ data, onUpdate, onLanguageChange, styles }) => {
   const { t } = useTranslation();
   return (
     <div>
       <h3 style={{
-        fontSize: '20px',
-        fontWeight: '600',
-        color: '#1f2937',
+        fontSize: '1.125rem',
+        fontWeight: 600,
+        color: styles['text-primary'],
         marginBottom: '16px'
       }}>
         {t('onboarding.locationPreferences')}
@@ -400,27 +564,30 @@ const Step2Location: React.FC<{
         <div>
           <label style={{
             display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#374151',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            color: styles['text-primary'],
             marginBottom: '4px'
           }}>
             {t('onboarding.yourLocation')}
           </label>
           <div style={{
-            padding: '12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '8px',
-            backgroundColor: '#f9fafb',
-            fontSize: '14px',
-            color: '#6b7280'
+            padding: '14px 16px',
+            background: styles['surface-secondary'],
+            border: `1px solid ${styles.border}`,
+            borderRadius: styles.radius,
+            fontSize: '0.875rem',
+            color: styles['text-secondary'],
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
             📍 {data.location.address}
           </div>
           <p style={{
-            fontSize: '12px',
-            color: '#6b7280',
-            marginTop: '4px'
+            fontSize: '0.75rem',
+            color: styles['text-muted'],
+            marginTop: '8px'
           }}>
             {t('onboarding.locationDescription')}
           </p>
@@ -429,46 +596,70 @@ const Step2Location: React.FC<{
         <div>
           <label style={{
             display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#374151',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            color: styles['text-primary'],
             marginBottom: '8px'
           }}>
             {t('onboarding.languagePreference')}
           </label>
           <select
             value={data.language}
-            onChange={(e) => onUpdate({ language: e.target.value })}
+            onChange={(e) => onLanguageChange(e.target.value)}
             style={{
               width: '100%',
-              padding: '12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              fontSize: '16px',
-              outline: 'none'
+              padding: '14px 16px',
+              border: `1px solid ${styles.border}`,
+              borderRadius: styles.radius,
+              fontSize: '1rem',
+              background: styles.surface,
+              outline: 'none',
+              transition: 'all 0.2s ease'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = styles.primary;
+              e.currentTarget.style.boxShadow = `0 0 0 3px rgba(0, 102, 255, 0.1)`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = styles.border;
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
             <option value="ar">العربية (Arabic)</option>
           </select>
         </div>
 
-        <div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '12px',
+          padding: '12px',
+          background: styles['surface-secondary'],
+          borderRadius: styles.radius,
+          border: `1px solid ${styles.border}`
+        }}>
+          <input
+            type="checkbox"
+            checked={data.notifications}
+            onChange={(e) => onUpdate({ notifications: e.target.checked })}
+            style={{
+              width: '18px',
+              height: '18px',
+              marginTop: '2px',
+              flexShrink: 0,
+              accentColor: styles.primary
+            }}
+          />
           <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#374151',
+            fontSize: '0.875rem',
+            color: styles['text-primary'],
+            lineHeight: '1.4',
             cursor: 'pointer'
           }}>
-            <input
-              type="checkbox"
-              checked={data.notifications}
-              onChange={(e) => onUpdate({ notifications: e.target.checked })}
-              style={{ width: '16px', height: '16px' }}
-            />
             {t('onboarding.enableNotifications')}
           </label>
         </div>
@@ -480,23 +671,24 @@ const Step2Location: React.FC<{
 const Step3Interests: React.FC<{
   data: OnboardingData;
   onToggleInterest: (interest: string) => void;
-}> = ({ data, onToggleInterest }) => {
+  styles: any;
+}> = ({ data, onToggleInterest, styles }) => {
   const { t } = useTranslation();
   return (
     <div>
       <h3 style={{
-        fontSize: '20px',
-        fontWeight: '600',
-        color: '#1f2937',
+        fontSize: '1.125rem',
+        fontWeight: 600,
+        color: styles['text-primary'],
         marginBottom: '16px'
       }}>
         {t('onboarding.communityInterests')}
       </h3>
 
       <p style={{
-        color: '#6b7280',
-        marginBottom: '24px',
-        fontSize: '14px'
+        color: styles['text-secondary'],
+        marginBottom: '20px',
+        fontSize: '0.875rem'
       }}>
         {t('onboarding.selectInterests')}
       </p>
@@ -505,9 +697,9 @@ const Step3Interests: React.FC<{
         {Object.entries(INTEREST_CATEGORIES).map(([key, category]) => (
           <div key={key}>
             <h4 style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#1f2937',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: styles['text-primary'],
               marginBottom: '8px',
               display: 'flex',
               alignItems: 'center',
@@ -527,15 +719,25 @@ const Step3Interests: React.FC<{
                   key={item}
                   onClick={() => onToggleInterest(item)}
                   style={{
-                    padding: '8px 16px',
+                    padding: '10px 16px',
                     borderRadius: '20px',
-                    border: data.interests.includes(item) ? '2px solid #3b82f6' : '2px solid #d1d5db',
-                    backgroundColor: data.interests.includes(item) ? '#eff6ff' : 'white',
-                    color: data.interests.includes(item) ? '#1d4ed8' : '#374151',
-                    fontSize: '14px',
-                    fontWeight: '500',
+                    border: data.interests.includes(item) ? `2px solid ${styles.primary}` : `2px solid ${styles.border}`,
+                    background: data.interests.includes(item) ? '#eff6ff' : styles.surface,
+                    color: data.interests.includes(item) ? '#1d4ed8' : styles['text-primary'],
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!data.interests.includes(item)) {
+                      e.currentTarget.style.borderColor = styles['primary-light'];
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!data.interests.includes(item)) {
+                      e.currentTarget.style.borderColor = styles.border;
+                    }
                   }}
                 >
                   {item}
@@ -549,12 +751,12 @@ const Step3Interests: React.FC<{
       <div style={{
         marginTop: '16px',
         padding: '12px',
-        backgroundColor: '#f0f9ff',
-        borderRadius: '8px',
+        background: '#f0f9ff',
+        borderRadius: styles.radius,
         border: '1px solid #bae6fd'
       }}>
         <p style={{
-          fontSize: '14px',
+          fontSize: '0.75rem',
           color: '#0369a1',
           margin: 0
         }}>
@@ -570,79 +772,81 @@ const Step4Welcome: React.FC<{
   privacyAccepted: boolean;
   onPrivacyAcceptedChange: (accepted: boolean) => void;
   onShowPrivacyTerms: () => void;
-}> = ({ data, privacyAccepted, onPrivacyAcceptedChange, onShowPrivacyTerms }) => {
+  styles: any;
+}> = ({ data, privacyAccepted, onPrivacyAcceptedChange, onShowPrivacyTerms, styles }) => {
   const { t } = useTranslation();
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{
-        fontSize: '48px',
+        fontSize: '3rem',
         marginBottom: '16px'
       }}>
         🎉
       </div>
 
       <h3 style={{
-        fontSize: '24px',
-        fontWeight: 'bold',
-        color: '#1f2937',
-        marginBottom: '16px'
+        fontSize: '1.5rem',
+        fontWeight: 700,
+        color: styles['text-primary'],
+        marginBottom: '12px'
       }}>
         {t('onboarding.allSetUp')}
       </h3>
 
       <p style={{
-        color: '#6b7280',
-        fontSize: '16px',
+        color: styles['text-secondary'],
+        fontSize: '1rem',
         marginBottom: '24px'
       }}>
         {t('onboarding.welcomeMessage', { name: data.firstName })}
       </p>
 
       <div style={{
-        backgroundColor: '#f0f9ff',
-        padding: '16px',
-        borderRadius: '8px',
-        border: '1px solid #bae6fd',
-        textAlign: 'left',
-        marginBottom: '24px'
+        background: styles['surface-secondary'],
+        padding: '20px',
+        borderRadius: styles.radius,
+        marginBottom: '20px',
+        border: `1px solid ${styles.border}`
       }}>
         <h4 style={{
-          fontSize: '16px',
-          fontWeight: '600',
-          color: '#1f2937',
-          marginBottom: '8px'
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          color: styles['text-primary'],
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
         }}>
-          {t('onboarding.whatsNext')}
+          🚀 {t('onboarding.whatsNext')}
         </h4>
         <ul style={{
-          color: '#0369a1',
-          fontSize: '14px',
+          color: styles['text-secondary'],
+          fontSize: '0.875rem',
           margin: 0,
-          paddingLeft: '20px'
+          paddingLeft: '20px',
+          textAlign: 'left'
         }}>
-          <li>{t('onboarding.exploreMap')}</li>
-          <li>{t('onboarding.submitReport')}</li>
-          <li>{t('onboarding.connectPeople')}</li>
+          <li style={{ marginBottom: '8px' }}>{t('onboarding.exploreMap')}</li>
+          <li style={{ marginBottom: '8px' }}>{t('onboarding.submitReport')}</li>
+          <li style={{ marginBottom: '8px' }}>{t('onboarding.connectPeople')}</li>
           <li>{t('onboarding.earnReputation')}</li>
         </ul>
       </div>
 
       {/* Privacy & Terms Acceptance */}
       <div style={{
-        backgroundColor: '#f9fafb',
+        background: styles['surface-secondary'],
         padding: '16px',
-        borderRadius: '8px',
-        border: '1px solid #e5e7eb',
-        textAlign: 'left',
-        marginBottom: '16px'
+        borderRadius: styles.radius,
+        marginTop: '16px',
+        border: `1px solid ${styles.border}`
       }}>
-        <label style={{
+        <div style={{
           display: 'flex',
           alignItems: 'flex-start',
           gap: '12px',
-          fontSize: '14px',
-          color: '#374151',
-          cursor: 'pointer',
+          fontSize: '0.875rem',
+          color: styles['text-primary'],
           lineHeight: '1.4'
         }}>
           <input
@@ -653,7 +857,8 @@ const Step4Welcome: React.FC<{
               width: '16px',
               height: '16px',
               marginTop: '2px',
-              flexShrink: 0
+              flexShrink: 0,
+              accentColor: styles.primary
             }}
           />
           <span>
@@ -664,14 +869,14 @@ const Step4Welcome: React.FC<{
                 onShowPrivacyTerms();
               }}
               style={{
-                color: '#3b82f6',
+                color: styles.primary,
                 textDecoration: 'underline',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '0.875rem',
                 padding: 0,
-                fontWeight: '500'
+                fontWeight: 500
               }}
             >
               Privacy Policy
@@ -683,21 +888,21 @@ const Step4Welcome: React.FC<{
                 onShowPrivacyTerms();
               }}
               style={{
-                color: '#3b82f6',
+                color: styles.primary,
                 textDecoration: 'underline',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '0.875rem',
                 padding: 0,
-                fontWeight: '500'
+                fontWeight: 500
               }}
             >
               Terms of Service
             </button>
             *
           </span>
-        </label>
+        </div>
       </div>
     </div>
   );
