@@ -5,7 +5,8 @@ import { INTEREST_CATEGORIES } from '../types';
 import { authService } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import PrivacyTermsModal from './PrivacyTermsModal';
+import PrivacyPolicyModal from './PrivacyPolicyModal';
+import TermsOfServiceModal from './TermsOfServiceModal';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -20,7 +21,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
-  const [showPrivacyTermsModal, setShowPrivacyTermsModal] = useState(false);
+  const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
+  const [showTermsOfServiceModal, setShowTermsOfServiceModal] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     firstName: '',
     lastName: '',
@@ -284,7 +286,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
               data={onboardingData}
               privacyAccepted={privacyAccepted}
               onPrivacyAcceptedChange={setPrivacyAccepted}
-              onShowPrivacyTerms={() => setShowPrivacyTermsModal(true)}
+              onShowPrivacyPolicy={() => setShowPrivacyPolicyModal(true)}
+              onShowTermsOfService={() => setShowTermsOfServiceModal(true)}
               styles={styles}
             />
           )}
@@ -403,10 +406,16 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
         </div>
       </div>
 
-      {/* Privacy & Terms Modal */}
-      <PrivacyTermsModal
-        isOpen={showPrivacyTermsModal}
-        onClose={() => setShowPrivacyTermsModal(false)}
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        isOpen={showPrivacyPolicyModal}
+        onClose={() => setShowPrivacyPolicyModal(false)}
+      />
+
+      {/* Terms of Service Modal */}
+      <TermsOfServiceModal
+        isOpen={showTermsOfServiceModal}
+        onClose={() => setShowTermsOfServiceModal(false)}
       />
     </div>
   );
@@ -771,9 +780,10 @@ const Step4Welcome: React.FC<{
   data: OnboardingData;
   privacyAccepted: boolean;
   onPrivacyAcceptedChange: (accepted: boolean) => void;
-  onShowPrivacyTerms: () => void;
+  onShowPrivacyPolicy: () => void;
+  onShowTermsOfService: () => void;
   styles: any;
-}> = ({ data, privacyAccepted, onPrivacyAcceptedChange, onShowPrivacyTerms, styles }) => {
+}> = ({ data, privacyAccepted, onPrivacyAcceptedChange, onShowPrivacyPolicy, onShowTermsOfService, styles }) => {
   const { t } = useTranslation();
   return (
     <div style={{ textAlign: 'center' }}>
@@ -866,7 +876,7 @@ const Step4Welcome: React.FC<{
             <button
               onClick={(e) => {
                 e.preventDefault();
-                onShowPrivacyTerms();
+                onShowPrivacyPolicy();
               }}
               style={{
                 color: styles.primary,
@@ -885,7 +895,7 @@ const Step4Welcome: React.FC<{
             <button
               onClick={(e) => {
                 e.preventDefault();
-                onShowPrivacyTerms();
+                onShowTermsOfService();
               }}
               style={{
                 color: styles.primary,

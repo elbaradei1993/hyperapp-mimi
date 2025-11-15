@@ -4,6 +4,18 @@ import { Modal, Button, LoadingSpinner } from './shared';
 import { VibeType } from '../types';
 import { reportsService } from '../services/reports';
 import { reverseGeocode, formatCoordinates } from '../lib/geocoding';
+import {
+  AlertTriangle,
+  Flame,
+  Ambulance,
+  Shield,
+  Car,
+  Triangle,
+  HelpCircle,
+  MapPin,
+  Crosshair,
+  Send
+} from 'lucide-react';
 
 interface EmergencyReportModalProps {
   isOpen: boolean;
@@ -14,7 +26,7 @@ interface EmergencyReportModalProps {
 interface EmergencyType {
   id: string;
   label: string;
-  icon: string;
+  icon: React.ComponentType<{ size?: number; color?: string; style?: React.CSSProperties }>;
   color: string;
   description: string;
 }
@@ -37,43 +49,43 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
     {
       id: 'fire',
       label: t('emergency.fire'),
-      icon: 'fas fa-fire',
-      color: '#ef4444',
+      icon: Flame,
+      color: 'var(--danger)',
       description: t('emergency.fireDesc')
     },
     {
       id: 'medical',
       label: t('emergency.medical'),
-      icon: 'fas fa-ambulance',
+      icon: Ambulance,
       color: '#dc2626',
       description: t('emergency.medicalDesc')
     },
     {
       id: 'crime',
       label: t('emergency.crime'),
-      icon: 'fas fa-shield-alt',
+      icon: Shield,
       color: '#7c2d12',
       description: t('emergency.crimeDesc')
     },
     {
       id: 'accident',
       label: t('emergency.accident'),
-      icon: 'fas fa-car-crash',
+      icon: Car,
       color: '#ea580c',
       description: t('emergency.accidentDesc')
     },
     {
       id: 'hazard',
       label: t('emergency.hazard'),
-      icon: 'fas fa-exclamation-triangle',
+      icon: Triangle,
       color: '#d97706',
       description: t('emergency.hazardDesc')
     },
     {
       id: 'other',
       label: t('emergency.other'),
-      icon: 'fas fa-question-circle',
-      color: '#6b7280',
+      icon: HelpCircle,
+      color: 'var(--text-muted)',
       description: t('emergency.otherDesc')
     }
   ];
@@ -155,37 +167,40 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('modals.emergencyReport.title')}>
-      <div style={{ padding: '20px 0' }}>
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div style={{
+        padding: '24px',
+        maxWidth: '100%'
+      }}>
         {/* Emergency Warning Banner */}
         <div style={{
           padding: '20px',
-          border: '2px solid #fee2e2',
-          borderRadius: '12px',
-          background: 'linear-gradient(135deg, #fef2f2 0%, #fef2f2 100%)',
-          marginBottom: '24px',
-          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)'
+          border: '2px solid var(--danger)',
+          borderRadius: '16px',
+          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(239, 68, 68, 0.08) 100%)',
+          marginBottom: '32px',
+          boxShadow: '0 8px 24px rgba(239, 68, 68, 0.15)',
+          animation: 'pulse 2s infinite'
         }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#dc2626',
-            fontSize: '16px',
-            fontWeight: '700'
+            color: 'var(--danger)',
+            fontSize: '18px',
+            fontWeight: '700',
+            marginBottom: '8px'
           }}>
-            <i className="fas fa-exclamation-triangle" style={{
-              marginRight: '12px',
-              fontSize: '20px'
-            }}></i>
+            <AlertTriangle size={24} style={{ marginRight: '12px' }} />
             {t('emergency.emergencyAlert')}
           </div>
           <p style={{
             textAlign: 'center',
-            color: '#dc2626',
+            color: 'var(--danger)',
             fontSize: '14px',
-            margin: '8px 0 0 0',
-            lineHeight: '1.4'
+            margin: 0,
+            lineHeight: '1.5',
+            fontWeight: '500'
           }}>
             {t('emergency.alertVisibleToAll')}
           </p>
@@ -194,124 +209,167 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
         {/* Header */}
         <div style={{
           textAlign: 'center',
-          marginBottom: '32px'
+          marginBottom: '40px'
         }}>
           <div style={{
-            width: '56px',
-            height: '56px',
+            width: '72px',
+            height: '72px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.2) 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 16px',
-            boxShadow: '0 6px 16px rgba(239, 68, 68, 0.2)'
+            margin: '0 auto 20px',
+            boxShadow: '0 12px 32px rgba(239, 68, 68, 0.25)',
+            border: '3px solid var(--danger)'
           }}>
-            <i className="fas fa-exclamation-triangle" style={{
-              fontSize: '24px',
-              color: '#ef4444'
-            }}></i>
+            <AlertTriangle size={32} color="var(--danger)" />
           </div>
-          <h2 style={{
-            fontSize: '22px',
-            fontWeight: '700',
-            color: '#1f2937',
-            margin: '0 0 8px 0'
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: '800',
+            color: 'var(--text-primary)',
+            margin: '0 0 12px 0',
+            letterSpacing: '-0.025em'
           }}>
             {t('modals.emergencyReport.title')}
-          </h2>
+          </h1>
           <p style={{
-            color: '#6b7280',
-            fontSize: '15px',
+            color: 'var(--text-secondary)',
+            fontSize: '16px',
             margin: 0,
-            lineHeight: '1.5'
+            lineHeight: '1.6',
+            maxWidth: '400px',
+            marginLeft: 'auto',
+            marginRight: 'auto'
           }}>
-            {t('modals.emergencyReport.description')}
+            {t('emergency.getHelpQuickly')}
           </p>
         </div>
-      </div>
 
       {/* Emergency Type Selection */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <h3 style={{
-          fontSize: '16px',
-          fontWeight: '600',
-          color: '#1f2937',
-          marginBottom: '12px'
+          fontSize: '18px',
+          fontWeight: '700',
+          color: 'var(--text-primary)',
+          marginBottom: '16px',
+          textAlign: 'center'
         }}>
-          {t('modals.emergencyReport.emergencyType')}
+          {t('emergency.whatType')}
         </h3>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
           gap: '12px'
         }}>
-          {emergencyTypes.map((emergency) => (
-            <button
-              key={emergency.id}
-              onClick={() => setSelectedEmergency(emergency.id)}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                padding: '16px 12px',
-                border: `2px solid ${selectedEmergency === emergency.id ? emergency.color : '#e5e7eb'}`,
-                borderRadius: '8px',
-                backgroundColor: selectedEmergency === emergency.id ? `${emergency.color}10` : 'white',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                textAlign: 'center'
-              }}
-            >
-              <i className={emergency.icon} style={{
-                fontSize: '24px',
-                color: emergency.color,
-                marginBottom: '8px'
-              }}></i>
-              <span style={{
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#1f2937'
-              }}>
-                {emergency.label}
-              </span>
-            </button>
-          ))}
+          {emergencyTypes.map((emergency) => {
+            const IconComponent = emergency.icon;
+            return (
+              <button
+                key={emergency.id}
+                onClick={() => setSelectedEmergency(emergency.id)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  padding: '20px 16px',
+                  border: `2px solid ${selectedEmergency === emergency.id ? emergency.color : 'var(--border-color)'}`,
+                  borderRadius: '12px',
+                  backgroundColor: selectedEmergency === emergency.id ? `${emergency.color}15` : 'var(--bg-primary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  textAlign: 'center',
+                  minHeight: '100px',
+                  boxShadow: selectedEmergency === emergency.id
+                    ? `0 8px 24px ${emergency.color}25`
+                    : '0 2px 8px var(--shadow-color)',
+                  transform: selectedEmergency === emergency.id ? 'translateY(-2px)' : 'translateY(0)'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedEmergency !== emergency.id) {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px var(--shadow-color)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedEmergency !== emergency.id) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
+                  }
+                }}
+              >
+                <IconComponent
+                  size={28}
+                  color={emergency.color}
+                  style={{ marginBottom: '12px' }}
+                />
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  lineHeight: '1.3'
+                }}>
+                  {emergency.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Urgency Level */}
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <h3 style={{
-          fontSize: '16px',
-          fontWeight: '600',
-          color: '#1f2937',
-          marginBottom: '12px'
+          fontSize: '18px',
+          fontWeight: '700',
+          color: 'var(--text-primary)',
+          marginBottom: '16px',
+          textAlign: 'center'
         }}>
           {t('emergency.urgencyLevel')}
         </h3>
         <div style={{
           display: 'flex',
-          gap: '8px'
+          gap: '12px',
+          flexWrap: 'wrap'
         }}>
           {[
-            { value: 'low', label: t('emergency.low'), color: '#22c55e' },
-            { value: 'medium', label: t('emergency.medium'), color: '#f59e0b' },
-            { value: 'high', label: t('emergency.high'), color: '#ef4444' }
+            { value: 'low', label: t('emergency.low'), color: 'var(--success)', bgColor: 'rgba(34, 197, 94, 0.1)' },
+            { value: 'medium', label: t('emergency.medium'), color: 'var(--warning)', bgColor: 'rgba(245, 158, 11, 0.1)' },
+            { value: 'high', label: t('emergency.high'), color: 'var(--danger)', bgColor: 'rgba(239, 68, 68, 0.1)' }
           ].map((level) => (
             <button
               key={level.value}
               onClick={() => setUrgency(level.value as 'high' | 'medium' | 'low')}
               style={{
-                flex: 1,
-                padding: '12px 16px',
-                border: `2px solid ${urgency === level.value ? level.color : '#e5e7eb'}`,
-                borderRadius: '6px',
-                backgroundColor: urgency === level.value ? `${level.color}10` : 'white',
-                color: urgency === level.value ? level.color : '#6b7280',
-                fontWeight: '600',
+                flex: '1 1 120px',
+                minWidth: '100px',
+                padding: '16px 20px',
+                border: `2px solid ${urgency === level.value ? level.color : 'var(--border-color)'}`,
+                borderRadius: '12px',
+                backgroundColor: urgency === level.value ? level.bgColor : 'var(--bg-primary)',
+                color: urgency === level.value ? level.color : 'var(--text-secondary)',
+                fontWeight: '700',
+                fontSize: '16px',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: urgency === level.value
+                  ? `0 6px 20px ${level.color}30`
+                  : '0 2px 8px var(--shadow-color)',
+                transform: urgency === level.value ? 'translateY(-2px)' : 'translateY(0)'
+              }}
+              onMouseEnter={(e) => {
+                if (urgency !== level.value) {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px var(--shadow-color)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (urgency !== level.value) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
+                }
               }}
             >
               {level.label}
@@ -321,29 +379,42 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
       </div>
 
       {/* Location */}
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <label style={{
           display: 'block',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: '#374151',
-          marginBottom: '6px'
+          fontSize: '16px',
+          fontWeight: '600',
+          color: 'var(--text-primary)',
+          marginBottom: '12px'
         }}>
-            {t('modals.emergencyReport.location')}
-          </label>
-          <div style={{ position: 'relative' }}>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder={t('modals.emergencyReport.selectLocation')}
+          <MapPin size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+          {t('modals.emergencyReport.location')}
+        </label>
+        <div style={{ position: 'relative' }}>
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder={t('modals.emergencyReport.selectLocation')}
             style={{
               width: '100%',
-              padding: '10px 40px 10px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontSize: '14px',
-              outline: 'none'
+              padding: '16px 50px 16px 16px',
+              border: '2px solid var(--border-color)',
+              borderRadius: '12px',
+              fontSize: '16px',
+              outline: 'none',
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              fontFamily: 'inherit'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'var(--accent-primary)';
+              e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'var(--border-color)';
+              e.target.style.boxShadow = 'none';
             }}
           />
           <button
@@ -351,51 +422,78 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
             disabled={locationLoading}
             style={{
               position: 'absolute',
-              right: '8px',
+              right: '12px',
               top: '50%',
               transform: 'translateY(-50%)',
-              background: 'none',
+              background: 'var(--accent-primary)',
               border: 'none',
-              color: locationLoading ? '#9ca3af' : '#3b82f6',
+              borderRadius: '8px',
+              color: 'white',
               cursor: locationLoading ? 'not-allowed' : 'pointer',
-              padding: '4px'
+              padding: '8px',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              opacity: locationLoading ? 0.6 : 1
             }}
             title={t('reports.useCurrentLocation')}
+            onMouseEnter={(e) => {
+              if (!locationLoading) {
+                e.currentTarget.style.background = 'var(--accent-secondary)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.05)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!locationLoading) {
+                e.currentTarget.style.background = 'var(--accent-primary)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+              }
+            }}
           >
             {locationLoading ? (
               <LoadingSpinner size="sm" />
             ) : (
-              <i className="fas fa-crosshairs"></i>
+              <Crosshair size={16} />
             )}
           </button>
         </div>
       </div>
 
       {/* Description */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '40px' }}>
         <label style={{
           display: 'block',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: '#374151',
-          marginBottom: '6px'
+          fontSize: '16px',
+          fontWeight: '600',
+          color: 'var(--text-primary)',
+          marginBottom: '12px'
         }}>
-          {t('modals.emergencyReport.descriptionLabel')}
+          {t('emergency.descriptionRequired')}
         </label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder={t('modals.emergencyReport.descriptionPlaceholder')}
-          rows={4}
+          placeholder={t('emergency.descriptionPlaceholder')}
+          rows={5}
           style={{
             width: '100%',
-            padding: '10px 12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '6px',
-            fontSize: '14px',
+            padding: '16px',
+            border: '2px solid var(--border-color)',
+            borderRadius: '12px',
+            fontSize: '16px',
             outline: 'none',
             resize: 'vertical',
-            fontFamily: 'inherit'
+            fontFamily: 'inherit',
+            backgroundColor: 'var(--bg-primary)',
+            color: 'var(--text-primary)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            lineHeight: '1.5'
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = 'var(--accent-primary)';
+            e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = 'var(--border-color)';
+            e.target.style.boxShadow = 'none';
           }}
           required
         />
@@ -405,38 +503,41 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
       <div style={{
         display: 'flex',
         gap: '16px',
-        justifyContent: 'flex-end',
-        marginTop: '32px'
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap'
       }}>
         {/* Cancel Button */}
         <button
           onClick={onClose}
           disabled={isSubmitting}
           style={{
-            padding: '14px 24px',
-            border: '2px solid #e5e7eb',
+            flex: '1 1 auto',
+            minWidth: '120px',
+            padding: '16px 24px',
+            border: '2px solid var(--border-color)',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-            color: '#6b7280',
+            background: 'var(--bg-primary)',
+            color: 'var(--text-secondary)',
             fontSize: '16px',
             fontWeight: '600',
             cursor: isSubmitting ? 'not-allowed' : 'pointer',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+            boxShadow: '0 2px 8px var(--shadow-color)',
             opacity: isSubmitting ? 0.6 : 1
           }}
           onMouseEnter={(e) => {
             if (!isSubmitting) {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.08)';
-              e.currentTarget.style.borderColor = '#d1d5db';
+              e.currentTarget.style.boxShadow = '0 6px 16px var(--shadow-color)';
+              e.currentTarget.style.borderColor = 'var(--text-muted)';
             }
           }}
           onMouseLeave={(e) => {
             if (!isSubmitting) {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
-              e.currentTarget.style.borderColor = '#e5e7eb';
+              e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
             }
           }}
           onMouseDown={(e) => {
@@ -458,36 +559,39 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
           onClick={handleSubmit}
           disabled={!selectedEmergency || !description.trim() || !userLocation || isSubmitting}
           style={{
-            padding: '14px 28px',
+            flex: '2 1 auto',
+            minWidth: '180px',
+            padding: '16px 32px',
             border: 'none',
             borderRadius: '12px',
             background: (!selectedEmergency || !description.trim() || !userLocation || isSubmitting)
-              ? 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)'
-              : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              ? 'var(--text-muted)'
+              : 'linear-gradient(135deg, var(--danger) 0%, #dc2626 100%)',
             color: 'white',
-            fontSize: '16px',
+            fontSize: '18px',
             fontWeight: '700',
             cursor: (!selectedEmergency || !description.trim() || !userLocation || isSubmitting) ? 'not-allowed' : 'pointer',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             boxShadow: (!selectedEmergency || !description.trim() || !userLocation || isSubmitting)
-              ? '0 2px 8px rgba(0, 0, 0, 0.04)'
-              : '0 6px 20px rgba(239, 68, 68, 0.3), 0 2px 8px rgba(239, 68, 68, 0.1)',
+              ? '0 2px 8px var(--shadow-color)'
+              : '0 8px 24px rgba(239, 68, 68, 0.4), 0 4px 12px rgba(239, 68, 68, 0.2)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            justifyContent: 'center',
+            gap: '12px',
             position: 'relative',
             overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
             if (selectedEmergency && description.trim() && userLocation && !isSubmitting) {
               e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 12px 32px rgba(239, 68, 68, 0.4), 0 4px 12px rgba(239, 68, 68, 0.2)';
+              e.currentTarget.style.boxShadow = '0 12px 32px rgba(239, 68, 68, 0.5), 0 6px 16px rgba(239, 68, 68, 0.3)';
             }
           }}
           onMouseLeave={(e) => {
             if (selectedEmergency && description.trim() && userLocation && !isSubmitting) {
               e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.3), 0 2px 8px rgba(239, 68, 68, 0.1)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.4), 0 4px 12px rgba(239, 68, 68, 0.2)';
             }
           }}
           onMouseDown={(e) => {
@@ -508,11 +612,12 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
             </>
           ) : (
             <>
-              <i className="fas fa-exclamation-triangle" style={{ fontSize: '16px' }}></i>
+              <Send size={20} />
               {t('modals.emergencyReport.submitReport')}
             </>
           )}
         </button>
+      </div>
       </div>
     </Modal>
   );

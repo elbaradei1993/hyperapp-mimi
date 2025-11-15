@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { authService } from '../services/auth';
-import PrivacyTermsModal from './PrivacyTermsModal';
+import PrivacyPolicyModal from './PrivacyPolicyModal';
+import TermsOfServiceModal from './TermsOfServiceModal';
 import type { Theme } from '../contexts/ThemeContext';
 
 const SettingsView: React.FC = () => {
@@ -22,7 +23,8 @@ const SettingsView: React.FC = () => {
   const [notifications, setNotifications] = useState(true);
   const [locationSharing, setLocationSharing] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [showPrivacyTermsModal, setShowPrivacyTermsModal] = useState(false);
+  const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
+  const [showTermsOfServiceModal, setShowTermsOfServiceModal] = useState(false);
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -638,7 +640,27 @@ const SettingsView: React.FC = () => {
           {/* Support Links */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <button
-              onClick={() => setShowPrivacyTermsModal(true)}
+              onClick={() => setShowPrivacyPolicyModal(true)}
+              style={{
+                padding: '12px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <i className="fas fa-shield-alt"></i>
+              {t('settings.privacyPolicy', 'Privacy Policy')}
+            </button>
+            <button
+              onClick={() => setShowTermsOfServiceModal(true)}
               style={{
                 padding: '12px',
                 border: '1px solid var(--border-color)',
@@ -655,7 +677,7 @@ const SettingsView: React.FC = () => {
               }}
             >
               <i className="fas fa-file-contract"></i>
-              {t('settings.terms')}
+              {t('settings.termsOfService', 'Terms of Service')}
             </button>
           </div>
         </div>
@@ -863,10 +885,16 @@ const SettingsView: React.FC = () => {
         </div>
       )}
 
-      {/* Privacy & Terms Modal */}
-      <PrivacyTermsModal
-        isOpen={showPrivacyTermsModal}
-        onClose={() => setShowPrivacyTermsModal(false)}
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        isOpen={showPrivacyPolicyModal}
+        onClose={() => setShowPrivacyPolicyModal(false)}
+      />
+
+      {/* Terms of Service Modal */}
+      <TermsOfServiceModal
+        isOpen={showTermsOfServiceModal}
+        onClose={() => setShowTermsOfServiceModal(false)}
       />
     </div>
   );

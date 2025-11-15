@@ -97,6 +97,7 @@
     "settings": "Settings"
   },
   "app": {
+    "appName": "HyperApp",
     "loadingHyperApp": "Loading HyperApp...",
     "welcomeBack": "Welcome back",
     "vibes": "Vibes",
@@ -128,7 +129,14 @@
     "otherVibes": "Other Vibes In This Area",
     "dominant": "Dominant Vibe",
     "howItWorks": "How it works",
-    "footer": "Locations are grouped by proximity (1km radius). Vibes are calculated from recent community reports to show the dominant atmosphere in each area."
+    "footer": "Locations are grouped by proximity (1km radius). Vibes are calculated from recent community reports to show the dominant atmosphere in each area.",
+    "refreshData": "Refresh Data",
+    "areaSentimentAnalysis": "Area Sentiment Analysis",
+    "activeReports": "Active Reports",
+    "sentimentDistribution": "Community sentiment distribution",
+    "areaExperiencing": "The area is currently experiencing",
+    "viewDetailedBreakdown": "View Detailed Breakdown",
+    "communityActivity": "Community Activity"
   },
   "modals": {
     "reportType": {
@@ -291,6 +299,87 @@
     "high": "High",
     "descriptionRequired": "Description (Required)",
     "descriptionPlaceholder": "Please describe the emergency situation in detail..."
+  },
+  "communityInsights": {
+    "title": "Community Hub",
+    "subtitle": "reports in your area",
+    "liveActivity": "Live Activity",
+    "safetyCheck": "Safety Check",
+    "communityStats": "Community Stats",
+    "quickActions": "Quick Actions",
+    "communityChallenges": "Community Challenges",
+    "achievements": "Achievements",
+    "noNearbyActivity": "No Nearby Activity",
+    "noNearbyActivityDesc": "Community activity will appear here as people report in your area.",
+    "totalReports": "Total Reports",
+    "contributors": "Contributors",
+    "emergencies": "Emergencies",
+    "today": "Today",
+    "reportVibe": "Report Vibe",
+    "emergencyCall": "Emergency Call",
+    "allChallenges": "All Community Challenges",
+    "challenges": {
+      "dailyReporter": {
+        "title": "Daily Reporter",
+        "description": "Make 3 reports today to help map your community",
+        "reward": "25 points + Daily Streak"
+      },
+      "emergencyHelper": {
+        "title": "Emergency Helper",
+        "description": "Help verify 2 emergency reports this week",
+        "reward": "50 points + Helper Badge"
+      },
+      "communityBuilder": {
+        "title": "Community Builder",
+        "description": "Help reach 25 reports this week as a team",
+        "reward": "Community Hero Badge + 100 points"
+      },
+      "firstResponder": {
+        "title": "First Responder",
+        "description": "Report your first emergency situation",
+        "reward": "First Responder Badge"
+      },
+      "neighborhoodExplorer": {
+        "title": "Neighborhood Explorer",
+        "description": "Report in 3 different areas this week",
+        "reward": "Explorer Badge + 30 points"
+      }
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "timeLeft": {
+      "ongoing": "Ongoing",
+      "hours": "{{count}}h {{minutes}}m",
+      "days": "{{count}} days"
+    },
+    "progress": {
+      "completed": "completed",
+      "viewAll": "View All →"
+    },
+    "personalAchievements": {
+      "firstSteps": {
+        "title": "First Steps",
+        "description": "Made your first report"
+      },
+      "safetyGuardian": {
+        "title": "Safety Guardian",
+        "description": "Helped 5 emergency situations"
+      },
+      "communityHero": {
+        "title": "Community Hero",
+        "description": "10 reports in one week"
+      },
+      "consistentReporter": {
+        "title": "Consistent Reporter",
+        "description": "Report for 7 days straight"
+      }
+    },
+    "stats": {
+      "remaining": "remaining"
+    }
   },
   "shared": {
     "emptyState": {

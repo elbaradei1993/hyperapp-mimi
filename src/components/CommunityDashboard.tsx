@@ -1025,18 +1025,20 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
     <div style={styles.container}>
       {/* Improved Header */}
       <div style={styles.dashboardHeader}>
-        <div style={{
+        <div className="dashboard-header-container" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           marginBottom: '16px'
         }}>
-          <div style={{
+          <div className="dashboard-title-section" style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            gap: '12px',
+            flex: 1,
+            minWidth: 0
           }}>
-            <div style={{
+            <div className="dashboard-icon" style={{
               width: '48px',
               height: '48px',
               borderRadius: '12px',
@@ -1045,13 +1047,14 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               color: 'white',
-              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+              flexShrink: 0
             }}>
               <i className="fas fa-users"></i>
             </div>
-            <div>
-            <h1 style={styles.dashboardTitle}>{t('tabs.community')}</h1>
-              <p style={styles.dashboardSubtitle}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h1 className="dashboard-title" style={styles.dashboardTitle}>{t('tabs.community')}</h1>
+              <p className="dashboard-subtitle" style={styles.dashboardSubtitle}>
                 {communityMetrics.activeMembers} active members • {communityMetrics.areasMonitored} areas monitored
                 {lastRefreshTime && (
                   <span style={{ marginLeft: '12px', fontSize: '0.8rem', opacity: 0.8 }}>
@@ -1067,6 +1070,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
           </div>
 
           <button
+            className="refresh-button"
             onClick={refreshCommunityData}
             disabled={isRefreshing}
             style={{
@@ -1083,7 +1087,9 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
               gap: '8px',
               boxShadow: isRefreshing ? 'none' : '0 2px 8px rgba(59, 130, 246, 0.3)',
               transition: 'all 0.2s ease',
-              opacity: isRefreshing ? 0.7 : 1
+              opacity: isRefreshing ? 0.7 : 1,
+              flexShrink: 0,
+              whiteSpace: 'nowrap'
             }}
             onMouseEnter={(e) => {
               if (!isRefreshing) {
@@ -1106,11 +1112,80 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
             ) : (
               <>
                 <i className="fas fa-sync-alt"></i>
-                Refresh Data
+                <span style={{ display: 'inline' }}>Refresh Data</span>
               </>
             )}
           </button>
         </div>
+
+        {/* Mobile-Responsive Styles */}
+        <style>
+          {`
+            /* Mobile-first responsive design */
+            @media (max-width: 640px) {
+              .dashboard-header-container {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 16px !important;
+              }
+
+              .dashboard-title-section {
+                width: 100% !important;
+              }
+
+              .dashboard-subtitle {
+                font-size: 0.85rem !important;
+                line-height: 1.4 !important;
+              }
+
+              .dashboard-subtitle span {
+                display: block !important;
+                margin-left: 0 !important;
+                margin-top: 4px !important;
+              }
+
+              .refresh-button {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 14px 20px !important;
+              }
+
+              .refresh-button span {
+                display: inline !important;
+              }
+            }
+
+            @media (max-width: 480px) {
+              .dashboard-icon {
+                width: 40px !important;
+                height: 40px !important;
+              }
+
+              .dashboard-title {
+                font-size: 1.5rem !important;
+              }
+
+              .dashboard-subtitle {
+                font-size: 0.8rem !important;
+              }
+            }
+
+            /* Respect user's motion preferences */
+            @media (prefers-reduced-motion: reduce) {
+              .refresh-button {
+                transition: none !important;
+              }
+            }
+
+            /* Touch-friendly interactions */
+            @media (hover: none) and (pointer: coarse) {
+              .refresh-button {
+                padding: 16px 20px !important;
+                min-height: 48px !important;
+              }
+            }
+          `}
+        </style>
       </div>
 
       {/* Main Grid */}

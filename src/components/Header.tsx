@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useVibe } from '../contexts/VibeContext';
 
 // Header component with professional design matching the HTML
 const Header: React.FC = () => {
+  const { t } = useTranslation();
   const { signOut } = useAuth();
   const { currentLocationVibe } = useVibe();
 
@@ -153,6 +155,25 @@ const Header: React.FC = () => {
             font-size: 16px;
           }
         }
+
+        /* RTL Support for Header */
+        [dir="rtl"] .header-content {
+          flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .pulse-container {
+          padding-left: 120px !important;
+          padding-right: 100px !important;
+        }
+
+        [dir="rtl"] .logout-btn {
+          right: auto !important;
+          left: 0 !important;
+        }
+
+        [dir="rtl"] .logo-text {
+          text-align: right;
+        }
       `;
       document.head.appendChild(styleSheet);
     }
@@ -198,7 +219,7 @@ const Header: React.FC = () => {
           whiteSpace: 'nowrap',
           zIndex: 2,
           flexShrink: 0,
-        }}>HyperApp</div>
+        }}>{t('app.appName')}</div>
 
         {/* Pulsing Light Animation - Connects app name to logout button */}
         <div className="pulse-container" style={{
@@ -210,7 +231,7 @@ const Header: React.FC = () => {
           height: '4px',
           pointerEvents: 'none',
           zIndex: 1,
-          paddingLeft: '100px', // Start after "HyperApp" text
+          paddingLeft: '100px', // Start after app name text
           paddingRight: '120px', // End before far right logout button
         }}>
           <div className={`pulse-track vibe-${currentLocationVibe?.type || 'calm'}`} style={{
@@ -284,7 +305,7 @@ const Header: React.FC = () => {
           <i className="fas fa-sign-out-alt"></i>
           <span className="logout-text" style={{
             display: 'none', // Hidden on mobile by default
-          }}>Logout</span>
+          }}>{t('auth.logout')}</span>
         </button>
       </div>
     </header>

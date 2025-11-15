@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 // SplashScreen will be handled inside App.tsx now
 // import SplashScreen from './components/SplashScreen';
+import ErrorBoundary from './components/ErrorBoundary';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -37,8 +38,10 @@ const RootApp: React.FC = () => {
   // }
 
   return (
-    // App component will now handle its own loading state and SplashScreen
-    <App />
+    <ErrorBoundary>
+      {/* App component will now handle its own loading state and SplashScreen */}
+      <App />
+    </ErrorBoundary>
   );
 };
 

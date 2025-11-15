@@ -846,6 +846,7 @@ const AppContent: React.FC = () => {
         isOpen={showVibeReportModal}
         onClose={() => setShowVibeReportModal(false)}
         onSuccess={handleReportSuccess}
+        currentLocation={userLocation}
       />
 
       {/* Emergency Report Modal */}
