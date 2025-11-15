@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LoadingSpinner, EmptyState, CircularProgress, MultiSegmentCircularProgress } from './shared';
 import { clusterReports, formatDistance, analyzeClusterVibes, calculateDistance, type LocationCluster } from '../lib/clustering';
@@ -7,8 +7,19 @@ import { reverseGeocode } from '../lib/geocoding';
 import { VIBE_CONFIG, VibeType } from '../constants/vibes';
 import { useVibe } from '../contexts/VibeContext';
 import { useAuth } from '../contexts/AuthContext';
-import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Vibe, Report } from '../types';
+
+// Lazy load heavy chart components for better performance
+const PieChart = lazy(() => import('recharts').then(module => ({ default: module.PieChart })));
+const Pie = lazy(() => import('recharts').then(module => ({ default: module.Pie })));
+const Cell = lazy(() => import('recharts').then(module => ({ default: module.Cell })));
+const LineChart = lazy(() => import('recharts').then(module => ({ default: module.LineChart })));
+const Line = lazy(() => import('recharts').then(module => ({ default: module.Line })));
+const XAxis = lazy(() => import('recharts').then(module => ({ default: module.XAxis })));
+const YAxis = lazy(() => import('recharts').then(module => ({ default: module.YAxis })));
+const CartesianGrid = lazy(() => import('recharts').then(module => ({ default: module.CartesianGrid })));
+const Tooltip = lazy(() => import('recharts').then(module => ({ default: module.Tooltip })));
+const ResponsiveContainer = lazy(() => import('recharts').then(module => ({ default: module.ResponsiveContainer })));
 
 // Modern CSS-in-JS styles with mobile-first approach
 const styles = {
@@ -54,24 +65,25 @@ const styles = {
 
   // Header styles
   dashboardHeader: {
-    marginBottom: '32px',
+    marginBottom: '24px',
     position: 'relative' as const,
+    padding: '0 16px',
   },
   dashboardTitle: {
-    fontSize: '2rem',
+    fontSize: '1.75rem',
     fontWeight: '800' as const,
     background: 'linear-gradient(135deg, #0f172a 0%, #475569 100%)',
     WebkitBackgroundClip: 'text' as const,
     WebkitTextFillColor: 'transparent' as const,
-    marginBottom: '8px',
+    marginBottom: '6px',
     letterSpacing: '-0.025em',
-    lineHeight: '1.2',
+    lineHeight: '1.3',
   },
   dashboardSubtitle: {
-    fontSize: '1rem',
+    fontSize: '0.95rem',
     color: '#475569',
     fontWeight: '500' as const,
-    lineHeight: '1.4',
+    lineHeight: '1.5',
   },
 
   // Main Grid - Mobile First
@@ -104,20 +116,20 @@ const styles = {
     background: 'linear-gradient(90deg, #2563eb 0%, #3b82f6 50%, #1d4ed8 100%)',
   },
   locationCardContent: {
-    padding: '24px 20px',
+    padding: '20px 16px',
   },
   locationHeader: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
     textAlign: 'center' as const,
-    gap: '16px',
-    marginBottom: '24px',
+    gap: '12px',
+    marginBottom: '20px',
   },
   locationIcon: {
-    width: '64px',
-    height: '64px',
-    borderRadius: '16px',
+    width: '56px',
+    height: '56px',
+    borderRadius: '14px',
     background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
     display: 'flex',
     alignItems: 'center',
@@ -130,11 +142,11 @@ const styles = {
     width: '100%',
   },
   locationAddress: {
-    fontSize: '1.5rem',
+    fontSize: '1.25rem',
     fontWeight: '700' as const,
     color: '#0f172a',
-    marginBottom: '12px',
-    lineHeight: '1.3',
+    marginBottom: '8px',
+    lineHeight: '1.4',
   },
   locationMeta: {
     display: 'flex',
@@ -159,8 +171,8 @@ const styles = {
     background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.02) 0%, rgba(37, 99, 235, 0.01) 100%)',
     border: '1px solid rgba(37, 99, 235, 0.08)',
     borderRadius: '16px',
-    padding: '24px 20px',
-    marginTop: '20px',
+    padding: '20px 16px',
+    marginTop: '16px',
   },
   vibeAnalysisHeader: {
     display: 'flex',
@@ -382,12 +394,12 @@ const styles = {
     overflow: 'hidden',
   },
   activityHeader: {
-    padding: '20px',
+    padding: '16px',
     borderBottom: '1px solid #e2e8f0',
     background: '#f8fafc',
   },
   activityTitle: {
-    fontSize: '1.25rem',
+    fontSize: '1.125rem',
     fontWeight: '700' as const,
     color: '#0f172a',
   },
@@ -401,10 +413,11 @@ const styles = {
     display: 'flex',
     alignItems: 'flex-start',
     gap: '12px',
-    padding: '16px 20px',
+    padding: '16px',
     borderBottom: '1px solid #f1f5f9',
     transition: 'background 0.2s ease',
     position: 'relative' as const,
+    minHeight: '80px',
   },
   activityAvatar: {
     width: '40px',
@@ -518,78 +531,7 @@ const styles = {
   },
 
   // Responsive breakpoints
-  '@media (min-width: 768px)': {
-    dashboard: {
-      padding: '24px',
-      maxWidth: '100%',
-    },
-    dashboardTitle: {
-      fontSize: '2.5rem',
-    },
-    dashboardSubtitle: {
-      fontSize: '1.125rem',
-    },
-    dashboardGrid: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 380px',
-      gap: '32px',
-    },
-    locationHeader: {
-      flexDirection: 'row' as const,
-      textAlign: 'left' as const,
-      alignItems: 'flex-start',
-    },
-    locationMeta: {
-      flexDirection: 'row' as const,
-      justifyContent: 'flex-start',
-    },
-    vibeAnalysisHeader: {
-      flexDirection: 'row' as const,
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    vibeContent: {
-      flexDirection: 'row' as const,
-      alignItems: 'center',
-    },
-    vibeVisual: {
-      flexDirection: 'row' as const,
-      textAlign: 'left' as const,
-    },
-    vibeDescription: {
-      paddingTop: '0',
-      paddingLeft: '24px',
-      borderTop: 'none',
-      borderLeft: '1px solid #e2e8f0',
-      textAlign: 'left' as const,
-    },
-    chartsGrid: {
-      gridTemplateColumns: '1fr 1fr',
-      display: 'grid',
-    },
-    statsGrid: {
-      gridTemplateColumns: '1fr 1fr',
-      gap: '16px',
-    },
-    activityContent: {
-      maxHeight: '500px',
-    },
-  },
 
-  '@media (min-width: 1024px)': {
-    dashboard: {
-      padding: '32px',
-    },
-    locationCardContent: {
-      padding: '32px',
-    },
-    statsGrid: {
-      gridTemplateColumns: '1fr',
-    },
-    chartContainer: {
-      height: '200px',
-    },
-  },
 
   '@media (min-width: 1440px)': {
     dashboard: {
@@ -623,6 +565,8 @@ const styles = {
       fontSize: '16px',
     },
   },
+
+
 };
 
 interface CommunityDashboardProps {
@@ -665,6 +609,8 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   const [nearbyReports, setNearbyReports] = useState<ReportWithVote[]>([]);
   const [nearbyReportsLoading, setNearbyReportsLoading] = useState(false);
   const [isVibeBreakdownExpanded, setIsVibeBreakdownExpanded] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
 
   // Ref for subscription cleanup
   const subscriptionsRef = useRef<{ reports?: any; votes?: any }>({});
@@ -795,6 +741,59 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       setNearbyReportsLoading(false);
     }
   }, [user]);
+
+  // Refresh community data functionality
+  const refreshCommunityData = useCallback(async () => {
+    if (isRefreshing) return;
+
+    setIsRefreshing(true);
+    try {
+      // Refresh all community data sources
+      const [userReports, nearbyReports] = await Promise.all([
+        loadUserReports(),
+        loadNearbyReports()
+      ]);
+
+      // Update state with fresh data
+      setUserReports(userReports);
+      setNearbyReports(nearbyReports as ReportWithVote[]);
+
+      // Update refresh timestamp
+      setLastRefreshTime(new Date());
+
+      // Trigger location data refresh if user location exists
+      if (userLocation && vibes.length > 0) {
+        const geocodeAndAnalyze = async () => {
+          try {
+            const [address, vibeAnalysis] = await Promise.all([
+              reverseGeocode(userLocation[0], userLocation[1]),
+              analyzeNearbyVibes(userLocation, vibes)
+            ]);
+
+            setCurrentLocationAddress(address);
+            setLocalCurrentLocationVibe(vibeAnalysis.dominantVibe);
+            setCurrentLocationVibeDistribution(vibeAnalysis.distribution);
+
+            if (vibeAnalysis.dominantVibe) {
+              setCurrentLocationVibe({
+                type: vibeAnalysis.dominantVibe.type,
+                percentage: vibeAnalysis.dominantVibe.percentage,
+                count: vibeAnalysis.dominantVibe.count,
+                color: getVibeColor(vibeAnalysis.dominantVibe.type)
+              });
+            }
+          } catch (error) {
+            console.error('Error refreshing location data:', error);
+          }
+        };
+        geocodeAndAnalyze();
+      }
+    } catch (error) {
+      console.error('Error refreshing community data:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing, loadUserReports, loadNearbyReports, userLocation, vibes, analyzeNearbyVibes, getVibeColor]);
 
   // Vote on report
   const voteOnReport = useCallback(async (reportId: number, voteType: 'upvote' | 'downvote') => {
@@ -1024,10 +1023,94 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
   return (
     <div style={styles.container}>
-      {/* Header */}
+      {/* Improved Header */}
       <div style={styles.dashboardHeader}>
-        <h1 style={styles.dashboardTitle}>Community Intelligence</h1>
-        <p style={styles.dashboardSubtitle}>Real-time insights and sentiment analysis for your local area</p>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '16px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+            }}>
+              <i className="fas fa-users"></i>
+            </div>
+            <div>
+            <h1 style={styles.dashboardTitle}>{t('tabs.community')}</h1>
+              <p style={styles.dashboardSubtitle}>
+                {communityMetrics.activeMembers} active members • {communityMetrics.areasMonitored} areas monitored
+                {lastRefreshTime && (
+                  <span style={{ marginLeft: '12px', fontSize: '0.8rem', opacity: 0.8 }}>
+                    • Last updated: {lastRefreshTime.toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={refreshCommunityData}
+            disabled={isRefreshing}
+            style={{
+              background: isRefreshing ? '#64748b' : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: isRefreshing ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: isRefreshing ? 'none' : '0 2px 8px rgba(59, 130, 246, 0.3)',
+              transition: 'all 0.2s ease',
+              opacity: isRefreshing ? 0.7 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (!isRefreshing) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isRefreshing) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3)';
+              }
+            }}
+          >
+            {isRefreshing ? (
+              <>
+                <LoadingSpinner size="sm" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-sync-alt"></i>
+                Refresh Data
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Main Grid */}
@@ -1084,20 +1167,20 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                         flexDirection: 'column',
                         gap: '12px'
                       }}>
-                        <div style={{
-                          fontSize: '1.5rem',
-                          fontWeight: '800',
-                          color: '#0f172a',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px'
-                        }}>
-                          <i className="fas fa-chart-pie" style={{
-                            color: getVibeColor(localCurrentLocationVibe.type),
-                            fontSize: '1.25rem'
-                          }}></i>
-                          Area Sentiment Analysis
-                        </div>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '800',
+                  color: '#0f172a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <i className="fas fa-chart-pie" style={{
+                    color: getVibeColor(localCurrentLocationVibe.type),
+                    fontSize: '1.25rem'
+                  }}></i>
+                  {t('community.areaSentimentAnalysis')}
+                </div>
                         <div style={{
                           color: '#64748b',
                           fontSize: '0.875rem',
@@ -1109,7 +1192,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                           backdropFilter: 'blur(8px)',
                           border: '1px solid rgba(255, 255, 255, 0.2)'
                         }}>
-                          {localCurrentLocationVibe.count} Active Reports
+                          {localCurrentLocationVibe.count} {t('community.activeReports')}
                         </div>
                       </div>
 
@@ -1169,7 +1252,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                             fontSize: '0.875rem',
                             fontWeight: '500'
                           }}>
-                            Community sentiment distribution
+                            {t('community.sentimentDistribution')}
                           </div>
                         </div>
 
@@ -1473,20 +1556,25 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                     </div>
 
                     {/* Vote Buttons */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <button
                         onClick={() => voteOnReport(report.id, 'upvote')}
                         style={{
                           backgroundColor: report.user_vote === 'upvote' ? '#10b981' : 'transparent',
                           color: report.user_vote === 'upvote' ? 'white' : '#64748b',
                           border: `1px solid ${report.user_vote === 'upvote' ? '#10b981' : '#e2e8f0'}`,
-                          borderRadius: '6px',
-                          padding: '4px 8px',
-                          fontSize: '12px',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          fontSize: '14px',
+                          fontWeight: '600',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '4px'
+                          justifyContent: 'center',
+                          gap: '6px',
+                          minWidth: '48px',
+                          minHeight: '44px',
+                          WebkitTapHighlightColor: 'transparent'
                         }}
                       >
                         <i className="fas fa-thumbs-up"></i>
@@ -1498,13 +1586,18 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                           backgroundColor: report.user_vote === 'downvote' ? '#ef4444' : 'transparent',
                           color: report.user_vote === 'downvote' ? 'white' : '#64748b',
                           border: `1px solid ${report.user_vote === 'downvote' ? '#ef4444' : '#e2e8f0'}`,
-                          borderRadius: '6px',
-                          padding: '4px 8px',
-                          fontSize: '12px',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          fontSize: '14px',
+                          fontWeight: '600',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '4px'
+                          justifyContent: 'center',
+                          gap: '6px',
+                          minWidth: '48px',
+                          minHeight: '44px',
+                          WebkitTapHighlightColor: 'transparent'
                         }}
                       >
                         <i className="fas fa-thumbs-down"></i>

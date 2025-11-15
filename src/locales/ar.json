@@ -92,10 +92,12 @@
   "tabs": {
     "map": "الخريطة",
     "reports": "التقارير",
+    "community": "المجتمع",
     "profile": "الملف الشخصي",
     "settings": "الإعدادات"
   },
   "app": {
+    "appName": "هايبر أب",
     "loadingHyperApp": "جارٍ تحميل HyperApp...",
     "welcomeBack": "مرحباً بعودتك",
     "vibes": "الأجواء",
@@ -271,6 +273,113 @@
     "high": "عالي",
     "descriptionRequired": "الوصف (مطلوب)",
     "descriptionPlaceholder": "يرجى وصف حالة الطوارئ بالتفصيل..."
+  },
+  "communityInsights": {
+    "title": "مركز المجتمع",
+    "subtitle": "تقارير في منطقتك",
+    "liveActivity": "النشاط المباشر",
+    "safetyCheck": "فحص الأمان",
+    "communityStats": "إحصائيات المجتمع",
+    "quickActions": "الإجراءات السريعة",
+    "communityChallenges": "تحديات المجتمع",
+    "achievements": "الإنجازات",
+    "noNearbyActivity": "لا يوجد نشاط قريب",
+    "noNearbyActivityDesc": "سيظهر نشاط المجتمع هنا عندما يقوم الأشخاص بالإبلاغ في منطقتك.",
+    "totalReports": "إجمالي التقارير",
+    "contributors": "المساهمون",
+    "emergencies": "الحالات الطارئة",
+    "today": "اليوم",
+    "reportVibe": "الإبلاغ عن جو",
+    "emergencyCall": "اتصال طوارئ",
+    "allChallenges": "جميع تحديات المجتمع",
+    "challenges": {
+      "dailyReporter": {
+        "title": "المراسل اليومي",
+        "description": "قم بإرسال 3 تقارير اليوم للمساعدة في رسم خريطة مجتمعك",
+        "reward": "25 نقطة + سلسلة يومية"
+      },
+      "emergencyHelper": {
+        "title": "مساعد الطوارئ",
+        "description": "ساعد في التحقق من تقريري طوارئ هذا الأسبوع",
+        "reward": "50 نقطة + شارة مساعد"
+      },
+      "communityBuilder": {
+        "title": "باني المجتمع",
+        "description": "ساعد في الوصول إلى 25 تقرير هذا الأسبوع كفريق",
+        "reward": "شارة بطل المجتمع + 100 نقطة"
+      },
+      "firstResponder": {
+        "title": "المستجيب الأول",
+        "description": "أبلغ عن أول حالة طوارئ لك",
+        "reward": "شارة المستجيب الأول"
+      },
+      "neighborhoodExplorer": {
+        "title": "مستكشف الحي",
+        "description": "أبلغ في 3 مناطق مختلفة هذا الأسبوع",
+        "reward": "شارة المستكشف + 30 نقطة"
+      }
+    },
+    "difficulty": {
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب"
+    },
+    "timeLeft": {
+      "ongoing": "مستمر",
+      "hours": "{{count}}س {{minutes}}د",
+      "days": "{{count}} أيام"
+    },
+    "progress": {
+      "completed": "مكتمل",
+      "viewAll": "عرض الكل ←"
+    },
+    "personalAchievements": {
+      "firstSteps": {
+        "title": "الخطوات الأولى",
+        "description": "قمت بإرسال أول تقرير لك"
+      },
+      "safetyGuardian": {
+        "title": "حارس الأمان",
+        "description": "ساعدت في 5 حالات طوارئ"
+      },
+      "communityHero": {
+        "title": "بطل المجتمع",
+        "description": "10 تقارير في أسبوع واحد"
+      },
+      "consistentReporter": {
+        "title": "المراسل المنتظم",
+        "description": "أبلغ لمدة 7 أيام متتالية"
+      }
+    },
+    "stats": {
+      "remaining": "متبقي"
+    }
+  },
+  "community": {
+    "title": "لوحة تحكم المجتمع",
+    "subtitle": "انظر كيف تبدو منطقتك الحالية",
+    "noData": "لا توجد بيانات مجتمع",
+    "noDataDesc": "ستظهر بيانات أجواء المجتمع هنا عندما يتم إرسال التقارير في منطقتك.",
+    "currentLocation": "موقعك الحالي",
+    "locationActive": "خدمات الموقع نشطة",
+    "locationUnavailable": "الموقع غير متوفر",
+    "geocoding": "جارٍ العثور على موقعك...",
+    "yourArea": "منطقتك الحالية",
+    "localVibe": "الجو المحلي",
+    "reports": "تقارير",
+    "locations": "مواقع",
+    "totalReports": "إجمالي التقارير",
+    "otherVibes": "الأجواء الأخرى في هذه المنطقة",
+    "dominant": "الجو السائد",
+    "howItWorks": "كيف يعمل",
+    "footer": "يتم تجميع المواقع حسب القرب (نصف قطر 1 كم). يتم حساب الأجواء من تقارير المجتمع الأخيرة لإظهار الجو السائد في كل منطقة.",
+    "refreshData": "تحديث البيانات",
+    "areaSentimentAnalysis": "تحليل مزاج المنطقة",
+    "activeReports": "التقارير النشطة",
+    "sentimentDistribution": "توزيع مزاج المجتمع",
+    "areaExperiencing": "تشهد المنطقة حالياً",
+    "viewDetailedBreakdown": "عرض التحليل التفصيلي",
+    "communityActivity": "نشاط المجتمع"
   },
   "shared": {
     "emptyState": {
