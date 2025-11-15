@@ -363,19 +363,20 @@
 /* Responsive Design */
 @media (max-width: 480px) {
   .authModal {
-    padding: 10px;
+    padding: 8px;
   }
 
   .modalContent {
-    padding: 24px 20px;
-    margin: 10px;
+    padding: 20px 16px;
+    margin: 8px;
     max-width: none;
-    max-height: 95vh;
+    max-height: 85vh;
+    width: calc(100vw - 16px);
   }
 
   .title {
     font-size: 22px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .subtitle {
@@ -383,34 +384,34 @@
   }
 
   .header {
-    margin-bottom: 24px;
-  }
-
-  .tabNav {
     margin-bottom: 20px;
   }
 
+  .tabNav {
+    margin-bottom: 16px;
+  }
+
   .form {
-    gap: 16px;
+    gap: 14px;
   }
 
   .formInput {
-    padding: 14px 18px;
+    padding: 12px 16px;
     font-size: 16px; /* Prevent zoom on iOS */
   }
 
   .submitButton {
-    padding: 14px 20px;
+    padding: 12px 18px;
     font-size: 15px;
   }
 
   .googleButton {
-    padding: 12px 20px;
+    padding: 10px 16px;
     font-size: 14px;
   }
 
   .divider {
-    margin: 20px 0;
+    margin: 16px 0;
   }
 }
 
@@ -423,7 +424,7 @@
   .modalContent {
     padding: 20px 16px;
     margin: 5px;
-    max-height: 98vh;
+    max-height: 80vh;
   }
 
   .title {
