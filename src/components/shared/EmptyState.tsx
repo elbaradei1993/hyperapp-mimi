@@ -23,12 +23,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         </div>
       )}
 
-      <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <h3 className="text-base font-medium text-gray-900 mb-2">
         {title}
       </h3>
 
       {description && (
-        <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+        <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
           {description}
         </p>
       )}

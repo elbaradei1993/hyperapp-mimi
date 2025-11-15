@@ -12,7 +12,7 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = 'px-4 py-3 rounded-lg font-semibold focus:outline-none transition-all duration-200 ease-in-out';
+  const baseClasses = 'px-4 py-3 rounded-lg text-sm font-semibold focus:outline-none transition-all duration-200 ease-in-out';
 
   const variantClasses = {
     primary: 'bg-accent-primary text-white hover:bg-accent-primary-dark active:bg-accent-primary-dark',

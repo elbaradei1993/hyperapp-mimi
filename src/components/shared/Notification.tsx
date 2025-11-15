@@ -134,7 +134,7 @@ const Notification: React.FC<NotificationProps> = ({
 
         <div style={{ marginLeft: '12px', flex: 1 }}>
           <p style={{
-            fontSize: '14px',
+            fontSize: '12px',
             fontWeight: '500',
             margin: '0 0 4px 0',
             color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af'
@@ -143,7 +143,7 @@ const Notification: React.FC<NotificationProps> = ({
           </p>
           {message && (
             <p style={{
-              fontSize: '14px',
+              fontSize: '12px',
               margin: '4px 0 0 0',
               color: type === 'success' ? '#047857' : type === 'error' ? '#dc2626' : type === 'warning' ? '#d97706' : '#1d4ed8'
             }}>

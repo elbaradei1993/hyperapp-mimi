@@ -132,7 +132,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
                 gap: '4px',
                 cursor: 'pointer',
                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                fontSize: '0.75rem',
+                fontSize: '0.7rem',
                 fontWeight: activeTab === tab.id ? '600' : '500',
                 borderRadius: '10px',
                 position: 'relative',

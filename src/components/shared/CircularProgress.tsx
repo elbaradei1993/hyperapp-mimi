@@ -103,7 +103,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
           left: '50%',
           transform: 'translate(-50%, -50%)',
           textAlign: 'center',
-          fontSize: Math.max(16, size * 0.15),
+          fontSize: Math.max(12, size * 0.12),
           fontWeight: '900',
           color: color,
           textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'

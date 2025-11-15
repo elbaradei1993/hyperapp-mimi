@@ -5,6 +5,7 @@ import { authService } from '../services/auth';
 import { reportsService } from '../services/reports';
 import { uploadService } from '../services/upload';
 import { LoadingSpinner, EmptyState } from './shared';
+import { reverseGeocode } from '../lib/geocoding';
 import type { User } from '../types';
 import { INTEREST_CATEGORIES } from '../types';
 
@@ -73,6 +74,7 @@ const ProfileView: React.FC = () => {
     profilePicturePreview: ''
   });
   const [uploadingPicture, setUploadingPicture] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -480,6 +482,55 @@ const ProfileView: React.FC = () => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
+  // Detect current location and populate the location field
+  const detectCurrentLocation = async () => {
+    if (detectingLocation) return;
+
+    setDetectingLocation(true);
+    try {
+      // Get current position
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error('Geolocation not supported'));
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+
+      // Reverse geocode to get address
+      const address = await reverseGeocode(latitude, longitude);
+
+      // Update the location field with the detected address
+      setEditForm(prev => ({
+        ...prev,
+        location: address
+      }));
+
+    } catch (error) {
+      console.warn('Location detection failed:', error);
+      // Fall back to stored location if available
+      const fallbackLocation = user?.location
+        ? (typeof user.location === 'string'
+            ? user.location
+            : (user.location.address || `${user.location.latitude.toFixed(4)}, ${user.location.longitude.toFixed(4)}`))
+        : '';
+
+      setEditForm(prev => ({
+        ...prev,
+        location: fallbackLocation
+      }));
+    } finally {
+      setDetectingLocation(false);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -574,7 +625,7 @@ const ProfileView: React.FC = () => {
         <div style={{ flex: 1 }}>
           <div style={{ marginBottom: '8px' }}>
             <h1 style={{
-              fontSize: '24px',
+              fontSize: '20px',
               fontWeight: 'bold',
               color: 'var(--text-primary)',
               margin: 0,
@@ -586,9 +637,11 @@ const ProfileView: React.FC = () => {
               }
             </h1>
             <button
-              onClick={() => {
+              onClick={async () => {
                 console.log('Edit profile button clicked!');
                 console.log('User object:', user);
+
+                // First set the form with stored values
                 setEditForm({
                   firstName: user?.first_name || '',
                   lastName: user?.last_name || '',
@@ -602,6 +655,10 @@ const ProfileView: React.FC = () => {
                   profilePicture: null,
                   profilePicturePreview: user?.profile_picture_url || ''
                 });
+
+                // Then try to detect and populate current location
+                await detectCurrentLocation();
+
                 setShowEditModal(true);
                 console.log('Modal should now be open, showEditModal:', true);
               }}
@@ -637,7 +694,7 @@ const ProfileView: React.FC = () => {
           }}>
             <i className="fas fa-star" style={{ color: 'var(--warning)' }}></i>
             <span style={{
-              fontSize: 'clamp(14px, 4vw, 18px)',
+              fontSize: 'clamp(12px, 3vw, 16px)',
               fontWeight: '600',
               color: stats.reputation > 50 ? 'var(--success)' : 'var(--text-primary)',
               whiteSpace: 'nowrap'
@@ -648,7 +705,7 @@ const ProfileView: React.FC = () => {
 
           <p style={{
             color: 'var(--text-muted)',
-            fontSize: '14px',
+            fontSize: '12px',
             margin: 0
           }}>
             {t('profile.memberSince')} {user?.created_at ? new Date(user.created_at).toLocaleDateString() : t('common.recently')}
@@ -665,7 +722,7 @@ const ProfileView: React.FC = () => {
         boxShadow: '0 1px 3px var(--shadow-color)'
       }}>
         <h2 style={{
-          fontSize: '20px',
+          fontSize: '18px',
           fontWeight: 'bold',
           color: 'var(--text-primary)',
           marginBottom: '16px',
@@ -757,7 +814,7 @@ const ProfileView: React.FC = () => {
         boxShadow: '0 1px 3px var(--shadow-color)'
       }}>
         <h2 style={{
-          fontSize: '20px',
+          fontSize: '18px',
           fontWeight: 'bold',
           color: 'var(--text-primary)',
           marginBottom: '16px',
@@ -815,7 +872,7 @@ const ProfileView: React.FC = () => {
           textAlign: 'center'
         }}>
           <div style={{
-            fontSize: '32px',
+            fontSize: '28px',
             fontWeight: 'bold',
             color: 'var(--accent-primary)',
             marginBottom: '8px'
@@ -839,7 +896,7 @@ const ProfileView: React.FC = () => {
           textAlign: 'center'
         }}>
           <div style={{
-            fontSize: '32px',
+            fontSize: '28px',
             fontWeight: 'bold',
             color: 'var(--success)',
             marginBottom: '8px'
@@ -863,7 +920,7 @@ const ProfileView: React.FC = () => {
           textAlign: 'center'
         }}>
           <div style={{
-            fontSize: '32px',
+            fontSize: '28px',
             fontWeight: 'bold',
             color: 'var(--warning)',
             marginBottom: '8px'
@@ -889,7 +946,7 @@ const ProfileView: React.FC = () => {
         boxShadow: '0 1px 3px var(--shadow-color)'
       }}>
         <h2 style={{
-          fontSize: '20px',
+          fontSize: '18px',
           fontWeight: 'bold',
           color: 'var(--text-primary)',
           marginBottom: '16px'
@@ -922,21 +979,21 @@ const ProfileView: React.FC = () => {
                 color: 'white'
               }}>
                 <div style={{
-                  fontSize: '32px',
+                  fontSize: '28px',
                   marginBottom: '8px',
                   opacity: 0.9
                 }}>
                   <i className={badge.icon}></i>
                 </div>
                 <h3 style={{
-                  fontSize: '16px',
+                  fontSize: '14px',
                   fontWeight: 'bold',
                   marginBottom: '4px'
                 }}>
                   {badge.name}
                 </h3>
                 <p style={{
-                  fontSize: '12px',
+                  fontSize: '11px',
                   opacity: 0.9,
                   margin: 0
                 }}>
@@ -1097,14 +1154,14 @@ const ProfileView: React.FC = () => {
             {/* Header */}
             <div style={{ textAlign: 'center', marginBottom: '32px' }}>
               <h2 style={{
-                fontSize: '24px',
+                fontSize: '20px',
                 fontWeight: 'bold',
                 color: '#1f2937',
                 marginBottom: '8px'
               }}>
                 {t('profile.editProfile')}
               </h2>
-              <p style={{ color: '#6b7280', fontSize: '16px' }}>
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>
                 Update your personal information
               </p>
             </div>
@@ -1115,7 +1172,7 @@ const ProfileView: React.FC = () => {
               {/* Profile Picture */}
               <div>
                 <h3 style={{
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fontWeight: '600',
                   color: '#1f2937',
                   marginBottom: '16px'
@@ -1256,7 +1313,7 @@ const ProfileView: React.FC = () => {
               {/* Personal Information */}
               <div>
                 <h3 style={{
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fontWeight: '600',
                   color: '#1f2937',
                   marginBottom: '16px'
@@ -1387,7 +1444,7 @@ const ProfileView: React.FC = () => {
               {/* Community Interests - Like Onboarding */}
               <div>
                 <h3 style={{
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fontWeight: '600',
                   color: '#1f2937',
                   marginBottom: '16px'
@@ -1407,7 +1464,7 @@ const ProfileView: React.FC = () => {
                   {Object.entries(INTEREST_CATEGORIES).map(([key, category]) => (
                     <div key={key}>
                       <h4 style={{
-                        fontSize: '16px',
+                        fontSize: '14px',
                         fontWeight: '600',
                         color: '#1f2937',
                         marginBottom: '8px',

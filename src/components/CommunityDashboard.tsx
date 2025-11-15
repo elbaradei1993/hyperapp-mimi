@@ -70,7 +70,7 @@ const styles = {
     padding: '0 16px',
   },
   dashboardTitle: {
-    fontSize: '1.75rem',
+    fontSize: '1.5rem',
     fontWeight: '800' as const,
     background: 'linear-gradient(135deg, #0f172a 0%, #475569 100%)',
     WebkitBackgroundClip: 'text' as const,
@@ -80,7 +80,7 @@ const styles = {
     lineHeight: '1.3',
   },
   dashboardSubtitle: {
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     color: '#475569',
     fontWeight: '500' as const,
     lineHeight: '1.5',
@@ -142,7 +142,7 @@ const styles = {
     width: '100%',
   },
   locationAddress: {
-    fontSize: '1.25rem',
+    fontSize: '1.125rem',
     fontWeight: '700' as const,
     color: '#0f172a',
     marginBottom: '8px',
@@ -159,7 +159,7 @@ const styles = {
     alignItems: 'center',
     gap: '6px',
     color: '#64748b',
-    fontSize: '0.875rem',
+    fontSize: '0.8rem',
     fontWeight: '500' as const,
     padding: '6px 12px',
     background: '#f8fafc',
@@ -181,13 +181,13 @@ const styles = {
     marginBottom: '20px',
   },
   vibeTitle: {
-    fontSize: '1.25rem',
+    fontSize: '1.125rem',
     fontWeight: '700' as const,
     color: '#0f172a',
   },
   vibeCount: {
     color: '#64748b',
-    fontSize: '0.875rem',
+    fontSize: '0.8rem',
     fontWeight: '600' as const,
     background: '#f8fafc',
     padding: '6px 12px',
@@ -238,14 +238,14 @@ const styles = {
     textAlign: 'center' as const,
   },
   vibePercentage: {
-    fontSize: '2.25rem',
+    fontSize: '1.875rem',
     fontWeight: '900' as const,
     color: '#10b981',
     lineHeight: 1,
     marginBottom: '4px',
   },
   vibeLabel: {
-    fontSize: '0.875rem',
+    fontSize: '0.75rem',
     fontWeight: '700' as const,
     color: '#475569',
     textTransform: 'uppercase' as const,
@@ -257,14 +257,14 @@ const styles = {
     textAlign: 'center' as const,
   },
   vibeType: {
-    fontSize: '1.375rem',
+    fontSize: '1.25rem',
     fontWeight: '800' as const,
     color: '#10b981',
     marginBottom: '8px',
   },
   vibeSubtitle: {
     color: '#64748b',
-    fontSize: '0.95rem',
+    fontSize: '0.875rem',
     lineHeight: '1.5',
   },
 
@@ -361,14 +361,14 @@ const styles = {
     minWidth: 0,
   },
   statValue: {
-    fontSize: '1.375rem',
+    fontSize: '1.25rem',
     fontWeight: '800' as const,
     color: '#0f172a',
     lineHeight: 1,
     marginBottom: '2px',
   },
   statLabel: {
-    fontSize: '0.875rem',
+    fontSize: '0.8rem',
     color: '#64748b',
     fontWeight: '500' as const,
     whiteSpace: 'nowrap' as const,
@@ -379,7 +379,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
-    fontSize: '0.875rem',
+    fontSize: '0.8rem',
     fontWeight: '700' as const,
     color: '#10b981',
     flexShrink: 0,
@@ -437,14 +437,14 @@ const styles = {
     fontWeight: '600' as const,
     marginBottom: '6px',
     lineHeight: '1.4',
-    fontSize: '0.9rem',
+    fontSize: '0.85rem',
   },
   activityMeta: {
     display: 'flex',
     flexWrap: 'wrap' as const,
     alignItems: 'center',
     gap: '8px',
-    fontSize: '0.75rem',
+    fontSize: '0.7rem',
     color: '#64748b',
   },
 
@@ -1053,17 +1053,35 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
               <i className="fas fa-users"></i>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h1 className="dashboard-title" style={styles.dashboardTitle}>{t('tabs.community')}</h1>
+              <h1 className="dashboard-title" style={{
+                ...styles.dashboardTitle,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <i className="fas fa-location-dot" style={{
+                  fontSize: '1.125rem',
+                  color: '#3b82f6',
+                  opacity: 0.8
+                }}></i>
+                {t('tabs.community')}
+              </h1>
               <p className="dashboard-subtitle" style={styles.dashboardSubtitle}>
-                {communityMetrics.activeMembers} active members • {communityMetrics.areasMonitored} areas monitored
+                <i className="fas fa-users" style={{ marginRight: '4px' }}></i>
+                {communityMetrics.activeMembers}
+                <span style={{ margin: '0 8px', opacity: 0.6 }}>•</span>
+                <i className="fas fa-map-marker-alt" style={{ marginRight: '4px' }}></i>
+                {communityMetrics.areasMonitored}
                 {lastRefreshTime && (
-                  <span style={{ marginLeft: '12px', fontSize: '0.8rem', opacity: 0.8 }}>
-                    • Last updated: {lastRefreshTime.toLocaleTimeString('en-US', {
+                  <>
+                    <span style={{ margin: '0 8px', opacity: 0.6 }}>•</span>
+                    <i className="fas fa-clock" style={{ marginRight: '4px' }}></i>
+                    {lastRefreshTime.toLocaleTimeString('en-US', {
                       hour: 'numeric',
                       minute: '2-digit',
                       hour12: true
                     })}
-                  </span>
+                  </>
                 )}
               </p>
             </div>
@@ -1134,7 +1152,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
               }
 
               .dashboard-subtitle {
-                font-size: 0.85rem !important;
+                font-size: 0.75rem !important;
                 line-height: 1.4 !important;
               }
 
@@ -1170,7 +1188,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
               }
 
               .dashboard-subtitle {
-                font-size: 0.8rem !important;
+                font-size: 0.7rem !important;
               }
 
               .area-sentiment-title {

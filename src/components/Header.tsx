@@ -116,13 +116,13 @@ const Header: React.FC = () => {
             gap: 24px !important;
           }
 
-          .logo-text {
-            font-size: 1.5rem !important;
+        .logo-text {
+            font-size: 1.25rem !important;
           }
 
           .logout-btn {
             padding: 10px 16px !important;
-            font-size: 0.875rem !important;
+            font-size: 0.75rem !important;
             gap: 8px !important;
           }
 
@@ -210,7 +210,7 @@ const Header: React.FC = () => {
       }}>
         {/* App Name - Left Side */}
         <div className="logo-text" style={{
-          fontSize: '1.25rem',
+          fontSize: '1.125rem',
           fontWeight: 800,
           background: 'linear-gradient(135deg, #0f172a 0%, #475569 100%)',
           WebkitBackgroundClip: 'text',

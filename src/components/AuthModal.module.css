@@ -58,7 +58,7 @@
 }
 
 .title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 8px;
@@ -367,7 +367,7 @@
   }
 
   .modalContent {
-    padding: 20px 16px;
+    padding: 24px 20px;
     margin: 8px;
     max-width: none;
     max-height: 85vh;
@@ -422,7 +422,7 @@
   }
 
   .modalContent {
-    padding: 20px 16px;
+    padding: 24px 20px;
     margin: 5px;
     max-height: 80vh;
   }

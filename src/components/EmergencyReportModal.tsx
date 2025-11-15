@@ -398,7 +398,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
             placeholder={t('modals.emergencyReport.selectLocation')}
             style={{
               width: '100%',
-              padding: '16px 50px 16px 16px',
+              padding: '20px 50px 20px 20px',
               border: '2px solid var(--border-color)',
               borderRadius: '12px',
               fontSize: '16px',
@@ -475,7 +475,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
           rows={5}
           style={{
             width: '100%',
-            padding: '16px',
+            padding: '20px',
             border: '2px solid var(--border-color)',
             borderRadius: '12px',
             fontSize: '16px',

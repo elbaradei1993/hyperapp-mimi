@@ -95,7 +95,7 @@
 }
 
 .modalTitle {
-  font-size: 1.375rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 0.5rem;
@@ -679,11 +679,11 @@
   }
 
   .modalHeader {
-    padding: 1.25rem 1rem 0.75rem;
+    padding: 1.25rem 1.25rem 0.75rem;
   }
 
   .modalContent {
-    padding: 1rem 1rem 1.25rem;
+    padding: 1rem 1.25rem 1.25rem;
   }
 
   .vibeGrid {
@@ -746,6 +746,14 @@
 
   .modalDescription {
     font-size: 0.9rem;
+  }
+
+  .formInput {
+    padding: 1rem 3rem 1rem 1rem;
+  }
+
+  .formTextarea {
+    padding: 1rem;
   }
 }
 

@@ -9,10 +9,10 @@
     --vh: calc(1vh * 0.01);
   }
 
-  /* Improve readability on small screens */
+  /* Improve readability on small screens with smaller fonts */
   body {
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.4;
   }
 
   /* Better touch targets */
