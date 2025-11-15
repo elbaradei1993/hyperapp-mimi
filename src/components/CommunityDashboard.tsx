@@ -1153,6 +1153,10 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
               .refresh-button span {
                 display: inline !important;
               }
+
+              .area-sentiment-title {
+                font-size: 1.25rem !important;
+              }
             }
 
             @media (max-width: 480px) {
@@ -1167,6 +1171,10 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
               .dashboard-subtitle {
                 font-size: 0.8rem !important;
+              }
+
+              .area-sentiment-title {
+                font-size: 1.125rem !important;
               }
             }
 
@@ -1242,7 +1250,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                         flexDirection: 'column',
                         gap: '12px'
                       }}>
-                <div style={{
+                <div className="area-sentiment-title" style={{
                   fontSize: '1.5rem',
                   fontWeight: '800',
                   color: '#0f172a',
