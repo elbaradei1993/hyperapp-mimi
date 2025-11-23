@@ -1,7 +1,7 @@
 {
-  "name": "hyperapp",
+  "name": "hyperapp-mimi-main",
   "version": "1.0.0",
-  "description": "Community Safety App",
+  "description": "botapp",
   "type": "module",
   "engines": {
     "node": ">=18.0.0",
@@ -34,6 +34,7 @@
   "homepage": "https://github.com/elbaradei1993/hyperapp-mimi#readme",
   "dependencies": {
     "@chakra-ui/react": "^3.29.0",
+    "@codetrix-studio/capacitor-google-auth": "^3.3.6",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@react-spring/web": "^10.0.3",

@@ -1,6 +1,6 @@
 {
   "appId": "com.hyperapp.mimi",
-  "appName": "HyperApp",
+  "appName": "HyperApp Mimi",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "plugins": {

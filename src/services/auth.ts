@@ -1,4 +1,5 @@
 import { AuthResponse, User } from '@supabase/supabase-js';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { supabase } from '../lib/supabase';
 import type { User as AppUser, OnboardingData } from '../types';
 
@@ -52,22 +53,25 @@ class AuthService {
     return response;
   }
 
-  async signInWithGoogle(): Promise<{ data: { provider: string; url: string } | null; error: any }> {
-    // Get the current host (will be IP address when accessed from phone)
-    const redirectTo = `${window.location.protocol}//${window.location.host}`;
+  async signInWithGoogle(): Promise<void> {
+    try {
+      // Use native Google Sign-In for mobile
+      const googleUser = await GoogleAuth.signIn();
 
-    const response = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectTo
+      // Sign in with Supabase using the Google ID token
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: googleUser.authentication.idToken
+      });
+
+      if (error) {
+        throw new Error(error.message);
       }
-    });
 
-    if (response.error) {
-      throw new Error(response.error.message);
+    } catch (error: any) {
+      console.error('Google Sign-In error:', error);
+      throw new Error(error.message || 'Google Sign-In failed');
     }
-
-    return response;
   }
 
   async signOut(): Promise<{ error: any }> {

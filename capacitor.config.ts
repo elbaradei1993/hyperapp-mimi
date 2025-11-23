@@ -2,10 +2,15 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.hyperapp.mimi',
-  appName: 'HyperApp Mimi',
+  appName: 'HayperApp',
   webDir: 'dist',
   bundledWebRuntime: false,
   plugins: {
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+      serverClientId: '1096420795648-tvflndafmrrnibhc90fqkadqdn8cnssu.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true,
+    },
     Camera: {
       allowEditing: false,
       saveToGallery: false,

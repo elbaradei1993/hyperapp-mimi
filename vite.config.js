@@ -61,6 +61,9 @@ export default defineConfig({
     host: '0.0.0.0' // Allow connections from network
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    rollupOptions: {
+      external: ['@codetrix-studio/capacitor-google-auth']
+    }
   }
 })

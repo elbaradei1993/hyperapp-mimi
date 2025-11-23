@@ -9,6 +9,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { rssService } from './services/rss';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 import './index.css';
 import './themes.css';
@@ -28,6 +29,20 @@ window.addEventListener('resize', setVH);
 window.addEventListener('orientationchange', () => {
   // Delay to account for mobile browser UI changes
   setTimeout(setVH, 100);
+});
+
+// Initialize Google Auth plugin for mobile
+GoogleAuth.initialize({
+  clientId: '1096420795648-tvflndafmrrnibhc90fqkadqdn8cnssu.apps.googleusercontent.com',
+  scopes: ['profile', 'email'],
+  grantOfflineAccess: true,
+}).catch((error: any) => {
+  console.warn('Google Auth initialization failed:', error);
+});
+
+// Pre-load news data for instant display when community tab is opened
+rssService.preLoadNews().catch(error => {
+  console.warn('Failed to pre-load news data:', error);
 });
 
 // Removed useAuth import as it's no longer used directly in RootApp
