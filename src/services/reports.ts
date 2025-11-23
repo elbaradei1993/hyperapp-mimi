@@ -134,6 +134,7 @@ class ReportsService {
     longitude: number;
     notes?: string;
     location?: string;
+    media_url?: string;
     emergency?: boolean;
     user_id?: string;
   }): Promise<Report> {
@@ -158,6 +159,7 @@ class ReportsService {
           longitude: reportData.longitude,
           notes: reportData.notes,
           location: reportData.location,
+          media_url: reportData.media_url,
           emergency: reportData.emergency || false,
           upvotes: 0,
           downvotes: 0
@@ -336,7 +338,8 @@ class ReportsService {
               profile: data.users ? {
                 username: data.users.username,
                 first_name: data.users.first_name,
-                last_name: data.users.last_name
+                last_name: data.users.last_name,
+                profile_picture_url: data.users.profile_picture_url
               } : undefined
             };
             callback(report);

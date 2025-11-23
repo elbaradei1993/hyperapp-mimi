@@ -4,6 +4,8 @@ import { LoadingSpinner } from './shared';
 import { VibeType } from '../types';
 import { reportsService } from '../services/reports';
 import { reverseGeocode, formatCoordinates } from '../lib/geocoding';
+import { SupabaseStorageService } from '../services/upload';
+import CameraModal from './CameraModal';
 import {
   AlertTriangle,
   Flame,
@@ -12,7 +14,9 @@ import {
   Car,
   Triangle,
   HelpCircle,
-  Send
+  Send,
+  Camera,
+  X
 } from 'lucide-react';
 import styles from './EmergencyReportModal.module.css';
 
@@ -44,6 +48,9 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string>('');
+  const [showCamera, setShowCamera] = useState(false);
 
   const emergencyTypes: EmergencyType[] = [
     {
@@ -98,6 +105,8 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
       setDescription('');
       setLocation('');
       setUserLocation(null);
+      setSelectedFile(null);
+      setMediaPreview('');
 
       // Get user's current location
       getCurrentLocation();
@@ -135,11 +144,42 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
     }
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setMediaPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeMedia = () => {
+    setSelectedFile(null);
+    setMediaPreview('');
+  };
+
+  const handleCameraCapture = (file: File) => {
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setMediaPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async () => {
     if (!selectedEmergency || !userLocation) return;
 
     setIsSubmitting(true);
     try {
+      let mediaUrl = '';
+      if (selectedFile) {
+        mediaUrl = await SupabaseStorageService.uploadReportMedia(selectedFile, Date.now().toString());
+      }
+
       const selectedType = emergencyTypes.find(type => type.id === selectedEmergency);
       const emergencyNotes = [
         `EMERGENCY: ${selectedType?.label}`,
@@ -153,6 +193,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
         longitude: userLocation[1],
         notes: emergencyNotes,
         location: location.trim() || undefined,
+        media_url: mediaUrl || undefined,
         emergency: true
       });
 
@@ -364,6 +405,73 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
             </div>
           </div>
 
+          {/* Media Upload */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              Add Photo (Optional)
+            </label>
+            {!selectedFile ? (
+              <div style={{
+                border: '2px dashed #d1d5db',
+                borderRadius: '12px',
+                padding: '2rem',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => setShowCamera(true)}
+              >
+                <Camera size={48} style={{ color: '#3b82f6', marginBottom: '1rem' }} />
+                <p style={{ color: '#6b7280', margin: '0.5rem 0' }}>
+                  Take a photo
+                </p>
+                <p style={{ color: '#9ca3af', fontSize: '14px' }}>
+                  Capture real-time evidence
+                </p>
+              </div>
+            ) : (
+              <div style={{
+                position: 'relative',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                maxWidth: '300px',
+                margin: '0 auto'
+              }}>
+                <img
+                  src={mediaPreview}
+                  alt="Emergency preview"
+                  style={{
+                    width: '100%',
+                    height: '200px',
+                    objectFit: 'cover'
+                  }}
+                />
+                <button
+                  onClick={removeMedia}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                  aria-label="Remove photo"
+                  title="Remove photo"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Action Buttons */}
           <div style={{
             display: 'flex',
@@ -402,6 +510,13 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Camera Modal */}
+      <CameraModal
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={handleCameraCapture}
+      />
     </div>
   );
 };

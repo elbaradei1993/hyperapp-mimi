@@ -5,6 +5,8 @@ import { VibeType } from '../types';
 import { reportsService } from '../services/reports';
 import { reverseGeocode, formatCoordinates } from '../lib/geocoding';
 import { VIBE_CONFIG } from '../constants/vibes';
+import { SupabaseStorageService } from '../services/upload';
+import CameraModal from './CameraModal';
 import {
   ShieldCheck,
   CloudSnow,
@@ -14,7 +16,9 @@ import {
   EyeOff,
   AlertTriangle,
   Volume2,
-  VolumeX
+  VolumeX,
+  Camera,
+  X
 } from 'lucide-react';
 import styles from './VibeReportModal.module.css';
 
@@ -47,6 +51,9 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string>('');
+  const [showCamera, setShowCamera] = useState(false);
   const [deviceCapabilities, setDeviceCapabilities] = useState({
     supports3D: true,
     isLowEndDevice: false,
@@ -151,50 +158,43 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
       setNotes('');
       setLocation('');
       setUserLocation(null);
+      setSelectedFile(null);
+      setMediaPreview('');
 
       // Use current location from props as initial fallback
       if (currentLocation) {
         setUserLocation(currentLocation);
-        // Try to get address for the current location
         reverseGeocode(currentLocation[0], currentLocation[1])
           .then(address => setLocation(address))
-          .catch(() => setLocation(t('reports.addressNotAvailable') || 'Location not available'));
-      } else {
-        // Only get device location if no specific location was provided
-        getCurrentLocation();
+          .catch(() => setLocation('Location not available'));
       }
     }
   }, [isOpen, currentLocation]);
 
-  const getCurrentLocation = async () => {
-    setLocationLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation([latitude, longitude]);
-
-          try {
-            // Try to get a readable address
-            const address = await reverseGeocode(latitude, longitude);
-            setLocation(address);
-          } catch (error) {
-            // Fallback to user-friendly message if geocoding fails
-            console.warn('Geocoding failed, using address not available message');
-            setLocation(t('reports.addressNotAvailable'));
-          }
-
-          setLocationLoading(false);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setLocationLoading(false);
-        },
-        { timeout: 10000, enableHighAccuracy: true }
-      );
-    } else {
-      setLocationLoading(false);
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setMediaPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const removeMedia = () => {
+    setSelectedFile(null);
+    setMediaPreview('');
+  };
+
+  const handleCameraCapture = (file: File) => {
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setMediaPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const getAnimationClass = (vibeType: VibeType) => {
@@ -227,12 +227,18 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
 
     setIsSubmitting(true);
     try {
+      let mediaUrl = '';
+      if (selectedFile) {
+        mediaUrl = await SupabaseStorageService.uploadReportMedia(selectedFile, Date.now().toString());
+      }
+
       await reportsService.createReport({
         vibe_type: selectedVibe,
         latitude: userLocation[0],
         longitude: userLocation[1],
         notes: notes.trim() || undefined,
         location: location.trim() || undefined,
+        media_url: mediaUrl || undefined,
         emergency: false
       });
 
@@ -245,7 +251,6 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
       }, 2500);
     } catch (error) {
       console.error('Error creating vibe report:', error);
-      // TODO: Show error notification
       setIsSubmitting(false);
     }
   };
@@ -267,10 +272,10 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
               </div>
             </div>
             <h3 style={{ margin: '1.5rem 0 0.5rem', color: '#10b981' }}>
-              {t('modals.vibeReport.successTitle', 'Report Submitted Successfully!')}
+              Report Submitted Successfully!
             </h3>
             <p style={{ color: '#6b7280' }}>
-              {t('modals.vibeReport.successMessage', 'Thank you for helping the community stay informed.')}
+              Thank you for helping the community stay informed.
             </p>
           </div>
         </div>
@@ -298,18 +303,10 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: '4px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-tertiary)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
+              borderRadius: '4px'
             }}
             aria-label="Close modal"
+            title="Close modal"
           >
             ×
           </button>
@@ -342,6 +339,8 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                     '--vibe-color-lighter': `${vibe.color}08`,
                     '--vibe-shadow': `${vibe.color}20`
                   } as React.CSSProperties}
+                  aria-label={`Select ${vibe.label} vibe`}
+                  title={`Select ${vibe.label} vibe`}
                 >
                   <div className={`${styles.vibeIcon} ${getAnimationClass(vibe.type)}`}>
                     {vibe.icon === 'shield-check' && <ShieldCheck size={32} />}
@@ -363,6 +362,73 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Media Upload */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>
+              Add Photo (Optional)
+            </label>
+            {!selectedFile ? (
+              <div style={{
+                border: '2px dashed #d1d5db',
+                borderRadius: '12px',
+                padding: '2rem',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onClick={() => setShowCamera(true)}
+              >
+                <Camera size={48} style={{ color: '#3b82f6', marginBottom: '1rem' }} />
+                <p style={{ color: '#6b7280', margin: '0.5rem 0' }}>
+                  Take a photo
+                </p>
+                <p style={{ color: '#9ca3af', fontSize: '14px' }}>
+                  Capture real-time evidence
+                </p>
+              </div>
+            ) : (
+              <div style={{
+                position: 'relative',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                maxWidth: '300px',
+                margin: '0 auto'
+              }}>
+                <img
+                  src={mediaPreview}
+                  alt="Preview"
+                  style={{
+                    width: '100%',
+                    height: '200px',
+                    objectFit: 'cover'
+                  }}
+                />
+                <button
+                  onClick={removeMedia}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: 'rgba(0,0,0,0.7)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                  aria-label="Remove photo"
+                  title="Remove photo"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Location */}
@@ -405,7 +471,6 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
             alignItems: 'center',
             flexWrap: 'wrap'
           }}>
-            {/* Cancel Button */}
             <button
               onClick={onClose}
               disabled={isSubmitting}
@@ -422,38 +487,12 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: '0 2px 8px var(--shadow-color)',
-                opacity: isSubmitting ? 0.6 : 1,
-                whiteSpace: 'nowrap'
-              }}
-              onMouseEnter={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 16px var(--shadow-color)';
-                  e.currentTarget.style.borderColor = 'var(--text-muted)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-color)';
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                }
-              }}
-              onMouseDown={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }
-              }}
-              onMouseUp={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }
+                opacity: isSubmitting ? 0.6 : 1
               }}
             >
               {t('common.cancel')}
             </button>
 
-            {/* Submit Vibe Report Button */}
             <button
               onClick={handleSubmit}
               disabled={!selectedVibe || !userLocation || isSubmitting}
@@ -481,28 +520,6 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                 position: 'relative',
                 overflow: 'hidden'
               }}
-              onMouseEnter={(e) => {
-                if (selectedVibe && userLocation && !isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(59, 130, 246, 0.5), 0 6px 16px rgba(59, 130, 246, 0.3)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedVibe && userLocation && !isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.4), 0 4px 12px rgba(59, 130, 246, 0.2)';
-                }
-              }}
-              onMouseDown={(e) => {
-                if (selectedVibe && userLocation && !isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(-1px) scale(0.98)';
-                }
-              }}
-              onMouseUp={(e) => {
-                if (selectedVibe && userLocation && !isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-                }
-              }}
             >
               {isSubmitting ? (
                 <>
@@ -516,6 +533,13 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Camera Modal */}
+      <CameraModal
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={handleCameraCapture}
+      />
     </div>
   );
 };

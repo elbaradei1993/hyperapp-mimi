@@ -195,6 +195,126 @@ class UploadService {
   }
 }
 
+// Supabase Storage Service for Safety Reports (Free alternative to Firebase Storage)
+export class SupabaseStorageService {
+  private static readonly BUCKET_NAME = 'safety-reports';
+
+  /**
+   * Upload media file for a safety report
+   */
+  static async uploadReportMedia(
+    file: File,
+    reportId: string,
+    type: 'image' | 'video' = 'image'
+  ): Promise<string> {
+    try {
+      // Validate file type
+      if (type === 'image' && !file.type.startsWith('image/')) {
+        throw new Error('Invalid image file type');
+      }
+      if (type === 'video' && !file.type.startsWith('video/')) {
+        throw new Error('Invalid video file type');
+      }
+
+      // Validate file size (50MB limit for Supabase free tier)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        throw new Error('File size exceeds 50MB limit');
+      }
+
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const timestamp = Date.now();
+      const fileName = `report-${reportId}-${timestamp}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      console.log(`📤 Uploading ${type} for report ${reportId}...`);
+
+      // Upload file to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from(this.BUCKET_NAME)
+        .upload(filePath, file, {
+          cacheControl: '3600', // 1 hour cache
+          upsert: false, // Don't overwrite existing files
+          contentType: file.type
+        });
+
+      if (error) {
+        console.error('Upload error:', error);
+        throw error;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from(this.BUCKET_NAME)
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl;
+
+      console.log(`✅ Media uploaded successfully: ${publicUrl}`);
+      return publicUrl;
+
+    } catch (error) {
+      console.error('❌ Media upload failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete media file from a safety report
+   */
+  static async deleteReportMedia(mediaUrl: string): Promise<void> {
+    try {
+      // Extract file path from public URL
+      const url = new URL(mediaUrl);
+      const pathParts = url.pathname.split('/');
+      const fileName = pathParts[pathParts.length - 1];
+      const filePath = `${fileName}`;
+
+      console.log(`🗑️ Deleting media: ${fileName}`);
+
+      const { error } = await supabase.storage
+        .from(this.BUCKET_NAME)
+        .remove([filePath]);
+
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
+
+      console.log(`✅ Media deleted successfully`);
+    } catch (error) {
+      console.error('❌ Media deletion failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get file metadata
+   */
+  static async getFileInfo(mediaUrl: string): Promise<any> {
+    try {
+      const url = new URL(mediaUrl);
+      const pathParts = url.pathname.split('/');
+      const fileName = pathParts[pathParts.length - 1];
+      const filePath = `${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from(this.BUCKET_NAME)
+        .list('', {
+          search: fileName
+        });
+
+      if (error) throw error;
+
+      return data?.[0] || null;
+    } catch (error) {
+      console.error('❌ Failed to get file info:', error);
+      return null;
+    }
+  }
+}
+
 // Export singleton instance
 export const uploadService = new UploadService();
 export default uploadService;
