@@ -1,0 +1,24 @@
+{
+  "appId": "com.hyperapp.mimi",
+  "appName": "HyperApp",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "Camera": {
+      "allowEditing": false,
+      "saveToGallery": false,
+      "quality": 90,
+      "resultType": "base64",
+      "direction": "rear"
+    }
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "ios": {
+    "allowsLinkPreview": false,
+    "contentInset": "automatic"
+  }
+}
