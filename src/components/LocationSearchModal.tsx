@@ -1,0 +1,385 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Loader2, Search, Building, Coffee, Car, Plane, Train, Bus, ShoppingBag, Heart, Star, MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Modal from './shared/Modal';
+import { searchPlaces, SearchResult, formatSearchResult, getPlaceTypeIcon, getCoordinatesFromResult } from '../lib/geocoding';
+import styles from './LocationSearchModal.module.css';
+
+interface LocationSearchModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onLocationSelect: (coordinates: [number, number], address: string) => void;
+}
+
+interface SearchState {
+  query: string;
+  results: SearchResult[];
+  isLoading: boolean;
+  selectedIndex: number;
+  isFocused: boolean;
+}
+
+const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
+  isOpen,
+  onClose,
+  onLocationSelect
+}) => {
+  const [state, setState] = useState<SearchState>({
+    query: '',
+    results: [],
+    isLoading: false,
+    selectedIndex: -1,
+    isFocused: false
+  });
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced search function
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setState(prev => ({ ...prev, results: [], isLoading: false }));
+      return;
+    }
+
+    setState(prev => ({ ...prev, isLoading: true }));
+
+    try {
+      const results = await searchPlaces(query, 8);
+      setState(prev => ({
+        ...prev,
+        results,
+        isLoading: false,
+        selectedIndex: results.length > 0 ? 0 : -1
+      }));
+    } catch (error) {
+      console.error('Search failed:', error);
+      setState(prev => ({ ...prev, results: [], isLoading: false }));
+    }
+  }, []);
+
+  // Handle input change with debouncing
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setState(prev => ({ ...prev, query }));
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout for debounced search
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  }, [performSearch]);
+
+  // Handle result selection
+  const handleResultSelect = useCallback((result: SearchResult) => {
+    const coordinates = getCoordinatesFromResult(result);
+    const address = formatSearchResult(result);
+
+    setState({
+      query: '',
+      results: [],
+      isLoading: false,
+      selectedIndex: -1,
+      isFocused: false
+    });
+
+    onLocationSelect(coordinates, address);
+    onClose();
+  }, [onLocationSelect, onClose]);
+
+  // Keyboard navigation
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (state.results.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setState(prev => ({
+          ...prev,
+          selectedIndex: prev.selectedIndex < prev.results.length - 1
+            ? prev.selectedIndex + 1
+            : 0
+        }));
+        break;
+
+      case 'ArrowUp':
+        e.preventDefault();
+        setState(prev => ({
+          ...prev,
+          selectedIndex: prev.selectedIndex > 0
+            ? prev.selectedIndex - 1
+            : prev.results.length - 1
+        }));
+        break;
+
+      case 'Enter':
+        e.preventDefault();
+        if (state.selectedIndex >= 0 && state.selectedIndex < state.results.length) {
+          handleResultSelect(state.results[state.selectedIndex]);
+        }
+        break;
+
+      case 'Escape':
+        e.preventDefault();
+        onClose();
+        break;
+    }
+  }, [state.results, state.selectedIndex, handleResultSelect, onClose]);
+
+  // Handle focus/blur
+  const handleFocus = useCallback(() => {
+    setState(prev => ({ ...prev, isFocused: true }));
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    setState(prev => ({ ...prev, isFocused: false }));
+  }, []);
+
+  // Clear search
+  const handleClear = useCallback(() => {
+    setState({
+      query: '',
+      results: [],
+      isLoading: false,
+      selectedIndex: -1,
+      isFocused: false
+    });
+    inputRef.current?.focus();
+  }, []);
+
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setState({
+        query: '',
+        results: [],
+        isLoading: false,
+        selectedIndex: -1,
+        isFocused: false
+      });
+      // Focus input after modal animation
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
+    }
+  }, [isOpen]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="xl"
+      title=""
+    >
+      <div className={styles.locationSearchContainer}>
+        <div className={styles.searchCard}>
+          <div className={styles.searchHeader}>
+            <h1 className={styles.searchTitle}>
+              <MapPin size={16} className="text-white" />
+              Location Search
+            </h1>
+            <p className={styles.searchSubtitle}>Find places and check safety vibes in your area</p>
+
+            <div className={styles.searchInputContainer}>
+              <Search size={18} className={styles.searchIcon} />
+              <input
+                ref={inputRef}
+                type="text"
+                value={state.query}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                placeholder="Search for locations, addresses..."
+                className={styles.searchInput}
+                autoComplete="off"
+                aria-label="Search for places, addresses, landmarks"
+              />
+              <button
+                onClick={() => {
+                  // Handle current location
+                  setState(prev => ({ ...prev, query: "Getting your location..." }));
+                  // Simulate getting location
+                  setTimeout(() => {
+                    setState(prev => ({ ...prev, query: "Current Location" }));
+                  }, 1000);
+                }}
+                className={styles.currentLocationBtn}
+                aria-label="Use current location"
+                title="Use current location"
+              >
+                <MapPin size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.searchResults}>
+            {/* Loading State */}
+            <AnimatePresence>
+              {state.isLoading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className={styles.loadingContainer}
+                >
+                  <div className={styles.loadingIcon}>
+                    <Loader2 size={28} className="animate-spin text-blue-600" />
+                  </div>
+                  <div className={styles.loadingText}>Searching places...</div>
+                  <div className={styles.loadingSubtext}>Finding the best locations for you</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Default Results - Recent Searches */}
+            <AnimatePresence>
+              {!state.isLoading && state.query.length < 2 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {/* Recent Searches Label */}
+                  <div className={styles.recentLabel}>Recent Searches</div>
+
+                  {/* Recent Search Items */}
+                  <div className={styles.resultItem}>
+                    <div className={styles.resultIcon}>
+                      <i className="fas fa-clock"></i>
+                    </div>
+                    <div className={styles.resultContent}>
+                      <div className={styles.resultTitle}>Golden Gate Park</div>
+                      <div className={styles.resultAddress}>San Francisco, CA</div>
+                    </div>
+                  </div>
+
+                  <div className={styles.resultItem}>
+                    <div className={styles.resultIcon}>
+                      <i className="fas fa-clock"></i>
+                    </div>
+                    <div className={styles.resultContent}>
+                      <div className={styles.resultTitle}>Union Square</div>
+                      <div className={styles.resultAddress}>San Francisco, CA</div>
+                    </div>
+                  </div>
+
+                  {/* Popular Locations Label */}
+                  <div className={styles.recentLabel}>Popular Locations</div>
+
+                  {/* Popular Location Items */}
+                  <div className={styles.resultItem}>
+                    <div className={styles.resultIcon}>
+                      <i className="fas fa-map-pin"></i>
+                    </div>
+                    <div className={styles.resultContent}>
+                      <div className={styles.resultTitle}>Fisherman's Wharf</div>
+                      <div className={styles.resultAddress}>San Francisco, CA</div>
+                    </div>
+                  </div>
+
+                  <div className={styles.resultItem}>
+                    <div className={styles.resultIcon}>
+                      <i className="fas fa-map-pin"></i>
+                    </div>
+                    <div className={styles.resultContent}>
+                      <div className={styles.resultTitle}>Mission District</div>
+                      <div className={styles.resultAddress}>San Francisco, CA</div>
+                    </div>
+                  </div>
+
+                  <div className={styles.resultItem}>
+                    <div className={styles.resultIcon}>
+                      <i className="fas fa-map-pin"></i>
+                    </div>
+                    <div className={styles.resultContent}>
+                      <div className={styles.resultTitle}>Tenderloin District</div>
+                      <div className={styles.resultAddress}>San Francisco, CA</div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Search Results */}
+            <AnimatePresence>
+              {!state.isLoading && state.results.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {/* Search Results Label */}
+                  <div className={styles.recentLabel}>Search Results</div>
+
+                  {state.results.map((result, index) => {
+                    return (
+                      <motion.div
+                        key={result.place_id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{
+                          delay: index * 0.03,
+                          duration: 0.2,
+                          ease: "easeOut"
+                        }}
+                        onClick={() => handleResultSelect(result)}
+                        className={`${styles.resultItem} ${index === state.selectedIndex ? styles.selected : ''}`}
+                      >
+                        <div className={styles.resultIcon}>
+                          <i className="fas fa-map-pin"></i>
+                        </div>
+                        <div className={styles.resultContent}>
+                          <div className={styles.resultTitle}>
+                            {formatSearchResult(result)}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* No Results State */}
+            <AnimatePresence>
+              {!state.isLoading && state.query.length >= 2 && state.results.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className={styles.emptyState}
+                >
+                  <i className="fas fa-map-marked-alt"></i>
+                  <p>No locations found</p>
+                  <p style={{marginTop: '8px', fontSize: '0.8rem'}}>Try searching for a different location</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className={styles.footer}>
+          HyperApp Community Safety • Search for locations to check safety vibes
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+export default LocationSearchModal;
