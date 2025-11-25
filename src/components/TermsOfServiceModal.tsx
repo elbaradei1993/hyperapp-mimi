@@ -22,13 +22,15 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
         maxHeight: '70vh',
         overflowY: 'auto',
         padding: '0 8px 16px 8px',
-        lineHeight: '1.6',
+        lineHeight: '1.7',
         color: 'var(--text-primary)',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
         textAlign: 'justify',
-        textJustify: 'inter-word',
+        wordSpacing: '0.02em',
+        letterSpacing: '0.005em',
         wordWrap: 'break-word',
-        overflowWrap: 'break-word'
+        overflowWrap: 'break-word',
+        hyphens: 'auto'
       }}>
 
         {/* Header */}

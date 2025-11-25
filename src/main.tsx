@@ -1,4 +1,4 @@
-import React from 'react'; // Removed useState as it's no longer needed in RootApp
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 // SplashScreen will be handled inside App.tsx now
@@ -9,7 +9,8 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { rssService } from './services/rss';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+// import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { Capacitor } from '@capacitor/core';
 
 import './index.css';
 import './themes.css';
@@ -31,48 +32,70 @@ window.addEventListener('orientationchange', () => {
   setTimeout(setVH, 100);
 });
 
-// Initialize Google Auth plugin for mobile
-GoogleAuth.initialize({
-  clientId: '1096420795648-tvflndafmrrnibhc90fqkadqdn8cnssu.apps.googleusercontent.com',
-  scopes: ['profile', 'email'],
-  grantOfflineAccess: true,
-}).catch((error: any) => {
-  console.warn('Google Auth initialization failed:', error);
-});
+// Initialize Google Auth plugin for mobile (disabled for now to fix 500 error)
+// GoogleAuth.initialize({
+//   clientId: '1096420795648-tvflndafmrrnibhc90fqkadqdn8cnssu.apps.googleusercontent.com',
+//   scopes: ['profile', 'email'],
+//   grantOfflineAccess: true,
+// }).catch((error: any) => {
+//   console.warn('Google Auth initialization failed:', error);
+// });
 
 // Pre-load news data for instant display when community tab is opened
 rssService.preLoadNews().catch(error => {
   console.warn('Failed to pre-load news data:', error);
 });
 
-// Removed useAuth import as it's no longer used directly in RootApp
-// import { useAuth } from './contexts/AuthContext';
+// Capacitor-ready app wrapper
+const CapacitorApp: React.FC = () => {
+  useEffect(() => {
+    const initializeCapacitor = async () => {
+      try {
+        console.log('🔧 Initializing Capacitor...');
 
-const RootApp: React.FC = () => {
-  // Removed isLoading check and SplashScreen rendering from here
-  // const { isLoading } = useAuth();
-  // if (isLoading) {
-  //   return <SplashScreen />;
-  // }
+        // Initialize Capacitor asynchronously without blocking app render
+        if (Capacitor.isNativePlatform()) {
+          console.log('📱 Running on native platform, initializing Capacitor...');
+          await new Promise(resolve => {
+            // Wait for deviceready or DOM ready
+            if (document.readyState === 'complete') {
+              resolve(void 0);
+            } else {
+              document.addEventListener('DOMContentLoaded', resolve);
+            }
+          });
+
+          // Small delay to ensure Capacitor plugins are ready
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        console.log('✅ Capacitor ready');
+      } catch (error) {
+        console.error('❌ Capacitor initialization error:', error);
+        // Continue anyway - app should still work
+      }
+    };
+
+    initializeCapacitor();
+  }, []);
 
   return (
     <ErrorBoundary>
-      {/* App component will now handle its own loading state and SplashScreen */}
-      <App />
+      <ChakraProvider value={defaultSystem}>
+        <NotificationProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              <App />
+            </ThemeProvider>
+          </AuthProvider>
+        </NotificationProvider>
+      </ChakraProvider>
     </ErrorBoundary>
   );
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ChakraProvider value={defaultSystem}>
-      <NotificationProvider>
-        <AuthProvider>
-          <ThemeProvider>
-            <RootApp />
-          </ThemeProvider>
-        </AuthProvider>
-      </NotificationProvider>
-    </ChakraProvider>
+    <CapacitorApp />
   </React.StrictMode>
 );

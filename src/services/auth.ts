@@ -1,5 +1,5 @@
 import { AuthResponse, User } from '@supabase/supabase-js';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+// import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'; // Disabled to fix 500 error
 import { supabase } from '../lib/supabase';
 import type { User as AppUser, OnboardingData } from '../types';
 
@@ -18,6 +18,7 @@ class AuthService {
       email: cleanEmail,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           username: cleanUsername,
           display_name: cleanUsername,
@@ -54,24 +55,26 @@ class AuthService {
   }
 
   async signInWithGoogle(): Promise<void> {
-    try {
-      // Use native Google Sign-In for mobile
-      const googleUser = await GoogleAuth.signIn();
+    // Google Auth disabled to fix 500 error
+    throw new Error('Google Sign-In is currently disabled');
+    // try {
+    //   // Use native Google Sign-In for mobile
+    //   const googleUser = await GoogleAuth.signIn();
 
-      // Sign in with Supabase using the Google ID token
-      const { data, error } = await supabase.auth.signInWithIdToken({
-        provider: 'google',
-        token: googleUser.authentication.idToken
-      });
+    //   // Sign in with Supabase using the Google ID token
+    //   const { data, error } = await supabase.auth.signInWithIdToken({
+    //     provider: 'google',
+    //     token: googleUser.authentication.idToken
+    //   });
 
-      if (error) {
-        throw new Error(error.message);
-      }
+    //   if (error) {
+    //     throw new Error(error.message);
+    //   }
 
-    } catch (error: any) {
-      console.error('Google Sign-In error:', error);
-      throw new Error(error.message || 'Google Sign-In failed');
-    }
+    // } catch (error: any) {
+    //   console.error('Google Sign-In error:', error);
+    //   throw new Error(error.message || 'Google Sign-In failed');
+    // }
   }
 
   async signOut(): Promise<{ error: any }> {

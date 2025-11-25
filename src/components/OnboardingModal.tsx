@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OnboardingData } from '../types';
-import { INTEREST_CATEGORIES } from '../types';
 import { authService } from '../services/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsOfServiceModal from './TermsOfServiceModal';
+import './OnboardingModal.css';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -23,6 +23,16 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
   const [showTermsOfServiceModal, setShowTermsOfServiceModal] = useState(false);
+
+  // Debug state changes
+  useEffect(() => {
+    console.log('Privacy Policy Modal state:', showPrivacyPolicyModal);
+  }, [showPrivacyPolicyModal]);
+
+  useEffect(() => {
+    console.log('Terms of Service Modal state:', showTermsOfServiceModal);
+  }, [showTermsOfServiceModal]);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     firstName: '',
     lastName: '',
@@ -78,37 +88,88 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
     }
   };
 
-  const handleNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handlePrevious = () => {
+  const navigateToPrevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    } else {
+      onClose();
     }
   };
 
-  const handleComplete = async () => {
-    if (!user) return;
-
-    if (!privacyAccepted) {
-      alert('Please accept the Privacy Policy and Terms of Service to continue.');
+  const navigateToNextStep = () => {
+    // Validation for required fields
+    if (currentStep === 1 && !onboardingData.firstName.trim()) {
+      alert('Please enter your first name');
       return;
     }
+
+    if (currentStep === 2 && !onboardingData.lastName.trim()) {
+      alert('Please enter your last name');
+      return;
+    }
+
+    if (currentStep === 6 && onboardingData.interests.length < 3) {
+      alert('Please select at least 3 interests to continue.');
+      return;
+    }
+
+    if (currentStep < 7) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Final step - complete onboarding
+      if (!privacyAccepted) {
+        alert('Please accept the Privacy Policy and Terms of Service to continue.');
+        return;
+      }
+      completeOnboarding();
+    }
+  };
+
+  const completeOnboarding = async () => {
+    if (!user) return;
 
     setIsLoading(true);
     try {
       await authService.completeOnboarding(user.id, onboardingData);
       // Refresh the profile to update the auth context with new onboarding status
       await refreshProfile();
-      onComplete();
+
+      // Show confirmation animation
+      setShowConfirmation(true);
+      createConfetti();
+
+      setTimeout(() => {
+        onComplete();
+      }, 2000);
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      alert(t('modals.onboarding.errorSetup'));
+      alert('Error completing setup. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const createConfetti = () => {
+    const colors = ['#ff6b6b', '#4ecdc4', '#ffd166', '#06d6a0', '#118ab2'];
+
+    for (let i = 0; i < 50; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.width = Math.random() * 10 + 5 + 'px';
+      confetti.style.height = Math.random() * 10 + 5 + 'px';
+      confetti.style.animation = `confetti ${Math.random() * 3 + 2}s linear forwards`;
+      confetti.style.animationDelay = Math.random() * 2 + 's';
+
+      document.body.appendChild(confetti);
+
+      // Remove confetti after animation completes
+      setTimeout(() => {
+        if (confetti.parentNode) {
+          confetti.parentNode.removeChild(confetti);
+        }
+      }, 5000);
     }
   };
 
@@ -131,280 +192,301 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
     }));
   };
 
+  // Auto-focus current input when step changes
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        const currentStepElement = document.getElementById(`step-${currentStep}`);
+        if (currentStepElement) {
+          const input = currentStepElement.querySelector('input, select') as HTMLElement;
+          if (input) {
+            input.focus();
+          }
+        }
+      }, 300);
+    }
+  }, [currentStep, isOpen]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        navigateToNextStep();
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, currentStep, onboardingData, privacyAccepted]);
+
   if (!isOpen) return null;
 
-  const styles = {
-    // CSS Variables as JavaScript object
-    primary: '#0066ff',
-    'primary-dark': '#0052d4',
-    'primary-light': '#3385ff',
-    surface: '#ffffff',
-    'surface-secondary': '#f8fafc',
-    'text-primary': '#0f172a',
-    'text-secondary': '#475569',
-    'text-muted': '#64748b',
-    border: '#e2e8f0',
-    'accent-green': '#10b981',
-    'accent-purple': '#8b5cf6',
-    'shadow-sm': '0 1px 3px rgba(0, 0, 0, 0.1)',
-    shadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-    radius: '8px',
-    'radius-lg': '16px'
-  };
-
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px'
-    }}>
-      <div style={{
-        background: styles.surface,
-        borderRadius: styles['radius-lg'],
-        width: '100%',
-        maxWidth: '440px',
-        maxHeight: '90vh',
-        overflow: 'hidden',
-        boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        {/* Modal Header */}
-        <div style={{
-          padding: '32px 24px 0',
-          textAlign: 'center',
-          background: `linear-gradient(135deg, ${styles.surface} 0%, ${styles['surface-secondary']} 100%)`
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            marginBottom: '16px'
-          }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              background: `linear-gradient(135deg, ${styles.primary} 0%, ${styles['primary-dark']} 100%)`,
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontWeight: 700,
-              fontSize: '1.125rem'
-            }}>
-              H
+    <>
+      <div className={`modal-overlay ${isOpen ? 'active' : ''}`}>
+        <div className="modal-container">
+          <div className="modal-header">
+            <div className="modal-brand">
+              <div className="modal-logo">H</div>
+              <div className="modal-title">HyperApp</div>
             </div>
-            <div style={{
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: styles['text-primary']
-            }}>
-              HyperApp
+            <p className="modal-subtitle">Your community safety platform</p>
+
+            <div className="progress-container">
+              {[1, 2, 3, 4, 5, 6, 7].map(step => (
+                <div
+                  key={step}
+                  className={`progress-dot ${step <= currentStep ? 'active' : ''}`}
+                  data-step={step}
+                />
+              ))}
             </div>
           </div>
-          <h2 style={{
-            fontSize: '1.375rem',
-            fontWeight: 700,
-            color: styles['text-primary'],
-            marginBottom: '8px',
-            lineHeight: '1.2'
-          }}>
-            {t('modals.onboarding.welcome')}
-          </h2>
-          <p style={{
-            fontSize: '1rem',
-            color: styles['text-secondary'],
-            marginBottom: '24px'
-          }}>
-            {t('modals.onboarding.welcomeDesc')}
-          </p>
 
-          {/* Progress Indicator */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '8px',
-            marginBottom: '24px'
-          }}>
-            {[1, 2, 3, 4].map(step => (
-              <div
-                key={step}
-                style={{
-                  width: '40px',
-                  height: '4px',
-                  borderRadius: '2px',
-                  background: step <= currentStep ? styles.primary : styles.border,
-                  transition: 'all 0.3s ease',
-                  transform: step <= currentStep ? 'scale(1.1)' : 'scale(1)'
-                }}
-              />
-            ))}
+          <div className="modal-content">
+            {/* Step 1: First Name */}
+            <div className={`step ${currentStep === 1 ? 'active' : ''}`} id="step-1">
+              <h3 className="step-title">What's your first name?</h3>
+              <div className="field-container">
+                <label className="field-label">First Name</label>
+                <input
+                  type="text"
+                  className="field-input"
+                  value={onboardingData.firstName}
+                  onChange={(e) => updateOnboardingData({ firstName: e.target.value })}
+                  placeholder="Enter your first name"
+                  autoFocus
+                />
+                <p className="field-description">This will be used to personalize your experience.</p>
+              </div>
+              <div className="step-indicator">Step 1 of 7</div>
+            </div>
+
+            {/* Step 2: Last Name */}
+            <div className={`step ${currentStep === 2 ? 'active' : ''}`} id="step-2">
+              <h3 className="step-title">And your last name?</h3>
+              <div className="field-container">
+                <label className="field-label">Last Name</label>
+                <input
+                  type="text"
+                  className="field-input"
+                  value={onboardingData.lastName}
+                  onChange={(e) => updateOnboardingData({ lastName: e.target.value })}
+                  placeholder="Enter your last name"
+                />
+                <p className="field-description">Your last name helps us create your profile.</p>
+              </div>
+              <div className="step-indicator">Step 2 of 7</div>
+            </div>
+
+            {/* Step 3: Phone Number */}
+            <div className={`step ${currentStep === 3 ? 'active' : ''}`} id="step-3">
+              <h3 className="step-title">How can we reach you?</h3>
+              <div className="field-container">
+                <label className="field-label">Phone Number</label>
+                <input
+                  type="tel"
+                  className="field-input"
+                  value={onboardingData.phone}
+                  onChange={(e) => updateOnboardingData({ phone: e.target.value })}
+                  placeholder="+1 (555) 123-4567"
+                />
+                <p className="field-description">We'll use this for important safety alerts (optional).</p>
+              </div>
+              <div className="step-indicator">Step 3 of 7</div>
+            </div>
+
+            {/* Step 4: Location */}
+            <div className={`step ${currentStep === 4 ? 'active' : ''}`} id="step-4">
+              <h3 className="step-title">Where are you located?</h3>
+              <div className="field-container">
+                <label className="field-label">Your Location</label>
+                <div className="location-display">
+                  <i className="fas fa-map-marker-alt" style={{marginRight: '8px', color: '#667eea'}}></i>
+                  {onboardingData.location.address}
+                </div>
+                <p className="field-description">We'll use this to show relevant community reports and safety information in your area.</p>
+              </div>
+              <div className="step-indicator">Step 4 of 7</div>
+            </div>
+
+            {/* Step 5: Language */}
+            <div className={`step ${currentStep === 5 ? 'active' : ''}`} id="step-5">
+              <h3 className="step-title">Language Preference</h3>
+              <div className="field-container">
+                <label className="field-label">Select your language</label>
+                <div className="select-container">
+                  <select
+                    className="select-field"
+                    value={onboardingData.language}
+                    onChange={(e) => handleLanguageChange(e.target.value)}
+                  >
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                    <option value="ar">العربية (Arabic)</option>
+                  </select>
+                </div>
+                <p className="field-description">This will change the language across the application.</p>
+              </div>
+              <div className="step-indicator">Step 5 of 7</div>
+            </div>
+
+            {/* Step 6: Community Activities */}
+            <div className={`step ${currentStep === 6 ? 'active' : ''}`} id="step-6">
+              <h3 className="step-title">What community activities interest you?</h3>
+              <div className="field-container">
+                <p className="field-description" style={{marginBottom: '20px'}}>Select activities you enjoy to connect with like-minded people in your community.</p>
+
+                <div className="interests-grid">
+                  {[
+                    { name: 'Food & Dining', icon: 'fas fa-utensils' },
+                    { name: 'Fashion', icon: 'fas fa-tshirt' },
+                    { name: 'Music', icon: 'fas fa-music' },
+                    { name: 'Art & Culture', icon: 'fas fa-paint-brush' },
+                    { name: 'Sports & Fitness', icon: 'fas fa-running' },
+                    { name: 'Nature & Outdoors', icon: 'fas fa-leaf' },
+                    { name: 'Gaming', icon: 'fas fa-gamepad' },
+                    { name: 'Movies & TV', icon: 'fas fa-film' }
+                  ].map((interest) => (
+                    <div
+                      key={interest.name}
+                      className={`interest-tag ${onboardingData.interests.includes(interest.name) ? 'selected' : ''}`}
+                      onClick={() => toggleInterest(interest.name)}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          toggleInterest(interest.name);
+                        }
+                      }}
+                    >
+                      <i className={`${interest.icon} interest-icon`}></i>
+                      {interest.name}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="checkbox-container" style={{marginTop: '25px'}}>
+                  <input
+                    type="checkbox"
+                    className="checkbox"
+                    checked={onboardingData.notifications}
+                    onChange={(e) => updateOnboardingData({ notifications: e.target.checked })}
+                    id="notifications"
+                  />
+                  <label className="checkbox-label" htmlFor="notifications">Enable push notifications for important safety alerts</label>
+                </div>
+              </div>
+              <div className="step-indicator">Step 6 of 7</div>
+            </div>
+
+            {/* Step 7: Welcome */}
+            <div className={`step ${currentStep === 7 ? 'active' : ''}`} id="step-7">
+              <div className="welcome-content">
+                <div className="welcome-icon">
+                  <i className="fas fa-check-circle"></i>
+                </div>
+                <h3 className="welcome-title">You're All Set!</h3>
+                <p className="welcome-message">Welcome to HyperApp! Your community safety platform is ready to use.</p>
+
+                <div className="welcome-card">
+                  <h4><i className="fas fa-rocket" style={{marginRight: '8px'}}></i> What's Next?</h4>
+                  <ul className="welcome-list">
+                    <li>Explore the interactive safety map</li>
+                    <li>Submit your first safety report</li>
+                    <li>Connect with your local community</li>
+                    <li>Earn reputation points and badges</li>
+                  </ul>
+                </div>
+
+                <div className="privacy-section">
+                  <div className="privacy-text">
+                    <input
+                      type="checkbox"
+                      className="checkbox"
+                      checked={privacyAccepted}
+                      onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                      id="privacy"
+                    />
+                    <span>
+                      I agree to the{' '}
+                      <span
+                        className="privacy-link"
+                        onClick={() => {
+                          alert('Privacy Policy clicked!');
+                          setShowPrivacyPolicyModal(true);
+                        }}
+                        style={{ cursor: 'pointer', color: '#667eea', textDecoration: 'underline', fontSize: 'inherit' }}
+                      >
+                        Privacy Policy
+                      </span>
+                      {' '}and{' '}
+                      <span
+                        className="privacy-link"
+                        onClick={() => {
+                          alert('Terms of Service clicked!');
+                          setShowTermsOfServiceModal(true);
+                        }}
+                        style={{ cursor: 'pointer', color: '#667eea', textDecoration: 'underline', fontSize: 'inherit' }}
+                      >
+                        Terms of Service
+                      </span>
+                      *
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="step-indicator">Step 7 of 7</div>
+            </div>
           </div>
-        </div>
 
-        {/* Modal Content */}
-        <div style={{
-          padding: '0 24px',
-          flex: 1,
-          overflowY: 'auto',
-          maxHeight: '50vh'
-        }}>
-          {currentStep === 1 && (
-            <Step1PersonalInfo
-              data={onboardingData}
-              onUpdate={updateOnboardingData}
-              styles={styles}
-            />
-          )}
-          {currentStep === 2 && (
-            <Step2Location
-              data={onboardingData}
-              onUpdate={updateOnboardingData}
-              onLanguageChange={handleLanguageChange}
-              styles={styles}
-            />
-          )}
-          {currentStep === 3 && (
-            <Step3Interests
-              data={onboardingData}
-              onToggleInterest={toggleInterest}
-              styles={styles}
-            />
-          )}
-          {currentStep === 4 && (
-            <Step4Welcome
-              data={onboardingData}
-              privacyAccepted={privacyAccepted}
-              onPrivacyAcceptedChange={setPrivacyAccepted}
-              onShowPrivacyPolicy={() => setShowPrivacyPolicyModal(true)}
-              onShowTermsOfService={() => setShowTermsOfServiceModal(true)}
-              styles={styles}
-            />
-          )}
-        </div>
-
-        {/* Modal Footer */}
-        <div style={{
-          padding: '20px 24px 24px',
-          borderTop: `1px solid ${styles.border}`,
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: '12px',
-          background: styles.surface
-        }}>
-          <button
-            onClick={currentStep === 1 ? onClose : handlePrevious}
-            style={{
-              padding: '14px 20px',
-              borderRadius: styles.radius,
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              border: `1px solid ${styles.border}`,
-              background: styles.surface,
-              color: styles['text-primary'],
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.background = styles['surface-secondary'];
-              e.currentTarget.style.borderColor = styles['primary-light'];
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.background = styles.surface;
-              e.currentTarget.style.borderColor = styles.border;
-            }}
-          >
-            {currentStep === 1 ? t('modals.onboarding.skip') : t('common.previous')}
-          </button>
-
-          {currentStep < 4 ? (
+          {/* Enhanced Button Container - Positioned Above Footer */}
+          <div className="button-container">
             <button
-              onClick={handleNext}
-              style={{
-                padding: '14px 20px',
-                borderRadius: styles.radius,
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                border: 'none',
-                background: styles.primary,
-                color: 'white',
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background = styles['primary-dark'];
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = styles.shadow;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background = styles.primary;
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              className="modal-btn btn-secondary"
+              onClick={navigateToPrevStep}
             >
-              {t('common.next')}
+              {currentStep === 1 ? 'Cancel' : 'Back'}
             </button>
-          ) : (
             <button
-              onClick={handleComplete}
+              className={`modal-btn ${currentStep < 7 ? 'btn-primary' : 'btn-success'}`}
+              onClick={navigateToNextStep}
               disabled={isLoading}
-              style={{
-                padding: '14px 20px',
-                borderRadius: styles.radius,
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                border: 'none',
-                background: styles['accent-green'],
-                color: 'white',
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                transition: 'all 0.2s ease',
-                opacity: isLoading ? 0.6 : 1
-              }}
-              onMouseOver={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.background = '#0da271';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = styles.shadow;
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.background = styles['accent-green'];
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
-              }}
             >
-              {isLoading ? t('common.loading') : t('modals.onboarding.getStarted')}
+              {currentStep < 7 ? 'Next' : (isLoading ? 'Setting Up...' : 'Get Started')}
             </button>
-          )}
+          </div>
+
+          <div className="modal-footer">
+            {/* Footer content moved to button container above */}
+          </div>
         </div>
       </div>
+
+      {/* Confirmation Message */}
+      {showConfirmation && (
+        <div className="confirmation-overlay active">
+          <div className="confirmation-container">
+            <div className="confirmation-icon">
+              <div className="confirmation-circle">
+                <i className="fas fa-check confirmation-check"></i>
+              </div>
+            </div>
+            <h2 className="confirmation-title">Welcome to HyperApp!</h2>
+            <p className="confirmation-message">Your account has been successfully set up. You're now ready to explore all the features of our community safety platform.</p>
+            <button className="confirmation-btn" onClick={() => setShowConfirmation(false)}>
+              Let's Get Started
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Privacy Policy Modal */}
       <PrivacyPolicyModal
@@ -417,505 +499,10 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
         isOpen={showTermsOfServiceModal}
         onClose={() => setShowTermsOfServiceModal(false)}
       />
-    </div>
+    </>
   );
 };
 
-// Step Components
-const Step1PersonalInfo: React.FC<{
-  data: OnboardingData;
-  onUpdate: (updates: Partial<OnboardingData>) => void;
-  styles: any;
-}> = ({ data, onUpdate, styles }) => {
-  const { t } = useTranslation();
-  return (
-    <div>
-      <h3 style={{
-        fontSize: '1.125rem',
-        fontWeight: 600,
-        marginBottom: '20px'
-      }}>
-        {t('onboarding.personalInfo')}
-      </h3>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            color: styles['text-primary'],
-            marginBottom: '8px'
-          }}>
-            {t('onboarding.firstName')} *
-          </label>
-          <input
-            type="text"
-            value={data.firstName}
-            onChange={(e) => onUpdate({ firstName: e.target.value })}
-            placeholder={t('onboarding.enterFirstName')}
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              border: `1px solid ${styles.border}`,
-              borderRadius: styles.radius,
-              fontSize: '1rem',
-              background: styles.surface,
-              outline: 'none',
-              transition: 'all 0.2s ease'
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = styles.primary;
-              e.currentTarget.style.boxShadow = `0 0 0 3px rgba(0, 102, 255, 0.1)`;
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = styles.border;
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          />
-        </div>
-
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            color: styles['text-primary'],
-            marginBottom: '8px'
-          }}>
-            {t('onboarding.lastName')} *
-          </label>
-          <input
-            type="text"
-            value={data.lastName}
-            onChange={(e) => onUpdate({ lastName: e.target.value })}
-            placeholder={t('onboarding.enterLastName')}
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              border: `1px solid ${styles.border}`,
-              borderRadius: styles.radius,
-              fontSize: '1rem',
-              background: styles.surface,
-              outline: 'none',
-              transition: 'all 0.2s ease'
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = styles.primary;
-              e.currentTarget.style.boxShadow = `0 0 0 3px rgba(0, 102, 255, 0.1)`;
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = styles.border;
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          />
-        </div>
-
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            color: styles['text-primary'],
-            marginBottom: '8px'
-          }}>
-            {t('onboarding.phoneNumber')}
-          </label>
-          <input
-            type="tel"
-            value={data.phone}
-            onChange={(e) => onUpdate({ phone: e.target.value })}
-            placeholder="+1 (555) 123-4567"
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              border: `1px solid ${styles.border}`,
-              borderRadius: styles.radius,
-              fontSize: '1rem',
-              background: styles.surface,
-              outline: 'none',
-              transition: 'all 0.2s ease'
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = styles.primary;
-              e.currentTarget.style.boxShadow = `0 0 0 3px rgba(0, 102, 255, 0.1)`;
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = styles.border;
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Step2Location: React.FC<{
-  data: OnboardingData;
-  onUpdate: (updates: Partial<OnboardingData>) => void;
-  onLanguageChange: (language: string) => void;
-  styles: any;
-}> = ({ data, onUpdate, onLanguageChange, styles }) => {
-  const { t } = useTranslation();
-  return (
-    <div>
-      <h3 style={{
-        fontSize: '1.125rem',
-        fontWeight: 600,
-        color: styles['text-primary'],
-        marginBottom: '16px'
-      }}>
-        {t('onboarding.locationPreferences')}
-      </h3>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            color: styles['text-primary'],
-            marginBottom: '4px'
-          }}>
-            {t('onboarding.yourLocation')}
-          </label>
-          <div style={{
-            padding: '14px 16px',
-            background: styles['surface-secondary'],
-            border: `1px solid ${styles.border}`,
-            borderRadius: styles.radius,
-            fontSize: '0.875rem',
-            color: styles['text-secondary'],
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            📍 {data.location.address}
-          </div>
-          <p style={{
-            fontSize: '0.75rem',
-            color: styles['text-muted'],
-            marginTop: '8px'
-          }}>
-            {t('onboarding.locationDescription')}
-          </p>
-        </div>
-
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            color: styles['text-primary'],
-            marginBottom: '8px'
-          }}>
-            {t('onboarding.languagePreference')}
-          </label>
-          <select
-            value={data.language}
-            onChange={(e) => onLanguageChange(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              border: `1px solid ${styles.border}`,
-              borderRadius: styles.radius,
-              fontSize: '1rem',
-              background: styles.surface,
-              outline: 'none',
-              transition: 'all 0.2s ease'
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = styles.primary;
-              e.currentTarget.style.boxShadow = `0 0 0 3px rgba(0, 102, 255, 0.1)`;
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = styles.border;
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="ar">العربية (Arabic)</option>
-          </select>
-        </div>
-
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '12px',
-          padding: '12px',
-          background: styles['surface-secondary'],
-          borderRadius: styles.radius,
-          border: `1px solid ${styles.border}`
-        }}>
-          <input
-            type="checkbox"
-            checked={data.notifications}
-            onChange={(e) => onUpdate({ notifications: e.target.checked })}
-            style={{
-              width: '18px',
-              height: '18px',
-              marginTop: '2px',
-              flexShrink: 0,
-              accentColor: styles.primary
-            }}
-          />
-          <label style={{
-            fontSize: '0.875rem',
-            color: styles['text-primary'],
-            lineHeight: '1.4',
-            cursor: 'pointer'
-          }}>
-            {t('onboarding.enableNotifications')}
-          </label>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Step3Interests: React.FC<{
-  data: OnboardingData;
-  onToggleInterest: (interest: string) => void;
-  styles: any;
-}> = ({ data, onToggleInterest, styles }) => {
-  const { t } = useTranslation();
-  return (
-    <div>
-      <h3 style={{
-        fontSize: '1.125rem',
-        fontWeight: 600,
-        color: styles['text-primary'],
-        marginBottom: '16px'
-      }}>
-        {t('onboarding.communityInterests')}
-      </h3>
-
-      <p style={{
-        color: styles['text-secondary'],
-        marginBottom: '20px',
-        fontSize: '0.875rem'
-      }}>
-        {t('onboarding.selectInterests')}
-      </p>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {Object.entries(INTEREST_CATEGORIES).map(([key, category]) => (
-          <div key={key}>
-            <h4 style={{
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              color: styles['text-primary'],
-              marginBottom: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <span>{category.icon}</span>
-              {category.label}
-            </h4>
-
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px'
-            }}>
-              {category.items.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => onToggleInterest(item)}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: '20px',
-                    border: data.interests.includes(item) ? `2px solid ${styles.primary}` : `2px solid ${styles.border}`,
-                    background: data.interests.includes(item) ? '#eff6ff' : styles.surface,
-                    color: data.interests.includes(item) ? '#1d4ed8' : styles['text-primary'],
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    if (!data.interests.includes(item)) {
-                      e.currentTarget.style.borderColor = styles['primary-light'];
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (!data.interests.includes(item)) {
-                      e.currentTarget.style.borderColor = styles.border;
-                    }
-                  }}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{
-        marginTop: '16px',
-        padding: '12px',
-        background: '#f0f9ff',
-        borderRadius: styles.radius,
-        border: '1px solid #bae6fd'
-      }}>
-        <p style={{
-          fontSize: '0.75rem',
-          color: '#0369a1',
-          margin: 0
-        }}>
-          💡 <strong>{t('onboarding.tip')}:</strong> {t('onboarding.interestsTip')}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const Step4Welcome: React.FC<{
-  data: OnboardingData;
-  privacyAccepted: boolean;
-  onPrivacyAcceptedChange: (accepted: boolean) => void;
-  onShowPrivacyPolicy: () => void;
-  onShowTermsOfService: () => void;
-  styles: any;
-}> = ({ data, privacyAccepted, onPrivacyAcceptedChange, onShowPrivacyPolicy, onShowTermsOfService, styles }) => {
-  const { t } = useTranslation();
-  return (
-    <div style={{ textAlign: 'center' }}>
-      <div style={{
-        fontSize: '3rem',
-        marginBottom: '16px'
-      }}>
-        🎉
-      </div>
-
-      <h3 style={{
-        fontSize: '1.5rem',
-        fontWeight: 700,
-        color: styles['text-primary'],
-        marginBottom: '12px'
-      }}>
-        {t('onboarding.allSetUp')}
-      </h3>
-
-      <p style={{
-        color: styles['text-secondary'],
-        fontSize: '1rem',
-        marginBottom: '24px'
-      }}>
-        {t('onboarding.welcomeMessage', { name: data.firstName })}
-      </p>
-
-      <div style={{
-        background: styles['surface-secondary'],
-        padding: '20px',
-        borderRadius: styles.radius,
-        marginBottom: '20px',
-        border: `1px solid ${styles.border}`
-      }}>
-        <h4 style={{
-          fontSize: '0.875rem',
-          fontWeight: 600,
-          color: styles['text-primary'],
-          marginBottom: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          🚀 {t('onboarding.whatsNext')}
-        </h4>
-        <ul style={{
-          color: styles['text-secondary'],
-          fontSize: '0.875rem',
-          margin: 0,
-          paddingLeft: '20px',
-          textAlign: 'left'
-        }}>
-          <li style={{ marginBottom: '8px' }}>{t('onboarding.exploreMap')}</li>
-          <li style={{ marginBottom: '8px' }}>{t('onboarding.submitReport')}</li>
-          <li style={{ marginBottom: '8px' }}>{t('onboarding.connectPeople')}</li>
-          <li>{t('onboarding.earnReputation')}</li>
-        </ul>
-      </div>
-
-      {/* Privacy & Terms Acceptance */}
-      <div style={{
-        background: styles['surface-secondary'],
-        padding: '16px',
-        borderRadius: styles.radius,
-        marginTop: '16px',
-        border: `1px solid ${styles.border}`
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '12px',
-          fontSize: '0.875rem',
-          color: styles['text-primary'],
-          lineHeight: '1.4'
-        }}>
-          <input
-            type="checkbox"
-            checked={privacyAccepted}
-            onChange={(e) => onPrivacyAcceptedChange(e.target.checked)}
-            style={{
-              width: '16px',
-              height: '16px',
-              marginTop: '2px',
-              flexShrink: 0,
-              accentColor: styles.primary
-            }}
-          />
-          <span>
-            I agree to the{' '}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                onShowPrivacyPolicy();
-              }}
-              style={{
-                color: styles.primary,
-                textDecoration: 'underline',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                padding: 0,
-                fontWeight: 500
-              }}
-            >
-              Privacy Policy
-            </button>
-            {' '}and{' '}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                onShowTermsOfService();
-              }}
-              style={{
-                color: styles.primary,
-                textDecoration: 'underline',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                padding: 0,
-                fontWeight: 500
-              }}
-            >
-              Terms of Service
-            </button>
-            *
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default OnboardingModal;

@@ -613,7 +613,10 @@ const SettingsView: React.FC = () => {
           {/* Support Links */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <button
-              onClick={() => setShowPrivacyPolicyModal(true)}
+              onClick={() => {
+                console.log('Privacy Policy button clicked, setting modal to true');
+                setShowPrivacyPolicyModal(true);
+              }}
               style={{
                 padding: '14px 12px',
                 border: '1px solid var(--border-color)',
@@ -645,7 +648,10 @@ const SettingsView: React.FC = () => {
               </span>
             </button>
             <button
-              onClick={() => setShowTermsOfServiceModal(true)}
+              onClick={() => {
+                console.log('Terms of Service button clicked, setting modal to true');
+                setShowTermsOfServiceModal(true);
+              }}
               style={{
                 padding: '14px 12px',
                 border: '1px solid var(--border-color)',

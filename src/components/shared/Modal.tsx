@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box } from '@chakra-ui/react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -26,86 +25,96 @@ const Modal: React.FC<ModalProps> = ({
   }[size];
 
   return (
-    <Box
-      position="fixed"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
-      bg="rgba(0, 0, 0, 0.7)"
-      backdropFilter="blur(8px)"
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      zIndex={1100}
-      p={3}
-      opacity={isOpen ? 1 : 0}
-      pointerEvents={isOpen ? 'all' : 'none'}
-      transition="opacity 0.3s ease"
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+        padding: '20px',
+        backdropFilter: 'blur(10px)'
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
-      className="modal-overlay"
     >
-      <Box
-        bg="gray.50"
-        _dark={{ bg: "gray.800" }}
-        borderRadius="2xl"
-        boxShadow="2xl"
-        width="100%"
-        maxWidth={maxWidth}
-        maxHeight={['85vh', '90vh']}
-        overflowY="auto"
-        overflowX="hidden"
-        transform={isOpen ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)'}
-        transition="transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)"
-        position="relative"
-        className="modal-content"
+      <div
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+          width: '100%',
+          maxWidth: maxWidth,
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          position: 'relative',
+          transform: 'translateY(0) scale(1)',
+          transition: 'transform 0.3s ease-out, opacity 0.3s ease-out'
+        }}
       >
-        <Box
-          position="absolute"
-          top={5}
-          right={5}
-          as="button"
+        {/* Close Button */}
+        <button
           onClick={onClose}
-          aria-label="Close modal"
-          bg="gray.200"
-          w={10}
-          h={10}
-          borderRadius="full"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          cursor="pointer"
-          color="gray.600"
-          transition="all 0.2s"
-          zIndex={10}
-          _dark={{
-            color: "gray.300",
-            bg: "gray.700"
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            background: 'rgba(0, 0, 0, 0.05)',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+            fontSize: '18px',
+            cursor: 'pointer',
+            color: '#666',
+            width: '36px',
+            height: '36px',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            transition: 'all 0.2s ease',
+            fontWeight: 'bold'
           }}
-          _hover={{
-            bg: "gray.300",
-            _dark: { bg: "gray.600" },
-            transform: "rotate(90deg)"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+            e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          ✕
-        </Box>
+          ×
+        </button>
+
+        {/* Title */}
         {title && (
-          <Box p={6} pb={0}>
-            <Box as="h2" fontSize="xl" fontWeight="bold" color="gray.900" _dark={{ color: "gray.100" }}>
+          <div style={{ padding: '24px 24px 0 24px' }}>
+            <h2 style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#1a1a1a',
+              margin: 0
+            }}>
               {title}
-            </Box>
-          </Box>
+            </h2>
+          </div>
         )}
-        <Box p={6}>
+
+        {/* Content */}
+        <div style={{ padding: '24px' }}>
           {children}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 

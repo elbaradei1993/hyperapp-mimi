@@ -1,25 +1,14 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { User, AuthState } from '../types';
+import type { AuthResponse } from '@supabase/supabase-js';
 import { authService } from '../services/auth';
-
-interface AuthResponse {
-  data?: {
-    user?: any;
-    session?: any;
-  };
-  error?: {
-    message: string;
-    status?: number;
-    name?: string;
-  };
-}
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, username: string) => Promise<void>;
+  signUp: (email: string, password: string, username: string) => Promise<AuthResponse>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -41,17 +30,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     let isMounted = true;
 
     const initializeAuth = async () => {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Auth initialization timeout')), 10000); // 10 second timeout
+      });
+
+      let minLoadingTime: Promise<void>;
+
       try {
-        const { session } = await authService.getSession();
+        console.log('🔄 Initializing auth...');
+        const authPromise = authService.getSession();
+        const { session } = await Promise.race([authPromise, timeoutPromise]) as any;
+        console.log('📋 Session check result:', !!session?.user);
+
+        // Set loading time based on whether user has existing session
+        // 5 seconds for new login, 2 seconds for refresh
+        const loadingDuration = session?.user ? 2000 : 5000;
+        minLoadingTime = new Promise(resolve => setTimeout(resolve, loadingDuration));
 
         if (session?.user && isMounted) {
+          console.log('👤 Syncing user profile...');
           const userProfile = await authService.syncUserWithProfile(session.user);
+          console.log('✅ User profile synced:', userProfile?.username);
           setUser(userProfile);
+        } else {
+          console.log('🚪 No active session found');
         }
+
+        // Wait for minimum loading time to ensure splash screen is visible
+        await minLoadingTime;
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('❌ Auth initialization error:', error);
+        // Continue even if there's an error
+        // Use default 2-second loading time on error
+        minLoadingTime = new Promise(resolve => setTimeout(resolve, 2000));
+        await minLoadingTime;
       } finally {
         if (isMounted) {
+          console.log('🏁 Setting loading to false');
           setIsLoading(false);
         }
       }
@@ -94,7 +110,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const signUp = async (email: string, password: string, username: string) => {
-    await authService.signUp(email, password, username);
+    return await authService.signUp(email, password, username);
   };
 
   const signInWithGoogle = async () => {

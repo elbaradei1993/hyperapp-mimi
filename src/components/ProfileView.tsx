@@ -773,7 +773,6 @@ const ProfileView: React.FC = () => {
             fontSize: '40px',
             color: 'var(--text-muted)',
             boxShadow: 'var(--shadow-md)',
-            boxShadow: 'var(--shadow-md)',
             transition: 'all 0.3s ease'
           }}>
             {user?.profile_picture_url ? (

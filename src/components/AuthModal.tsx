@@ -91,24 +91,44 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
     try {
       console.log('Attempting signup for:', formData.signupEmail);
-      await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername);
-      console.log('Signup successful');
+      const response = await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername);
+      console.log('Signup response:', response);
 
-      addNotification({
-        type: 'success',
-        title: 'Account Created Successfully!',
-        message: 'You can now log in with your email and password.',
-        duration: 5000
-      });
+      if (response.data.user && !response.data.session) {
+        // Email confirmation required
+        console.log('Email confirmation required for user:', response.data.user.email);
+        addNotification({
+          type: 'info',
+          title: 'Check Your Email!',
+          message: 'We sent you a confirmation link. Please check your email and click the link to activate your account.',
+          duration: 10000
+        });
 
-      setActiveTab('login');
-      setFormData(prev => ({
-        ...prev,
-        signupUsername: '',
-        signupEmail: '',
-        signupPassword: '',
-        signupPasswordConfirm: ''
-      }));
+        setError(''); // Clear any errors
+        onClose(); // Close the modal
+      } else if (response.data.session) {
+        // Auto-confirmed (if disabled in Supabase)
+        console.log('Auto-confirmed signup successful');
+        addNotification({
+          type: 'success',
+          title: 'Account Created Successfully!',
+          message: 'Welcome to HyperApp! You can now start exploring.',
+          duration: 5000
+        });
+
+        setActiveTab('login');
+        setFormData(prev => ({
+          ...prev,
+          signupUsername: '',
+          signupEmail: '',
+          signupPassword: '',
+          signupPasswordConfirm: ''
+        }));
+      } else {
+        // Unexpected response
+        console.warn('Unexpected signup response:', response);
+        setError('Account created but something went wrong. Please try logging in.');
+      }
     } catch (error: any) {
       console.error('Signup error:', error);
 
@@ -117,6 +137,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       if (error.message?.includes('User already registered')) {
         errorMessage = 'An account with this email already exists. Please try logging in instead.';
         setActiveTab('login');
+      } else if (error.message?.includes('Password should be at least')) {
+        errorMessage = 'Password must be at least 6 characters long.';
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = 'Please enter a valid email address.';
       } else {
         // Show the actual error for debugging
         errorMessage = `Signup failed: ${error.message}`;

@@ -55,7 +55,7 @@ export class FCMService {
         return null;
       }
 
-      // Request permission
+      // Request notification permission (Android system handles POST_NOTIFICATIONS automatically)
       const permission = await Notification.requestPermission();
 
       if (permission !== 'granted') {

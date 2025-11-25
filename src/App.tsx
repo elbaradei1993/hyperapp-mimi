@@ -7,6 +7,7 @@ import { NotificationManager } from './components/shared/Notification';
 import TabNavigation, { TabType } from './components/TabNavigation';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
+import AuthCallback from './components/AuthCallback';
 import OnboardingModal from './components/OnboardingModal';
 import ReportTypeModal from './components/ReportTypeModal';
 import VibeReportModal from './components/VibeReportModal';
@@ -55,10 +56,18 @@ const AppContent: React.FC = () => {
   const center: [number, number] = [30.0444, 31.2357];
   const zoom = 10;
 
+  // Show auth modal directly for non-authenticated users (moved to top with other hooks)
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setShowAuthModal(true);
+    }
+  }, [isLoading, isAuthenticated]);
+
   useEffect(() => {
     // Check authentication state on app load
     if (!isLoading) {
       if (isAuthenticated) {
+        // Check if user needs onboarding (not completed yet)
         if (!user?.onboarding_completed) {
           setShowOnboardingModal(true);
         } else {
@@ -660,160 +669,17 @@ const AppContent: React.FC = () => {
     setActiveTab('profile');
   }, []);
 
+  // Check for auth callback URL
+  const isAuthCallback = window.location.pathname === '/auth/callback';
+
   // Show loading screen while checking auth
-  if (isLoading) {
+  if (isLoading && !isAuthCallback) {
     return <SplashScreen />;
   }
 
-  // Show welcome screen for non-authenticated users
-  if (!isAuthenticated) {
-    return (
-      <div style={{
-        height: '100vh',
-        width: '100vw',
-        backgroundColor: 'var(--bg-secondary)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        textAlign: 'center'
-      }}>
-        {/* HayperApp Logo/Branding */}
-        <div style={{
-          marginBottom: '40px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'linear-gradient(135deg, #0066ff 0%, #0052d4 100%)',
-            borderRadius: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '36px',
-            fontWeight: 700
-          }}>
-            H
-          </div>
-          <h1 style={{
-            fontSize: '28px',
-            fontWeight: 700,
-            color: 'var(--text-primary)',
-            margin: 0
-          }}>
-            HayperApp
-          </h1>
-          <p style={{
-            fontSize: '16px',
-            color: 'var(--text-muted)',
-            margin: 0,
-            maxWidth: '300px'
-          }}>
-            Community Safety Platform
-          </p>
-        </div>
-
-        {/* Welcome Message */}
-        <div style={{
-          marginBottom: '40px',
-          maxWidth: '320px'
-        }}>
-          <h2 style={{
-            fontSize: '20px',
-            fontWeight: 600,
-            color: 'var(--text-primary)',
-            marginBottom: '12px'
-          }}>
-            Welcome to Safety
-          </h2>
-          <p style={{
-            fontSize: '14px',
-            color: 'var(--text-secondary)',
-            lineHeight: '1.5',
-            margin: 0
-          }}>
-            Join our community to report safety concerns, view real-time alerts, and help keep your neighborhood safe.
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          width: '100%',
-          maxWidth: '280px'
-        }}>
-          <button
-            onClick={() => setShowAuthModal(true)}
-            style={{
-              padding: '16px 24px',
-              background: 'linear-gradient(135deg, #0066ff 0%, #0052d4 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              width: '100%',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 102, 255, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            Get Started
-          </button>
-
-          <button
-            onClick={() => {
-              // For demo purposes, show some basic content
-              // In a real app, you might show public reports
-              alert('Browse public safety reports coming soon!');
-            }}
-            style={{
-              padding: '14px 24px',
-              background: 'transparent',
-              color: 'var(--text-primary)',
-              border: '2px solid var(--border-color)',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              width: '100%',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.background = 'var(--bg-tertiary)';
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'var(--border-color)';
-            }}
-          >
-            Browse Reports
-          </button>
-        </div>
-
-        {/* Auth Modal */}
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-        />
-      </div>
-    );
+  // Handle auth callback
+  if (isAuthCallback) {
+    return <AuthCallback />;
   }
 
 

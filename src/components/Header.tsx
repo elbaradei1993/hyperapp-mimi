@@ -159,19 +159,27 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
           transform: translateY(0);
         }
 
+        /* Mobile Styles - Maintain desktop appearance */
+        @media (max-width: 767px) {
+          .header-content {
+            height: 80px !important;
+          }
+        }
+
         /* Tablet and Desktop Styles */
         @media (min-width: 768px) {
-          .app-header {
-            padding: 0 24px !important;
-          }
-
           .header-content {
-            height: 90px !important;
+            height: 80px !important;
             gap: 24px !important;
           }
 
         .logo-text {
             font-size: 1.25rem !important;
+          }
+
+          .app-icon {
+            width: 40px !important;
+            height: 40px !important;
           }
 
           .vibe-status {
@@ -192,12 +200,6 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
           .pulse-container {
             padding-left: 120px !important;
             padding-right: 140px !important;
-          }
-        }
-
-        @media (min-width: 1024px) {
-          .app-header {
-            padding: 0 32px !important;
           }
         }
 
@@ -254,15 +256,18 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
       // Mobile-specific improvements
       WebkitBackdropFilter: 'blur(10px)',
       backdropFilter: 'blur(10px)',
-      // Ensure header doesn't cause horizontal scrolling
+      // Ensure header doesn't cause horizontal scrolling - constrain to viewport
       minWidth: 0,
       width: '100vw',
+      maxWidth: '100vw',
       boxSizing: 'border-box',
       // Safe area for notched devices
       paddingTop: 'env(safe-area-inset-top, 0px)',
+      // Prevent overflow on all tabs
+      overflow: 'hidden',
     }}>
       <div className="header-content" style={{
-        maxWidth: '1800px',
+        maxWidth: '100vw',
         margin: '0 auto',
         display: 'flex',
         alignItems: 'center',
@@ -273,6 +278,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
         minHeight: '80px',
         // Ensure content doesn't overflow on small screens
         overflow: 'hidden',
+        // Prevent any width expansion
+        width: '100%',
+        boxSizing: 'border-box',
       }}>
         {/* App Name and Vibe Status - Left Side */}
         <MotionDiv
@@ -307,7 +315,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
           style={{
             position: 'absolute',
             right: '0',
-            top: '10px', // Fixed positioning to align with text baseline
+            top: '20px', // Center with the 40px favicon container
             zIndex: 3, // Higher z-index so ECG line shows behind it
             display: 'flex',
             alignItems: 'center',

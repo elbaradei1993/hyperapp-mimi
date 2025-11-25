@@ -12,7 +12,7 @@ import VibeReportModal from './VibeReportModal';
 import LocationSearchModal from './LocationSearchModal';
 import LocationSearchButton from './LocationSearchButton';
 import SafetyWaveOverlay from './SafetyWaveOverlay';
-
+import VibeLegend from './VibeLegend';
 import 'leaflet/dist/leaflet.css';
 // Import heatmap plugin
 import 'leaflet.heat';
@@ -923,6 +923,15 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({
           console.log('Location selected from modal:', address, coordinates);
         }}
       />
+
+      {/* Vibe Legend */}
+      <VibeLegend />
+
+      {/* Vibe Legend */}
+      <VibeLegend />
+
+      {/* Vibe Legend */}
+      <VibeLegend />
 
       {/* Dynamic Safety Waves Overlay */}
       <SafetyWaveOverlay vibes={validVibes} />
