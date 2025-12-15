@@ -1,0 +1,396 @@
+{
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "back": "العودة",
+    "next": "التالي",
+    "previous": "السابق",
+    "submit": "إرسال",
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا",
+    "ok": "موافق",
+    "retry": "إعادة المحاولة",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "export": "تصدير",
+    "import": "استيراد"
+  },
+  "auth": {
+    "welcome": "مرحباً بك في HyperApp",
+    "joinCommunity": "انضم إلى منصة أمان المجتمع",
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "username": "اسم المستخدم",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "enterEmail": "أدخل بريدك الإلكتروني",
+    "enterPassword": "أدخل كلمة مرورك",
+    "chooseUsername": "اختر اسم مستخدم",
+    "createPassword": "أنشئ كلمة مرور (6 أحرف على الأقل)",
+    "confirmPasswordPlaceholder": "أكد كلمة مرورك",
+    "loggingIn": "جارٍ تسجيل الدخول...",
+    "creatingAccount": "جارٍ إنشاء الحساب...",
+    "loginFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+    "signupFailed": "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+    "signupSuccessful": "تم إنشاء الحساب بنجاح! يرجى التحقق من بريدك الإلكتروني للتحقق.",
+    "fillAllFields": "يرجى ملء جميع الحقول",
+    "passwordsNotMatch": "كلمات المرور غير متطابقة",
+    "passwordTooShort": "يجب أن تكون كلمة المرور 6 أحرف على الأقل"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة حسابك وتفضيلات التطبيق",
+    "accountManagement": "إدارة الحساب",
+    "changePassword": "تغيير كلمة المرور",
+    "updatePassword": "قم بتحديث كلمة مرور حسابك",
+    "change": "تغيير",
+    "signOut": "تسجيل الخروج من حسابك",
+    "deleteAccount": "حذف الحساب",
+    "deleteAccountDesc": "حذف الحساب وجميع البيانات نهائياً",
+    "appPreferences": "تفضيلات التطبيق",
+    "language": "اللغة",
+    "chooseLanguage": "اختر لغتك المفضلة",
+    "theme": "المظهر",
+    "switchTheme": "التبديل بين الوضع الفاتح والداكن",
+    "light": "فاتح",
+    "dark": "داكن",
+    "notifications": "الإشعارات",
+    "receiveNotifications": "تلقي إشعارات التطبيق والتحديثات",
+    "privacySecurity": "الخصوصية والأمان",
+    "locationSharing": "مشاركة الموقع",
+    "allowLocation": "السماح للتطبيق بالوصول إلى موقعك",
+    "exportData": "تصدير البيانات",
+    "downloadData": "قم بتنزيل نسخة من بياناتك",
+    "aboutSupport": "حول والدعم",
+    "version": "HyperApp v1.0.0",
+    "communitySafety": "أمان المجتمع ورسم خرائط المزاج",
+    "help": "المساعدة",
+    "privacy": "الخصوصية",
+    "terms": "الشروط",
+    "contact": "التواصل",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+    "updatingPassword": "جارٍ التحديث...",
+    "passwordUpdated": "تم تحديث كلمة المرور بنجاح!",
+    "errorUpdatingPassword": "خطأ في تحديث كلمة المرور",
+    "deleteConfirmTitle": "⚠️ حذف الحساب",
+    "deleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع تقاريرك وأصواتك وبيانات ملفك الشخصي ومعلومات حسابك نهائياً.",
+    "deleting": "جارٍ الحذف...",
+    "accountDeleted": "تم حذف الحساب بنجاح. سيتم تسجيل خروجك.",
+    "errorDeletingAccount": "خطأ في حذف الحساب"
+  },
+  "tabs": {
+    "map": "الخريطة",
+    "reports": "التقارير",
+    "community": "المجتمع",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات"
+  },
+  "app": {
+    "appName": "هايبر أب",
+    "loadingHyperApp": "جارٍ تحميل HyperApp...",
+    "welcomeBack": "مرحباً بعودتك",
+    "vibes": "الأجواء",
+    "sos": "استغاثة",
+    "heatmap": "خريطة الحرارة",
+    "on": "تشغيل",
+    "off": "إيقاف",
+    "newReport": "تقرير جديد"
+  },
+  "reports": {
+    "comingSoon": "قريباً - نظام التقارير والتصويت القريب",
+    "reportsView": "عرض التقارير",
+    "addressNotAvailable": "العنوان غير متوفر"
+  },
+  "modals": {
+    "reportType": {
+      "title": "ماذا تريد الإبلاغ عنه؟",
+      "vibe": "الإبلاغ عن جو",
+      "vibeDesc": "شارك مزاجك أو أجواءك الحالية",
+      "emergency": "تقرير طوارئ",
+      "emergencyDesc": "الإبلاغ عن مخاوف أمنية عاجلة"
+    },
+    "vibeReport": {
+      "title": "أبلغ عن جوك",
+      "description": "كيف تشعر الآن؟",
+      "location": "الموقع",
+      "selectLocation": "اختر الموقع على الخريطة",
+      "vibeType": "نوع الجو",
+      "selectVibeType": "اختر جوك الحالي",
+      "details": "تفاصيل إضافية",
+      "detailsPlaceholder": "شارك المزيد عن وضعك الحالي...",
+      "submitReport": "إرسال التقرير",
+      "submitting": "جارٍ الإرسال...",
+      "reportSuccess": "تم الإبلاغ عن الجو بنجاح!",
+      "reportError": "خطأ في إرسال التقرير"
+    },
+    "emergencyReport": {
+      "title": "تقرير طوارئ",
+      "description": "الإبلاغ عن مخاوف أمنية عاجلة",
+      "emergencyType": "نوع الطوارئ",
+      "selectEmergencyType": "اختر نوع الطوارئ",
+      "location": "الموقع",
+      "selectLocation": "اختر الموقع على الخريطة",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "صف حالة الطوارئ...",
+      "contactInfo": "معلومات التواصل",
+      "contactPlaceholder": "رقم الهاتف أو معلومات تواصل أخرى",
+      "submitReport": "إرسال تقرير الطوارئ",
+      "submitting": "جارٍ الإرسال...",
+      "reportSuccess": "تم الإبلاغ عن الطوارئ بنجاح!",
+      "reportError": "خطأ في إرسال تقرير الطوارئ"
+    },
+    "onboarding": {
+      "welcome": "مرحباً بك في HyperApp!",
+      "welcomeDesc": "منصة أمان المجتمع ورسم خرائط المزاج الخاصة بك",
+      "step1Title": "اكتشف مجتمعك",
+      "step1Desc": "استكشف أجواء الأمان والتقارير الطارئة في الوقت الفعلي في منطقتك",
+      "step2Title": "شارك تجربتك",
+      "step2Desc": "أبلغ عن جوك الحالي أو حالات الطوارئ لمساعدة الآخرين",
+      "step3Title": "ابقَ على اتصال",
+      "step3Desc": "تلقَ إشعارات حول التحديثات المهمة وتنبيهات المجتمع",
+      "getStarted": "ابدأ",
+      "skip": "تخطي",
+      "errorSetup": "خطأ في إكمال الإعداد. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "profile": {
+    "loading": "جارٍ تحميل الملف الشخصي...",
+    "editProfile": "تعديل الملف الشخصي",
+    "personalInfo": "المعلومات الشخصية",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "location": "الموقع",
+    "notProvided": "غير محدد",
+    "communityInterests": "اهتمامات المجتمع",
+    "noInterests": "لم يتم اختيار أي اهتمامات بعد",
+    "totalReports": "إجمالي التقارير",
+    "communityUpvotes": "تصويتات المجتمع الإيجابية",
+    "communityRank": "ترتيب المجتمع",
+    "achievementBadges": "شارات الإنجاز",
+    "noBadges": "لم يتم كسب أي شارات بعد",
+    "newReport": "تقرير جديد",
+    "noReports": "لم يتم إرسال أي تقارير بعد",
+    "communityActivity": "نشاط المجتمع",
+    "noNearbyReports": "لا توجد تقارير قريبة في الوقت الحالي",
+    "recentActivity": "النشاط الأخير",
+    "noRecentActivity": "لا يوجد نشاط أخير",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "firstNamePlaceholder": "أدخل اسمك الأول",
+    "lastNamePlaceholder": "أدخل اسم عائلتك",
+    "phonePlaceholder": "أدخل رقم هاتفك",
+    "saveChanges": "حفظ التغييرات",
+    "myReports": "تقاريري",
+    "reputationPoints": "نقاط السمعة",
+    "memberSince": "عضو منذ",
+    "viewAllReports": "عرض جميع التقارير",
+    "report": "تقرير",
+    "unknownLocation": "موقع غير معروف",
+    "timeAgo": {
+      "justNow": "الآن",
+      "minutesAgo": "منذ {{count}} دقيقة",
+      "hoursAgo": "منذ {{count}} ساعة{{plural}}",
+      "daysAgo": "منذ {{count}} يوم{{plural}}"
+    },
+    "badges": {
+      "communityLeader": {
+        "name": "قائد المجتمع",
+        "description": "حصل على 100+ نقطة سمعة"
+      },
+      "trustedReporter": {
+        "name": "المراسل الموثوق",
+        "description": "حصل على 50+ نقطة سمعة"
+      },
+      "activeContributor": {
+        "name": "المساهم النشط",
+        "description": "حصل على 10+ نقطة سمعة"
+      },
+      "safetyGuardian": {
+        "name": "حارس الأمان",
+        "description": "أرسل 50+ تقرير أمان"
+      },
+      "communityWatch": {
+        "name": "مراقبة المجتمع",
+        "description": "أرسل 20+ تقرير أمان"
+      },
+      "firstResponder": {
+        "name": "المستجيب الأول",
+        "description": "أرسل 5+ تقرير أمان"
+      }
+    }
+  },
+  "vibes": {
+    "safe": "آمن",
+    "safeDesc": "المنطقة تبدو آمنة ومريحة",
+    "calm": "هادئ",
+    "calmDesc": "أجواء هادئة ومريحة",
+    "lively": "حيوي",
+    "livelyDesc": "بيئة نشيطة وحيوية",
+    "festive": "احتفالي",
+    "festiveDesc": "أجواء احتفالية ومبهجة",
+    "crowded": "مزدحم",
+    "crowdedDesc": "مزدحم بالعديد من الأشخاص",
+    "suspicious": "مشبوه",
+    "suspiciousDesc": "شيء يبدو غريباً أو مثيراً للقلق",
+    "dangerous": "خطر",
+    "dangerousDesc": "وضع غير آمن محتمل",
+    "noisy": "صاخب",
+    "noisyDesc": "أصوات عالية ومزعجة",
+    "quiet": "هادئ",
+    "quietDesc": "هادئ ومستوى ضوضاء منخفض"
+  },
+  "emergency": {
+    "fire": "حريق",
+    "fireDesc": "طوارئ حريق أو دخان مكتشف",
+    "medical": "طبي",
+    "medicalDesc": "طوارئ طبية تحتاج مساعدة",
+    "crime": "جريمة",
+    "crimeDesc": "نشاط إجرامي أو تهديد أمني",
+    "accident": "حادث",
+    "accidentDesc": "حادث مروري أو حادث آخر",
+    "hazard": "خطر",
+    "hazardDesc": "خطر بيئي أو هيكلي",
+    "other": "أخرى",
+    "otherDesc": "نوع آخر من الطوارئ",
+    "emergencyAlert": "🚨 تنبيه طوارئ",
+    "alertVisibleToAll": "سيكون هذا التنبيه مرئياً لجميع المستخدمين القريبين",
+    "getHelpQuickly": "احصل على المساعدة بسرعة من خلال تقديم التفاصيل أدناه",
+    "whatType": "ما نوع الطوارئ؟",
+    "urgencyLevel": "مستوى الإلحاح",
+    "low": "منخفض",
+    "medium": "متوسط",
+    "high": "عالي",
+    "descriptionRequired": "الوصف (مطلوب)",
+    "descriptionPlaceholder": "يرجى وصف حالة الطوارئ بالتفصيل..."
+  },
+  "communityInsights": {
+    "title": "مركز المجتمع",
+    "subtitle": "تقارير في منطقتك",
+    "liveActivity": "النشاط المباشر",
+    "safetyCheck": "فحص الأمان",
+    "communityStats": "إحصائيات المجتمع",
+    "quickActions": "الإجراءات السريعة",
+    "communityChallenges": "تحديات المجتمع",
+    "achievements": "الإنجازات",
+    "noNearbyActivity": "لا يوجد نشاط قريب",
+    "noNearbyActivityDesc": "سيظهر نشاط المجتمع هنا عندما يقوم الأشخاص بالإبلاغ في منطقتك.",
+    "totalReports": "إجمالي التقارير",
+    "contributors": "المساهمون",
+    "emergencies": "الحالات الطارئة",
+    "today": "اليوم",
+    "reportVibe": "الإبلاغ عن جو",
+    "emergencyCall": "اتصال طوارئ",
+    "allChallenges": "جميع تحديات المجتمع",
+    "challenges": {
+      "dailyReporter": {
+        "title": "المراسل اليومي",
+        "description": "قم بإرسال 3 تقارير اليوم للمساعدة في رسم خريطة مجتمعك",
+        "reward": "25 نقطة + سلسلة يومية"
+      },
+      "emergencyHelper": {
+        "title": "مساعد الطوارئ",
+        "description": "ساعد في التحقق من تقريري طوارئ هذا الأسبوع",
+        "reward": "50 نقطة + شارة مساعد"
+      },
+      "communityBuilder": {
+        "title": "باني المجتمع",
+        "description": "ساعد في الوصول إلى 25 تقرير هذا الأسبوع كفريق",
+        "reward": "شارة بطل المجتمع + 100 نقطة"
+      },
+      "firstResponder": {
+        "title": "المستجيب الأول",
+        "description": "أبلغ عن أول حالة طوارئ لك",
+        "reward": "شارة المستجيب الأول"
+      },
+      "neighborhoodExplorer": {
+        "title": "مستكشف الحي",
+        "description": "أبلغ في 3 مناطق مختلفة هذا الأسبوع",
+        "reward": "شارة المستكشف + 30 نقطة"
+      }
+    },
+    "difficulty": {
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب"
+    },
+    "timeLeft": {
+      "ongoing": "مستمر",
+      "hours": "{{count}}س {{minutes}}د",
+      "days": "{{count}} أيام"
+    },
+    "progress": {
+      "completed": "مكتمل",
+      "viewAll": "عرض الكل ←"
+    },
+    "personalAchievements": {
+      "firstSteps": {
+        "title": "الخطوات الأولى",
+        "description": "قمت بإرسال أول تقرير لك"
+      },
+      "safetyGuardian": {
+        "title": "حارس الأمان",
+        "description": "ساعدت في 5 حالات طوارئ"
+      },
+      "communityHero": {
+        "title": "بطل المجتمع",
+        "description": "10 تقارير في أسبوع واحد"
+      },
+      "consistentReporter": {
+        "title": "المراسل المنتظم",
+        "description": "أبلغ لمدة 7 أيام متتالية"
+      }
+    },
+    "stats": {
+      "remaining": "متبقي"
+    }
+  },
+  "community": {
+    "title": "لوحة تحكم المجتمع",
+    "subtitle": "انظر كيف تبدو منطقتك الحالية",
+    "noData": "لا توجد بيانات مجتمع",
+    "noDataDesc": "ستظهر بيانات أجواء المجتمع هنا عندما يتم إرسال التقارير في منطقتك.",
+    "currentLocation": "موقعك الحالي",
+    "locationActive": "خدمات الموقع نشطة",
+    "locationUnavailable": "الموقع غير متوفر",
+    "geocoding": "جارٍ العثور على موقعك...",
+    "yourArea": "منطقتك الحالية",
+    "localVibe": "الجو المحلي",
+    "reports": "تقارير",
+    "locations": "مواقع",
+    "totalReports": "إجمالي التقارير",
+    "otherVibes": "الأجواء الأخرى في هذه المنطقة",
+    "dominant": "الجو السائد",
+    "howItWorks": "كيف يعمل",
+    "footer": "يتم تجميع المواقع حسب القرب (نصف قطر 1 كم). يتم حساب الأجواء من تقارير المجتمع الأخيرة لإظهار الجو السائد في كل منطقة.",
+    "refreshData": "تحديث البيانات",
+    "areaSentimentAnalysis": "تحليل مزاج المنطقة",
+    "activeReports": "التقارير النشطة",
+    "sentimentDistribution": "توزيع مزاج المجتمع",
+    "areaExperiencing": "تشهد المنطقة حالياً",
+    "viewDetailedBreakdown": "عرض التحليل التفصيلي",
+    "communityActivity": "نشاط المجتمع"
+  },
+  "shared": {
+    "emptyState": {
+      "title": "لا توجد بيانات متاحة",
+      "description": "لا توجد عناصر لعرضها في الوقت الحالي."
+    },
+    "notification": {
+      "success": "نجح",
+      "error": "خطأ",
+      "warning": "تحذير",
+      "info": "معلومات"
+    }
+  }
+}
