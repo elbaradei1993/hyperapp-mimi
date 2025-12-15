@@ -34,7 +34,7 @@
   "homepage": "https://github.com/elbaradei1993/hyperapp-mimi#readme",
   "dependencies": {
     "@chakra-ui/react": "^3.29.0",
-    "@codetrix-studio/capacitor-google-auth": "^3.3.6",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@react-spring/web": "^10.0.3",
