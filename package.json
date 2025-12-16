@@ -4,7 +4,7 @@
   "description": "botapp",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0",
+    "node": "18.17.0",
     "npm": ">=9.0.0"
   },
   "scripts": {
@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/elbaradei1993/hyperapp-mimi#readme",
   "dependencies": {
+    "@capacitor/geolocation": "^6.1.1",
     "@chakra-ui/react": "^3.29.0",
     "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@emotion/react": "^11.14.0",

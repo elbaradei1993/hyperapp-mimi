@@ -42,7 +42,9 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
         method: 'GET',
         headers: {
           'User-Agent': 'HyperApp/1.0 (https://github.com/elbaradei1993/hyperapp-mimi)' // Required by Nominatim
-        }
+        },
+        // Add timeout to prevent hanging
+        signal: AbortSignal.timeout(5000) // 5 second timeout
       }
     );
 
@@ -62,7 +64,7 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
     throw new Error('No address found in API response');
 
   } catch (error) {
-    console.warn('Real geocoding failed:', error);
+    console.warn('Real geocoding failed:', error instanceof Error ? error.message : String(error));
     // Fallback to user-friendly message instead of coordinates
     return 'Address not available';
   }

@@ -40,27 +40,10 @@ class RSSService {
   private readonly NEWSAPI_BASE_URL = 'https://newsapi.org/v2';
 
   // Multiple RSS feeds with different proxies for reliability (fallback only)
+  // Note: External RSS services may be unreliable, so we prioritize NewsAPI if available
   private readonly RSS_FEEDS: RSSFeedConfig[] = [
-    {
-      url: 'https://feeds.reuters.com/reuters/topNews',
-      name: 'Reuters Top News',
-      proxy: 'https://api.allorigins.win/get?url='
-    },
-    {
-      url: 'https://feeds.apnews.com/rss/apf-topnews',
-      name: 'AP Top News',
-      proxy: 'https://api.allorigins.win/get?url='
-    },
-    {
-      url: 'https://feeds.bbci.co.uk/news/rss.xml',
-      name: 'BBC News',
-      proxy: 'https://api.allorigins.win/get?url='
-    },
-    {
-      url: 'https://www.aljazeera.com/xml/rss/all.xml',
-      name: 'Al Jazeera',
-      proxy: 'https://api.allorigins.win/get?url='
-    }
+    // Temporarily disabled external RSS feeds due to API reliability issues
+    // Keeping structure for future use when services are stable
   ];
 
   /**
@@ -69,7 +52,7 @@ class RSSService {
   async fetchRSSFeed(preferredUrl?: string): Promise<NewsAlert[]> {
     // FIRST: Try to return cached data immediately for instant display
     const cachedData = this.getAnyCachedData();
-    if (cachedData) {
+    if (cachedData && cachedData.length > 0) {
       console.log('🚀 Using cached news data for instant display');
       // Start background refresh but return cached data immediately
       this.refreshInBackground(preferredUrl);
