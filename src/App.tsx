@@ -54,6 +54,8 @@ const AppContent: React.FC = () => {
   const [targetLocation, setTargetLocation] = useState<[number, number] | null>(null);
   const [locationPermissionStatus, setLocationPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [showLocationPermissionModal, setShowLocationPermissionModal] = useState(false);
+  const [locationRefreshInterval, setLocationRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [lastLocationUpdate, setLastLocationUpdate] = useState<number>(0);
 
   // Default center (Cairo, Egypt)
   const center: [number, number] = [30.0444, 31.2357];
@@ -290,18 +292,21 @@ const AppContent: React.FC = () => {
               currentLocation = [latitude, longitude];
               currentAccuracy = accuracy;
               setUserLocation(currentLocation);
+              setLastLocationUpdate(Date.now());
               console.log(`🎯 Location set with excellent accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
               startLocationWatching();
             } else if (accuracy <= goodAccuracy) {
               currentLocation = [latitude, longitude];
               currentAccuracy = accuracy;
               setUserLocation(currentLocation);
+              setLastLocationUpdate(Date.now());
               console.log(`✅ Location set with good accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
               startLocationWatching();
             } else if (accuracy <= acceptableAccuracy) {
               currentLocation = [latitude, longitude];
               currentAccuracy = accuracy;
               setUserLocation(currentLocation);
+              setLastLocationUpdate(Date.now());
 
               console.log(`⚠️ Location set with acceptable accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
               startLocationWatching();
@@ -309,6 +314,7 @@ const AppContent: React.FC = () => {
               currentLocation = [latitude, longitude];
               currentAccuracy = accuracy;
               setUserLocation(currentLocation);
+              setLastLocationUpdate(Date.now());
 
               console.log(`📍 Location set with poor accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
               startLocationWatching();
@@ -354,24 +360,28 @@ const AppContent: React.FC = () => {
                   currentLocation = [latitude, longitude];
                   currentAccuracy = accuracy;
                   setUserLocation(currentLocation);
+                  setLastLocationUpdate(Date.now());
                   console.log(`🎯 Secondary location excellent: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
                   startLocationWatching();
                 } else if (accuracy <= goodAccuracy) {
                   currentLocation = [latitude, longitude];
                   currentAccuracy = accuracy;
                   setUserLocation(currentLocation);
+                  setLastLocationUpdate(Date.now());
                   console.log(`✅ Secondary location good: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
                   startLocationWatching();
                 } else if (accuracy <= acceptableAccuracy) {
                   currentLocation = [latitude, longitude];
                   currentAccuracy = accuracy;
                   setUserLocation(currentLocation);
+                  setLastLocationUpdate(Date.now());
                   console.log(`⚠️ Secondary location acceptable: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
                   startLocationWatching();
                 } else if (accuracy <= poorAccuracy) {
                   currentLocation = [latitude, longitude];
                   currentAccuracy = accuracy;
                   setUserLocation(currentLocation);
+                  setLastLocationUpdate(Date.now());
                   console.log(`📍 Secondary location poor: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
                   startLocationWatching();
                 } else if (accuracy <= veryPoorAccuracy) {
@@ -413,24 +423,28 @@ const AppContent: React.FC = () => {
                       currentLocation = [latitude, longitude];
                       currentAccuracy = accuracy;
                       setUserLocation(currentLocation);
+                      setLastLocationUpdate(Date.now());
                       console.log(`🎯 Third attempt excellent: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
                       startLocationWatching();
                     } else if (accuracy <= goodAccuracy) {
                       currentLocation = [latitude, longitude];
                       currentAccuracy = accuracy;
                       setUserLocation(currentLocation);
+                      setLastLocationUpdate(Date.now());
                       console.log(`✅ Third attempt good: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
                       startLocationWatching();
                     } else if (accuracy <= acceptableAccuracy) {
                       currentLocation = [latitude, longitude];
                       currentAccuracy = accuracy;
                       setUserLocation(currentLocation);
+                      setLastLocationUpdate(Date.now());
                       console.log(`⚠️ Third attempt acceptable: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
                       startLocationWatching();
                     } else if (accuracy <= poorAccuracy) {
                       currentLocation = [latitude, longitude];
                       currentAccuracy = accuracy;
                       setUserLocation(currentLocation);
+                      setLastLocationUpdate(Date.now());
                       console.log(`📍 Third attempt poor: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
                       startLocationWatching();
                     } else if (accuracy <= veryPoorAccuracy) {
@@ -503,8 +517,55 @@ const AppContent: React.FC = () => {
       };
 
       getLocationWithAggressiveGPS();
+
+      // Set up permission change listener for automatic re-detection
+      if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
+          console.log('🎧 Setting up permission change listener');
+
+          permissionStatus.onchange = () => {
+            console.log('🔄 Permission status changed to:', permissionStatus.state);
+            setLocationPermissionStatus(permissionStatus.state);
+
+            // If permission was granted, immediately try to get location
+            if (permissionStatus.state === 'granted') {
+              console.log('✅ Permission granted - refreshing location automatically');
+              setShowLocationPermissionModal(false);
+              // Re-run location detection
+              getLocationWithAggressiveGPS();
+            } else if (permissionStatus.state === 'denied') {
+              console.log('❌ Permission denied - showing guidance');
+              setShowLocationPermissionModal(true);
+            }
+          };
+        }).catch(error => {
+          console.warn('Could not set up permission listener:', error);
+        });
+      }
+
+      // Set up automatic location refresh every 2 minutes
+      const refreshInterval = setInterval(() => {
+        const now = Date.now();
+        const timeSinceLastUpdate = now - lastLocationUpdate;
+
+        // Only refresh if it's been more than 1.5 minutes since last update
+        // and user has granted permissions
+        if (timeSinceLastUpdate > 90 * 1000 && locationPermissionStatus === 'granted') {
+          console.log('⏰ Automatic location refresh (2-minute interval)');
+          getLocationWithAggressiveGPS();
+        }
+      }, 2 * 60 * 1000); // 2 minutes
+
+      setLocationRefreshInterval(refreshInterval);
+
+      // Cleanup function
+      return () => {
+        if (refreshInterval) {
+          clearInterval(refreshInterval);
+        }
+      };
     }
-  }, [isAuthenticated, isLoading, locationInitialized]);
+  }, [isAuthenticated, isLoading, locationInitialized, lastLocationUpdate, locationPermissionStatus]);
 
   // Initialize notification service when user is authenticated
   useEffect(() => {
