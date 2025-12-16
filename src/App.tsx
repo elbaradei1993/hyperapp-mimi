@@ -13,6 +13,7 @@ import ReportTypeModal from './components/ReportTypeModal';
 import VibeReportModal from './components/VibeReportModal';
 import EmergencyReportModal from './components/EmergencyReportModal';
 import LocationOverrideModal from './components/LocationOverrideModal';
+import LocationPermissionModal from './components/LocationPermissionModal';
 
 import SplashScreen from './components/SplashScreen';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -51,6 +52,8 @@ const AppContent: React.FC = () => {
   const [locationInitialized, setLocationInitialized] = useState(false);
   const [showGPSHelp, setShowGPSHelp] = useState<boolean>(false);
   const [targetLocation, setTargetLocation] = useState<[number, number] | null>(null);
+  const [locationPermissionStatus, setLocationPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
+  const [showLocationPermissionModal, setShowLocationPermissionModal] = useState(false);
 
   // Default center (Cairo, Egypt)
   const center: [number, number] = [30.0444, 31.2357];
@@ -83,7 +86,7 @@ const AppContent: React.FC = () => {
       setLocationInitialized(true);
 
       // Get user location with aggressive GPS strategy
-      const getLocationWithAggressiveGPS = () => {
+      const getLocationWithAggressiveGPS = async () => {
         let currentAccuracy = Infinity;
         let currentLocation: [number, number] | null = null;
         let gpsWatchId: number | null = null;
@@ -141,6 +144,24 @@ const AppContent: React.FC = () => {
                   lng: data.longitude,
                   city: data.city || data.locality
                 })
+              },
+              {
+                url: 'https://ipinfo.io/json',
+                parseData: (data: any) => {
+                  if (data.loc) {
+                    const [lat, lng] = data.loc.split(',').map(parseFloat);
+                    return { lat, lng, city: data.city };
+                  }
+                  return null;
+                }
+              },
+              {
+                url: 'https://api.ip.sb/geoip',
+                parseData: (data: any) => ({
+                  lat: data.latitude,
+                  lng: data.longitude,
+                  city: data.city
+                })
               }
             ];
 
@@ -162,7 +183,7 @@ const AppContent: React.FC = () => {
                 const data = await response.json();
                 const parsed = service.parseData(data);
 
-                if (parsed.lat && parsed.lng && !isNaN(parsed.lat) && !isNaN(parsed.lng)) {
+                if (parsed && parsed.lat && parsed.lng && !isNaN(parsed.lat) && !isNaN(parsed.lng)) {
                   const location: [number, number] = [parsed.lat, parsed.lng];
 
                   // Cache the location
@@ -201,18 +222,42 @@ const AppContent: React.FC = () => {
           return;
         }
 
-        // Check location permissions first
-        if (navigator.permissions) {
-          navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-            console.log(' Location permission status:', result.state);
+        // Check location permissions first and handle different states
+        const checkLocationPermissions = async () => {
+          if (!navigator.permissions) {
+            console.log('⚠️ Permissions API not supported, proceeding with GPS attempt');
+            setLocationPermissionStatus('unknown');
+            return true; // Allow GPS attempt
+          }
+
+          try {
+            const result = await navigator.permissions.query({ name: 'geolocation' });
+            console.log('📍 Location permission status:', result.state);
+            setLocationPermissionStatus(result.state);
+
             if (result.state === 'denied') {
-              console.log('❌ Location permission denied, using IP fallback');
+              console.log('❌ Location permission denied, showing user guidance');
+              setShowLocationPermissionModal(true);
               getIPLocation();
-              return;
+              return false; // Don't attempt GPS
+            } else if (result.state === 'prompt') {
+              console.log('❓ Location permission prompt, will trigger native dialog');
+              return true; // Allow GPS attempt which will trigger prompt
+            } else if (result.state === 'granted') {
+              console.log('✅ Location permission granted');
+              return true; // Allow GPS attempt
             }
-          }).catch(() => {
-            console.log('⚠️ Could not check location permissions');
-          });
+          } catch (error) {
+            console.log('⚠️ Could not check location permissions:', error);
+            setLocationPermissionStatus('unknown');
+            return true; // Allow GPS attempt
+          }
+          return true;
+        };
+
+        const shouldAttemptGPS = await checkLocationPermissions();
+        if (!shouldAttemptGPS) {
+          return; // Skip GPS attempts if permission denied
         }
 
         console.log('🚀 Starting aggressive GPS location detection...');
@@ -224,16 +269,16 @@ const AppContent: React.FC = () => {
             console.log(`📡 GPS Lock achieved: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m accuracy)`);
 
             // More lenient accuracy thresholds for better user experience
-            const excellentAccuracy = 50; // 50m - excellent
-            const goodAccuracy = 200; // 200m - good
-            const acceptableAccuracy = 1000; // 1km - acceptable for initial location
-            const poorAccuracy = 5000; // 5km - poor but usable
-            const veryPoorAccuracy = 25000; // 25km - very poor, prefer IP
-            const extremelyPoorAccuracy = 100000; // 100km - extremely poor, reject
+            const excellentAccuracy = 100; // 100m - excellent
+            const goodAccuracy = 500; // 500m - good
+            const acceptableAccuracy = 2000; // 2km - acceptable for initial location
+            const poorAccuracy = 10000; // 10km - poor but usable
+            const veryPoorAccuracy = 50000; // 50km - very poor, prefer IP
+            const extremelyPoorAccuracy = 200000; // 200km - extremely poor, reject
 
             // Check for obviously wrong GPS data (coordinates that don't make sense)
             const isValidCoordinates = latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
-            const isReasonableAccuracy = accuracy > 0 && accuracy < 500000; // Less than 500km
+            const isReasonableAccuracy = accuracy > 0 && accuracy < 1000000; // Less than 1000km
 
             if (!isValidCoordinates || !isReasonableAccuracy) {
               console.log(`❌ GPS returned invalid data: ${latitude}, ${longitude} (${accuracy}m), using IP fallback`);
@@ -909,7 +954,15 @@ const AppContent: React.FC = () => {
         currentLocation={userLocation}
       />
 
-
+      {/* Location Permission Modal */}
+      <LocationPermissionModal
+        isOpen={showLocationPermissionModal}
+        onClose={() => setShowLocationPermissionModal(false)}
+        onManualLocation={() => {
+          setShowLocationPermissionModal(false);
+          setShowLocationOverride(true);
+        }}
+      />
 
       {/* Global Notifications */}
       <NotificationManager
