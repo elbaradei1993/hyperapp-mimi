@@ -1,0 +1,341 @@
+/* Location Search Modal Styles - Adapted from HTML Design */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --background: #ffffff;
+  --card: #f8fafc;
+  --foreground: #0f172a;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --input-background: #f1f5f9;
+  --accent: #f1f5f9;
+  --radius: 12px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.locationSearchContainer {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.searchCard {
+  background: var(--background);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.searchHeader {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.searchTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchSubtitle {
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+}
+
+.searchInputContainer {
+  position: relative;
+  margin-top: 16px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  width: 18px;
+  height: 18px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--input-background);
+  font-size: 1rem;
+  transition: all 0.2s;
+  outline: none;
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.searchInput::placeholder {
+  color: var(--muted-foreground);
+}
+
+.searchInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.currentLocationBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.currentLocationBtn:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.searchResults {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.resultItem {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resultItem:hover {
+  background: var(--accent);
+}
+
+.resultItem:last-child {
+  border-bottom: none;
+}
+
+.resultItem.selected {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.resultIcon {
+  color: var(--muted-foreground);
+  width: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resultContent {
+  flex: 1;
+}
+
+.resultTitle {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--foreground);
+}
+
+.resultAddress {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.recentLabel {
+  padding: 8px 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.emptyState {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+.emptyState i {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.vibeIndicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.8rem;
+}
+
+.vibeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.vibeSafe { background: #10b981; }
+.vibeLively { background: #f59e0b; }
+.vibeCalm { background: #3b82f6; }
+.vibeCrowded { background: #f97316; }
+.vibeFestive { background: #8b5cf6; }
+
+.loadingContainer {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.loadingIcon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 4px;
+}
+
+.loadingSubtext {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 600px) {
+  .locationSearchContainer {
+    max-width: 100%;
+    padding: 0 8px;
+  }
+
+  .searchCard {
+    border-radius: 16px;
+  }
+
+  .searchHeader {
+    padding: 16px;
+  }
+
+  .searchTitle {
+    font-size: 1.1rem;
+  }
+
+  .searchSubtitle {
+    font-size: 0.8rem;
+  }
+
+  .searchInputContainer {
+    margin-top: 12px;
+  }
+
+  .searchInput {
+    padding: 12px 14px 12px 44px;
+    font-size: 0.95rem;
+  }
+
+  .searchIcon {
+    left: 14px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .currentLocationBtn {
+    right: 10px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .searchResults {
+    max-height: 250px;
+  }
+
+  .resultItem {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .resultIcon {
+    width: 18px;
+  }
+
+  .resultTitle {
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+
+  .resultAddress {
+    font-size: 0.8rem;
+  }
+
+  .recentLabel {
+    padding: 6px 16px;
+    font-size: 0.75rem;
+  }
+
+  .loadingContainer,
+  .emptyState {
+    padding: 32px 16px;
+  }
+
+  .loadingIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .loadingText {
+    font-size: 1rem;
+  }
+
+  .loadingSubtext {
+    font-size: 0.8rem;
+  }
+
+  .footer {
+    margin-top: 16px;
+    font-size: 0.75rem;
+    padding: 0 8px;
+  }
+}
