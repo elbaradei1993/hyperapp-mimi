@@ -152,6 +152,37 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
     detectCapabilities();
   }, []);
 
+  const getCurrentLocation = async () => {
+    setLocationLoading(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation([latitude, longitude]);
+
+          try {
+            // Try to get a readable address
+            const address = await reverseGeocode(latitude, longitude);
+            setLocation(address);
+          } catch (error) {
+            // Fallback to user-friendly message if geocoding fails
+            console.warn('Geocoding failed, using address not available message');
+            setLocation(t('reports.addressNotAvailable', 'Address not available'));
+          }
+
+          setLocationLoading(false);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setLocationLoading(false);
+        },
+        { timeout: 10000, enableHighAccuracy: true }
+      );
+    } else {
+      setLocationLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       // Reset form when modal opens
@@ -167,10 +198,13 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
         setUserLocation(currentLocation);
         reverseGeocode(currentLocation[0], currentLocation[1])
           .then(address => setLocation(address))
-          .catch(() => setLocation('Location not available'));
+          .catch(() => setLocation(t('reports.addressNotAvailable', 'Address not available')));
+      } else {
+        // Get user's current location if no location prop provided
+        getCurrentLocation();
       }
     }
-  }, [isOpen, currentLocation]);
+  }, [isOpen, currentLocation, t]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -224,7 +258,20 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!selectedVibe || !userLocation) return;
+    if (!selectedVibe) return;
+
+    // If location is not available but loading, wait for it
+    if (!userLocation && locationLoading) {
+      // Wait for location to be available (with timeout)
+      let attempts = 0;
+      while (!userLocation && attempts < 50) { // 5 seconds max
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+      if (!userLocation) return; // Still no location after waiting
+    }
+
+    if (!userLocation) return;
 
     setIsSubmitting(true);
     try {
@@ -368,7 +415,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
           {/* Media Upload */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              Add Photo (Optional)
+              {t('modals.vibeReport.addPhotoOptional')}
             </label>
             {!selectedFile ? (
               <div style={{
@@ -496,22 +543,22 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
 
             <button
               onClick={handleSubmit}
-              disabled={!selectedVibe || !userLocation || isSubmitting}
+              disabled={!selectedVibe || (!userLocation && !locationLoading) || isSubmitting}
               style={{
                 flex: '2 1 auto',
                 minWidth: '180px',
                 padding: '16px 32px',
                 border: 'none',
                 borderRadius: '12px',
-                background: (!selectedVibe || !userLocation || isSubmitting)
+                background: (!selectedVibe || (!userLocation && !locationLoading) || isSubmitting)
                   ? 'var(--text-muted)'
                   : 'linear-gradient(135deg, var(--accent-primary) 0%, #2563eb 100%)',
                 color: 'white',
                 fontSize: '18px',
                 fontWeight: '700',
-                cursor: (!selectedVibe || !userLocation || isSubmitting) ? 'not-allowed' : 'pointer',
+                cursor: (!selectedVibe || (!userLocation && !locationLoading) || isSubmitting) ? 'not-allowed' : 'pointer',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: (!selectedVibe || !userLocation || isSubmitting)
+                boxShadow: (!selectedVibe || (!userLocation && !locationLoading) || isSubmitting)
                   ? '0 2px 8px var(--shadow-color)'
                   : '0 8px 24px rgba(59, 130, 246, 0.4), 0 4px 12px rgba(59, 130, 246, 0.2)',
                 display: 'flex',

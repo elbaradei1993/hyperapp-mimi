@@ -36,8 +36,8 @@ class PushNotificationService {
     this.currentUserId = userId;
 
     try {
-      // Check if FCM is supported
-      if (!fcmService.isSupported()) {
+      // Check if notifications are supported
+      if (!(await fcmService.isSupported())) {
         console.log('Push notifications not supported on this device');
         return;
       }
@@ -46,19 +46,23 @@ class PushNotificationService {
       const token = await fcmService.requestPermission();
 
       if (!token) {
-        console.log('Failed to get FCM token');
+        console.log('Failed to get notification permission/token');
         return;
       }
 
       this.currentToken = token;
 
-      // Store token in Supabase
-      await this.storePushSubscription(token);
+      // Store token in Supabase (only for web FCM tokens, not Capacitor)
+      if (token !== 'capacitor-local-notifications-enabled') {
+        await this.storePushSubscription(token);
 
-      // Listen for foreground messages
-      this.unsubscribeFromMessages = fcmService.onMessageReceived((payload) => {
-        this.handleForegroundMessage(payload);
-      });
+        // Listen for foreground messages (only on web)
+        this.unsubscribeFromMessages = fcmService.onMessageReceived((payload) => {
+          this.handleForegroundMessage(payload);
+        });
+      } else {
+        console.log('📱 Capacitor local notifications enabled - push notifications handled via FCM server');
+      }
 
       console.log('🔔 Push notifications initialized for user:', userId);
 
@@ -224,8 +228,9 @@ class PushNotificationService {
   }
 
   // Check if push notifications are enabled
-  isEnabled(): boolean {
-    return fcmService.getPermissionStatus() === 'granted' && !!this.currentToken;
+  async isEnabled(): Promise<boolean> {
+    const permissionStatus = await fcmService.getPermissionStatus();
+    return permissionStatus === 'granted' && !!this.currentToken;
   }
 
   // Get current FCM token

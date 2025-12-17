@@ -171,7 +171,20 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!selectedEmergency || !userLocation) return;
+    if (!selectedEmergency || !description.trim()) return;
+
+    // If location is not available but loading, wait for it
+    if (!userLocation && locationLoading) {
+      // Wait for location to be available (with timeout)
+      let attempts = 0;
+      while (!userLocation && attempts < 50) { // 5 seconds max
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+      if (!userLocation) return; // Still no location after waiting
+    }
+
+    if (!userLocation) return;
 
     setIsSubmitting(true);
     try {
@@ -408,7 +421,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
           {/* Media Upload */}
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>
-              Add Photo (Optional)
+              {t('modals.emergencyReport.addPhotoOptional', 'Add Photo (Optional)')}
             </label>
             {!selectedFile ? (
               <div style={{
@@ -492,7 +505,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
             {/* Submit Emergency Report Button */}
             <button
               onClick={handleSubmit}
-              disabled={!selectedEmergency || !description.trim() || !userLocation || isSubmitting}
+              disabled={!selectedEmergency || !description.trim() || (!userLocation && !locationLoading) || isSubmitting}
               className={styles.btnSubmit}
             >
               {isSubmitting ? (

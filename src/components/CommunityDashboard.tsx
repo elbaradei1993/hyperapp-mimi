@@ -9,6 +9,17 @@ import { useVibe } from '../contexts/VibeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { IconButton } from '@chakra-ui/react';
 import BreakingNewsBanner from './BreakingNewsBanner';
+import {
+  ShieldCheck,
+  CloudSnow,
+  Music,
+  PartyPopper,
+  Users,
+  EyeOff,
+  AlertTriangle,
+  Volume2,
+  VolumeX
+} from 'lucide-react';
 import type { Vibe, Report } from '../types';
 
 // Lazy load heavy chart components for better performance
@@ -53,7 +64,7 @@ const styles = {
   'radius-lg': '16px',
   'radius-xl': '20px',
 
-  // Base styles
+  // Premium Base styles
   container: {
     height: '100vh',
     width: '100vw',
@@ -65,27 +76,29 @@ const styles = {
     WebkitTapHighlightColor: 'transparent',
   },
 
-  // Header styles
+  // Premium Header styles
   dashboardHeader: {
-    marginBottom: '24px',
+    marginBottom: '32px',
     position: 'relative' as const,
     padding: '0 20px',
   },
   dashboardTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '800' as const,
-    background: 'linear-gradient(135deg, #0f172a 0%, #475569 100%)',
+    fontSize: '1.5rem',
+    fontWeight: '900' as const,
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
     WebkitBackgroundClip: 'text' as const,
     WebkitTextFillColor: 'transparent' as const,
-    marginBottom: '6px',
-    letterSpacing: '-0.025em',
-    lineHeight: '1.3',
+    marginBottom: '8px',
+    letterSpacing: '-0.03em',
+    lineHeight: '1.2',
+    textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   dashboardSubtitle: {
-    fontSize: '0.9rem',
-    color: '#475569',
-    fontWeight: '500' as const,
-    lineHeight: '1.5',
+    fontSize: '1rem',
+    color: '#64748b',
+    fontWeight: '600' as const,
+    lineHeight: '1.4',
+    letterSpacing: '0.01em',
   },
 
   // Main Grid - Mobile First
@@ -100,12 +113,14 @@ const styles = {
     gap: '32px',
   },
 
-  // Location Card
+  // Premium Location Card
   locationCard: {
-    background: 'var(--bg-primary)',
+    background: 'var(--bg-glass)',
+    backdropFilter: 'blur(24px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+    border: '1px solid rgba(255, 255, 255, 0.18)',
     borderRadius: '20px',
-    boxShadow: 'var(--shadow-lg)',
-    border: '1px solid var(--border-color)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
     position: 'relative' as const,
   },
@@ -114,41 +129,49 @@ const styles = {
     top: '0',
     left: '0',
     right: '0',
-    height: '4px',
-    background: 'linear-gradient(90deg, #2563eb 0%, #3b82f6 50%, #1d4ed8 100%)',
+    height: '2px',
+    background: 'linear-gradient(90deg, rgba(37, 99, 235, 0.6) 0%, rgba(59, 130, 246, 0.8) 50%, rgba(29, 78, 216, 0.6) 100%)',
+    boxShadow: '0 0 10px rgba(37, 99, 235, 0.3)',
   },
   locationCardContent: {
-    padding: '20px 16px',
+    padding: '32px 24px',
   },
   locationHeader: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
     textAlign: 'center' as const,
-    gap: '12px',
-    marginBottom: '20px',
+    gap: '16px',
+    marginBottom: '24px',
   },
   locationIcon: {
-    width: '56px',
-    height: '56px',
-    borderRadius: '14px',
-    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+    width: '72px',
+    height: '72px',
+    borderRadius: '18px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: 'white',
-    boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06)',
+    boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3), 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
     flexShrink: 0,
+    position: 'relative',
+    overflow: 'hidden'
   },
   locationInfo: {
     width: '100%',
   },
   locationAddress: {
-    fontSize: '1.125rem',
-    fontWeight: '700' as const,
-    color: '#0f172a',
-    marginBottom: '8px',
-    lineHeight: '1.4',
+    fontSize: '1.375rem',
+    fontWeight: '800' as const,
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+    WebkitBackgroundClip: 'text' as const,
+    WebkitTextFillColor: 'transparent' as const,
+    backgroundClip: 'text',
+    marginBottom: '12px',
+    lineHeight: '1.3',
+    letterSpacing: '-0.02em',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
   },
   locationMeta: {
     display: 'flex',
@@ -314,96 +337,35 @@ const styles = {
     gap: '20px',
   },
 
-  // Stats Cards
-  statsCard: {
-    background: '#ffffff',
-    borderRadius: '16px',
-    padding: '24px 20px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    border: '1px solid #f1f5f9',
-  },
-  statsHeader: {
-    marginBottom: '20px',
-  },
-  statsTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '700' as const,
-    color: '#0f172a',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '16px',
-  },
-  statItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    padding: '16px',
-    background: '#f8fafc',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-    transition: 'all 0.2s ease',
-    minHeight: '72px',
-  },
-  statIcon: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '8px',
-    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'white',
-    flexShrink: 0,
-    fontSize: '1rem',
-  },
-  statContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  statValue: {
-    fontSize: '1.25rem',
-    fontWeight: '800' as const,
-    color: '#0f172a',
-    lineHeight: 1,
-    marginBottom: '2px',
-  },
-  statLabel: {
-    fontSize: '0.8rem',
-    color: '#64748b',
-    fontWeight: '500' as const,
-    whiteSpace: 'nowrap' as const,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  statTrend: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    fontSize: '0.8rem',
-    fontWeight: '700' as const,
-    color: '#10b981',
-    flexShrink: 0,
-  },
 
-  // Activity Feed
+
+  // Premium Activity Feed
   activityCard: {
-    background: 'var(--bg-primary)',
+    background: 'var(--bg-glass)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
     borderRadius: '16px',
-    boxShadow: 'var(--shadow-lg)',
-    border: '1px solid var(--border-color)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
+    position: 'relative' as const
   },
   activityHeader: {
-    padding: '16px',
-    borderBottom: '1px solid var(--border-color)',
-    background: 'var(--bg-secondary)',
+    padding: '24px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
   },
   activityTitle: {
-    fontSize: '1.125rem',
-    fontWeight: '700' as const,
-    color: 'var(--text-primary)',
+    fontSize: '1.25rem',
+    fontWeight: '800' as const,
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+    WebkitBackgroundClip: 'text' as const,
+    WebkitTextFillColor: 'transparent' as const,
+    backgroundClip: 'text',
+    letterSpacing: '-0.02em',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
   },
   activityContent: {
     padding: '0',
@@ -414,25 +376,29 @@ const styles = {
   activityItem: {
     display: 'flex',
     alignItems: 'flex-start',
-    gap: '12px',
-    padding: '16px',
-    borderBottom: '1px solid var(--border-color)',
-    transition: 'background 0.2s ease',
+    gap: '16px',
+    padding: '20px 24px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+    transition: 'all 0.3s ease',
     position: 'relative' as const,
     minHeight: '80px',
+    background: 'rgba(255, 255, 255, 0.02)',
   },
   activityAvatar: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+    width: '48px',
+    height: '48px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: 'white',
-    fontWeight: '600' as const,
-    fontSize: '0.875rem',
+    fontWeight: '700' as const,
+    fontSize: '1rem',
     flexShrink: 0,
+    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3), 0 2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    position: 'relative' as const,
+    overflow: 'hidden'
   },
   activityMessage: {
     color: '#0f172a',
@@ -540,16 +506,10 @@ const styles = {
       maxWidth: '1400px',
       margin: '0 auto',
     },
-    statsGrid: {
-      gridTemplateColumns: '1fr 1fr',
-    },
   },
 
   // Touch improvements
   '@media (hover: none) and (pointer: coarse)': {
-    statItem: {
-      transition: 'none',
-    },
     activityItem: {
       transition: 'none',
     },
@@ -578,6 +538,7 @@ interface CommunityDashboardProps {
   onNewReport?: () => void;
   onNavigateToMap?: (latitude: number, longitude: number) => void;
   onNavigateToProfile?: (userId: string) => void;
+  onVibesUpdate?: (vibes: Vibe[]) => void;
 }
 
 interface ReportWithVote extends Report {
@@ -590,11 +551,12 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   isLoading = false,
   onNewReport,
   onNavigateToMap,
-  onNavigateToProfile
+  onNavigateToProfile,
+  onVibesUpdate
 }) => {
   const { t } = useTranslation();
   const { setCurrentLocationVibe } = useVibe();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [clusters, setClusters] = useState<LocationCluster[]>([]);
   const [currentLocationAddress, setCurrentLocationAddress] = useState<string>('');
   const [localCurrentLocationVibe, setLocalCurrentLocationVibe] = useState<{
@@ -612,11 +574,10 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [userReports, setUserReports] = useState<Report[]>([]);
   const [userReportsLoading, setUserReportsLoading] = useState(false);
-  const [nearbyReports, setNearbyReports] = useState<ReportWithVote[]>([]);
-  const [nearbyReportsLoading, setNearbyReportsLoading] = useState(false);
   const [isVibeBreakdownExpanded, setIsVibeBreakdownExpanded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  const [isActivityExpanded, setIsActivityExpanded] = useState(true); // Default expanded
 
   // Ref for subscription cleanup
   const subscriptionsRef = useRef<{ reports?: any; votes?: any }>({});
@@ -647,6 +608,31 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   const getVibeIcon = useCallback((vibeType: string): string => {
     return vibeIconMap[vibeType as VibeType] || '❓';
   }, [vibeIconMap]);
+
+  const getVibeIconComponent = useCallback((vibeType: string) => {
+    switch (vibeType) {
+      case 'safe':
+        return <ShieldCheck size={32} />;
+      case 'calm':
+        return <CloudSnow size={32} />;
+      case 'lively':
+        return <Music size={32} />;
+      case 'festive':
+        return <PartyPopper size={32} />;
+      case 'crowded':
+        return <Users size={32} />;
+      case 'suspicious':
+        return <EyeOff size={32} />;
+      case 'dangerous':
+        return <AlertTriangle size={32} />;
+      case 'noisy':
+        return <Volume2 size={32} />;
+      case 'quiet':
+        return <VolumeX size={32} />;
+      default:
+        return <ShieldCheck size={32} />;
+    }
+  }, []);
 
   // Extract vibe analysis logic
   const analyzeNearbyVibes = useCallback((location: [number, number], vibes: Vibe[]) => {
@@ -713,138 +699,9 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
     }
   }, []);
 
-  // Load nearby reports for community activity
-  const loadNearbyReports = useCallback(async (): Promise<Report[]> => {
-    try {
-      setNearbyReportsLoading(true);
-      // For now, load recent reports from database
-      // In a full implementation, this would filter by location
-      const reports = await reportsService.getReports({ limit: 10 });
 
-      // Add user vote information for each report
-      const reportsWithVotes = await Promise.all(
-        reports.map(async (report) => {
-          try {
-            const voteType = await reportsService.getUserVote(report.id, user!.id);
-            return {
-              ...report,
-              user_vote: voteType
-            };
-          } catch (error) {
-            return {
-              ...report,
-              user_vote: null
-            };
-          }
-        })
-      );
 
-      return reportsWithVotes;
-    } catch (error) {
-      console.error("Error loading nearby reports:", error);
-      return [];
-    } finally {
-      setNearbyReportsLoading(false);
-    }
-  }, [user]);
 
-  // Refresh community data functionality
-  const refreshCommunityData = useCallback(async () => {
-    if (isRefreshing) return;
-
-    setIsRefreshing(true);
-    try {
-      // Refresh all community data sources
-      const [userReports, nearbyReports] = await Promise.all([
-        loadUserReports(),
-        loadNearbyReports()
-      ]);
-
-      // Update state with fresh data
-      setUserReports(userReports);
-      setNearbyReports(nearbyReports as ReportWithVote[]);
-
-      // Update refresh timestamp
-      setLastRefreshTime(new Date());
-
-      // Trigger location data refresh if user location exists
-      if (userLocation && vibes.length > 0) {
-        const geocodeAndAnalyze = async () => {
-          try {
-            const [address, vibeAnalysis] = await Promise.all([
-              reverseGeocode(userLocation[0], userLocation[1]),
-              analyzeNearbyVibes(userLocation, vibes)
-            ]);
-
-            setCurrentLocationAddress(address);
-            setLocalCurrentLocationVibe(vibeAnalysis.dominantVibe);
-            setCurrentLocationVibeDistribution(vibeAnalysis.distribution);
-
-            if (vibeAnalysis.dominantVibe) {
-              setCurrentLocationVibe({
-                type: vibeAnalysis.dominantVibe.type,
-                percentage: vibeAnalysis.dominantVibe.percentage,
-                count: vibeAnalysis.dominantVibe.count,
-                color: getVibeColor(vibeAnalysis.dominantVibe.type)
-              });
-            }
-          } catch (error) {
-            console.error('Error refreshing location data:', error);
-          }
-        };
-        geocodeAndAnalyze();
-      }
-    } catch (error) {
-      console.error('Error refreshing community data:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [isRefreshing, loadUserReports, loadNearbyReports, userLocation, vibes, analyzeNearbyVibes, getVibeColor]);
-
-  // Vote on report
-  const voteOnReport = useCallback(async (reportId: number, voteType: 'upvote' | 'downvote') => {
-    if (!user) return;
-
-    try {
-      await reportsService.vote(reportId, user.id, voteType);
-
-      // Update local state optimistically
-      setNearbyReports(prevReports =>
-        prevReports.map(report => {
-          if (report.id === reportId) {
-            const currentVote = report.user_vote;
-            let newUpvotes = report.upvotes || 0;
-            let newDownvotes = report.downvotes || 0;
-
-            // Remove previous vote if exists
-            if (currentVote === 'upvote') {
-              newUpvotes--;
-            } else if (currentVote === 'downvote') {
-              newDownvotes--;
-            }
-
-            // Add new vote
-            if (voteType === 'upvote') {
-              newUpvotes++;
-            } else {
-              newDownvotes++;
-            }
-
-            return {
-              ...report,
-              upvotes: newUpvotes,
-              downvotes: newDownvotes,
-              user_vote: voteType
-            };
-          }
-          return report;
-        })
-      );
-
-    } catch (error) {
-      console.error("Error voting on report:", error);
-    }
-  }, [user]);
 
   // Memoize processed clusters to avoid re-computation on every render
   const processedClusters = useMemo(() => {
@@ -864,7 +721,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
     setClusters(processedClusters);
   }, [processedClusters]);
 
-  // Geocode user location and calculate local vibe
+  // Geocode user location and calculate local vibe - with debouncing to prevent excessive re-renders
   useEffect(() => {
     if (!userLocation || vibes.length === 0) {
       setCurrentLocationAddress('');
@@ -873,86 +730,97 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       return;
     }
 
-    let cancelled = false;
+    // Debounce geocoding to prevent excessive API calls and re-renders
+    const timeoutId = setTimeout(async () => {
+      let cancelled = false;
 
-    const geocodeAndAnalyze = async () => {
-      setIsGeocoding(true);
-      setError(null);
-      try {
-        const [address, vibeAnalysis] = await Promise.all([
-          reverseGeocode(userLocation[0], userLocation[1]),
-          analyzeNearbyVibes(userLocation, vibes)
-        ]);
+      const geocodeAndAnalyze = async () => {
+        setIsGeocoding(true);
+        setError(null);
+        try {
+          const [address, vibeAnalysis] = await Promise.all([
+            reverseGeocode(userLocation[0], userLocation[1]),
+            analyzeNearbyVibes(userLocation, vibes)
+          ]);
 
-        if (!cancelled) {
-          setCurrentLocationAddress(address);
-          setLocalCurrentLocationVibe(vibeAnalysis.dominantVibe);
-          setCurrentLocationVibeDistribution(vibeAnalysis.distribution);
+          if (!cancelled) {
+            setCurrentLocationAddress(address);
+            setLocalCurrentLocationVibe(vibeAnalysis.dominantVibe);
+            setCurrentLocationVibeDistribution(vibeAnalysis.distribution);
 
-          // Update the global context with the current location vibe
-          if (vibeAnalysis.dominantVibe) {
-            setCurrentLocationVibe({
-              type: vibeAnalysis.dominantVibe.type,
-              percentage: vibeAnalysis.dominantVibe.percentage,
-              count: vibeAnalysis.dominantVibe.count,
-              color: getVibeColor(vibeAnalysis.dominantVibe.type)
-            });
-          } else {
-            setCurrentLocationVibe(null);
+            // Update the global context with the current location vibe
+            if (vibeAnalysis.dominantVibe) {
+              setCurrentLocationVibe({
+                type: vibeAnalysis.dominantVibe.type,
+                percentage: vibeAnalysis.dominantVibe.percentage,
+                count: vibeAnalysis.dominantVibe.count,
+                color: getVibeColor(vibeAnalysis.dominantVibe.type)
+              });
+            } else {
+              setCurrentLocationVibe(null);
+            }
           }
+        } catch (error) {
+          if (!cancelled) {
+            console.error('Error processing location data:', error);
+            setError('Failed to load location data');
+            setCurrentLocationAddress('');
+            setLocalCurrentLocationVibe(null);
+            setCurrentLocationVibeDistribution([]);
+          }
+        } finally {
+          if (!cancelled) setIsGeocoding(false);
         }
-      } catch (error) {
-        if (!cancelled) {
-          console.error('Error processing location data:', error);
-          setError('Failed to load location data');
-          setCurrentLocationAddress('');
-          setLocalCurrentLocationVibe(null);
-          setCurrentLocationVibeDistribution([]);
-        }
-      } finally {
-        if (!cancelled) setIsGeocoding(false);
-      }
-    };
+      };
 
-    geocodeAndAnalyze();
+      geocodeAndAnalyze();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [userLocation, vibes, analyzeNearbyVibes]);
+      return () => {
+        cancelled = true;
+      };
+    }, 1000); // 1 second debounce to prevent excessive geocoding
 
-  // Calculate community metrics - always called before any conditional returns
-  const communityMetrics = useMemo(() => {
-    const totalReports = vibes.length;
-    const uniqueUsers = new Set(vibes.map(v => v.user_id)).size;
-    const safetyScore = localCurrentLocationVibe ? Math.round((localCurrentLocationVibe.percentage / 100) * 94) : 85;
-    const liveReports = Math.floor(totalReports * 0.1); // Estimate live reports
+    return () => clearTimeout(timeoutId);
+  }, [userLocation?.[0], userLocation?.[1], vibes.length, analyzeNearbyVibes, getVibeColor]); // More specific dependencies
 
-    return {
-      activeMembers: uniqueUsers,
-      areasMonitored: Math.max(1, Math.floor(totalReports / 10)),
-      safetyScore,
-      liveReports
-    };
-  }, [vibes, localCurrentLocationVibe]);
 
-  // Generate sample activity feed - always called before any conditional returns
+
+  // Generate enhanced activity feed - always called before any conditional returns
   const activityFeed = useMemo(() => {
     const recentReports = vibes
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 4);
+      .slice(0, 6); // Increased to show more activity
 
-    return recentReports.map(report => ({
-      id: report.id,
-      user: report.user_id.substring(0, 2).toUpperCase(),
-      message: `Reported ${report.vibe_type} atmosphere ${report.notes ? ` - ${report.notes.substring(0, 50)}` : ''}`,
-      time: new Date(report.created_at).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      }),
-      type: report.emergency ? 'safe' : report.vibe_type
-    }));
+    return recentReports.map(report => {
+      // Get proper display name with fallbacks
+      const getDisplayName = () => {
+        if (report.profile?.first_name && report.profile?.last_name) {
+          return `${report.profile.first_name} ${report.profile.last_name}`;
+        }
+        if (report.profile?.username) {
+          return report.profile.username;
+        }
+        // Fallback to first 8 characters of UUID for privacy
+        return report.user_id.substring(0, 8);
+      };
+
+      return {
+        id: report.id,
+        user: report.user_id.substring(0, 2).toUpperCase(),
+        userId: getDisplayName(),
+        message: `${t('community.reportedAtmosphere', 'Reported {{vibe}} atmosphere', { vibe: report.vibe_type })}${report.notes ? ` - ${report.notes.substring(0, 40)}` : ''}`,
+        location: report.location || 'Unknown location',
+        time: new Date(report.created_at).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        type: report.emergency ? 'safe' : report.vibe_type,
+        vibeType: report.vibe_type,
+        notes: report.notes || '',
+        createdAt: report.created_at
+      };
+    });
   }, [vibes]);
 
   // Load user reports on component mount
@@ -964,34 +832,69 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
     loadReports();
   }, [loadUserReports]);
 
-  // Load nearby reports for community activity
-  useEffect(() => {
-    const loadNearby = async () => {
-      const reports = await loadNearbyReports();
-      setNearbyReports(reports as ReportWithVote[]);
-    };
-    loadNearby();
-  }, [loadNearbyReports]);
 
-  // Set up real-time subscriptions
+
+  // Set up optimized real-time subscriptions with debouncing
   useEffect(() => {
+    if (!isAuthenticated || !user?.onboarding_completed) return;
+
+    // Clean up existing subscriptions
+    Object.values(subscriptionsRef.current).forEach(subscription => {
+      subscription?.unsubscribe?.();
+    });
+    subscriptionsRef.current = {};
+
+    // Debounce subscription updates to prevent excessive re-renders
+    let updateTimeout: NodeJS.Timeout;
+    let lastUpdate = Date.now();
+
+    // Set up optimized real-time subscriptions
     subscriptionsRef.current.reports = reportsService.subscribeToReports((newReport) => {
-      if (!newReport.emergency) {
-        console.log('New vibe report received:', newReport.id);
-      }
+      // Only update if it's been at least 2 seconds since last update
+      const now = Date.now();
+      if (now - lastUpdate < 2000) return;
+
+      lastUpdate = now;
+
+      // Use setTimeout to batch updates
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(() => {
+        if (!newReport.emergency) {
+          console.log('New vibe report received:', newReport.id);
+          // Update vibes state efficiently via callback
+          onVibesUpdate?.([newReport, ...vibes.slice(0, 999)]);
+        }
+      }, 100);
     });
 
     subscriptionsRef.current.votes = reportsService.subscribeToVotes((update) => {
-      console.log('Vote update received:', update.reportId);
+      // Batch vote updates to prevent spam
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(() => {
+        console.log('Vote update received:', update.reportId);
+        // Update both vibes and userReports efficiently via callbacks
+        onVibesUpdate?.(vibes.map((vibe: Vibe) =>
+          vibe.id === update.reportId
+            ? { ...vibe, upvotes: update.upvotes, downvotes: update.downvotes }
+            : vibe
+        ));
+        setUserReports(prev => prev.map(report =>
+          report.id === update.reportId
+            ? { ...report, upvotes: update.upvotes, downvotes: update.downvotes }
+            : report
+        ));
+      }, 100);
     });
 
+    // Cleanup function
     return () => {
+      clearTimeout(updateTimeout);
       Object.values(subscriptionsRef.current).forEach(subscription => {
-        subscription?.unsubscribe();
+        subscription?.unsubscribe?.();
       });
       subscriptionsRef.current = {};
     };
-  }, []);
+  }, [user?.onboarding_completed, onVibesUpdate]);
 
   if (isLoading) {
     return (
@@ -1039,15 +942,26 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
           {/* Location Card */}
           {isGeocoding ? (
             <div style={{
-              background: 'white',
+              background: 'var(--bg-glass)',
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              border: '1px solid rgba(255, 255, 255, 0.18)',
               borderRadius: '20px',
               padding: '40px',
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e5e7eb',
-              textAlign: 'center'
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
               <LoadingSpinner size="lg" />
-              <div style={{ color: '#6b7280', fontSize: '16px', fontWeight: '500', marginTop: '16px' }}>
+              <div style={{
+                color: '#64748b',
+                fontSize: '16px',
+                fontWeight: '600',
+                marginTop: '16px',
+                position: 'relative',
+                zIndex: 1
+              }}>
                 Loading location data...
               </div>
             </div>
@@ -1114,18 +1028,33 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                         flexDirection: 'column',
                         gap: '24px'
                       }}>
-                        {/* Circular Progress Chart */}
+                        {/* Premium Circular Progress Chart */}
                         <div style={{
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '16px'
+                          gap: '20px'
                         }}>
                           <div style={{
                             position: 'relative',
-                            borderRadius: '50%'
+                            borderRadius: '50%',
+                            filter: 'drop-shadow(0 8px 32px rgba(0, 0, 0, 0.12))'
                           }}>
-                            {/* Pulsing radial effect - multiple concentric circles */}
+                            {/* Premium Background Glow */}
+                            <div style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: '200px',
+                              height: '200px',
+                              borderRadius: '50%',
+                              background: `radial-gradient(circle, ${getVibeColor(localCurrentLocationVibe.type)}15 0%, ${getVibeColor(localCurrentLocationVibe.type)}08 40%, transparent 70%)`,
+                              animation: 'premiumGlow 3s ease-in-out infinite',
+                              zIndex: -1
+                            }}></div>
+
+                            {/* Sophisticated Pulsing Rings */}
                             <div style={{
                               position: 'absolute',
                               top: '50%',
@@ -1134,8 +1063,9 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                               width: '140px',
                               height: '140px',
                               borderRadius: '50%',
-                              border: `2px solid ${getVibeColor(localCurrentLocationVibe.type)}40`,
-                              animation: 'pulseRadius1 2s ease-in-out infinite',
+                              border: `1.5px solid ${getVibeColor(localCurrentLocationVibe.type)}60`,
+                              boxShadow: `0 0 20px ${getVibeColor(localCurrentLocationVibe.type)}40, inset 0 0 20px ${getVibeColor(localCurrentLocationVibe.type)}20`,
+                              animation: 'premiumPulse1 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite',
                               zIndex: 0
                             }}></div>
                             <div style={{
@@ -1143,11 +1073,12 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                               top: '50%',
                               left: '50%',
                               transform: 'translate(-50%, -50%)',
-                              width: '160px',
-                              height: '160px',
+                              width: '165px',
+                              height: '165px',
                               borderRadius: '50%',
-                              border: `1px solid ${getVibeColor(localCurrentLocationVibe.type)}30`,
-                              animation: 'pulseRadius2 2s ease-in-out infinite 0.5s',
+                              border: `1px solid ${getVibeColor(localCurrentLocationVibe.type)}45`,
+                              boxShadow: `0 0 15px ${getVibeColor(localCurrentLocationVibe.type)}30`,
+                              animation: 'premiumPulse2 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite 0.8s',
                               zIndex: 0
                             }}></div>
                             <div style={{
@@ -1155,16 +1086,46 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                               top: '50%',
                               left: '50%',
                               transform: 'translate(-50%, -50%)',
-                              width: '180px',
-                              height: '180px',
+                              width: '190px',
+                              height: '190px',
                               borderRadius: '50%',
-                              border: `1px solid ${getVibeColor(localCurrentLocationVibe.type)}20`,
-                              animation: 'pulseRadius3 2s ease-in-out infinite 1s',
+                              border: `0.8px solid ${getVibeColor(localCurrentLocationVibe.type)}30`,
+                              boxShadow: `0 0 10px ${getVibeColor(localCurrentLocationVibe.type)}20`,
+                              animation: 'premiumPulse3 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite 1.6s',
                               zIndex: 0
                             }}></div>
+
+                            {/* Metallic Particles Effect */}
+                            <div style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: '220px',
+                              height: '220px',
+                              zIndex: -1
+                            }}>
+                              {[...Array(8)].map((_, i) => (
+                                <div key={i} style={{
+                                  position: 'absolute',
+                                  width: '3px',
+                                  height: '3px',
+                                  background: `linear-gradient(45deg, ${getVibeColor(localCurrentLocationVibe.type)}80, ${getVibeColor(localCurrentLocationVibe.type)}40)`,
+                                  borderRadius: '50%',
+                                  boxShadow: `0 0 6px ${getVibeColor(localCurrentLocationVibe.type)}60`,
+                                  top: `${50 + 35 * Math.sin((i * 45) * Math.PI / 180)}%`,
+                                  left: `${50 + 35 * Math.cos((i * 45) * Math.PI / 180)}%`,
+                                  animation: `particleFloat 4s ease-in-out infinite ${i * 0.5}s`,
+                                  opacity: 0.7
+                                }}></div>
+                              ))}
+                            </div>
+
+                            {/* Premium Chart Container */}
                             <div style={{
                               position: 'relative',
-                              zIndex: 1
+                              zIndex: 2,
+                              filter: 'drop-shadow(0 4px 16px rgba(0, 0, 0, 0.15))'
                             }}>
                               <MultiSegmentCircularProgress
                                 segments={currentLocationVibeDistribution
@@ -1177,26 +1138,48 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                                   }))
                                 }
                                 size={140}
-                                strokeWidth={12}
+                                strokeWidth={14}
                                 centerContent={
                                   <div style={{
                                     textAlign: 'center',
-                                    color: getVibeColor(localCurrentLocationVibe.type)
+                                    position: 'relative'
                                   }}>
+                                    {/* Premium Center Glow */}
                                     <div style={{
-                                      fontSize: '1.75rem',
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      transform: 'translate(-50%, -50%)',
+                                      width: '80px',
+                                      height: '80px',
+                                      borderRadius: '50%',
+                                      background: `radial-gradient(circle, ${getVibeColor(localCurrentLocationVibe.type)}20 0%, transparent 70%)`,
+                                      animation: 'centerGlow 3s ease-in-out infinite',
+                                      zIndex: -1
+                                    }}></div>
+
+                                    <div style={{
+                                      fontSize: '2.25rem',
                                       fontWeight: '900',
                                       lineHeight: 1,
-                                      marginBottom: '2px'
+                                      marginBottom: '4px',
+                                      background: `linear-gradient(135deg, ${getVibeColor(localCurrentLocationVibe.type)} 0%, ${getVibeColor(localCurrentLocationVibe.type)}dd 50%, ${getVibeColor(localCurrentLocationVibe.type)}aa 100%)`,
+                                      WebkitBackgroundClip: 'text',
+                                      WebkitTextFillColor: 'transparent',
+                                      backgroundClip: 'text',
+                                      textShadow: `0 2px 8px ${getVibeColor(localCurrentLocationVibe.type)}40`,
+                                      animation: 'textGlow 2s ease-in-out infinite alternate'
                                     }}>
                                       {localCurrentLocationVibe.percentage}%
                                     </div>
                                     <div style={{
-                                      fontSize: '0.75rem',
-                                      fontWeight: '700',
+                                      fontSize: '0.875rem',
+                                      fontWeight: '800',
                                       textTransform: 'uppercase',
-                                      letterSpacing: '0.1em',
-                                      opacity: 0.8
+                                      letterSpacing: '0.15em',
+                                      color: `${getVibeColor(localCurrentLocationVibe.type)}ee`,
+                                      textShadow: `0 1px 3px ${getVibeColor(localCurrentLocationVibe.type)}30`,
+                                      animation: 'textPulse 2s ease-in-out infinite alternate'
                                     }}>
                                       {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}
                                     </div>
@@ -1205,13 +1188,35 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                               />
                             </div>
                           </div>
+
+                          {/* Premium Label - Moved lower to avoid overlaying pulse animation */}
                           <div style={{
                             textAlign: 'center',
-                            color: '#64748b',
-                            fontSize: '0.875rem',
-                            fontWeight: '500'
+                            padding: '12px 20px',
+                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                            borderRadius: '16px',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            backdropFilter: 'blur(10px)',
+                            WebkitBackdropFilter: 'blur(10px)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                            marginTop: '40px' // Added margin to move it below the pulse animation
                           }}>
-                            {t('community.sentimentDistribution')}
+                            <div style={{
+                              color: '#64748b',
+                              fontSize: '0.875rem',
+                              fontWeight: '600',
+                              letterSpacing: '0.02em'
+                            }}>
+                              {t('community.sentimentDistribution')}
+                            </div>
+                            <div style={{
+                              color: '#94a3b8',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              marginTop: '2px'
+                            }}>
+                              Real-time community sentiment
+                            </div>
                           </div>
                         </div>
 
@@ -1263,7 +1268,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                           >
                             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <i className="fas fa-chart-bar" style={{ color: getVibeColor(localCurrentLocationVibe.type) }}></i>
-                              View Detailed Breakdown
+                              {t('community.viewDetailedBreakdown')}
                             </span>
                             <i className={`fas fa-chevron-${isVibeBreakdownExpanded ? 'up' : 'down'}`}
                               style={{ color: '#6b7280', transition: 'transform 0.2s ease' }}></i>
@@ -1300,18 +1305,17 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                                       }}
                                     >
                                       <div style={{
-                                        width: '32px',
-                                        height: '32px',
+                                        width: '40px',
+                                        height: '40px',
                                         borderRadius: '8px',
                                         background: `linear-gradient(135deg, ${vibe.color} 0%, ${vibe.color}cc 100%)`,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: '16px',
                                         boxShadow: `0 2px 8px ${vibe.color}40`,
                                         animation: 'pulseVibeIcon 2s ease-in-out infinite'
                                       }}>
-                                        {getVibeIcon(vibe.type)}
+                                        {getVibeIconComponent(vibe.type)}
                                       </div>
                                       <div style={{
                                         fontSize: '0.875rem',
@@ -1320,6 +1324,14 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                                         textAlign: 'center'
                                       }}>
                                         {t(`vibes.${vibe.type}`, vibe.type)}
+                                      </div>
+                                      <div style={{
+                                        fontSize: '0.75rem',
+                                        color: '#64748b',
+                                        textAlign: 'center',
+                                        lineHeight: '1.3'
+                                      }}>
+                                        {t(`vibes.${vibe.type}Desc`, `${vibe.type} description`)}
                                       </div>
                                       <div style={{
                                         fontSize: '1.25rem',
@@ -1344,9 +1356,113 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                       </div>
                     </div>
 
-                    {/* CSS Animations */}
+                    {/* Premium CSS Animations */}
                     <style>
                       {`
+                        /* Premium Pulsing Rings */
+                        @keyframes premiumPulse1 {
+                          0%, 100% {
+                            transform: translate(-50%, -50%) scale(1);
+                            opacity: 0.8;
+                            filter: blur(0px);
+                          }
+                          50% {
+                            transform: translate(-50%, -50%) scale(1.15);
+                            opacity: 0.4;
+                            filter: blur(1px);
+                          }
+                        }
+                        @keyframes premiumPulse2 {
+                          0%, 100% {
+                            transform: translate(-50%, -50%) scale(1);
+                            opacity: 0.6;
+                            filter: blur(0px);
+                          }
+                          50% {
+                            transform: translate(-50%, -50%) scale(1.25);
+                            opacity: 0.3;
+                            filter: blur(1px);
+                          }
+                        }
+                        @keyframes premiumPulse3 {
+                          0%, 100% {
+                            transform: translate(-50%, -50%) scale(1);
+                            opacity: 0.4;
+                            filter: blur(0px);
+                          }
+                          50% {
+                            transform: translate(-50%, -50%) scale(1.35);
+                            opacity: 0.2;
+                            filter: blur(1px);
+                          }
+                        }
+
+                        /* Premium Background Glow */
+                        @keyframes premiumGlow {
+                          0%, 100% {
+                            transform: translate(-50%, -50%) scale(1);
+                            opacity: 0.3;
+                          }
+                          50% {
+                            transform: translate(-50%, -50%) scale(1.1);
+                            opacity: 0.6;
+                          }
+                        }
+
+                        /* Center Content Glow */
+                        @keyframes centerGlow {
+                          0%, 100% {
+                            transform: translate(-50%, -50%) scale(1);
+                            opacity: 0.4;
+                          }
+                          50% {
+                            transform: translate(-50%, -50%) scale(1.2);
+                            opacity: 0.8;
+                          }
+                        }
+
+                        /* Text Glow Effects */
+                        @keyframes textGlow {
+                          0%, 100% {
+                            text-shadow: 0 2px 8px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.2);
+                          }
+                          50% {
+                            text-shadow: 0 2px 12px rgba(16, 185, 129, 0.6), 0 0 30px rgba(16, 185, 129, 0.4), 0 0 40px rgba(16, 185, 129, 0.2);
+                          }
+                        }
+
+                        @keyframes textPulse {
+                          0%, 100% {
+                            opacity: 0.9;
+                            transform: scale(1);
+                          }
+                          50% {
+                            opacity: 1;
+                            transform: scale(1.02);
+                          }
+                        }
+
+                        /* Metallic Particles */
+                        @keyframes particleFloat {
+                          0%, 100% {
+                            transform: translateY(0px) rotate(0deg);
+                            opacity: 0.7;
+                          }
+                          25% {
+                            transform: translateY(-8px) rotate(90deg);
+                            opacity: 1;
+                          }
+                          50% {
+                            transform: translateY(-4px) rotate(180deg);
+                            opacity: 0.8;
+                          }
+                          75% {
+                            transform: translateY(-12px) rotate(270deg);
+                            opacity: 0.9;
+                          }
+                        }
+
+                        /* Legacy animations for compatibility */
                         @keyframes pulseRadius1 {
                           0%, 100% {
                             transform: translate(-50%, -50%) scale(1);
@@ -1450,18 +1566,40 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
             </div>
           ) : (
             <div style={{
-              background: 'white',
+              background: 'var(--bg-glass)',
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              border: '1px solid rgba(255, 255, 255, 0.18)',
               borderRadius: '20px',
               padding: '40px',
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e5e7eb',
-              textAlign: 'center'
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              <i className="fas fa-location-slash" style={{ fontSize: '48px', color: '#d1d5db', marginBottom: '16px' }}></i>
-              <div style={{ color: '#6b7280', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              <i className="fas fa-location-slash" style={{
+                fontSize: '48px',
+                color: '#94a3b8',
+                marginBottom: '16px',
+                position: 'relative',
+                zIndex: 1
+              }}></i>
+              <div style={{
+                color: '#64748b',
+                fontSize: '18px',
+                fontWeight: '700',
+                marginBottom: '8px',
+                position: 'relative',
+                zIndex: 1
+              }}>
                 Location Not Available
               </div>
-              <div style={{ color: '#9ca3af', fontSize: '14px' }}>
+              <div style={{
+                color: '#94a3b8',
+                fontSize: '14px',
+                position: 'relative',
+                zIndex: 1
+              }}>
                 Please enable location services to see your area's community vibe
               </div>
             </div>
@@ -1470,194 +1608,150 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
         {/* Sidebar */}
         <div style={styles.sidebar}>
-          {/* Community Activity */}
+          {/* Premium Activity Feed Dropdown */}
           <div style={styles.activityCard}>
-            <div style={styles.activityHeader}>
-              <div style={styles.activityTitle}>Community Activity</div>
-            </div>
-            <div style={styles.activityContent}>
-              {nearbyReportsLoading ? (
+            {/* Premium Dropdown Header */}
+            <div
+              style={{
+                ...styles.activityHeader,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: isActivityExpanded ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+                transition: 'all 0.3s ease'
+              }}
+              onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
                 <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '40px 20px'
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
                 }}>
-                  <LoadingSpinner size="md" />
+                  <i className="fas fa-history" style={{ fontSize: '16px', color: 'white' }}></i>
                 </div>
-              ) : nearbyReports.length === 0 ? (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '40px 20px',
-                  color: '#64748b'
-                }}>
-                  <i className="fas fa-users" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
-                  <p>No nearby reports</p>
-                </div>
-              ) : (
-                nearbyReports.slice(0, 5).map(report => (
-                  <div
-                    key={report.id}
-                    onClick={() => {
-                      console.log('Report clicked:', report.id, report.latitude, report.longitude);
-                      onNavigateToMap?.(report.latitude, report.longitude);
-                    }}
-                    style={{
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
+                <h2 style={styles.activityTitle}>
+                  {t('community.recentActivityTitle')}
+                </h2>
+              </div>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.3s ease',
+                transform: isActivityExpanded ? 'rotate(0deg)' : 'rotate(180deg)'
+              }}>
+                <i className="fas fa-chevron-up" style={{
+                  fontSize: '12px',
+                  color: '#64748b',
+                  transition: 'color 0.3s ease'
+                }}></i>
+              </div>
+            </div>
+
+            {/* Expandable Content */}
+            {isActivityExpanded && (
+              <div style={{
+                animation: 'slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                padding: '0 24px 24px'
+              }}>
+                <div style={styles.activityContent}>
+                  {activityFeed.map((activity, index) => (
+                    <div key={index} style={{
+                      ...styles.activityItem,
+                      background: index % 2 === 0 ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.01)',
+                      animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#f8fafc';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                      e.currentTarget.style.transform = 'translateX(4px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    {/* User Profile Picture */}
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Profile picture clicked:', report.user_id);
-                        onNavigateToProfile?.(report.user_id);
-                      }}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        overflow: 'hidden',
-                        border: '2px solid #e5e7eb',
-                        cursor: 'pointer',
-                        flexShrink: 0
-                      }}
-                    >
-                      {report.profile?.profile_picture_url ? (
-                        <img
-                          src={report.profile.profile_picture_url}
-                          alt={report.profile.username || 'User'}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const fallback = target.parentElement?.querySelector('.profile-fallback') as HTMLElement;
-                            if (fallback) fallback.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className="profile-fallback"
-                        style={{
-                          display: report.profile?.profile_picture_url ? 'none' : 'flex',
-                          width: '100%',
-                          height: '100%',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          color: 'white',
-                          fontSize: '16px',
-                          fontWeight: '600'
-                        }}
-                      >
-                        {(report.profile?.username || report.profile?.first_name || 'U')[0]?.toUpperCase() || 'U'}
+                      e.currentTarget.style.background = index % 2 === 0 ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.01)';
+                      e.currentTarget.style.transform = 'translateX(0)';
+                    }}>
+                      <div style={styles.activityAvatar}>
+                        {activity.user}
                       </div>
-                    </div>
-
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        fontWeight: '600',
-                        color: '#0f172a',
-                        marginBottom: '2px'
-                      }}>
-                        {String(t(`vibes.${report.vibe_type}`))} {String(t('profile.report'))}
-                      </div>
-                      <div style={{
-                        color: '#64748b',
-                        fontSize: '14px',
-                        marginBottom: '4px'
-                      }}>
-                        {report.location || String(t('profile.unknownLocation'))}
-                      </div>
-                      {report.notes && (
-                        <div style={{
-                          color: '#475569',
-                          fontSize: '14px',
-                          marginBottom: '4px'
-                        }}>
-                          {report.notes}
+                      <div style={{ flex: 1 }}>
+                        <div style={styles.activityMessage}>
+                          {activity.message}
                         </div>
-                      )}
-                      <div style={{
-                        color: '#64748b',
-                        fontSize: '12px'
-                      }}>
-                        {new Date(report.created_at).toLocaleDateString()}
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                          marginTop: '8px'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '0.75rem',
+                            color: '#64748b'
+                          }}>
+                            <i className="fas fa-user" style={{ fontSize: '10px' }}></i>
+                            <span style={{ fontWeight: '600' }}>
+                              {activity.userId}
+                            </span>
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '0.75rem',
+                            color: '#64748b'
+                          }}>
+                            <i className="fas fa-map-marker-alt" style={{ fontSize: '10px' }}></i>
+                            <span style={{ fontWeight: '500' }}>
+                              {activity.location}
+                            </span>
+                          </div>
+                        </div>
+                        <div style={styles.activityMeta}>
+                          <span>{activity.time}</span>
+                          <span style={{
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontSize: '0.6rem',
+                            fontWeight: '700',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            background: getVibeColor(activity.type) + '20',
+                            color: getVibeColor(activity.type),
+                            border: `1px solid ${getVibeColor(activity.type)}40`
+                          }}>
+                            {t(`vibes.${activity.type}`, activity.type)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Vote Buttons */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <button
-                        onClick={() => voteOnReport(report.id, 'upvote')}
-                        style={{
-                          backgroundColor: report.user_vote === 'upvote' ? '#10b981' : 'transparent',
-                          color: report.user_vote === 'upvote' ? 'white' : '#64748b',
-                          border: `1px solid ${report.user_vote === 'upvote' ? '#10b981' : '#e2e8f0'}`,
-                          borderRadius: '8px',
-                          padding: '8px 12px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                          minWidth: '48px',
-                          minHeight: '44px',
-                          WebkitTapHighlightColor: 'transparent'
-                        }}
-                      >
-                        <i className="fas fa-thumbs-up"></i>
-                        {report.upvotes || 0}
-                      </button>
-                      <button
-                        onClick={() => voteOnReport(report.id, 'downvote')}
-                        style={{
-                          backgroundColor: report.user_vote === 'downvote' ? '#ef4444' : 'transparent',
-                          color: report.user_vote === 'downvote' ? 'white' : '#64748b',
-                          border: `1px solid ${report.user_vote === 'downvote' ? '#ef4444' : '#e2e8f0'}`,
-                          borderRadius: '8px',
-                          padding: '8px 12px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                          minWidth: '48px',
-                          minHeight: '44px',
-                          WebkitTapHighlightColor: 'transparent'
-                        }}
-                      >
-                        <i className="fas fa-thumbs-down"></i>
-                        {report.downvotes || 0}
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

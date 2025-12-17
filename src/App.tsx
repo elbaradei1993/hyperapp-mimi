@@ -22,6 +22,8 @@ import { reportsService } from './services/reports';
 import { storageManager } from './lib/storage';
 import { notificationService } from './services/notificationService';
 import { pushNotificationService } from './services/pushNotificationService';
+import { fcmService } from './lib/firebase';
+import { Capacitor } from '@capacitor/core';
 import { Box, Text as ChakraText } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Vibe, SOS } from './types';
@@ -67,6 +69,44 @@ const AppContent: React.FC = () => {
       setShowAuthModal(true);
     }
   }, [isLoading, isAuthenticated]);
+
+  // Request notification permission on app startup
+  useEffect(() => {
+    const requestNotificationPermission = async () => {
+      try {
+        console.log('🔔 Requesting notification permission on app startup...');
+
+        // Check if we've already requested permission this session
+        const permissionRequested = await storageManager.get('notificationPermissionRequested');
+        if (permissionRequested === 'true') {
+          console.log('🔔 Notification permission already requested this session');
+          return;
+        }
+
+        // Request permission
+        const token = await fcmService.requestPermission();
+
+        if (token) {
+          console.log('🔔 Notification permission granted on startup');
+          // Mark as requested to avoid repeated prompts
+          await storageManager.set('notificationPermissionRequested', 'true');
+        } else {
+          console.log('🔔 Notification permission denied or not supported');
+          // Still mark as requested to avoid repeated prompts
+          await storageManager.set('notificationPermissionRequested', 'true');
+        }
+      } catch (error) {
+        console.error('Error requesting notification permission on startup:', error);
+      }
+    };
+
+    // Only request permission after a short delay to ensure the app is fully loaded
+    const timer = setTimeout(() => {
+      requestNotificationPermission();
+    }, 2000); // 2 second delay
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // Check authentication state on app load
@@ -491,16 +531,23 @@ const AppContent: React.FC = () => {
           gpsWatchId = navigator.geolocation.watchPosition(
             (position) => {
               const { latitude: newLat, longitude: newLng, accuracy: newAccuracy } = position.coords;
+              const now = Date.now();
+
+              // Only update if it's been at least 30 seconds since last update
+              if (now - lastLocationUpdate < 30000) {
+                return; // Skip update to prevent excessive tracking
+              }
 
               // Update if accuracy improved significantly or position changed
               const distance = currentLocation ? Math.sqrt(
                 Math.pow(newLat - currentLocation[0], 2) + Math.pow(newLng - currentLocation[1], 2)
               ) * 111000 : Infinity;
 
-              if (newAccuracy < currentAccuracy * 0.7 || distance > 25) { // 70% accuracy improvement or 25m movement
+              if (newAccuracy < currentAccuracy * 0.7 || distance > 50) { // 70% accuracy improvement or 50m movement
                 currentLocation = [newLat, newLng];
                 currentAccuracy = newAccuracy;
                 setUserLocation(currentLocation);
+                setLastLocationUpdate(now);
                 console.log(`🔄 Location updated: ${newLat.toFixed(6)}, ${newLng.toFixed(6)} (${Math.round(newAccuracy)}m, ${Math.round(distance)}m moved)`);
               }
             },
@@ -567,42 +614,52 @@ const AppContent: React.FC = () => {
     }
   }, [isAuthenticated, isLoading, locationInitialized, lastLocationUpdate, locationPermissionStatus]);
 
-  // Initialize notification service when user is authenticated
+  // Initialize notification service when user is authenticated - with guards to prevent re-initialization
   useEffect(() => {
     if (isAuthenticated && user?.onboarding_completed) {
-      // Set up notification service with real context methods
-      notificationService.setNotificationContext({
-        notifications: notifications,
-        unreadCount: notifications.filter(n => !n.read).length,
-        recentNotifications: notifications.filter(n => {
-          const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
-          return n.timestamp >= twelveHoursAgo;
-        }),
-        addNotification: (notification) => {
-          // Use the real addNotification from useNotification hook
-          return addNotification(notification);
-        },
-        removeNotification,
-        markAsRead,
-        markAllAsRead,
-        clearAll
-      });
+      const currentUserId = notificationService.getCurrentUserId();
 
-      // Set current user ID to filter out own reports
-      notificationService.setCurrentUserId(user.id);
+      // Only initialize if not already initialized for this user
+      if (currentUserId !== user.id) {
+        // Set up notification service with real context methods
+        notificationService.setNotificationContext({
+          notifications: notifications,
+          unreadCount: notifications.filter(n => !n.read).length,
+          recentNotifications: notifications.filter(n => {
+            const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+            return n.timestamp >= twelveHoursAgo;
+          }),
+          addNotification: (notification) => {
+            // Use the real addNotification from useNotification hook
+            return addNotification(notification);
+          },
+          removeNotification,
+          markAsRead,
+          markAllAsRead,
+          clearAll
+        });
 
-      // Update user location when it changes
-      if (userLocation) {
-        notificationService.setUserLocation(userLocation);
+        // Set current user ID to filter out own reports
+        notificationService.setCurrentUserId(user.id);
+
+        // Update user location when it changes
+        if (userLocation) {
+          notificationService.setUserLocation(userLocation);
+        }
+
+        // Initialize push notifications
+        pushNotificationService.initialize(user.id);
+
+        // Start monitoring reports for notifications
+        notificationService.startMonitoring();
+
+        console.log('🔔 Notification services initialized for user:', user.id);
+      } else {
+        // Just update location if user is already initialized
+        if (userLocation) {
+          notificationService.setUserLocation(userLocation);
+        }
       }
-
-      // Initialize push notifications
-      pushNotificationService.initialize(user.id);
-
-      // Start monitoring reports for notifications
-      notificationService.startMonitoring();
-
-      console.log('🔔 Notification services initialized for user:', user.id);
     } else {
       // Stop monitoring when user logs out
       notificationService.stopMonitoring();
@@ -616,7 +673,7 @@ const AppContent: React.FC = () => {
       notificationService.setCurrentUserId(null);
       pushNotificationService.cleanup();
     };
-  }, [isAuthenticated, user?.onboarding_completed, user?.id, notifications, removeNotification, addNotification, markAsRead, markAllAsRead, clearAll, userLocation]);
+  }, [isAuthenticated, user?.onboarding_completed, user?.id, userLocation]); // Removed notifications dependencies to prevent re-initialization
 
   // Memoize subscriptions ref to prevent recreation
   const subscriptionsRef = useRef<{ reports?: { unsubscribe: () => void }; votes?: { unsubscribe: () => void } }>({});
@@ -625,25 +682,33 @@ const AppContent: React.FC = () => {
   const debouncedLoadData = useCallback(
     (() => {
       let timeoutId: NodeJS.Timeout;
+      let lastLoadTime = 0;
       return () => {
+        const now = Date.now();
+        // Only allow loading every 5 seconds to prevent excessive API calls
+        if (now - lastLoadTime < 5000) {
+          return; // Skip if loaded recently
+        }
+
         clearTimeout(timeoutId);
         timeoutId = setTimeout(async () => {
           try {
             // Load vibes and SOS alerts from Supabase with error handling
             const [vibesData, sosData] = await Promise.all([
-              reportsService.getVibes({ limit: 1000 }),    // Load 1000 vibes for historical data
-              reportsService.getSOSAlerts({ limit: 500 })  // Load 500 SOS alerts for historical data
+              reportsService.getVibes({ limit: 500 }),    // Reduced from 1000 to 500
+              reportsService.getSOSAlerts({ limit: 200 }) // Reduced from 500 to 200
             ]);
 
             setVibes(vibesData || []);
             setSosAlerts(sosData || []);
+            lastLoadTime = Date.now();
           } catch (error) {
             console.error('Error loading data:', error);
             // Fallback to empty arrays if loading fails - app still works
             setVibes([]);
             setSosAlerts([]);
           }
-        }, 300); // 300ms debounce
+        }, 500); // Increased debounce to 500ms
       };
     })(),
     []

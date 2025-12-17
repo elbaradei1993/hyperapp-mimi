@@ -492,12 +492,14 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, o
       <PrivacyPolicyModal
         isOpen={showPrivacyPolicyModal}
         onClose={() => setShowPrivacyPolicyModal(false)}
+        onAccept={() => setPrivacyAccepted(true)}
       />
 
       {/* Terms of Service Modal */}
       <TermsOfServiceModal
         isOpen={showTermsOfServiceModal}
         onClose={() => setShowTermsOfServiceModal(false)}
+        onAccept={() => setPrivacyAccepted(true)}
       />
     </>
   );

@@ -37,6 +37,10 @@ class NotificationService {
     this.currentUserId = userId;
   }
 
+  getCurrentUserId(): string | null {
+    return this.currentUserId;
+  }
+
   // Calculate distance between two points in kilometers
   private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
     const R = 6371; // Earth's radius in kilometers

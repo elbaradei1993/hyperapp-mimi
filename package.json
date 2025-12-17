@@ -34,6 +34,7 @@
   "homepage": "https://github.com/elbaradei1993/hyperapp-mimi#readme",
   "dependencies": {
     "@capacitor/geolocation": "^6.1.1",
+    "@capacitor/local-notifications": "^6.0.0",
     "@chakra-ui/react": "^3.29.0",
     "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@emotion/react": "^11.14.0",
@@ -50,8 +51,8 @@
     "ollama": "^0.6.3",
     "openai": "^6.9.0",
     "piper-tts-web": "^1.1.2",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-i18next": "^16.2.0",
     "react-is": "^19.2.3",
     "react-leaflet": "^5.0.0",
@@ -66,12 +67,12 @@
     "@types/leaflet": "^1.9.21",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "@vitejs/plugin-react": "^5.1.0",
+    "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.16",
     "typescript": "^5.9.3",
-    "vite": "^7.1.12",
+    "vite": "^7.3.0",
     "vite-plugin-pwa": "^1.1.0"
   }
 }

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { VIBE_CONFIG } from '../constants/vibes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 const VibeLegend: React.FC = () => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpanded = () => {
@@ -43,9 +45,9 @@ const VibeLegend: React.FC = () => {
           color: '#374151',
           WebkitTapHighlightColor: 'transparent',
         }}
-        aria-label={isExpanded ? 'Collapse legend' : 'Expand legend'}
+        aria-label={isExpanded ? t('community.vibeLegendCollapse') : t('community.vibeLegendExpand')}
       >
-        <span>Vibe Legend</span>
+        <span>{t('community.vibeLegend')}</span>
         {isExpanded ? (
           <ChevronDown size={14} color="#6b7280" />
         ) : (
@@ -106,7 +108,7 @@ const VibeLegend: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                     <span style={{ fontSize: '10px' }}>{config.icon}</span>
                     <span style={{ fontSize: '10px', fontWeight: '600' }}>
-                      {config.label}
+                      {t(`vibes.${vibeType}`, config.label)}
                     </span>
                   </div>
                 </div>

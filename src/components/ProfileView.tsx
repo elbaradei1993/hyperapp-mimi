@@ -64,7 +64,7 @@ const ProfileView: React.FC = () => {
   const [reportsLoading, setReportsLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showMyReports, setShowMyReports] = useState(false);
-  const [editStep, setEditStep] = useState(1); // 1 = Basic Info, 2 = Interests
+  const [editStep, setEditStep] = useState(1);
   const [cachedUserReports, setCachedUserReports] = useState<Report[]>([]);
   const [reportsLoaded, setReportsLoaded] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -140,11 +140,6 @@ const ProfileView: React.FC = () => {
       // Load recent activity immediately after stats
       const activityData = await loadRecentActivity();
       setRecentActivity(activityData);
-
-      // Try to detect and update current location in background
-      detectCurrentLocationForProfile().catch(error => {
-        console.log('Location detection for profile failed, using existing location:', error);
-      });
 
       // Defer badge loading to improve initial load time
       loadUserBadges().then(badgesData => {
@@ -501,6 +496,30 @@ const ProfileView: React.FC = () => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
+  const createConfetti = () => {
+    const colors = ['#ff6b6b', '#4ecdc4', '#ffd166', '#06d6a0', '#118ab2'];
+
+    for (let i = 0; i < 50; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.width = Math.random() * 10 + 5 + 'px';
+      confetti.style.height = Math.random() * 10 + 5 + 'px';
+      confetti.style.animation = `confetti ${Math.random() * 3 + 2}s linear forwards`;
+      confetti.style.animationDelay = Math.random() * 2 + 's';
+
+      document.body.appendChild(confetti);
+
+      // Remove confetti after animation completes
+      setTimeout(() => {
+        if (confetti.parentNode) {
+          confetti.parentNode.removeChild(confetti);
+        }
+      }, 5000);
+    }
+  };
+
   // Helper function to extract address from location regardless of format
   const getLocationAddress = (location: any): string => {
     if (!location) return t('profile.notProvided');
@@ -528,139 +547,68 @@ const ProfileView: React.FC = () => {
     return t('profile.notProvided');
   };
 
-  // Detect current location for profile display
-  const detectCurrentLocationForProfile = async () => {
-    if (detectingLocation) return;
-
-    setDetectingLocation(true);
-    try {
-      // Get current position
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error('Geolocation not supported'));
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000 // 5 minutes
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-
-      // Reverse geocode to get address
-      const address = await reverseGeocode(latitude, longitude);
-
-      // Update user's profile with the detected location
-      if (user) {
-        await updateProfile({
-          location: {
-            latitude,
-            longitude,
-            address
-          }
-        });
-      }
-
-    } catch (error: any) {
-      console.warn('Location detection for profile failed:', error);
-      // Don't show error to user, just use existing location
-    } finally {
-      setDetectingLocation(false);
-    }
-  };
-
-  // Detect current location and populate the location field
-  const detectCurrentLocation = async () => {
-    if (detectingLocation) return;
-
-    setDetectingLocation(true);
-    try {
-      // Get current position
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error('Geolocation not supported'));
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000 // 5 minutes
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-
-      // Reverse geocode to get address
-      const address = await reverseGeocode(latitude, longitude);
-
-      // Update the location field with the detected address
-      setEditForm(prev => ({
-        ...prev,
-        location: address
-      }));
-
-    } catch (error) {
-      console.warn('Location detection failed:', error);
-      // Fall back to stored location if available
-      const fallbackLocation = user?.location
-        ? (typeof user.location === 'string'
-            ? user.location
-            : (user.location.address || `${user.location.latitude.toFixed(4)}, ${user.location.longitude.toFixed(4)}`))
-        : '';
-
-      setEditForm(prev => ({
-        ...prev,
-        location: fallbackLocation
-      }));
-    } finally {
-      setDetectingLocation(false);
-    }
-  };
-
   return (
     <div style={{
       padding: '16px',
       maxWidth: '800px',
       margin: '0 auto',
       backgroundColor: 'var(--bg-secondary)',
-      paddingBottom: '100px', // Extra padding for mobile scrolling
-      paddingTop: '80px', // Add top padding to account for fixed header
+      paddingBottom: '100px',
+      paddingTop: '80px',
       minHeight: '100vh'
     }}>
-      {/* Modern Profile Header */}
+      {/* Premium Profile Header */}
       <div style={{
         background: 'var(--bg-glass)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid var(--bg-glass-border)',
-        borderRadius: '16px',
-        padding: '32px',
-        marginBottom: '24px',
-        boxShadow: 'var(--shadow-lg)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+        borderRadius: '20px',
+        padding: '40px',
+        marginBottom: '32px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
         display: 'flex',
         alignItems: 'center',
-        gap: '24px',
+        gap: '32px',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Animated Background Gradient */}
+        {/* Premium Multi-layer Background */}
         <div style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(45deg, rgba(76, 0, 176, 0.35), rgba(168, 85, 247, 0.35), rgba(124, 58, 237, 0.35))',
-          backgroundSize: '400% 400%',
-          animation: 'gradientShift 8s ease infinite',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%)',
           pointerEvents: 'none'
         }}></div>
 
-        {/* Floating Particles Effect */}
+        {/* Luxury Gradient Overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(168, 85, 247, 0.06) 35%, rgba(236, 72, 153, 0.04) 70%, rgba(34, 197, 94, 0.02) 100%)',
+          backgroundSize: '300% 300%',
+          animation: 'luxuryGradientShift 12s ease-in-out infinite',
+          pointerEvents: 'none'
+        }}></div>
+
+        {/* Metallic Reflection Effect */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 20%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.4) 80%, transparent 100%)',
+          pointerEvents: 'none'
+        }}></div>
+
+        {/* Premium Particle System */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -670,170 +618,245 @@ const ProfileView: React.FC = () => {
           pointerEvents: 'none',
           overflow: 'hidden'
         }}>
-          {/* Particle 1 */}
+          {/* Gold Particle */}
           <div style={{
             position: 'absolute',
-            top: '20%',
-            left: '10%',
-            width: '4px',
-            height: '4px',
-            background: 'var(--brand-primary)',
-            borderRadius: '50%',
-            opacity: '0.3',
-            animation: 'floatParticle1 6s ease-in-out infinite'
-          }}></div>
-
-          {/* Particle 2 */}
-          <div style={{
-            position: 'absolute',
-            top: '60%',
-            right: '15%',
+            top: '25%',
+            left: '15%',
             width: '3px',
             height: '3px',
-            background: 'var(--accent-primary)',
+            background: 'linear-gradient(45deg, #FFD700, #FFA500)',
             borderRadius: '50%',
-            opacity: '0.4',
-            animation: 'floatParticle2 8s ease-in-out infinite'
+            opacity: '0.6',
+            boxShadow: '0 0 6px rgba(255, 215, 0, 0.4)',
+            animation: 'premiumFloat1 8s ease-in-out infinite'
           }}></div>
 
-          {/* Particle 3 */}
+          {/* Silver Particle */}
           <div style={{
             position: 'absolute',
-            bottom: '25%',
-            left: '70%',
-            width: '5px',
-            height: '5px',
-            background: 'var(--brand-secondary)',
+            top: '65%',
+            right: '20%',
+            width: '2px',
+            height: '2px',
+            background: 'linear-gradient(45deg, #C0C0C0, #A8A8A8)',
             borderRadius: '50%',
-            opacity: '0.2',
-            animation: 'floatParticle3 7s ease-in-out infinite'
+            opacity: '0.5',
+            boxShadow: '0 0 4px rgba(192, 192, 192, 0.3)',
+            animation: 'premiumFloat2 10s ease-in-out infinite'
+          }}></div>
+
+          {/* Bronze Particle */}
+          <div style={{
+            position: 'absolute',
+            bottom: '30%',
+            left: '75%',
+            width: '4px',
+            height: '4px',
+            background: 'linear-gradient(45deg, #CD7F32, #A0522D)',
+            borderRadius: '50%',
+            opacity: '0.4',
+            boxShadow: '0 0 8px rgba(205, 127, 50, 0.3)',
+            animation: 'premiumFloat3 9s ease-in-out infinite'
+          }}></div>
+
+          {/* Crystal Particle */}
+          <div style={{
+            position: 'absolute',
+            top: '45%',
+            right: '8%',
+            width: '2px',
+            height: '2px',
+            background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6))',
+            borderRadius: '50%',
+            opacity: '0.7',
+            boxShadow: '0 0 3px rgba(255, 255, 255, 0.5)',
+            animation: 'premiumFloat4 7s ease-in-out infinite'
           }}></div>
         </div>
 
-        {/* Subtle background gradient accent */}
+        {/* Premium Inner Shadow */}
         <div style={{
           position: 'absolute',
           top: 0,
+          left: 0,
           right: 0,
-          width: '200px',
-          height: '200px',
-          background: 'var(--brand-gradient)',
-          opacity: '0.03',
-          borderRadius: '50%',
-          transform: 'translate(50%, -50%)',
-          pointerEvents: 'none'
+          bottom: 0,
+          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.05)',
+          pointerEvents: 'none',
+          borderRadius: '20px'
         }}></div>
 
-        {/* CSS Animations */}
+        {/* Premium CSS Animations */}
         <style>{`
-          @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+          @keyframes luxuryGradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
           }
 
-          @keyframes floatParticle1 {
-            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
-            25% { transform: translateY(-10px) translateX(5px); opacity: 0.6; }
-            50% { transform: translateY(-5px) translateX(-5px); opacity: 0.4; }
-            75% { transform: translateY(-15px) translateX(10px); opacity: 0.5; }
+          @keyframes premiumFloat1 {
+            0%, 100% {
+              transform: translateY(0px) translateX(0px) scale(1);
+              opacity: 0.6;
+            }
+            25% {
+              transform: translateY(-12px) translateX(8px) scale(1.2);
+              opacity: 0.9;
+            }
+            50% {
+              transform: translateY(-6px) translateX(-4px) scale(0.8);
+              opacity: 0.4;
+            }
+            75% {
+              transform: translateY(-18px) translateX(12px) scale(1.1);
+              opacity: 0.7;
+            }
           }
 
-          @keyframes floatParticle2 {
-            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.4; }
-            33% { transform: translateY(8px) translateX(-8px); opacity: 0.7; }
-            66% { transform: translateY(-6px) translateX(6px); opacity: 0.3; }
+          @keyframes premiumFloat2 {
+            0%, 100% {
+              transform: translateY(0px) translateX(0px) scale(1);
+              opacity: 0.5;
+            }
+            33% {
+              transform: translateY(10px) translateX(-10px) scale(1.3);
+              opacity: 0.8;
+            }
+            66% {
+              transform: translateY(-8px) translateX(8px) scale(0.7);
+              opacity: 0.3;
+            }
           }
 
-          @keyframes floatParticle3 {
-            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
-            40% { transform: translateY(12px) translateX(-4px); opacity: 0.5; }
-            80% { transform: translateY(-8px) translateX(8px); opacity: 0.3; }
+          @keyframes premiumFloat3 {
+            0%, 100% {
+              transform: translateY(0px) translateX(0px) scale(1);
+              opacity: 0.4;
+            }
+            40% {
+              transform: translateY(15px) translateX(-6px) scale(1.4);
+              opacity: 0.7;
+            }
+            80% {
+              transform: translateY(-10px) translateX(10px) scale(0.6);
+              opacity: 0.2;
+            }
+          }
+
+          @keyframes premiumFloat4 {
+            0%, 100% {
+              transform: translateY(0px) translateX(0px) scale(1);
+              opacity: 0.7;
+            }
+            50% {
+              transform: translateY(-8px) translateX(6px) scale(1.1);
+              opacity: 0.9;
+            }
+          }
+
+          @keyframes confetti {
+            0% {
+              transform: translateY(-10px) rotateZ(15deg);
+              opacity: 1;
+            }
+            25% {
+              transform: translateY(10px) rotateZ(-5deg);
+              opacity: 0.8;
+            }
+            50% {
+              transform: translateY(-5px) rotateZ(10deg);
+              opacity: 0.9;
+            }
+            75% {
+              transform: translateY(15px) rotateZ(-10deg);
+              opacity: 0.7;
+            }
+            100% {
+              transform: translateY(100vh) rotateZ(0deg);
+              opacity: 0;
+            }
           }
         `}</style>
 
-        {/* Enhanced Profile Avatar */}
+        {/* Profile Picture */}
         <div style={{
-          position: 'relative',
-          flexShrink: 0
+          width: '100px',
+          height: '100px',
+          borderRadius: '50%',
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '3px solid transparent',
+          backgroundImage: 'var(--brand-gradient)',
+          backgroundClip: 'padding-box',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '40px',
+          color: 'var(--text-muted)',
+          boxShadow: 'var(--shadow-md)',
+          transition: 'all 0.3s ease'
         }}>
-          <div style={{
-            width: '100px',
-            height: '100px',
-            borderRadius: '50%',
-            background: 'var(--bg-glass)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            border: '3px solid transparent',
-            backgroundImage: 'var(--brand-gradient)',
-            backgroundClip: 'padding-box',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '40px',
-            color: 'var(--text-muted)',
-            boxShadow: 'var(--shadow-md)',
-            transition: 'all 0.3s ease'
-          }}>
-            {user?.profile_picture_url ? (
-              <img
-                src={user.profile_picture_url}
-                alt="Profile"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '50%',
-                  overflow: 'hidden'
-                }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallbackIcon = target.parentElement?.querySelector('.profile-fallback') as HTMLElement;
-                  if (fallbackIcon) {
-                    fallbackIcon.style.display = 'flex';
-                  }
-                }}
-                onLoad={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'block';
-                  const fallbackIcon = target.parentElement?.querySelector('.profile-fallback') as HTMLElement;
-                  if (fallbackIcon) {
-                    fallbackIcon.style.display = 'none';
-                  }
-                }}
-              />
-            ) : null}
-            <div
-              className="profile-fallback"
+          {user?.profile_picture_url ? (
+            <img
+              src={user.profile_picture_url}
+              alt="Profile"
               style={{
-                display: user?.profile_picture_url ? 'none' : 'flex',
-                position: 'absolute',
                 width: '100%',
                 height: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-secondary)',
-                fontSize: '40px'
+                objectFit: 'cover',
+                borderRadius: '50%',
+                overflow: 'hidden'
               }}
-            >
-              <i className="fas fa-user"></i>
-            </div>
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const fallbackIcon = target.parentElement?.querySelector('.profile-fallback') as HTMLElement;
+                if (fallbackIcon) {
+                  fallbackIcon.style.display = 'flex';
+                }
+              }}
+              onLoad={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'block';
+                const fallbackIcon = target.parentElement?.querySelector('.profile-fallback') as HTMLElement;
+                if (fallbackIcon) {
+                  fallbackIcon.style.display = 'none';
+                }
+              }}
+            />
+          ) : null}
+          <div
+            className="profile-fallback"
+            style={{
+              display: user?.profile_picture_url ? 'none' : 'flex',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--text-secondary)',
+              fontSize: '40px'
+            }}
+          >
+            <i className="fas fa-user"></i>
           </div>
-
-          {/* Online status indicator */}
-          <div style={{
-            position: 'absolute',
-            bottom: '8px',
-            right: '8px',
-            width: '20px',
-            height: '20px',
-            borderRadius: '50%',
-            background: 'var(--success)',
-            border: '3px solid var(--bg-primary)',
-            boxShadow: '0 0 0 2px var(--bg-glass)'
-          }}></div>
         </div>
+
+        {/* Online status indicator */}
+        <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          right: '8px',
+          width: '20px',
+          height: '20px',
+          borderRadius: '50%',
+          background: 'var(--success)',
+          border: '3px solid var(--bg-primary)',
+          boxShadow: '0 0 0 2px var(--bg-glass)'
+        }}></div>
 
         {/* Enhanced Profile Info */}
         <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
@@ -856,9 +879,9 @@ const ProfileView: React.FC = () => {
               }
             </h1>
 
-            {/* Modern Edit Button */}
+            {/* Premium Edit Button */}
             <button
-              onClick={async () => {
+              onClick={() => {
                 console.log('Edit profile button clicked!');
                 console.log('User object:', user);
 
@@ -876,449 +899,996 @@ const ProfileView: React.FC = () => {
                   profilePicturePreview: user?.profile_picture_url || ''
                 });
 
-                await detectCurrentLocation();
-                setEditStep(1); // Reset to first step
+                setEditStep(1);
                 setShowEditModal(true);
               }}
               style={{
-                background: 'var(--brand-gradient)',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '12px',
-                padding: '12px 20px',
-                fontSize: '14px',
-                fontWeight: '600',
+                borderRadius: '16px',
+                padding: '14px 24px',
+                fontSize: '15px',
+                fontWeight: '700',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
                 zIndex: 10,
                 position: 'relative',
                 pointerEvents: 'auto',
-                boxShadow: 'var(--shadow-md)',
-                transition: 'all 0.3s ease',
-                letterSpacing: '0.025em'
+                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                letterSpacing: '0.025em',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-xl)';
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #f472b6 100%)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)';
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px) scale(0.98)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.2), 0 2px 5px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4), 0 6px 15px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
               }}
             >
-              <i className="fas fa-edit"></i>
-              {t('profile.editProfile')}
+              <i className="fas fa-edit" style={{ filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2))' }}></i>
+              <span style={{ fontWeight: '700' }}>{t('profile.editProfile')}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Premium Personal Information Section */}
+      <div style={{
+        background: 'var(--bg-glass)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '16px',
+        padding: '32px',
+        marginBottom: '32px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Premium Background Gradient */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(147, 51, 234, 0.02) 50%, rgba(236, 72, 153, 0.01) 100%)',
+          pointerEvents: 'none'
+        }}></div>
+
+        {/* Premium Inner Shadow */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.03)',
+          pointerEvents: 'none',
+          borderRadius: '16px'
+        }}></div>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: '700',
+            background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            letterSpacing: '-0.025em'
+          }}>
+            <div style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+            }}>
+              <i className="fas fa-id-card" style={{ fontSize: '18px' }}></i>
+            </div>
+            {t('profile.personalInfo')}
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+              }}>
+                <i className="fas fa-envelope" style={{ fontSize: '18px' }}></i>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: '13px',
+                  color: 'var(--text-muted)',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}>
+                  {t('profile.email')}
+                </div>
+                <div style={{
+                  fontSize: '17px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  letterSpacing: '-0.01em'
+                }}>
+                  {user?.email || t('profile.notProvided')}
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+              }}>
+                <i className="fas fa-phone" style={{ fontSize: '18px' }}></i>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: '13px',
+                  color: 'var(--text-muted)',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}>
+                  {t('profile.phone')}
+                </div>
+                <div style={{
+                  fontSize: '17px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  letterSpacing: '-0.01em'
+                }}>
+                  {user?.phone || t('profile.notProvided')}
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+              }}>
+                <i className="fas fa-map-marker-alt" style={{ fontSize: '18px' }}></i>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: '13px',
+                  color: 'var(--text-muted)',
+                  marginBottom: '4px',
+                  fontWeight: '500',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}>
+                  {t('profile.location')}
+                </div>
+                <div style={{
+                  fontSize: '17px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  letterSpacing: '-0.01em'
+                }}>
+                  {getLocationAddress(user?.location)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Premium Stats Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gap: '20px',
+        marginBottom: '32px'
+      }}>
+        <div style={{
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: '16px',
+          padding: '28px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.06)';
+        }}>
+          {/* Premium Background Gradient */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.04) 0%, rgba(59, 130, 246, 0.02) 100%)',
+            pointerEvents: 'none'
+          }}></div>
+
+          {/* Premium Inner Shadow */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.02)',
+            pointerEvents: 'none',
+            borderRadius: '16px'
+          }}></div>
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              boxShadow: '0 8px 24px rgba(59, 130, 246, 0.3)'
+            }}>
+              <i className="fas fa-chart-line" style={{ fontSize: '20px', color: 'white' }}></i>
+            </div>
+            <div style={{
+              fontSize: '36px',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              marginBottom: '8px',
+              letterSpacing: '-0.02em'
+            }}>
+              {stats.totalReports}
+            </div>
+            <div style={{
+              color: 'var(--text-muted)',
+              fontSize: '14px',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              {String(t('profile.totalReports'))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: '16px',
+          padding: '28px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.06)';
+        }}>
+          {/* Premium Background Gradient */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, rgba(16, 185, 129, 0.02) 100%)',
+            pointerEvents: 'none'
+          }}></div>
+
+          {/* Premium Inner Shadow */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.02)',
+            pointerEvents: 'none',
+            borderRadius: '16px'
+          }}></div>
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.3)'
+            }}>
+              <i className="fas fa-thumbs-up" style={{ fontSize: '20px', color: 'white' }}></i>
+            </div>
+            <div style={{
+              fontSize: '36px',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              marginBottom: '8px',
+              letterSpacing: '-0.02em'
+            }}>
+              {stats.totalUpvotes}
+            </div>
+            <div style={{
+              color: 'var(--text-muted)',
+              fontSize: '14px',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              {String(t('profile.communityUpvotes'))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRadius: '16px',
+          padding: '28px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.06)';
+        }}>
+          {/* Premium Background Gradient */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.04) 0%, rgba(245, 158, 11, 0.02) 100%)',
+            pointerEvents: 'none'
+          }}></div>
+
+          {/* Premium Inner Shadow */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.02)',
+            pointerEvents: 'none',
+            borderRadius: '16px'
+          }}></div>
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              boxShadow: '0 8px 24px rgba(245, 158, 11, 0.3)'
+            }}>
+              <i className="fas fa-trophy" style={{ fontSize: '20px', color: 'white' }}></i>
+            </div>
+            <div style={{
+              fontSize: '36px',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              marginBottom: '8px',
+              letterSpacing: '-0.02em'
+            }}>
+              #{stats.rank || '-'}
+            </div>
+            <div style={{
+              color: 'var(--text-muted)',
+              fontSize: '14px',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              {String(t('profile.communityRank'))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Premium Badges Section */}
+      <div style={{
+        background: 'var(--bg-glass)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '16px',
+        padding: '32px',
+        marginBottom: '32px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Premium Background Gradient */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.03) 0%, rgba(245, 158, 11, 0.02) 50%, rgba(217, 119, 6, 0.01) 100%)',
+          pointerEvents: 'none'
+        }}></div>
+
+        {/* Premium Inner Shadow */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.03)',
+          pointerEvents: 'none',
+          borderRadius: '16px'
+        }}></div>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: '700',
+            background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            letterSpacing: '-0.025em'
+          }}>
+            <div style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+            }}>
+              <i className="fas fa-medal" style={{ fontSize: '18px' }}></i>
+            </div>
+            {t('profile.achievementBadges')}
+          </h2>
+
+          {badges.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: 'var(--text-muted)',
+              background: 'rgba(255, 255, 255, 0.3)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '20px',
+                background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)'
+              }}>
+                <i className="fas fa-medal" style={{ fontSize: '32px', color: '#9ca3af' }}></i>
+              </div>
+              <p style={{
+                fontSize: '16px',
+                fontWeight: '500',
+                margin: 0,
+                color: 'var(--text-secondary)'
+              }}>
+                {t('profile.noBadges')}
+              </p>
+              <p style={{
+                fontSize: '14px',
+                margin: '8px 0 0 0',
+                opacity: 0.7
+              }}>
+                Keep contributing to earn your first badge!
+              </p>
+            </div>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: '20px'
+            }}>
+              {badges.map(badge => (
+                <div key={badge.id} style={{
+                  background: 'rgba(255, 255, 255, 0.4)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  textAlign: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                }}>
+                  {/* Badge Background Gradient */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: badge.color,
+                    opacity: 0.9,
+                    pointerEvents: 'none'
+                  }}></div>
+
+                  {/* Premium Inner Shadow */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.1)',
+                    pointerEvents: 'none',
+                    borderRadius: '16px'
+                  }}></div>
+
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{
+                      width: '64px',
+                      height: '64px',
+                      borderRadius: '16px',
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 16px',
+                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)'
+                    }}>
+                      <i className={badge.icon} style={{
+                        fontSize: '28px',
+                        color: 'white',
+                        filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))'
+                      }}></i>
+                    </div>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      marginBottom: '8px',
+                      color: 'white',
+                      textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                      letterSpacing: '-0.01em'
+                    }}>
+                      {badge.name}
+                    </h3>
+                    <p style={{
+                      fontSize: '13px',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      margin: 0,
+                      lineHeight: '1.4',
+                      textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+                    }}>
+                      {badge.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Premium My Reports Section */}
+      <div style={{
+        background: 'var(--bg-glass)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '16px',
+        padding: '32px',
+        marginBottom: '32px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Premium Background Gradient */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(59, 130, 246, 0.02) 50%, rgba(16, 185, 129, 0.01) 100%)',
+          pointerEvents: 'none'
+        }}></div>
+
+        {/* Premium Inner Shadow */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.03)',
+          pointerEvents: 'none',
+          borderRadius: '16px'
+        }}></div>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px',
+            cursor: 'pointer'
+          }}
+          onClick={() => setShowMyReports(!showMyReports)}
+          >
+            <h2 style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              letterSpacing: '-0.025em'
+            }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+              }}>
+                <i className="fas fa-list" style={{ fontSize: '18px' }}></i>
+              </div>
+              {t('profile.myReports')} ({myReports.length})
+            </h2>
+            <button style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '12px',
+              color: 'var(--text-muted)',
+              fontSize: '16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '12px',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            }}>
+              <i className={`fas fa-chevron-${showMyReports ? 'up' : 'down'}`} style={{ fontSize: '14px' }}></i>
             </button>
           </div>
 
-
-        </div>
-      </div>
-
-      {/* Personal Information Section */}
-      <div style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        padding: '24px',
-        marginBottom: '24px',
-        boxShadow: '0 1px 3px var(--shadow-color)'
-      }}>
-        <h2 style={{
-          fontSize: '18px',
-          fontWeight: 'bold',
-          color: 'var(--text-primary)',
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <i className="fas fa-id-card" style={{ color: 'var(--text-muted)' }}></i>
-          {t('profile.personalInfo')}
-        </h2>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {myReports.length === 0 ? (
             <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-tertiary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-muted)'
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: 'var(--text-muted)',
+              background: 'rgba(255, 255, 255, 0.3)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
             }}>
-              <i className="fas fa-envelope"></i>
-            </div>
-            <div>
-              <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '2px' }}>{t('profile.email')}</div>
-              <div style={{ fontSize: '16px', fontWeight: '500', color: 'var(--text-primary)' }}>
-                {user?.email || t('profile.notProvided')}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-tertiary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-muted)'
-            }}>
-              <i className="fas fa-phone"></i>
-            </div>
-            <div>
-              <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '2px' }}>{t('profile.phone')}</div>
-              <div style={{ fontSize: '16px', fontWeight: '500', color: 'var(--text-primary)' }}>
-                {user?.phone || t('profile.notProvided')}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-tertiary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-muted)'
-            }}>
-              <i className="fas fa-map-marker-alt"></i>
-            </div>
-            <div>
-              <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '2px' }}>{t('profile.location')}</div>
-              <div style={{ fontSize: '16px', fontWeight: '500', color: 'var(--text-primary)' }}>
-                {getLocationAddress(user?.location)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Community Interests Section */}
-      <div style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        padding: '24px',
-        marginBottom: '24px',
-        boxShadow: '0 1px 3px var(--shadow-color)'
-      }}>
-        <h2 style={{
-          fontSize: '18px',
-          fontWeight: 'bold',
-          color: 'var(--text-primary)',
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <i className="fas fa-heart" style={{ color: 'var(--text-muted)' }}></i>
-          {t('profile.communityInterests')}
-        </h2>
-
-        {user?.interests && user.interests.length > 0 ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {user.interests.map((interest, index) => (
-              <span key={`${interest}-${index}`} style={{
-                backgroundColor: 'var(--bg-tertiary)',
-                color: 'var(--accent-primary)',
-                padding: '6px 12px',
+              <div style={{
+                width: '80px',
+                height: '80px',
                 borderRadius: '20px',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                <i className="fas fa-tag"></i>
-                {interest}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: 'var(--text-muted)'
-          }}>
-            <i className="fas fa-heart" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
-            <p>{t('profile.noInterests')}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Stats Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '16px',
-        marginBottom: '24px'
-      }}>
-        <div style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 1px 3px var(--shadow-color)',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            fontSize: '28px',
-            fontWeight: 'bold',
-            color: 'var(--accent-primary)',
-            marginBottom: '8px'
-          }}>
-            {stats.totalReports}
-          </div>
-          <div style={{
-            color: 'var(--text-muted)',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            {String(t('profile.totalReports'))}
-          </div>
-        </div>
-
-        <div style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 1px 3px var(--shadow-color)',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            fontSize: '28px',
-            fontWeight: 'bold',
-            color: 'var(--success)',
-            marginBottom: '8px'
-          }}>
-            {stats.totalUpvotes}
-          </div>
-          <div style={{
-            color: 'var(--text-muted)',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            {String(t('profile.communityUpvotes'))}
-          </div>
-        </div>
-
-        <div style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 1px 3px var(--shadow-color)',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            fontSize: '28px',
-            fontWeight: 'bold',
-            color: 'var(--warning)',
-            marginBottom: '8px'
-          }}>
-            #{stats.rank || '-'}
-          </div>
-          <div style={{
-            color: 'var(--text-muted)',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            {String(t('profile.communityRank'))}
-          </div>
-        </div>
-      </div>
-
-      {/* Badges Section */}
-      <div style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        padding: '24px',
-        marginBottom: '24px',
-        boxShadow: '0 1px 3px var(--shadow-color)'
-      }}>
-        <h2 style={{
-          fontSize: '18px',
-          fontWeight: 'bold',
-          color: 'var(--text-primary)',
-          marginBottom: '16px'
-        }}>
-          {t('profile.achievementBadges')}
-        </h2>
-
-        {badges.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: 'var(--text-muted)'
-          }}>
-            <i className="fas fa-medal" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
-            <p>{t('profile.noBadges')}</p>
-          </div>
-        ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '16px'
-          }}>
-            {badges.map(badge => (
-              <div key={badge.id} style={{
-                border: '2px solid var(--border-color)',
-                borderRadius: '12px',
-                padding: '16px',
-                textAlign: 'center',
-                background: badge.color,
-                color: 'white'
-              }}>
-                <div style={{
-                  fontSize: '28px',
-                  marginBottom: '8px',
-                  opacity: 0.9
-                }}>
-                  <i className={badge.icon}></i>
-                </div>
-                <h3 style={{
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  marginBottom: '4px'
-                }}>
-                  {badge.name}
-                </h3>
-                <p style={{
-                  fontSize: '11px',
-                  opacity: 0.9,
-                  margin: 0
-                }}>
-                  {badge.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* My Reports Section */}
-      <div style={{
-        backgroundColor: 'var(--bg-primary)',
-        borderRadius: '12px',
-        padding: '24px',
-        marginBottom: '24px',
-        boxShadow: '0 1px 3px var(--shadow-color)'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '16px',
-          cursor: 'pointer'
-        }}
-        onClick={() => setShowMyReports(!showMyReports)}
-        >
-          <h2 style={{
-            fontSize: '20px',
-            fontWeight: 'bold',
-            color: 'var(--text-primary)',
-            margin: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <i className="fas fa-list" style={{ color: 'var(--text-muted)' }}></i>
-            {t('profile.myReports')} ({myReports.length})
-          </h2>
-          <button style={{
-            backgroundColor: 'transparent',
-            border: 'none',
-            color: 'var(--text-muted)',
-            fontSize: '16px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '4px',
-            borderRadius: '4px',
-            transition: 'all 0.2s ease'
-          }}>
-            <i className={`fas fa-chevron-${showMyReports ? 'up' : 'down'}`}></i>
-          </button>
-        </div>
-
-        {myReports.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: 'var(--text-muted)'
-          }}>
-            <i className="fas fa-plus-circle" style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}></i>
-            <p>{t('profile.noReports')}</p>
-          </div>
-        ) : showMyReports && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {myReports.map(report => (
-              <div key={report.id} style={{
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                padding: '16px',
+                background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px'
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)'
               }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  backgroundColor: getVibeColor(report.vibe_type),
+                <i className="fas fa-plus-circle" style={{ fontSize: '32px', color: '#9ca3af' }}></i>
+              </div>
+              <p style={{
+                fontSize: '16px',
+                fontWeight: '500',
+                margin: 0,
+                color: 'var(--text-secondary)'
+              }}>
+                {t('profile.noReports')}
+              </p>
+              <p style={{
+                fontSize: '14px',
+                margin: '8px 0 0 0',
+                opacity: 0.7
+              }}>
+                Your safety reports will appear here
+              </p>
+            </div>
+          ) : showMyReports && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {myReports.map(report => (
+                <div key={report.id} style={{
+                  background: 'rgba(255, 255, 255, 0.4)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '12px',
+                  padding: '20px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '16px'
+                  gap: '16px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
                 }}>
-                  <i className={getVibeIcon(report.vibe_type)}></i>
-                </div>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    background: `linear-gradient(135deg, ${getVibeColor(report.vibe_type)} 0%, ${getVibeColor(report.vibe_type)}dd 100%)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    boxShadow: `0 4px 12px ${getVibeColor(report.vibe_type)}40`
+                  }}>
+                    <i className={getVibeIcon(report.vibe_type)} style={{ fontSize: '18px' }}></i>
+                  </div>
 
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontWeight: '600',
-                    color: 'var(--text-primary)',
-                    marginBottom: '2px'
-                  }}>
-                    {t(`vibes.${report.vibe_type}`)} {t('profile.report')}
-                  </div>
-                  <div style={{
-                    color: 'var(--text-muted)',
-                    fontSize: '14px',
-                    marginBottom: '4px'
-                  }}>
-                    {report.location || t('profile.unknownLocation')}
-                  </div>
-                  {report.notes && (
+                  <div style={{ flex: 1 }}>
                     <div style={{
-                      color: 'var(--text-secondary)',
-                      fontSize: '14px',
-                      marginBottom: '4px'
+                      fontWeight: '700',
+                      color: 'var(--text-primary)',
+                      marginBottom: '4px',
+                      fontSize: '16px',
+                      letterSpacing: '-0.01em'
                     }}>
-                      {report.notes}
+                      {t(`vibes.${report.vibe_type}`)} {t('profile.report')}
                     </div>
-                  )}
-                  <div style={{
-                    color: 'var(--text-muted)',
-                    fontSize: '12px'
-                  }}>
-                    {formatTimeAgo(report.created_at)} • 👍 {report.upvotes || 0} 👎 {report.downvotes || 0}
+                    <div style={{
+                      color: 'var(--text-muted)',
+                      fontSize: '14px',
+                      marginBottom: '6px',
+                      fontWeight: '500'
+                    }}>
+                      📍 {report.location || t('profile.unknownLocation')}
+                    </div>
+                    {report.notes && (
+                      <div style={{
+                        color: 'var(--text-secondary)',
+                        fontSize: '14px',
+                        marginBottom: '8px',
+                        lineHeight: '1.4'
+                      }}>
+                        {report.notes}
+                      </div>
+                    )}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      color: 'var(--text-muted)',
+                      fontSize: '13px',
+                      fontWeight: '500'
+                    }}>
+                      <span>🕒 {formatTimeAgo(report.created_at)}</span>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: '#10b981',
+                        fontWeight: '600'
+                      }}>
+                        👍 {report.upvotes || 0}
+                      </span>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: '#ef4444',
+                        fontWeight: '600'
+                      }}>
+                        👎 {report.downvotes || 0}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Edit Profile Modal - Matching OnboardingModal Style */}
@@ -1347,43 +1917,14 @@ const ProfileView: React.FC = () => {
             display: 'flex',
             flexDirection: 'column'
           }}>
-            {/* Modal Header - Matching OnboardingModal */}
+            {/* Modal Header - Clean and Simple */}
             <div style={{
               padding: '32px 24px 0',
               textAlign: 'center',
               background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)'
             }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px',
-                marginBottom: '16px'
-              }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'linear-gradient(135deg, #0066ff 0%, #0052d4 100%)',
-                  borderRadius: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '1.125rem'
-                }}>
-                  H
-                </div>
-                <div style={{
-                  fontSize: '1.5rem',
-                  fontWeight: 700,
-                  color: '#0f172a'
-                }}>
-                  HyperApp
-                </div>
-              </div>
               <h2 style={{
-                fontSize: '1.375rem',
+                fontSize: '1.5rem',
                 fontWeight: 700,
                 color: '#0f172a',
                 marginBottom: '8px',
@@ -1406,11 +1947,11 @@ const ProfileView: React.FC = () => {
                 gap: '8px',
                 marginBottom: '24px'
               }}>
-                {[1, 2].map(step => (
+                {[1, 2, 3, 4, 5, 6].map(step => (
                   <div
                     key={step}
                     style={{
-                      width: '40px',
+                      width: '32px',
                       height: '4px',
                       borderRadius: '2px',
                       background: step <= editStep ? '#0066ff' : '#e2e8f0',
@@ -1432,32 +1973,40 @@ const ProfileView: React.FC = () => {
               {/* Form Content - Progressive Disclosure */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-              {/* Step 1: Basic Information */}
-              {editStep === 1 && (
-                <>
-                  {/* Profile Picture */}
+                {/* Step 1: Profile Picture */}
+                {editStep === 1 && (
                   <div>
                     <h3 style={{
-                      fontSize: '16px',
-                      fontWeight: '600',
+                      fontSize: '18px',
+                      fontWeight: '700',
                       color: '#1f2937',
-                      marginBottom: '16px'
+                      marginBottom: '8px',
+                      textAlign: 'center'
                     }}>
-                      Profile Picture
+                      Add a Profile Picture
                     </h3>
+                    <p style={{
+                      color: '#6b7280',
+                      marginBottom: '32px',
+                      fontSize: '14px',
+                      textAlign: 'center'
+                    }}>
+                      Help others recognize you in the community
+                    </p>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
                       {/* Profile Picture Preview */}
                       <div style={{
-                        width: '120px',
-                        height: '120px',
+                        width: '140px',
+                        height: '140px',
                         borderRadius: '50%',
-                        border: '3px solid #d1d5db',
+                        border: '4px solid #e5e7eb',
                         overflow: 'hidden',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: '#f9fafb'
+                        backgroundColor: '#f9fafb',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)'
                       }}>
                         {editForm.profilePicturePreview ? (
                           <img
@@ -1480,7 +2029,7 @@ const ProfileView: React.FC = () => {
                             }}
                           />
                         ) : (
-                          <i className="fas fa-user" style={{ fontSize: '48px', color: '#9ca3af' }}></i>
+                          <i className="fas fa-user" style={{ fontSize: '56px', color: '#9ca3af' }}></i>
                         )}
                       </div>
 
@@ -1514,18 +2063,32 @@ const ProfileView: React.FC = () => {
                           onClick={() => fileInputRef.current?.click()}
                           disabled={uploadingPicture}
                           style={{
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            border: '1px solid #d1d5db',
+                            padding: '12px 20px',
+                            borderRadius: '12px',
+                            border: '2px solid #d1d5db',
                             backgroundColor: 'white',
                             color: '#374151',
-                            fontSize: '14px',
-                            fontWeight: '500',
+                            fontSize: '15px',
+                            fontWeight: '600',
                             cursor: uploadingPicture ? 'not-allowed' : 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '6px',
-                            opacity: uploadingPicture ? 0.5 : 1
+                            gap: '8px',
+                            opacity: uploadingPicture ? 0.5 : 1,
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                          }}
+                          onMouseOver={(e) => {
+                            if (!uploadingPicture) {
+                              e.currentTarget.style.borderColor = '#3b82f6';
+                              e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.2)';
+                            }
+                          }}
+                          onMouseOut={(e) => {
+                            if (!uploadingPicture) {
+                              e.currentTarget.style.borderColor = '#d1d5db';
+                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+                            }
                           }}
                         >
                           <i className="fas fa-camera"></i>
@@ -1546,17 +2109,27 @@ const ProfileView: React.FC = () => {
                               }
                             }}
                             style={{
-                              padding: '8px 16px',
-                              borderRadius: '8px',
-                              border: '1px solid #dc2626',
+                              padding: '12px 20px',
+                              borderRadius: '12px',
+                              border: '2px solid #dc2626',
                               backgroundColor: 'white',
                               color: '#dc2626',
-                              fontSize: '14px',
-                              fontWeight: '500',
+                              fontSize: '15px',
+                              fontWeight: '600',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '6px'
+                              gap: '8px',
+                              transition: 'all 0.2s ease',
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = '#b91c1c';
+                              e.currentTarget.style.boxShadow = '0 4px 16px rgba(220, 38, 38, 0.2)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = '#dc2626';
+                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
                             }}
                           >
                             <i className="fas fa-trash"></i>
@@ -1566,222 +2139,321 @@ const ProfileView: React.FC = () => {
                       </div>
 
                       <p style={{
-                        fontSize: '12px',
+                        fontSize: '13px',
                         color: '#6b7280',
                         textAlign: 'center',
-                        margin: '8px 0 0 0'
+                        margin: '0',
+                        maxWidth: '280px'
                       }}>
-                        Upload a profile picture (max 5MB, JPG/PNG/WebP/GIF)
+                        Upload a profile picture (max 5MB, JPG/PNG/WebP/GIF). You can skip this step and add one later.
                       </p>
                     </div>
                   </div>
+                )}
 
-                  {/* Personal Information */}
+                {/* Step 2: First Name */}
+                {editStep === 2 && (
                   <div>
                     <h3 style={{
-                      fontSize: '16px',
-                      fontWeight: '600',
+                      fontSize: '18px',
+                      fontWeight: '700',
                       color: '#1f2937',
-                      marginBottom: '16px'
+                      marginBottom: '8px',
+                      textAlign: 'center'
                     }}>
-                      Personal Information
+                      What's your first name?
                     </h3>
+                    <p style={{
+                      color: '#6b7280',
+                      marginBottom: '32px',
+                      fontSize: '14px',
+                      textAlign: 'center'
+                    }}>
+                      This will be used to personalize your experience
+                    </p>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      {/* First Name */}
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          fontSize: '14px',
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <input
+                        type="text"
+                        value={editForm.firstName}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+                        placeholder="Enter your first name"
+                        autoFocus
+                        style={{
+                          width: '100%',
+                          maxWidth: '320px',
+                          padding: '16px 20px',
+                          border: '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          fontSize: '18px',
                           fontWeight: '500',
-                          color: '#374151',
-                          marginBottom: '4px'
-                        }}>
-                          {t('profile.firstName')}
-                        </label>
-                        <input
-                          type="text"
-                          value={editForm.firstName}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
-                          placeholder={t('profile.firstNamePlaceholder')}
-                          aria-label={t('profile.firstName')}
-                          style={{
-                            width: '100%',
-                            padding: '12px',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '16px',
-                            outline: 'none'
-                          }}
-                        />
-                      </div>
-
-                      {/* Last Name */}
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#374151',
-                          marginBottom: '4px'
-                        }}>
-                          {t('profile.lastName')}
-                        </label>
-                        <input
-                          type="text"
-                          value={editForm.lastName}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
-                          placeholder={t('profile.lastNamePlaceholder')}
-                          style={{
-                            width: '100%',
-                            padding: '12px',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '16px',
-                            outline: 'none'
-                          }}
-                        />
-                      </div>
-
-                      {/* Phone */}
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#374151',
-                          marginBottom: '4px'
-                        }}>
-                          {t('profile.phone')}
-                        </label>
-                        <input
-                          type="tel"
-                          value={editForm.phone}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                          placeholder={t('profile.phonePlaceholder')}
-                          style={{
-                            width: '100%',
-                            padding: '12px',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '16px',
-                            outline: 'none'
-                          }}
-                        />
-                      </div>
-
-                      {/* Location */}
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#374151',
-                          marginBottom: '4px'
-                        }}>
-                          {t('profile.location')}
-                        </label>
-                        <input
-                          type="text"
-                          value={editForm.location}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
-                          placeholder="Enter your location"
-                          style={{
-                            width: '100%',
-                            padding: '12px',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '16px',
-                            outline: 'none'
-                          }}
-                        />
-                        <p style={{
-                          fontSize: '12px',
-                          color: '#6b7280',
-                          marginTop: '4px',
-                          marginBottom: '0'
-                        }}>
-                          Your location was automatically detected during onboarding, but you can update it here
-                        </p>
-                      </div>
+                          outline: 'none',
+                          textAlign: 'center',
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#3b82f6';
+                          e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.15)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+                        }}
+                      />
                     </div>
                   </div>
-                </>
-              )}
+                )}
 
-              {/* Step 2: Community Interests */}
-              {editStep === 2 && (
-                <div>
-                  <h3 style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    marginBottom: '16px'
-                  }}>
-                    {t('profile.communityInterests')}
-                  </h3>
+                {/* Step 3: Last Name */}
+                {editStep === 3 && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#1f2937',
+                      marginBottom: '8px',
+                      textAlign: 'center'
+                    }}>
+                      And your last name?
+                    </h3>
+                    <p style={{
+                      color: '#6b7280',
+                      marginBottom: '32px',
+                      fontSize: '14px',
+                      textAlign: 'center'
+                    }}>
+                      Your last name helps us create your profile
+                    </p>
 
-                  <p style={{
-                    color: '#6b7280',
-                    marginBottom: '24px',
-                    fontSize: '14px'
-                  }}>
-                    Select your interests to connect with like-minded people
-                  </p>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {Object.entries(INTEREST_CATEGORIES).map(([key, category]) => (
-                      <div key={key}>
-                        <h4 style={{
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#1f2937',
-                          marginBottom: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}>
-                          <span>{category.icon}</span>
-                          {category.label}
-                        </h4>
-
-                        <div style={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: '8px'
-                        }}>
-                          {category.items.map((item) => (
-                            <button
-                              key={item}
-                              onClick={() => {
-                                setEditForm(prev => ({
-                                  ...prev,
-                                  interests: prev.interests.includes(item)
-                                    ? prev.interests.filter(i => i !== item)
-                                    : [...prev.interests, item]
-                                }));
-                              }}
-                              style={{
-                                padding: '8px 16px',
-                                borderRadius: '20px',
-                                border: editForm.interests.includes(item) ? '2px solid #3b82f6' : '2px solid #d1d5db',
-                                backgroundColor: editForm.interests.includes(item) ? '#eff6ff' : 'white',
-                                color: editForm.interests.includes(item) ? '#1d4ed8' : '#374151',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              {item}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <input
+                        type="text"
+                        value={editForm.lastName}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
+                        placeholder="Enter your last name"
+                        autoFocus
+                        style={{
+                          width: '100%',
+                          maxWidth: '320px',
+                          padding: '16px 20px',
+                          border: '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          fontSize: '18px',
+                          fontWeight: '500',
+                          outline: 'none',
+                          textAlign: 'center',
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#3b82f6';
+                          e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.15)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
+                {/* Step 4: Phone Number */}
+                {editStep === 4 && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#1f2937',
+                      marginBottom: '8px',
+                      textAlign: 'center'
+                    }}>
+                      How can we reach you?
+                    </h3>
+                    <p style={{
+                      color: '#6b7280',
+                      marginBottom: '32px',
+                      fontSize: '14px',
+                      textAlign: 'center'
+                    }}>
+                      We'll use this for important safety alerts (optional)
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <input
+                        type="tel"
+                        value={editForm.phone}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="+1 (555) 123-4567"
+                        autoFocus
+                        style={{
+                          width: '100%',
+                          maxWidth: '320px',
+                          padding: '16px 20px',
+                          border: '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          fontSize: '18px',
+                          fontWeight: '500',
+                          outline: 'none',
+                          textAlign: 'center',
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#3b82f6';
+                          e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.15)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 5: Address */}
+                {editStep === 5 && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#1f2937',
+                      marginBottom: '8px',
+                      textAlign: 'center'
+                    }}>
+                      Where are you located?
+                    </h3>
+                    <p style={{
+                      color: '#6b7280',
+                      marginBottom: '32px',
+                      fontSize: '14px',
+                      textAlign: 'center'
+                    }}>
+                      We'll use this to show relevant community reports and safety information in your area
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <input
+                        type="text"
+                        value={editForm.location}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                        placeholder="Enter your city or address"
+                        autoFocus
+                        style={{
+                          width: '100%',
+                          maxWidth: '320px',
+                          padding: '16px 20px',
+                          border: '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          fontWeight: '500',
+                          outline: 'none',
+                          textAlign: 'center',
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                        }}
+                        onFocus={(e) => {
+                          e.currentTarget.style.borderColor = '#3b82f6';
+                          e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.15)';
+                        }}
+                        onBlur={(e) => {
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 6: Community Interests */}
+                {editStep === 6 && (
+                  <div>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#1f2937',
+                      marginBottom: '8px',
+                      textAlign: 'center'
+                    }}>
+                      What community activities interest you?
+                    </h3>
+                    <p style={{
+                      color: '#6b7280',
+                      marginBottom: '32px',
+                      fontSize: '14px',
+                      textAlign: 'center'
+                    }}>
+                      Select activities you enjoy to connect with like-minded people in your community
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                      {Object.entries(INTEREST_CATEGORIES).map(([key, category]) => (
+                        <div key={key}>
+                          <h4 style={{
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            color: '#1f2937',
+                            marginBottom: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <span style={{ fontSize: '18px' }}>{category.icon}</span>
+                            {category.label}
+                          </h4>
+
+                          <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '10px'
+                          }}>
+                            {category.items.map((item) => (
+                              <button
+                                key={item}
+                                onClick={() => {
+                                  setEditForm(prev => ({
+                                    ...prev,
+                                    interests: prev.interests.includes(item)
+                                      ? prev.interests.filter(i => i !== item)
+                                      : [...prev.interests, item]
+                                  }));
+                                }}
+                                style={{
+                                  padding: '10px 18px',
+                                  borderRadius: '24px',
+                                  border: editForm.interests.includes(item) ? '2px solid #3b82f6' : '2px solid #d1d5db',
+                                  backgroundColor: editForm.interests.includes(item) ? '#eff6ff' : 'white',
+                                  color: editForm.interests.includes(item) ? '#1d4ed8' : '#374151',
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease',
+                                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)'
+                                }}
+                                onMouseOver={(e) => {
+                                  if (!editForm.interests.includes(item)) {
+                                    e.currentTarget.style.borderColor = '#9ca3af';
+                                    e.currentTarget.style.backgroundColor = '#f9fafb';
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (!editForm.interests.includes(item)) {
+                                    e.currentTarget.style.borderColor = '#d1d5db';
+                                    e.currentTarget.style.backgroundColor = 'white';
+                                  }
+                                }}
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
               </div>
             </div>
@@ -1795,190 +2467,175 @@ const ProfileView: React.FC = () => {
               gap: '12px',
               background: '#ffffff'
             }}>
-              {editStep === 1 ? (
-                <>
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    className="modal-action-btn"
-                    style={{
-                      padding: '14px 20px',
-                      borderRadius: '8px',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      border: '1px solid #d1d5db',
-                      background: '#ffffff',
-                      color: '#374151',
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#f8fafc';
-                      e.currentTarget.style.borderColor = '#3385ff';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = '#ffffff';
-                      e.currentTarget.style.borderColor = '#d1d5db';
-                    }}
-                  >
-                    {t('common.cancel')}
-                  </button>
+              {/* Left Button - Cancel or Back */}
+              <button
+                onClick={editStep === 1 ? () => setShowEditModal(false) : () => setEditStep(editStep - 1)}
+                className="modal-action-btn"
+                style={{
+                  padding: '14px 20px',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: '1px solid #d1d5db',
+                  background: '#ffffff',
+                  color: '#374151',
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = '#f8fafc';
+                  e.currentTarget.style.borderColor = '#3385ff';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = '#ffffff';
+                  e.currentTarget.style.borderColor = '#d1d5db';
+                }}
+              >
+                {editStep === 1 ? t('common.cancel') : 'Back'}
+              </button>
 
-                  <button
-                    onClick={() => setEditStep(2)}
-                    className="modal-action-btn"
-                    style={{
-                      padding: '14px 20px',
-                      borderRadius: '8px',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      border: 'none',
-                      background: '#0066ff',
-                      color: 'white',
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#0052d4';
+              {/* Right Button - Continue or Save */}
+              {editStep < 6 ? (
+                <button
+                  onClick={() => {
+                    // Basic validation for required fields
+                    if (editStep === 2 && !editForm.firstName.trim()) {
+                      alert('Please enter your first name');
+                      return;
+                    }
+                    if (editStep === 3 && !editForm.lastName.trim()) {
+                      alert('Please enter your last name');
+                      return;
+                    }
+                    setEditStep(editStep + 1);
+                  }}
+                  className="modal-action-btn"
+                  style={{
+                    padding: '14px 20px',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    border: 'none',
+                    background: '#0066ff',
+                    color: 'white',
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#0052d4';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = '#0066ff';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  {editStep === 1 ? 'Continue to First Name' :
+                   editStep === 2 ? 'Continue to Last Name' :
+                   editStep === 3 ? 'Continue to Phone' :
+                   editStep === 4 ? 'Continue to Address' :
+                   'Continue to Interests'}
+                </button>
+              ) : (
+                <button
+                  onClick={async () => {
+                    if (!user) return;
+
+                    try {
+                      setUploadingPicture(true);
+
+                      let profilePictureUrl = user.profile_picture_url;
+
+                      // Upload profile picture if selected
+                      if (editForm.profilePicture) {
+                        const uploadResult = await uploadService.uploadProfilePicture(
+                          editForm.profilePicture,
+                          user.id
+                        );
+                        profilePictureUrl = uploadResult.url;
+                      } else if (!editForm.profilePicturePreview && user.profile_picture_url) {
+                        // User removed the profile picture
+                        profilePictureUrl = undefined;
+                      }
+
+                      // Prepare location update - keep existing coordinates if available
+                      const locationUpdate = editForm.location ? {
+                        latitude: user?.location?.latitude || 0,
+                        longitude: user?.location?.longitude || 0,
+                        address: editForm.location
+                      } : undefined;
+
+                      await updateProfile({
+                        first_name: editForm.firstName,
+                        last_name: editForm.lastName,
+                        phone: editForm.phone,
+                        profile_picture_url: profilePictureUrl,
+                        location: locationUpdate,
+                        interests: editForm.interests
+                      });
+
+                      // Show confetti animation for successful update
+                      createConfetti();
+
+                      setShowEditModal(false);
+                      setEditStep(1); // Reset for next time
+                      // Reload profile data to reflect changes
+                      loadProfileData();
+                    } catch (error) {
+                      console.error('Error updating profile:', error);
+                      alert(`Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    } finally {
+                      setUploadingPicture(false);
+                    }
+                  }}
+                  disabled={uploadingPicture}
+                  className="modal-action-btn"
+                  style={{
+                    padding: '14px 20px',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    cursor: uploadingPicture ? 'not-allowed' : 'pointer',
+                    border: 'none',
+                    background: uploadingPicture ? '#9ca3af' : '#10b981',
+                    color: 'white',
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s ease',
+                    opacity: uploadingPicture ? 0.6 : 1
+                  }}
+                  onMouseOver={(e) => {
+                    if (!uploadingPicture) {
+                      e.currentTarget.style.background = '#0da271';
                       e.currentTarget.style.transform = 'translateY(-1px)';
                       e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = '#0066ff';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!uploadingPicture) {
+                      e.currentTarget.style.background = uploadingPicture ? '#9ca3af' : '#10b981';
                       e.currentTarget.style.transform = 'translateY(0)';
                       e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    Continue to Interests
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => setEditStep(1)}
-                    className="modal-action-btn"
-                    style={{
-                      padding: '14px 20px',
-                      borderRadius: '8px',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      border: '1px solid #d1d5db',
-                      background: '#ffffff',
-                      color: '#374151',
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#f8fafc';
-                      e.currentTarget.style.borderColor = '#3385ff';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = '#ffffff';
-                      e.currentTarget.style.borderColor = '#d1d5db';
-                    }}
-                  >
-                    Back
-                  </button>
-
-                  <button
-                    onClick={async () => {
-                      if (!user) return;
-
-                      try {
-                        setUploadingPicture(true);
-
-                        let profilePictureUrl = user.profile_picture_url;
-
-                        // Upload profile picture if selected
-                        if (editForm.profilePicture) {
-                          const uploadResult = await uploadService.uploadProfilePicture(
-                            editForm.profilePicture,
-                            user.id
-                          );
-                          profilePictureUrl = uploadResult.url;
-                        } else if (!editForm.profilePicturePreview && user.profile_picture_url) {
-                          // User removed the profile picture
-                          profilePictureUrl = undefined;
-                        }
-
-                        // Prepare location update - keep existing coordinates if available
-                        const locationUpdate = editForm.location ? {
-                          latitude: user?.location?.latitude || 0,
-                          longitude: user?.location?.longitude || 0,
-                          address: editForm.location
-                        } : undefined;
-
-                        await updateProfile({
-                          first_name: editForm.firstName,
-                          last_name: editForm.lastName,
-                          phone: editForm.phone,
-                          profile_picture_url: profilePictureUrl,
-                          location: locationUpdate,
-                          interests: editForm.interests
-                        });
-
-                        setShowEditModal(false);
-                        setEditStep(1); // Reset for next time
-                        // Reload profile data to reflect changes
-                        loadProfileData();
-                      } catch (error) {
-                        console.error('Error updating profile:', error);
-                        alert(`Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                      } finally {
-                        setUploadingPicture(false);
-                      }
-                    }}
-                    disabled={uploadingPicture}
-                    className="modal-action-btn"
-                    style={{
-                      padding: '14px 20px',
-                      borderRadius: '8px',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                      cursor: uploadingPicture ? 'not-allowed' : 'pointer',
-                      border: 'none',
-                      background: uploadingPicture ? '#9ca3af' : '#10b981',
-                      color: 'white',
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      transition: 'all 0.2s ease',
-                      opacity: uploadingPicture ? 0.6 : 1
-                    }}
-                    onMouseOver={(e) => {
-                      if (!uploadingPicture) {
-                        e.currentTarget.style.background = '#0da271';
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!uploadingPicture) {
-                        e.currentTarget.style.background = uploadingPicture ? '#9ca3af' : '#10b981';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }
-                    }}
-                  >
-                    {uploadingPicture ? 'Uploading...' : t('profile.saveChanges')}
-                  </button>
-                </>
+                    }
+                  }}
+                >
+                  {uploadingPicture ? 'Uploading...' : t('profile.saveChanges')}
+                </button>
               )}
             </div>
           </div>
