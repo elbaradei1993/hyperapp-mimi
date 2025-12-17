@@ -556,7 +556,8 @@ const ProfileView: React.FC = () => {
       paddingBottom: '100px',
       paddingTop: '80px',
       minHeight: '100vh'
-    }}>
+    }}
+    className="profile-container">
       {/* Premium Profile Header */}
       <div style={{
         background: 'var(--bg-glass)',

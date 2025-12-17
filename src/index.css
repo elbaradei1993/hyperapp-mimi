@@ -534,6 +534,209 @@ select:active {
   }
 }
 
+/* ProfileView Mobile Optimizations - Even More Aggressive */
+@media screen and (max-width: 768px) {
+  /* Main container */
+  div[style*="padding: 16px"][style*="maxWidth: 800px"] {
+    padding: var(--space-1) !important;
+    padding-top: 60px !important;
+  }
+
+  /* Profile header section */
+  div[style*="background: var(--bg-glass)"][style*="padding: 40px"] {
+    padding: var(--space-2) !important;
+    margin-bottom: var(--space-2) !important;
+  }
+
+  /* Profile picture */
+  div[style*="width: 100px"][style*="height: 100px"] {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  div[style*="width: 100px"][style*="height: 100px"] i {
+    font-size: 32px !important;
+  }
+
+  /* Profile name */
+  h1[style*="fontSize: 24px"] {
+    font-size: 18px !important;
+    margin-bottom: var(--space-1) !important;
+  }
+
+  /* Edit profile button */
+  button[style*="background: linear-gradient(135deg, #667eea"] {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+
+  button[style*="background: linear-gradient(135deg, #667eea"] i {
+    font-size: 12px !important;
+  }
+
+  /* Personal info section */
+  div[style*="background: var(--bg-glass)"][style*="padding: 32px"][style*="marginBottom: 32px"]:nth-of-type(1) {
+    padding: var(--space-2) !important;
+    margin-bottom: var(--space-2) !important;
+  }
+
+  /* Personal info section header */
+  h2[style*="fontSize: 20px"][style*="marginBottom: 24px"] {
+    font-size: 16px !important;
+    margin-bottom: var(--space-2) !important;
+  }
+
+  h2[style*="fontSize: 20px"][style*="marginBottom: 24px"] div {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  h2[style*="fontSize: 20px"][style*="marginBottom: 24px"] div i {
+    font-size: 14px !important;
+  }
+
+  /* Personal info cards */
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"] {
+    padding: var(--space-2) !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"] div[style*="width: 48px"] {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"] div[style*="width: 48px"] i {
+    font-size: 14px !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"] div[style*="fontSize: 13px"] {
+    font-size: 11px !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"] div[style*="fontSize: 17px"] {
+    font-size: 14px !important;
+  }
+
+  /* Stats grid */
+  div[style*="display: grid"][style*="gridTemplateColumns: repeat(auto-fit, minmax(220px, 1fr))"] {
+    gap: var(--space-2) !important;
+    margin-bottom: var(--space-2) !important;
+  }
+
+  /* Stats cards */
+  div[style*="background: var(--bg-glass)"][style*="padding: 28px"][style*="textAlign: center"] {
+    padding: var(--space-2) !important;
+  }
+
+  div[style*="background: var(--bg-glass)"][style*="padding: 28px"][style*="textAlign: center"] div[style*="width: 56px"] {
+    width: 36px !important;
+    height: 36px !important;
+    margin-bottom: var(--space-1) !important;
+  }
+
+  div[style*="background: var(--bg-glass)"][style*="padding: 28px"][style*="textAlign: center"] div[style*="width: 56px"] i {
+    font-size: 16px !important;
+  }
+
+  div[style*="background: var(--bg-glass)"][style*="padding: 28px"][style*="textAlign: center"] div[style*="fontSize: 36px"] {
+    font-size: 24px !important;
+    margin-bottom: 4px !important;
+  }
+
+  div[style*="background: var(--bg-glass)"][style*="padding: 28px"][style*="textAlign: center"] div[style*="fontSize: 14px"] {
+    font-size: 12px !important;
+  }
+
+  /* Badges section */
+  div[style*="background: var(--bg-glass)"][style*="padding: 32px"][style*="marginBottom: 32px"]:nth-of-type(2) {
+    padding: var(--space-2) !important;
+    margin-bottom: var(--space-2) !important;
+  }
+
+  /* Badges grid */
+  div[style*="display: grid"][style*="gridTemplateColumns: repeat(auto-fill, minmax(220px, 1fr))"] {
+    gap: var(--space-2) !important;
+  }
+
+  /* Badge cards */
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 24px"] {
+    padding: var(--space-2) !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 24px"] div[style*="width: 64px"] {
+    width: 40px !important;
+    height: 40px !important;
+    margin-bottom: var(--space-1) !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 24px"] div[style*="width: 64px"] i {
+    font-size: 18px !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 24px"] h3 {
+    font-size: 14px !important;
+    margin-bottom: 4px !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 24px"] p {
+    font-size: 11px !important;
+  }
+
+  /* My reports section */
+  div[style*="background: var(--bg-glass)"][style*="padding: 32px"][style*="marginBottom: 32px"]:nth-of-type(3) {
+    padding: var(--space-2) !important;
+    margin-bottom: var(--space-2) !important;
+  }
+
+  /* Report cards */
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"][style*="display: flex"] {
+    padding: var(--space-2) !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"][style*="display: flex"] div[style*="width: 48px"] {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"][style*="display: flex"] div[style*="width: 48px"] i {
+    font-size: 14px !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"][style*="display: flex"] div[style*="fontWeight: 700"] {
+    font-size: 14px !important;
+  }
+
+  div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"][style*="display: flex"] div[style*="fontSize: 14px"] {
+    font-size: 12px !important;
+  }
+
+  /* Icon font smoothing for all icons */
+  .profile-container i,
+  .profile-container .fas,
+  .profile-container .far,
+  .profile-container .fab {
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+  }
+
+  /* Text containment */
+  .profile-container * {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure text doesn't overflow cards */
+  .profile-container div[style*="background: rgba(255, 255, 255, 0.4)"] {
+    overflow: hidden !important;
+  }
+
+  .profile-container div[style*="background: rgba(255, 255, 255, 0.4)"] div {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
 /* Make map fill entire container without any gaps */
 .leaflet-container {
   margin: 0 !important;
