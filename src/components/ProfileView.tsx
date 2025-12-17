@@ -864,7 +864,7 @@ const ProfileView: React.FC = () => {
           <div style={{ marginBottom: '16px' }}>
             {/* Gradient Name */}
             <h1 style={{
-              fontSize: '24px',
+              fontSize: '20px',
               fontWeight: '700',
               background: 'var(--brand-gradient)',
               WebkitBackgroundClip: 'text',
@@ -989,7 +989,7 @@ const ProfileView: React.FC = () => {
 
         <div style={{ position: 'relative', zIndex: 1 }}>
           <h2 style={{
-            fontSize: '20px',
+            fontSize: '18px',
             fontWeight: '700',
             background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
             WebkitBackgroundClip: 'text',
@@ -1064,7 +1064,7 @@ const ProfileView: React.FC = () => {
                   {t('profile.email')}
                 </div>
                 <div style={{
-                  fontSize: '17px',
+                  fontSize: '15px',
                   fontWeight: '600',
                   color: 'var(--text-primary)',
                   letterSpacing: '-0.01em'
@@ -1255,7 +1255,7 @@ const ProfileView: React.FC = () => {
               <i className="fas fa-chart-line" style={{ fontSize: '20px', color: 'white' }}></i>
             </div>
             <div style={{
-              fontSize: '36px',
+              fontSize: '32px',
               fontWeight: '800',
               background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
               WebkitBackgroundClip: 'text',
@@ -1268,7 +1268,7 @@ const ProfileView: React.FC = () => {
             </div>
             <div style={{
               color: 'var(--text-muted)',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '600',
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
@@ -1622,7 +1622,7 @@ const ProfileView: React.FC = () => {
                       }}></i>
                     </div>
                     <h3 style={{
-                      fontSize: '16px',
+                      fontSize: '14px',
                       fontWeight: '700',
                       marginBottom: '8px',
                       color: 'white',
@@ -1632,7 +1632,7 @@ const ProfileView: React.FC = () => {
                       {badge.name}
                     </h3>
                     <p style={{
-                      fontSize: '13px',
+                      fontSize: '11px',
                       color: 'rgba(255, 255, 255, 0.9)',
                       margin: 0,
                       lineHeight: '1.4',
@@ -1775,7 +1775,7 @@ const ProfileView: React.FC = () => {
                 <i className="fas fa-plus-circle" style={{ fontSize: '32px', color: '#9ca3af' }}></i>
               </div>
               <p style={{
-                fontSize: '16px',
+                fontSize: '14px',
                 fontWeight: '500',
                 margin: 0,
                 color: 'var(--text-secondary)'
@@ -1783,7 +1783,7 @@ const ProfileView: React.FC = () => {
                 {t('profile.noReports')}
               </p>
               <p style={{
-                fontSize: '14px',
+                fontSize: '12px',
                 margin: '8px 0 0 0',
                 opacity: 0.7
               }}>
@@ -1833,14 +1833,14 @@ const ProfileView: React.FC = () => {
                       fontWeight: '700',
                       color: 'var(--text-primary)',
                       marginBottom: '4px',
-                      fontSize: '16px',
+                      fontSize: '14px',
                       letterSpacing: '-0.01em'
                     }}>
                       {t(`vibes.${report.vibe_type}`)} {t('profile.report')}
                     </div>
                     <div style={{
                       color: 'var(--text-muted)',
-                      fontSize: '14px',
+                      fontSize: '12px',
                       marginBottom: '6px',
                       fontWeight: '500'
                     }}>
@@ -1849,7 +1849,7 @@ const ProfileView: React.FC = () => {
                     {report.notes && (
                       <div style={{
                         color: 'var(--text-secondary)',
-                        fontSize: '14px',
+                        fontSize: '12px',
                         marginBottom: '8px',
                         lineHeight: '1.4'
                       }}>
@@ -1861,7 +1861,7 @@ const ProfileView: React.FC = () => {
                       alignItems: 'center',
                       gap: '16px',
                       color: 'var(--text-muted)',
-                      fontSize: '13px',
+                      fontSize: '11px',
                       fontWeight: '500'
                     }}>
                       <span>🕒 {formatTimeAgo(report.created_at)}</span>

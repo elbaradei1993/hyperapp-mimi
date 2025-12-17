@@ -503,7 +503,7 @@ const SettingsView: React.FC = () => {
                 position: 'relative',
                 display: 'inline-block',
                 width: 'var(--touch-target)',
-                height: '28px',
+                height: '36px',
                 cursor: 'pointer'
               }}>
                 <input
@@ -522,14 +522,14 @@ const SettingsView: React.FC = () => {
                   bottom: 0,
                   backgroundColor: notifications ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  borderRadius: '14px',
+                  borderRadius: '18px',
                   border: '2px solid transparent'
                 }}>
                   <span style={{
                     position: 'absolute',
-                    height: '20px',
-                    width: '20px',
-                    left: notifications ? 'calc(100% - 24px)' : '2px',
+                    height: '28px',
+                    width: '28px',
+                    left: notifications ? 'calc(100% - 32px)' : '2px',
                     top: '2px',
                     backgroundColor: 'white',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -646,7 +646,7 @@ const SettingsView: React.FC = () => {
                 position: 'relative',
                 display: 'inline-block',
                 width: 'var(--touch-target)',
-                height: '28px',
+                height: '36px',
                 cursor: 'pointer'
               }}>
                 <input
@@ -665,14 +665,14 @@ const SettingsView: React.FC = () => {
                   bottom: 0,
                   backgroundColor: locationSharing ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  borderRadius: '14px',
+                  borderRadius: '18px',
                   border: '2px solid transparent'
                 }}>
                   <span style={{
                     position: 'absolute',
-                    height: '20px',
-                    width: '20px',
-                    left: locationSharing ? 'calc(100% - 24px)' : '2px',
+                    height: '28px',
+                    width: '28px',
+                    left: locationSharing ? 'calc(100% - 32px)' : '2px',
                     top: '2px',
                     backgroundColor: 'white',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

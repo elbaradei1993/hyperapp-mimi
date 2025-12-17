@@ -480,23 +480,23 @@ select:active {
   }
 
   .settings-container label[style*="width: var(--touch-target)"] {
-    width: 42px !important;
-    height: 26px !important;
+    width: 44px !important;
+    height: 36px !important;
   }
 
   .settings-container label[style*="width: var(--touch-target)"] span:first-of-type {
-    height: 26px !important;
-    border-radius: 13px !important;
+    height: 36px !important;
+    border-radius: 18px !important;
   }
 
   .settings-container label[style*="width: var(--touch-target)"] span:last-of-type {
-    height: 20px !important;
-    width: 20px !important;
-    left: 3px !important;
+    height: 28px !important;
+    width: 28px !important;
+    left: 2px !important;
   }
 
   .settings-container label[style*="width: var(--touch-target)"] input:checked ~ span:first-of-type ~ span {
-    left: calc(100% - 23px) !important;
+    left: calc(100% - 32px) !important;
   }
 
   .settings-container div[style*="grid-template-columns"] {
