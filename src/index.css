@@ -480,23 +480,23 @@ select:active {
   }
 
   .settings-container label[style*="width: var(--touch-target)"] {
-    width: 40px !important;
-    height: 24px !important;
+    width: 42px !important;
+    height: 26px !important;
   }
 
   .settings-container label[style*="width: var(--touch-target)"] span:first-of-type {
-    height: 24px !important;
-    border-radius: 12px !important;
+    height: 26px !important;
+    border-radius: 13px !important;
   }
 
   .settings-container label[style*="width: var(--touch-target)"] span:last-of-type {
-    height: 18px !important;
-    width: 18px !important;
+    height: 20px !important;
+    width: 20px !important;
     left: 3px !important;
   }
 
   .settings-container label[style*="width: var(--touch-target)"] input:checked ~ span:first-of-type ~ span {
-    left: calc(100% - 21px) !important;
+    left: calc(100% - 23px) !important;
   }
 
   .settings-container div[style*="grid-template-columns"] {
@@ -614,7 +614,7 @@ select:active {
   }
 
   div[style*="background: rgba(255, 255, 255, 0.4)"][style*="padding: 20px"] div[style*="fontSize: 17px"] {
-    font-size: 14px !important;
+    font-size: 13px !important;
   }
 
   /* Stats grid */
