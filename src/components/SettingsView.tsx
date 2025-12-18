@@ -476,7 +476,6 @@ const SettingsView: React.FC = () => {
                 <div style={{
                   fontWeight: '600',
                   color: 'var(--text-primary)',
-                  marginBottom: 'var(--space-1)',
                   fontSize: '14px',
                   display: 'flex',
                   alignItems: 'center',
@@ -489,14 +488,6 @@ const SettingsView: React.FC = () => {
                     fontSize: '12px'
                   }}></i>
                   {t('settings.notifications')}
-                </div>
-                <div style={{
-                  fontSize: '12px',
-                  color: 'var(--text-muted)',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale'
-                }}>
-                  {t('settings.receiveNotifications')}
                 </div>
               </div>
               <label style={{
@@ -619,7 +610,6 @@ const SettingsView: React.FC = () => {
                 <div style={{
                   fontWeight: '600',
                   color: 'var(--text-primary)',
-                  marginBottom: 'var(--space-1)',
                   fontSize: '14px',
                   display: 'flex',
                   alignItems: 'center',
@@ -632,14 +622,6 @@ const SettingsView: React.FC = () => {
                     fontSize: '12px'
                   }}></i>
                   {t('settings.locationSharing')}
-                </div>
-                <div style={{
-                  fontSize: '12px',
-                  color: 'var(--text-muted)',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale'
-                }}>
-                  {t('settings.allowLocation')}
                 </div>
               </div>
               <label style={{
@@ -684,87 +666,7 @@ const SettingsView: React.FC = () => {
             </div>
           </div>
 
-          {/* Export Data */}
-          <div style={{
-            background: 'var(--bg-primary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: 'var(--space-3)',
-            transition: 'all 0.2s ease',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{
-                  fontWeight: '600',
-                  color: 'var(--text-primary)',
-                  marginBottom: 'var(--space-1)',
-                  fontSize: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale'
-                }}>
-                  <i className="fas fa-download" style={{
-                    color: 'var(--accent-primary)',
-                    fontSize: '14px'
-                  }}></i>
-                  {t('settings.exportData')}
-                </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: 'var(--text-muted)',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale'
-                }}>
-                  {t('settings.downloadData')}
-                </div>
-              </div>
-              <button
-                onClick={handleExportData}
-                style={{
-                  background: 'linear-gradient(135deg, var(--accent-secondary) 0%, rgba(139, 92, 246, 0.8) 100%)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  padding: 'var(--space-2) var(--space-4)',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  minWidth: '80px',
-                  height: 'var(--touch-target)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale',
-                  WebkitTapHighlightColor: 'transparent',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(139, 92, 246, 0.3)';
-                }}
-              >
-                <i className="fas fa-file-export" style={{ marginRight: 'var(--space-1)', fontSize: '12px' }}></i>
-                {t('common.export')}
-              </button>
-            </div>
-          </div>
+
         </div>
       </div>
 
