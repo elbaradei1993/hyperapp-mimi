@@ -78,12 +78,16 @@ const ProfileView: React.FC = () => {
   });
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [resolvedLocationAddress, setResolvedLocationAddress] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
       loadProfileData();
       loadReportsData();
+
+      // Resolve location address
+      resolveLocationAddress();
 
       // Set up real-time subscriptions for automatic updates
       const reportsSubscription = reportsService.subscribeToReports((newReport) => {
@@ -126,6 +130,13 @@ const ProfileView: React.FC = () => {
       };
     }
   }, [user]);
+
+  // Resolve location address when user location changes
+  useEffect(() => {
+    if (user?.location) {
+      resolveLocationAddress();
+    }
+  }, [user?.location]);
 
   const loadProfileData = async () => {
     if (!user) return;
@@ -520,9 +531,40 @@ const ProfileView: React.FC = () => {
     }
   };
 
+  // Resolve location address and update state
+  const resolveLocationAddress = async () => {
+    if (!user?.location) {
+      setResolvedLocationAddress(t('profile.notProvided'));
+      return;
+    }
+
+    try {
+      const address = await getLocationAddress(user.location);
+      setResolvedLocationAddress(address);
+    } catch (error) {
+      console.error('Error resolving location address:', error);
+      setResolvedLocationAddress(t('profile.notProvided'));
+    }
+  };
+
   // Helper function to extract address from location regardless of format
-  const getLocationAddress = (location: any): string => {
+  const getLocationAddress = async (location: any): Promise<string> => {
     if (!location) return t('profile.notProvided');
+
+    // If location has coordinates, try reverse geocoding for professional address
+    if (typeof location === 'object' && location.latitude && location.longitude) {
+      try {
+        setDetectingLocation(true);
+        const geocodedAddress = await reverseGeocode(location.latitude, location.longitude);
+        if (geocodedAddress && geocodedAddress.trim()) {
+          return geocodedAddress;
+        }
+      } catch (error) {
+        console.error('Error reverse geocoding location:', error);
+      } finally {
+        setDetectingLocation(false);
+      }
+    }
 
     // If location is an object, extract the address
     if (typeof location === 'object' && location.address) {
@@ -1054,7 +1096,7 @@ const ProfileView: React.FC = () => {
               </div>
               <div>
                 <div style={{
-                  fontSize: '13px',
+                  fontSize: '11px',
                   color: 'var(--text-muted)',
                   marginBottom: '4px',
                   fontWeight: '500',
@@ -1064,7 +1106,7 @@ const ProfileView: React.FC = () => {
                   {t('profile.email')}
                 </div>
                 <div style={{
-                  fontSize: '15px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   color: 'var(--text-primary)',
                   letterSpacing: '-0.01em'
@@ -1110,7 +1152,7 @@ const ProfileView: React.FC = () => {
               </div>
               <div>
                 <div style={{
-                  fontSize: '13px',
+                  fontSize: '11px',
                   color: 'var(--text-muted)',
                   marginBottom: '4px',
                   fontWeight: '500',
@@ -1120,7 +1162,7 @@ const ProfileView: React.FC = () => {
                   {t('profile.phone')}
                 </div>
                 <div style={{
-                  fontSize: '17px',
+                  fontSize: '14px',
                   fontWeight: '600',
                   color: 'var(--text-primary)',
                   letterSpacing: '-0.01em'
@@ -1176,12 +1218,19 @@ const ProfileView: React.FC = () => {
                   {t('profile.location')}
                 </div>
                 <div style={{
-                  fontSize: '17px',
+                  fontSize: '14px',
                   fontWeight: '600',
                   color: 'var(--text-primary)',
                   letterSpacing: '-0.01em'
                 }}>
-                  {getLocationAddress(user?.location)}
+                  {detectingLocation ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <i className="fas fa-spinner fa-spin" style={{ fontSize: '12px' }}></i>
+                      Detecting location...
+                    </div>
+                  ) : (
+                    resolvedLocationAddress
+                  )}
                 </div>
               </div>
             </div>
