@@ -490,45 +490,11 @@ const SettingsView: React.FC = () => {
                   {t('settings.notifications')}
                 </div>
               </div>
-              <label style={{
-                position: 'relative',
-                display: 'inline-block',
-                width: 'var(--touch-target)',
-                height: '36px',
-                cursor: 'pointer'
-              }}>
-                <input
-                  type="checkbox"
-                  checked={notifications}
-                  onChange={(e) => setNotifications(e.target.checked)}
-                  aria-label={t('settings.notifications')}
-                  style={{ opacity: 0, width: 0, height: 0 }}
-                />
-                <span style={{
-                  position: 'absolute',
-                  cursor: 'pointer',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: notifications ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  borderRadius: '18px',
-                  border: '2px solid transparent'
-                }}>
-                  <span style={{
-                    position: 'absolute',
-                    height: '28px',
-                    width: '28px',
-                    left: notifications ? 'calc(100% - 32px)' : '2px',
-                    top: '2px',
-                    backgroundColor: 'white',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    borderRadius: '50%',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-                  }}></span>
-                </span>
-              </label>
+              <ToggleSwitch
+                checked={notifications}
+                onChange={setNotifications}
+                size="md"
+              />
             </div>
           </div>
         </div>
@@ -624,45 +590,11 @@ const SettingsView: React.FC = () => {
                   {t('settings.locationSharing')}
                 </div>
               </div>
-              <label style={{
-                position: 'relative',
-                display: 'inline-block',
-                width: 'var(--touch-target)',
-                height: '36px',
-                cursor: 'pointer'
-              }}>
-                <input
-                  type="checkbox"
-                  checked={locationSharing}
-                  onChange={(e) => setLocationSharing(e.target.checked)}
-                  aria-label={t('settings.locationSharing')}
-                  style={{ opacity: 0, width: 0, height: 0 }}
-                />
-                <span style={{
-                  position: 'absolute',
-                  cursor: 'pointer',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: locationSharing ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  borderRadius: '18px',
-                  border: '2px solid transparent'
-                }}>
-                  <span style={{
-                    position: 'absolute',
-                    height: '28px',
-                    width: '28px',
-                    left: locationSharing ? 'calc(100% - 32px)' : '2px',
-                    top: '2px',
-                    backgroundColor: 'white',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    borderRadius: '50%',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-                  }}></span>
-                </span>
-              </label>
+              <ToggleSwitch
+                checked={locationSharing}
+                onChange={setLocationSharing}
+                size="md"
+              />
             </div>
           </div>
 
