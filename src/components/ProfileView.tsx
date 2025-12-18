@@ -6,6 +6,7 @@ import { reportsService } from '../services/reports';
 import { uploadService } from '../services/upload';
 import { LoadingSpinner, EmptyState } from './shared';
 import { reverseGeocode } from '../lib/geocoding';
+import { Geolocation } from '@capacitor/geolocation';
 import type { User } from '../types';
 import { INTEREST_CATEGORIES } from '../types';
 
@@ -77,17 +78,42 @@ const ProfileView: React.FC = () => {
     profilePicturePreview: ''
   });
   const [uploadingPicture, setUploadingPicture] = useState(false);
-  const [detectingLocation, setDetectingLocation] = useState(false);
-  const [resolvedLocationAddress, setResolvedLocationAddress] = useState<string>('');
+  const [locationAddress, setLocationAddress] = useState<string>('');
+  const [currentLocationAddress, setCurrentLocationAddress] = useState<string>('');
+  const [isGeocoding, setIsGeocoding] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Get current location and reverse geocode it - same as Community Dashboard
+  useEffect(() => {
+    const getCurrentLocation = async () => {
+      try {
+        setIsGeocoding(true);
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        });
+
+        const { latitude, longitude } = position.coords;
+        const address = await reverseGeocode(latitude, longitude);
+        setCurrentLocationAddress(address);
+        setLocationAddress(address);
+      } catch (error) {
+        console.error('Error getting current location:', error);
+        setCurrentLocationAddress('Location unavailable');
+        setLocationAddress('Location unavailable');
+      } finally {
+        setIsGeocoding(false);
+      }
+    };
+
+    getCurrentLocation();
+  }, []);
 
   useEffect(() => {
     if (user) {
       loadProfileData();
       loadReportsData();
-
-      // Resolve location address
-      resolveLocationAddress();
 
       // Set up real-time subscriptions for automatic updates
       const reportsSubscription = reportsService.subscribeToReports((newReport) => {
@@ -131,12 +157,7 @@ const ProfileView: React.FC = () => {
     }
   }, [user]);
 
-  // Resolve location address when user location changes
-  useEffect(() => {
-    if (user?.location) {
-      resolveLocationAddress();
-    }
-  }, [user?.location]);
+
 
   const loadProfileData = async () => {
     if (!user) return;
@@ -531,62 +552,11 @@ const ProfileView: React.FC = () => {
     }
   };
 
-  // Resolve location address and update state
-  const resolveLocationAddress = async () => {
-    if (!user?.location) {
-      setResolvedLocationAddress(t('profile.notProvided'));
-      return;
-    }
-
-    try {
-      const address = await getLocationAddress(user.location);
-      setResolvedLocationAddress(address);
-    } catch (error) {
-      console.error('Error resolving location address:', error);
-      setResolvedLocationAddress(t('profile.notProvided'));
-    }
-  };
-
-  // Helper function to extract address from location regardless of format
-  const getLocationAddress = async (location: any): Promise<string> => {
-    if (!location) return t('profile.notProvided');
-
-    // If location has coordinates, try reverse geocoding for professional address
-    if (typeof location === 'object' && location.latitude && location.longitude) {
-      try {
-        setDetectingLocation(true);
-        const geocodedAddress = await reverseGeocode(location.latitude, location.longitude);
-        if (geocodedAddress && geocodedAddress.trim()) {
-          return geocodedAddress;
-        }
-      } catch (error) {
-        console.error('Error reverse geocoding location:', error);
-      } finally {
-        setDetectingLocation(false);
-      }
-    }
-
-    // If location is an object, extract the address
-    if (typeof location === 'object' && location.address) {
-      return location.address;
-    }
-
-    // If location is a string, try to parse it as JSON
-    if (typeof location === 'string') {
-      try {
-        const parsed = JSON.parse(location);
-        if (parsed && typeof parsed === 'object' && parsed.address) {
-          return parsed.address;
-        }
-        // If it's a valid JSON object but no address, return the string as-is (fallback)
-        return location;
-      } catch (error) {
-        // If it's not valid JSON, treat it as a plain address string
-        return location;
-      }
-    }
-
-    return t('profile.notProvided');
+  // Get location address - simplified to share with Community Dashboard
+  const getLocationAddress = (): string => {
+    // For now, return a placeholder - this should be shared with Community Dashboard
+    // TODO: Share location address with Community Dashboard via context or props
+    return user?.location ? 'Current Location' : t('profile.notProvided');
   };
 
   return (
@@ -1223,14 +1193,7 @@ const ProfileView: React.FC = () => {
                   color: 'var(--text-primary)',
                   letterSpacing: '-0.01em'
                 }}>
-                  {detectingLocation ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <i className="fas fa-spinner fa-spin" style={{ fontSize: '12px' }}></i>
-                      Detecting location...
-                    </div>
-                  ) : (
-                    resolvedLocationAddress
-                  )}
+                  {locationAddress}
                 </div>
               </div>
             </div>
@@ -2620,11 +2583,11 @@ const ProfileView: React.FC = () => {
                         profilePictureUrl = undefined;
                       }
 
-                      // Prepare location update - keep existing coordinates if available
-                      const locationUpdate = editForm.location ? {
+                      // Prepare location update - only save if location has content
+                      const locationUpdate = editForm.location && editForm.location.trim() ? {
                         latitude: user?.location?.latitude || 0,
                         longitude: user?.location?.longitude || 0,
-                        address: editForm.location
+                        address: editForm.location.trim()
                       } : undefined;
 
                       await updateProfile({
