@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { authService } from '../services/auth';
-import { Button, Box, Flex, Grid, Text, VStack, HStack } from '@chakra-ui/react';
+import { pushNotificationService } from '../services/pushNotificationService';
+import { notificationService } from '../services/notificationService';
+import { fcmService } from '../lib/firebase';
+import { Capacitor } from '@capacitor/core';
+
 import ToggleSwitch from './shared/ToggleSwitch';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsOfServiceModal from './TermsOfServiceModal';
@@ -12,6 +17,7 @@ const SettingsView: React.FC = () => {
   const { t } = useTranslation();
   const { user, signOut, updateProfile } = useAuth();
   const { currentLanguage, changeLanguage } = useLanguage();
+  const { settings, updateSettings, isLoading: settingsLoading } = useSettings();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
@@ -19,16 +25,38 @@ const SettingsView: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
-  const [notifications, setNotifications] = useState(true);
-  const [locationSharing, setLocationSharing] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
   const [showTermsOfServiceModal, setShowTermsOfServiceModal] = useState(false);
+  const [notificationPermissionStatus, setNotificationPermissionStatus] = useState<'granted' | 'denied' | 'default' | 'unknown'>('unknown');
+  const [locationPermissionStatus, setLocationPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
 
   const languages = [
     { code: 'en', name: 'English' },
     { code: 'ar', name: 'العربية' }
   ];
+
+  // Check permission statuses on mount
+  useEffect(() => {
+    const checkPermissions = async () => {
+      // Check notification permission
+      if ('Notification' in window) {
+        setNotificationPermissionStatus(Notification.permission);
+      }
+
+      // Check location permission
+      if (navigator.permissions) {
+        try {
+          const result = await navigator.permissions.query({ name: 'geolocation' });
+          setLocationPermissionStatus(result.state);
+        } catch (error) {
+          console.warn('Could not check location permission:', error);
+        }
+      }
+    };
+
+    checkPermissions();
+  }, []);
 
   const handlePasswordChange = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -488,11 +516,56 @@ const SettingsView: React.FC = () => {
                     fontSize: '12px'
                   }}></i>
                   {t('settings.notifications')}
+                  {notificationPermissionStatus !== 'unknown' && (
+                    <span style={{
+                      fontSize: '10px',
+                      padding: '2px 6px',
+                      borderRadius: 'var(--radius-sm)',
+                      backgroundColor: notificationPermissionStatus === 'granted' ? 'var(--success)' : 'var(--danger)',
+                      color: 'white',
+                      marginLeft: 'var(--space-2)',
+                      fontWeight: '500'
+                    }}>
+                      {notificationPermissionStatus === 'granted' ? 'ON' : 'OFF'}
+                    </span>
+                  )}
                 </div>
               </div>
               <ToggleSwitch
-                checked={notifications}
-                onChange={setNotifications}
+                checked={settings.notifications}
+                onChange={async (enabled) => {
+                  updateSettings({ notifications: enabled });
+
+                  if (enabled) {
+                    // Request permission if not granted
+                    if (notificationPermissionStatus !== 'granted') {
+                      try {
+                        const token = await fcmService.requestPermission();
+                        if (token) {
+                          setNotificationPermissionStatus('granted');
+                          console.log('🔔 Notification permission granted');
+                        } else {
+                          setNotificationPermissionStatus('denied');
+                          console.log('🔔 Notification permission denied');
+                        }
+                      } catch (error) {
+                        console.error('Error requesting notification permission:', error);
+                        setNotificationPermissionStatus('denied');
+                      }
+                    }
+                  }
+
+                  // Update push notification preferences
+                  try {
+                    await pushNotificationService.updatePreferences({
+                      emergency_alerts: enabled,
+                      safety_reports: enabled
+                    });
+                    console.log('🔔 Push notification preferences updated');
+                  } catch (error) {
+                    console.error('Error updating push notification preferences:', error);
+                  }
+                }}
                 size="md"
               />
             </div>
@@ -588,11 +661,62 @@ const SettingsView: React.FC = () => {
                     fontSize: '12px'
                   }}></i>
                   {t('settings.locationSharing')}
+                  {locationPermissionStatus !== 'unknown' && (
+                    <span style={{
+                      fontSize: '10px',
+                      padding: '2px 6px',
+                      borderRadius: 'var(--radius-sm)',
+                      backgroundColor: locationPermissionStatus === 'granted' ? 'var(--success)' : 'var(--danger)',
+                      color: 'white',
+                      marginLeft: 'var(--space-2)',
+                      fontWeight: '500'
+                    }}>
+                      {locationPermissionStatus === 'granted' ? 'ON' : 'OFF'}
+                    </span>
+                  )}
                 </div>
               </div>
               <ToggleSwitch
-                checked={locationSharing}
-                onChange={setLocationSharing}
+                checked={settings.locationSharing}
+                onChange={async (enabled) => {
+                  updateSettings({ locationSharing: enabled });
+
+                  if (enabled) {
+                    // Request location permission if not granted
+                    if (locationPermissionStatus !== 'granted') {
+                      if (navigator.geolocation) {
+                        try {
+                          // Try to get current position to trigger permission prompt
+                          await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(
+                              () => {
+                                setLocationPermissionStatus('granted');
+                                console.log('📍 Location permission granted');
+                                resolve(void 0);
+                              },
+                              (error) => {
+                                console.error('Error requesting location permission:', error);
+                                setLocationPermissionStatus('denied');
+                                reject(error);
+                              },
+                              { timeout: 10000 }
+                            );
+                          });
+                        } catch (error) {
+                          console.error('Failed to request location permission:', error);
+                          setLocationPermissionStatus('denied');
+                        }
+                      }
+                    }
+                  }
+
+                  // Update notification service location preferences
+                  if (user?.id) {
+                    notificationService.setCurrentUserId(user.id);
+                    // Location will be updated when available
+                    console.log('📍 Location sharing preference updated');
+                  }
+                }}
                 size="md"
               />
             </div>

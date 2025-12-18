@@ -192,6 +192,8 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
       setUserLocation(null);
       setSelectedFile(null);
       setMediaPreview('');
+      setIsSubmitting(false);
+      setLocationLoading(false);
 
       // Use current location from props as initial fallback
       if (currentLocation) {

@@ -24,19 +24,18 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     // Load language from localStorage or default to 'en'
     const savedLanguage = localStorage.getItem('language') || 'en';
     setCurrentLanguage(savedLanguage);
-    i18n.changeLanguage(savedLanguage);
+    i18n.changeLanguage(savedLanguage).then(() => {
+      // Set initial direction after i18n is ready
+      const direction = rtlLanguages.includes(savedLanguage) ? 'rtl' : 'ltr';
+      document.documentElement.dir = direction;
+      document.documentElement.lang = savedLanguage;
 
-    // Update document direction and body class for RTL languages
-    const direction = rtlLanguages.includes(savedLanguage) ? 'rtl' : 'ltr';
-    document.documentElement.dir = direction;
-    document.documentElement.lang = savedLanguage;
-
-    // Update body class for RTL styling
-    if (rtlLanguages.includes(savedLanguage)) {
-      document.body.classList.add('rtl');
-    } else {
-      document.body.classList.remove('rtl');
-    }
+      if (rtlLanguages.includes(savedLanguage)) {
+        document.body.classList.add('rtl');
+      } else {
+        document.body.classList.remove('rtl');
+      }
+    });
   }, [i18n]);
 
   const changeLanguage = async (language: string, updateProfile?: (data: any) => Promise<void>, user?: any) => {
@@ -52,7 +51,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
         await updateProfile({ language });
       }
 
-      // Update document direction and body class for RTL languages
+      // Update document direction after i18n change completes
       const direction = rtlLanguages.includes(language) ? 'rtl' : 'ltr';
       document.documentElement.dir = direction;
       document.documentElement.lang = language;

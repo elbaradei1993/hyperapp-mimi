@@ -107,6 +107,8 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
       setUserLocation(null);
       setSelectedFile(null);
       setMediaPreview('');
+      setIsSubmitting(false);
+      setLocationLoading(false);
 
       // Get user's current location
       getCurrentLocation();

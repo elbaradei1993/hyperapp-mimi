@@ -33,6 +33,9 @@ interface RSSFeedConfig {
   proxy: string;
 }
 
+// Import Capacitor for platform detection
+import { Capacitor } from '@capacitor/core';
+
 class RSSService {
   private cache: Map<string, { data: NewsAlert[]; timestamp: number }> = new Map();
   private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutes for better performance
@@ -50,6 +53,12 @@ class RSSService {
    * Fetch and parse RSS feed with automatic fallbacks - OPTIMIZED VERSION
    */
   async fetchRSSFeed(preferredUrl?: string): Promise<NewsAlert[]> {
+    // On mobile, skip external API calls and return default content immediately
+    if (Capacitor.isNativePlatform()) {
+      console.log('📱 Mobile platform detected - using default news content');
+      return this.getMobileDefaultNewsAlerts();
+    }
+
     // FIRST: Try to return cached data immediately for instant display
     const cachedData = this.getAnyCachedData();
     if (cachedData && cachedData.length > 0) {
@@ -152,7 +161,7 @@ class RSSService {
 
     // Fallback to any cached data
     const fallbackData = this.getAnyCachedData();
-    if (fallbackData) {
+    if (fallbackData?.length) {
       console.log('📁 Using fallback cached data');
       return fallbackData;
     }
@@ -513,6 +522,46 @@ class RSSService {
       data,
       timestamp: Date.now()
     });
+  }
+
+  /**
+   * Get mobile-specific default news alerts (no external API calls)
+   */
+  private getMobileDefaultNewsAlerts(): NewsAlert[] {
+    return [
+      {
+        id: 'mobile-1',
+        time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        headline: "Welcome to Community Safety Hub",
+        source: "Community Hub",
+        category: "NEWS",
+        priority: "medium"
+      },
+      {
+        id: 'mobile-2',
+        time: new Date(Date.now() - 3 * 60000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        headline: "Share safety reports and help keep your community informed",
+        source: "Community Hub",
+        category: "UPDATE",
+        priority: "low"
+      },
+      {
+        id: 'mobile-3',
+        time: new Date(Date.now() - 10 * 60000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        headline: "Report suspicious activity or emergency situations instantly",
+        source: "Community Hub",
+        category: "ALERT",
+        priority: "medium"
+      },
+      {
+        id: 'mobile-4',
+        time: new Date(Date.now() - 20 * 60000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        headline: "Connect with neighbors and stay aware of local safety trends",
+        source: "Community Hub",
+        category: "FEATURE",
+        priority: "low"
+      }
+    ];
   }
 
   /**

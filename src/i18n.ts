@@ -32,29 +32,7 @@ i18n
     }
   });
 
-// RTL language detection and document direction setting
+// RTL language detection - direction setting handled by LanguageContext
 const rtlLanguages = ['ar'];
-
-i18n.on('languageChanged', (lng) => {
-  const direction = rtlLanguages.includes(lng) ? 'rtl' : 'ltr';
-  document.documentElement.dir = direction;
-  document.documentElement.lang = lng;
-
-  // Update body class for RTL styling
-  if (rtlLanguages.includes(lng)) {
-    document.body.classList.add('rtl');
-  } else {
-    document.body.classList.remove('rtl');
-  }
-});
-
-// Set initial direction
-const initialDirection = rtlLanguages.includes(i18n.language) ? 'rtl' : 'ltr';
-document.documentElement.dir = initialDirection;
-document.documentElement.lang = i18n.language;
-
-if (rtlLanguages.includes(i18n.language)) {
-  document.body.classList.add('rtl');
-}
 
 export default i18n;

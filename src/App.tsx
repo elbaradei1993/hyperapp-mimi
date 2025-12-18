@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useNotification } from './contexts/NotificationContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { VibeProvider } from './contexts/VibeContext';
+import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { NotificationManager } from './components/shared/Notification';
 import TabNavigation, { TabType } from './components/TabNavigation';
 import Header from './components/Header';
@@ -23,6 +24,7 @@ import { storageManager } from './lib/storage';
 import { notificationService } from './services/notificationService';
 import { pushNotificationService } from './services/pushNotificationService';
 import { fcmService } from './lib/firebase';
+import { locationService } from './services/locationService';
 import { Capacitor } from '@capacitor/core';
 import { Box, Text as ChakraText } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,6 +40,7 @@ const CommunityDashboard = lazy(() => import('./components/CommunityDashboard'))
 const AppContent: React.FC = () => {
   const { user, isAuthenticated, isLoading, updateProfile } = useAuth();
   const { notifications, removeNotification, addNotification, markAsRead, markAllAsRead, clearAll } = useNotification();
+  const { settings } = useSettings();
   const [activeTab, setActiveTab] = useState<TabType>('map');
   const [vibes, setVibes] = useState<Vibe[]>([]);
   const [sosAlerts, setSosAlerts] = useState<SOS[]>([]);
@@ -70,9 +73,15 @@ const AppContent: React.FC = () => {
     }
   }, [isLoading, isAuthenticated]);
 
-  // Request notification permission on app startup
+  // Request notification permission on app startup (only if notifications are enabled)
   useEffect(() => {
     const requestNotificationPermission = async () => {
+      // Only request if notifications are enabled in settings
+      if (!settings.notifications) {
+        console.log('🔔 Notifications disabled in settings, skipping permission request');
+        return;
+      }
+
       try {
         console.log('🔔 Requesting notification permission on app startup...');
 
@@ -106,7 +115,7 @@ const AppContent: React.FC = () => {
     }, 2000); // 2 second delay
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [settings.notifications]);
 
   useEffect(() => {
     // Check authentication state on app load
@@ -124,495 +133,109 @@ const AppContent: React.FC = () => {
     }
 
     // Only initialize location once
-    if (!locationInitialized && isAuthenticated && user?.onboarding_completed) {
+    if (!locationInitialized && isAuthenticated && user?.onboarding_completed && settings.locationSharing) {
       setLocationInitialized(true);
 
-      // Get user location with aggressive GPS strategy
-      const getLocationWithAggressiveGPS = async () => {
-        let currentAccuracy = Infinity;
-        let currentLocation: [number, number] | null = null;
-        let gpsWatchId: number | null = null;
+      // Initialize location service
+      const initializeLocation = async () => {
+        try {
+          console.log('🚀 Initializing location service...');
 
-        const getIPLocation = async (forceFresh = false) => {
-          // Check if we have cached IP location from today (unless forced fresh)
-          const cachedLocation = await storageManager.get('ipLocation');
-          const cacheTime = await storageManager.get('ipLocationTime');
-          const now = Date.now();
-
-          if (!forceFresh && cachedLocation && cacheTime && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) { // 24 hours
-            const location = JSON.parse(cachedLocation);
-            setUserLocation(location);
-            console.log(`📍 Using cached IP location: ${location[0]}, ${location[1]}`);
-            return;
-          }
-
-          if (forceFresh) {
-            console.log('🔄 Forcing fresh IP location lookup (GPS accuracy was poor)');
-          }
-
-          try {
-            console.log('🔄 Trying IP-based geolocation...');
-
-            // Try multiple CORS-enabled services that provide actual location data
-            const services = [
-              {
-                url: 'https://ipapi.co/json/',
-                parseData: (data: any) => ({
-                  lat: data.latitude,
-                  lng: data.longitude,
-                  city: data.city
-                })
-              },
-              {
-                url: 'https://api.ipgeolocation.io/ipgeo?apiKey=free',
-                parseData: (data: any) => ({
-                  lat: parseFloat(data.latitude),
-                  lng: parseFloat(data.longitude),
-                  city: data.city
-                })
-              },
-              {
-                url: 'https://api.ipstack.com/check?access_key=free',
-                parseData: (data: any) => ({
-                  lat: data.latitude,
-                  lng: data.longitude,
-                  city: data.city
-                })
-              },
-              {
-                url: 'https://api.bigdatacloud.net/data/reverse-geocode-client',
-                parseData: (data: any) => ({
-                  lat: data.latitude,
-                  lng: data.longitude,
-                  city: data.city || data.locality
-                })
-              },
-              {
-                url: 'https://ipinfo.io/json',
-                parseData: (data: any) => {
-                  if (data.loc) {
-                    const [lat, lng] = data.loc.split(',').map(parseFloat);
-                    return { lat, lng, city: data.city };
-                  }
-                  return null;
-                }
-              },
-              {
-                url: 'https://api.ip.sb/geoip',
-                parseData: (data: any) => ({
-                  lat: data.latitude,
-                  lng: data.longitude,
-                  city: data.city
-                })
-              }
-            ];
-
-            for (const service of services) {
-              try {
-                console.log(`Trying ${service.url}...`);
-                const response = await fetch(service.url, {
-                  method: 'GET',
-                  headers: {
-                    'Accept': 'application/json',
-                  }
-                });
-
-                if (!response.ok) {
-                  console.log(`${service.url} returned ${response.status}`);
-                  continue;
-                }
-
-                const data = await response.json();
-                const parsed = service.parseData(data);
-
-                if (parsed && parsed.lat && parsed.lng && !isNaN(parsed.lat) && !isNaN(parsed.lng)) {
-                  const location: [number, number] = [parsed.lat, parsed.lng];
-
-                  // Cache the location
-                  await storageManager.set('ipLocation', JSON.stringify(location));
-                  await storageManager.set('ipLocationTime', now.toString());
-
-                  setUserLocation(location);
-                  console.log(`📍 IP Location set: ${parsed.lat}, ${parsed.lng} (${parsed.city || 'Unknown'})`);
-                  return; // Success, exit the loop
-                }
-              } catch (serviceError) {
-                console.log(`Service ${service.url} failed:`, serviceError);
-                continue; // Try next service
-              }
-            }
-
-            // If all services failed, use a default location
-            console.log('❌ All IP geolocation services failed, using default location');
-            const defaultLocation: [number, number] = [30.0444, 31.2357]; // Cairo, Egypt
-            setUserLocation(defaultLocation);
-            console.log(`📍 Using default location: ${defaultLocation[0]}, ${defaultLocation[1]} (Cairo, Egypt)`);
-
-          } catch (error) {
-            console.log('❌ IP geolocation failed completely:', error);
-
-            // Use default location as final fallback
-            const defaultLocation: [number, number] = [30.0444, 31.2357]; // Cairo, Egypt
-            setUserLocation(defaultLocation);
-            console.log(`📍 Using default location: ${defaultLocation[0]}, ${defaultLocation[1]} (Cairo, Egypt)`);
-          }
-        };
-
-        if (!navigator.geolocation) {
-          console.log('❌ Geolocation not supported, trying IP fallback');
-          getIPLocation();
-          return;
-        }
-
-        // Check location permissions first and handle different states
-        const checkLocationPermissions = async () => {
-          if (!navigator.permissions) {
-            console.log('⚠️ Permissions API not supported, proceeding with GPS attempt');
-            setLocationPermissionStatus('unknown');
-            return true; // Allow GPS attempt
-          }
-
-          try {
-            const result = await navigator.permissions.query({ name: 'geolocation' });
-            console.log('📍 Location permission status:', result.state);
-            setLocationPermissionStatus(result.state);
-
-            if (result.state === 'denied') {
-              console.log('❌ Location permission denied, showing user guidance');
-              setShowLocationPermissionModal(true);
-              getIPLocation();
-              return false; // Don't attempt GPS
-            } else if (result.state === 'prompt') {
-              console.log('❓ Location permission prompt, will trigger native dialog');
-              return true; // Allow GPS attempt which will trigger prompt
-            } else if (result.state === 'granted') {
-              console.log('✅ Location permission granted');
-              return true; // Allow GPS attempt
-            }
-          } catch (error) {
-            console.log('⚠️ Could not check location permissions:', error);
-            setLocationPermissionStatus('unknown');
-            return true; // Allow GPS attempt
-          }
-          return true;
-        };
-
-        const shouldAttemptGPS = await checkLocationPermissions();
-        if (!shouldAttemptGPS) {
-          return; // Skip GPS attempts if permission denied
-        }
-
-        console.log('🚀 Starting aggressive GPS location detection...');
-
-        // Primary GPS attempt with maximum timeout and best settings
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude, accuracy } = position.coords;
-            console.log(`📡 GPS Lock achieved: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m accuracy)`);
-
-            // More lenient accuracy thresholds for better user experience
-            const excellentAccuracy = 100; // 100m - excellent
-            const goodAccuracy = 500; // 500m - good
-            const acceptableAccuracy = 2000; // 2km - acceptable for initial location
-            const poorAccuracy = 10000; // 10km - poor but usable
-            const veryPoorAccuracy = 50000; // 50km - very poor, prefer IP
-            const extremelyPoorAccuracy = 200000; // 200km - extremely poor, reject
-
-            // Check for obviously wrong GPS data (coordinates that don't make sense)
-            const isValidCoordinates = latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
-            const isReasonableAccuracy = accuracy > 0 && accuracy < 1000000; // Less than 1000km
-
-            if (!isValidCoordinates || !isReasonableAccuracy) {
-              console.log(`❌ GPS returned invalid data: ${latitude}, ${longitude} (${accuracy}m), using IP fallback`);
-              getIPLocation();
-              return;
-            }
-
-            if (accuracy <= excellentAccuracy) {
-              currentLocation = [latitude, longitude];
-              currentAccuracy = accuracy;
-              setUserLocation(currentLocation);
-              setLastLocationUpdate(Date.now());
-              console.log(`🎯 Location set with excellent accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-              startLocationWatching();
-            } else if (accuracy <= goodAccuracy) {
-              currentLocation = [latitude, longitude];
-              currentAccuracy = accuracy;
-              setUserLocation(currentLocation);
-              setLastLocationUpdate(Date.now());
-              console.log(`✅ Location set with good accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-              startLocationWatching();
-            } else if (accuracy <= acceptableAccuracy) {
-              currentLocation = [latitude, longitude];
-              currentAccuracy = accuracy;
-              setUserLocation(currentLocation);
-              setLastLocationUpdate(Date.now());
-
-              console.log(`⚠️ Location set with acceptable accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-              startLocationWatching();
-            } else if (accuracy <= poorAccuracy) {
-              currentLocation = [latitude, longitude];
-              currentAccuracy = accuracy;
-              setUserLocation(currentLocation);
-              setLastLocationUpdate(Date.now());
-
-              console.log(`📍 Location set with poor accuracy: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-              startLocationWatching();
-            } else if (accuracy <= veryPoorAccuracy) {
-              console.log(`📍 GPS accuracy very poor (${Math.round(accuracy)}m), trying IP fallback for better initial location`);
-              getIPLocation();
-              // Still start watching for better GPS accuracy
-              startLocationWatching();
-            } else {
-              console.log(`❌ GPS accuracy extremely poor (${Math.round(accuracy)}m), rejecting and forcing fresh IP lookup`);
-              setShowGPSHelp(true); // Show user guidance for better GPS
-              getIPLocation(true); // Force fresh IP lookup
-            }
-          },
-          (error) => {
-            console.log(`❌ Primary GPS attempt failed: ${error.code} - ${error.message}`);
-
-            // Secondary attempt with different parameters
-            console.log('🔄 Trying secondary GPS attempt...');
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                const { latitude, longitude, accuracy } = position.coords;
-                console.log(`📡 Secondary GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-
-                // Use same improved accuracy thresholds and validation
-                const excellentAccuracy = 100;
-                const goodAccuracy = 500;
-                const acceptableAccuracy = 2000;
-                const poorAccuracy = 10000;
-                const veryPoorAccuracy = 50000;
-                const extremelyPoorAccuracy = 200000;
-
-                const isValidCoordinates = latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
-                const isReasonableAccuracy = accuracy > 0 && accuracy < 1000000;
-
-                if (!isValidCoordinates || !isReasonableAccuracy) {
-                  console.log(`❌ Secondary GPS returned invalid data: ${latitude}, ${longitude} (${accuracy}m), using IP fallback`);
-                  getIPLocation();
-                  return;
-                }
-
-                if (accuracy <= excellentAccuracy) {
-                  currentLocation = [latitude, longitude];
-                  currentAccuracy = accuracy;
-                  setUserLocation(currentLocation);
-                  setLastLocationUpdate(Date.now());
-                  console.log(`🎯 Secondary location excellent: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-                  startLocationWatching();
-                } else if (accuracy <= goodAccuracy) {
-                  currentLocation = [latitude, longitude];
-                  currentAccuracy = accuracy;
-                  setUserLocation(currentLocation);
-                  setLastLocationUpdate(Date.now());
-                  console.log(`✅ Secondary location good: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-                  startLocationWatching();
-                } else if (accuracy <= acceptableAccuracy) {
-                  currentLocation = [latitude, longitude];
-                  currentAccuracy = accuracy;
-                  setUserLocation(currentLocation);
-                  setLastLocationUpdate(Date.now());
-                  console.log(`⚠️ Secondary location acceptable: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-                  startLocationWatching();
-                } else if (accuracy <= poorAccuracy) {
-                  currentLocation = [latitude, longitude];
-                  currentAccuracy = accuracy;
-                  setUserLocation(currentLocation);
-                  setLastLocationUpdate(Date.now());
-                  console.log(`📍 Secondary location poor: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-                  startLocationWatching();
-                } else if (accuracy <= veryPoorAccuracy) {
-                  console.log(`📍 Secondary GPS very poor (${Math.round(accuracy)}m), using IP fallback`);
-                  getIPLocation();
-                  startLocationWatching();
-                } else {
-                  console.log(`❌ Secondary GPS extremely poor (${Math.round(accuracy)}m), using IP fallback`);
-                  getIPLocation();
-                }
-              },
-              (secondaryError) => {
-                console.log(`❌ Secondary GPS failed: ${secondaryError.code} - ${secondaryError.message}`);
-
-                // Third attempt with even more lenient settings
-                console.log('🔄 Trying third GPS attempt with minimal requirements...');
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const { latitude, longitude, accuracy } = position.coords;
-                    console.log(`📡 Third GPS attempt: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-
-                    // Use same improved accuracy thresholds and validation
-                    const excellentAccuracy = 100;
-                    const goodAccuracy = 500;
-                    const acceptableAccuracy = 2000;
-                    const poorAccuracy = 10000;
-                    const veryPoorAccuracy = 50000;
-
-                    const isValidCoordinates = latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
-                    const isReasonableAccuracy = accuracy > 0 && accuracy < 1000000;
-
-                    if (!isValidCoordinates || !isReasonableAccuracy) {
-                      console.log(`❌ Third GPS returned invalid data: ${latitude}, ${longitude} (${accuracy}m), using IP fallback`);
-                      getIPLocation();
-                      return;
-                    }
-
-                    if (accuracy <= excellentAccuracy) {
-                      currentLocation = [latitude, longitude];
-                      currentAccuracy = accuracy;
-                      setUserLocation(currentLocation);
-                      setLastLocationUpdate(Date.now());
-                      console.log(`🎯 Third attempt excellent: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-                      startLocationWatching();
-                    } else if (accuracy <= goodAccuracy) {
-                      currentLocation = [latitude, longitude];
-                      currentAccuracy = accuracy;
-                      setUserLocation(currentLocation);
-                      setLastLocationUpdate(Date.now());
-                      console.log(`✅ Third attempt good: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-                      startLocationWatching();
-                    } else if (accuracy <= acceptableAccuracy) {
-                      currentLocation = [latitude, longitude];
-                      currentAccuracy = accuracy;
-                      setUserLocation(currentLocation);
-                      setLastLocationUpdate(Date.now());
-                      console.log(`⚠️ Third attempt acceptable: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-                      startLocationWatching();
-                    } else if (accuracy <= poorAccuracy) {
-                      currentLocation = [latitude, longitude];
-                      currentAccuracy = accuracy;
-                      setUserLocation(currentLocation);
-                      setLastLocationUpdate(Date.now());
-                      console.log(`📍 Third attempt poor: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${Math.round(accuracy)}m)`);
-                      startLocationWatching();
-                    } else if (accuracy <= veryPoorAccuracy) {
-                      console.log(`📍 Third GPS very poor (${Math.round(accuracy)}m), using IP fallback`);
-                      getIPLocation();
-                      startLocationWatching();
-                    } else {
-                      console.log(`❌ Third GPS extremely poor (${Math.round(accuracy)}m), using IP fallback`);
-                      getIPLocation();
-                    }
-                  },
-                  (thirdError) => {
-                    console.log(`❌ Third GPS failed: ${thirdError.code} - ${thirdError.message}`);
-                    console.log('🔄 All GPS attempts failed, using IP geolocation');
-                    getIPLocation();
-                  },
-                  {
-                    enableHighAccuracy: false,
-                    timeout: 15000, // Shorter timeout
-                    maximumAge: 1800000 // Accept 30 minute old cached location
-                  }
-                );
-              },
-              {
-                enableHighAccuracy: false, // Try without high accuracy requirement
-                timeout: 45000, // Longer timeout for secondary attempt
-                maximumAge: 600000 // Accept 10 minute old cached location
-              }
-            );
-          },
-          {
+          // Try to get current position first
+          const position = await locationService.getCurrentPosition({
             enableHighAccuracy: true,
-            timeout: 180000, // 3 minutes - very aggressive waiting for GPS lock
-            maximumAge: 60000 // Accept 1 minute old cached location if available
-          }
-        );
+            timeout: 30000
+          });
 
-        const startLocationWatching = () => {
-          if (gpsWatchId !== null) {
-            navigator.geolocation.clearWatch(gpsWatchId);
-          }
+          setUserLocation([position.latitude, position.longitude]);
+          setLastLocationUpdate(Date.now());
+          console.log(`📍 Initial location set: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)} (${Math.round(position.accuracy)}m)`);
 
-          console.log('👀 Starting continuous location monitoring...');
-          gpsWatchId = navigator.geolocation.watchPosition(
-            (position) => {
-              const { latitude: newLat, longitude: newLng, accuracy: newAccuracy } = position.coords;
+          // Start watching for location updates
+          const watchId = await locationService.watchPosition(
+            (result) => {
               const now = Date.now();
-
               // Only update if it's been at least 30 seconds since last update
               if (now - lastLocationUpdate < 30000) {
-                return; // Skip update to prevent excessive tracking
+                return;
               }
 
-              // Update if accuracy improved significantly or position changed
-              const distance = currentLocation ? Math.sqrt(
-                Math.pow(newLat - currentLocation[0], 2) + Math.pow(newLng - currentLocation[1], 2)
-              ) * 111000 : Infinity;
-
-              if (newAccuracy < currentAccuracy * 0.7 || distance > 50) { // 70% accuracy improvement or 50m movement
-                currentLocation = [newLat, newLng];
-                currentAccuracy = newAccuracy;
-                setUserLocation(currentLocation);
-                setLastLocationUpdate(now);
-                console.log(`🔄 Location updated: ${newLat.toFixed(6)}, ${newLng.toFixed(6)} (${Math.round(newAccuracy)}m, ${Math.round(distance)}m moved)`);
-              }
+              setUserLocation([result.latitude, result.longitude]);
+              setLastLocationUpdate(now);
+              console.log(`🔄 Location updated: ${result.latitude.toFixed(6)}, ${result.longitude.toFixed(6)} (${Math.round(result.accuracy)}m)`);
             },
             (error) => {
-              console.log('⚠️ Location watch error:', error.code, error.message);
+              console.log('⚠️ Location watch error:', error.message);
             },
             {
               enableHighAccuracy: true,
               timeout: 30000,
-              maximumAge: 30000 // Accept 30 second old locations
+              maximumAge: 30000
             }
           );
-        };
-      };
 
-      getLocationWithAggressiveGPS();
+          // Set up automatic location refresh every 2 minutes
+          const refreshInterval = setInterval(async () => {
+            const now = Date.now();
+            const timeSinceLastUpdate = now - lastLocationUpdate;
 
-      // Set up permission change listener for automatic re-detection
-      if (navigator.permissions) {
-        navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
-          console.log('🎧 Setting up permission change listener');
+            // Only refresh if it's been more than 1.5 minutes since last update
+            if (timeSinceLastUpdate > 90 * 1000) {
+              try {
+                console.log('⏰ Automatic location refresh');
+                const newPosition = await locationService.getCurrentPosition({
+                  enableHighAccuracy: true,
+                  timeout: 10000
+                });
+                setUserLocation([newPosition.latitude, newPosition.longitude]);
+                setLastLocationUpdate(Date.now());
+              } catch (error) {
+                console.log('⚠️ Automatic location refresh failed:', error.message);
+              }
+            }
+          }, 2 * 60 * 1000); // 2 minutes
 
-          permissionStatus.onchange = () => {
-            console.log('🔄 Permission status changed to:', permissionStatus.state);
-            setLocationPermissionStatus(permissionStatus.state);
+          setLocationRefreshInterval(refreshInterval);
 
-            // If permission was granted, immediately try to get location
-            if (permissionStatus.state === 'granted') {
-              console.log('✅ Permission granted - refreshing location automatically');
-              setShowLocationPermissionModal(false);
-              // Re-run location detection
-              getLocationWithAggressiveGPS();
-            } else if (permissionStatus.state === 'denied') {
-              console.log('❌ Permission denied - showing guidance');
-              setShowLocationPermissionModal(true);
+          // Cleanup function
+          return () => {
+            locationService.clearWatch(watchId);
+            if (refreshInterval) {
+              clearInterval(refreshInterval);
             }
           };
-        }).catch(error => {
-          console.warn('Could not set up permission listener:', error);
-        });
-      }
 
-      // Set up automatic location refresh every 2 minutes
-      const refreshInterval = setInterval(() => {
-        const now = Date.now();
-        const timeSinceLastUpdate = now - lastLocationUpdate;
+        } catch (error: any) {
+          console.log('❌ Initial location failed:', error?.message || error);
 
-        // Only refresh if it's been more than 1.5 minutes since last update
-        // and user has granted permissions
-        if (timeSinceLastUpdate > 90 * 1000 && locationPermissionStatus === 'granted') {
-          console.log('⏰ Automatic location refresh (2-minute interval)');
-          getLocationWithAggressiveGPS();
-        }
-      }, 2 * 60 * 1000); // 2 minutes
-
-      setLocationRefreshInterval(refreshInterval);
-
-      // Cleanup function
-      return () => {
-        if (refreshInterval) {
-          clearInterval(refreshInterval);
+          // Fallback to IP-based location for web
+          if (!Capacitor.isNativePlatform()) {
+            try {
+              // Use IP geolocation as fallback
+              const response = await fetch('https://ipapi.co/json/');
+              const data = await response.json();
+              if (data.latitude && data.longitude) {
+                const location: [number, number] = [data.latitude, data.longitude];
+                setUserLocation(location);
+                console.log(`📍 IP Location fallback: ${data.latitude}, ${data.longitude} (${data.city || 'Unknown'})`);
+              }
+            } catch (ipError) {
+              console.log('❌ IP geolocation fallback failed');
+              // Use default location
+              const defaultLocation: [number, number] = [30.0444, 31.2357]; // Cairo, Egypt
+              setUserLocation(defaultLocation);
+              console.log(`📍 Using default location: ${defaultLocation[0]}, ${defaultLocation[1]}`);
+            }
+          } else {
+            // On mobile, show permission guidance
+            setShowLocationPermissionModal(true);
+          }
         }
       };
+
+      initializeLocation();
     }
-  }, [isAuthenticated, isLoading, locationInitialized, lastLocationUpdate, locationPermissionStatus]);
+  }, [isAuthenticated, isLoading, locationInitialized, lastLocationUpdate, locationPermissionStatus, settings.locationSharing]);
 
   // Initialize notification service when user is authenticated - with guards to prevent re-initialization
   useEffect(() => {
@@ -1103,7 +726,9 @@ const App: React.FC = () => {
   return (
     <LanguageProvider>
       <VibeProvider>
-        <AppContent />
+        <SettingsProvider>
+          <AppContent />
+        </SettingsProvider>
       </VibeProvider>
     </LanguageProvider>
   );

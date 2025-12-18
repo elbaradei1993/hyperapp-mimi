@@ -1,6 +1,8 @@
 // Push Notification Service - Firebase FCM + Supabase Integration
 import { fcmService } from '../lib/firebase';
 import { supabase } from '../lib/supabase';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import type { Vibe, SOS } from '../types';
 
 interface PushSubscription {
@@ -52,16 +54,24 @@ class PushNotificationService {
 
       this.currentToken = token;
 
-      // Store token in Supabase (only for web FCM tokens, not Capacitor)
-      if (token !== 'capacitor-local-notifications-enabled') {
-        await this.storePushSubscription(token);
+      // Handle different platforms
+      if (Capacitor.isNativePlatform()) {
+        if (token === 'capacitor-push-notifications-enabled') {
+          // Set up Capacitor push notification listeners
+          this.setupCapacitorListeners();
 
-        // Listen for foreground messages (only on web)
-        this.unsubscribeFromMessages = fcmService.onMessageReceived((payload) => {
-          this.handleForegroundMessage(payload);
-        });
+          console.log('📱 Capacitor push notifications initialized - waiting for FCM token');
+        }
       } else {
-        console.log('📱 Capacitor local notifications enabled - push notifications handled via FCM server');
+        // Web platform - store FCM token directly
+        if (token !== 'capacitor-push-notifications-enabled') {
+          await this.storePushSubscription(token);
+
+          // Listen for foreground messages (only on web)
+          this.unsubscribeFromMessages = fcmService.onMessageReceived((payload) => {
+            this.handleForegroundMessage(payload);
+          });
+        }
       }
 
       console.log('🔔 Push notifications initialized for user:', userId);
@@ -69,6 +79,45 @@ class PushNotificationService {
     } catch (error) {
       console.error('Failed to initialize push notifications:', error);
     }
+  }
+
+  // Set up Capacitor push notification listeners
+  private setupCapacitorListeners(): void {
+    if (!Capacitor.isNativePlatform()) return;
+
+    // Listen for FCM token registration
+    PushNotifications.addListener('registration', async (token) => {
+      console.log('📱 FCM token received from Capacitor:', token.value);
+      this.currentToken = token.value;
+      await this.storePushSubscription(token.value);
+    });
+
+    // Listen for registration errors
+    PushNotifications.addListener('registrationError', (error) => {
+      console.error('📱 Push notification registration error:', error);
+    });
+
+    // Listen for push notifications received while app is in foreground
+    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+      console.log('📱 Push notification received in foreground:', notification);
+      this.handleForegroundMessage({
+        notification: {
+          title: notification.title,
+          body: notification.body
+        },
+        data: notification.data
+      });
+    });
+
+    // Listen for push notification action performed (user tapped notification)
+    PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+      console.log('📱 Push notification action performed:', action);
+      // Handle notification tap - could navigate to specific screen
+      const data = action.notification.data;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    });
   }
 
   // Store FCM token in Supabase

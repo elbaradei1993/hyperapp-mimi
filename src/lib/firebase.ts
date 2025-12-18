@@ -2,6 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 // Firebase configuration - these will be set via environment variables
@@ -61,20 +62,44 @@ export class FCMService {
   async requestPermission(): Promise<string | null> {
     try {
       if (Capacitor.isNativePlatform()) {
-        // On mobile, use Capacitor's LocalNotifications plugin
-        console.log('📱 Requesting notification permission via Capacitor');
+        // On mobile, use Capacitor's PushNotifications plugin for native permission dialog
+        console.log('📱 Requesting push notification permission via Capacitor');
 
-        const { display } = await LocalNotifications.requestPermissions();
+        // Register for push notifications first
+        await PushNotifications.register();
 
-        if (display !== 'granted') {
-          console.log('📱 Notification permission denied via Capacitor');
+        // Request permissions - this shows the native Android dialog
+        const { receive } = await PushNotifications.requestPermissions();
+
+        if (receive !== 'granted') {
+          console.log('📱 Push notification permission denied via Capacitor');
           return null;
         }
 
-        console.log('📱 Notification permission granted via Capacitor');
-        // On mobile, we don't need FCM token for local notifications
-        // Push notifications will be handled differently
-        return 'capacitor-local-notifications-enabled';
+        console.log('📱 Push notification permission granted via Capacitor');
+
+        // Set up listeners for push notifications
+        PushNotifications.addListener('registration', (token) => {
+          console.log('📱 Push notification token received:', token.value);
+          // The token will be handled by the push notification service
+        });
+
+        PushNotifications.addListener('registrationError', (error) => {
+          console.error('📱 Push notification registration error:', error);
+        });
+
+        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+          console.log('📱 Push notification received:', notification);
+          // Handle foreground push notifications
+        });
+
+        PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+          console.log('📱 Push notification action performed:', action);
+          // Handle notification tap actions
+        });
+
+        // Return a placeholder - actual FCM token will be received via registration listener
+        return 'capacitor-push-notifications-enabled';
 
       } else {
         // On web, use Firebase messaging
@@ -133,21 +158,17 @@ export class FCMService {
   // Check if notifications are supported
   async isSupported(): Promise<boolean> {
     if (Capacitor.isNativePlatform()) {
-      // On mobile, check if LocalNotifications plugin is available
+      // On mobile, check if PushNotifications plugin is available
       try {
-        const { display } = await LocalNotifications.checkPermissions();
-        return display !== 'denied';
+        const { receive } = await PushNotifications.checkPermissions();
+        return receive !== 'denied';
       } catch (error) {
-        console.warn('Error checking Capacitor notification permissions:', error);
+        console.warn('Error checking Capacitor push notification permissions:', error);
         return false;
       }
     } else {
       // On web, check for standard notification support
-      return !!(
-        messaging &&
-        'serviceWorker' in navigator &&
-        'Notification' in window
-      );
+      return !!(messaging && 'serviceWorker' in navigator && 'Notification' in window);
     }
   }
 
@@ -155,8 +176,8 @@ export class FCMService {
   async getPermissionStatus(): Promise<NotificationPermission | 'unknown'> {
     if (Capacitor.isNativePlatform()) {
       try {
-        const { display } = await LocalNotifications.checkPermissions();
-        switch (display) {
+        const { receive } = await PushNotifications.checkPermissions();
+        switch (receive) {
           case 'granted':
             return 'granted';
           case 'denied':
@@ -165,7 +186,7 @@ export class FCMService {
             return 'default';
         }
       } catch (error) {
-        console.warn('Error getting Capacitor permission status:', error);
+        console.warn('Error getting Capacitor push notification permission status:', error);
         return 'unknown';
       }
     } else {
