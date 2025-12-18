@@ -9,6 +9,8 @@ import { useVibe } from '../contexts/VibeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { IconButton } from '@chakra-ui/react';
 import BreakingNewsBanner from './BreakingNewsBanner';
+import VibePulseCard from './VibePulseCard';
+import { backgroundLocationService } from '../services/backgroundLocationService';
 import {
   ShieldCheck,
   CloudSnow,
@@ -721,34 +723,73 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
     setClusters(processedClusters);
   }, [processedClusters]);
 
-  // Geocode user location and calculate local vibe - with debouncing to prevent excessive re-renders
+  // Initialize background location service and subscribe to significant location changes
   useEffect(() => {
-    if (!userLocation || vibes.length === 0) {
-      setCurrentLocationAddress('');
-      setLocalCurrentLocationVibe(null);
-      setCurrentLocationVibeDistribution([]);
-      return;
-    }
+    let locationUnsubscribe: (() => void) | null = null;
 
-    // Debounce geocoding to prevent excessive API calls and re-renders
-    const timeoutId = setTimeout(async () => {
-      let cancelled = false;
+    const initializeBackgroundLocation = async () => {
+      try {
+        // Initialize background location service
+        await backgroundLocationService.initialize();
 
-      const geocodeAndAnalyze = async () => {
-        setIsGeocoding(true);
-        setError(null);
-        try {
-          const [address, vibeAnalysis] = await Promise.all([
-            reverseGeocode(userLocation[0], userLocation[1]),
-            analyzeNearbyVibes(userLocation, vibes)
-          ]);
+        // Subscribe to significant location changes only
+        locationUnsubscribe = backgroundLocationService.onLocationChange(
+          async (newLocation, oldLocation) => {
+            console.log('📍 Significant location change detected, updating vibe analysis');
 
-          if (!cancelled) {
+            // Only update vibe analysis when location significantly changes
+            if (vibes.length > 0) {
+              setIsGeocoding(true);
+              setError(null);
+
+              try {
+                const [address, vibeAnalysis] = await Promise.all([
+                  reverseGeocode(newLocation[0], newLocation[1]),
+                  analyzeNearbyVibes(newLocation, vibes)
+                ]);
+
+                setCurrentLocationAddress(address);
+                setLocalCurrentLocationVibe(vibeAnalysis.dominantVibe);
+                setCurrentLocationVibeDistribution(vibeAnalysis.distribution);
+
+                // Update the global context with the current location vibe
+                if (vibeAnalysis.dominantVibe) {
+                  setCurrentLocationVibe({
+                    type: vibeAnalysis.dominantVibe.type,
+                    percentage: vibeAnalysis.dominantVibe.percentage,
+                    count: vibeAnalysis.dominantVibe.count,
+                    color: getVibeColor(vibeAnalysis.dominantVibe.type)
+                  });
+                } else {
+                  setCurrentLocationVibe(null);
+                }
+              } catch (error) {
+                console.error('Error processing location data:', error);
+                setError('Failed to load location data');
+                setCurrentLocationAddress('');
+                setLocalCurrentLocationVibe(null);
+                setCurrentLocationVibeDistribution([]);
+              } finally {
+                setIsGeocoding(false);
+              }
+            }
+          }
+        );
+
+        // Get initial location for immediate display
+        const initialLocation = backgroundLocationService.getCurrentLocation();
+        if (initialLocation && vibes.length > 0) {
+          setIsGeocoding(true);
+          try {
+            const [address, vibeAnalysis] = await Promise.all([
+              reverseGeocode(initialLocation[0], initialLocation[1]),
+              analyzeNearbyVibes(initialLocation, vibes)
+            ]);
+
             setCurrentLocationAddress(address);
             setLocalCurrentLocationVibe(vibeAnalysis.dominantVibe);
             setCurrentLocationVibeDistribution(vibeAnalysis.distribution);
 
-            // Update the global context with the current location vibe
             if (vibeAnalysis.dominantVibe) {
               setCurrentLocationVibe({
                 type: vibeAnalysis.dominantVibe.type,
@@ -759,29 +800,27 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
             } else {
               setCurrentLocationVibe(null);
             }
+          } catch (error) {
+            console.error('Error processing initial location data:', error);
+          } finally {
+            setIsGeocoding(false);
           }
-        } catch (error) {
-          if (!cancelled) {
-            console.error('Error processing location data:', error);
-            setError('Failed to load location data');
-            setCurrentLocationAddress('');
-            setLocalCurrentLocationVibe(null);
-            setCurrentLocationVibeDistribution([]);
-          }
-        } finally {
-          if (!cancelled) setIsGeocoding(false);
         }
-      };
+      } catch (error) {
+        console.error('Failed to initialize background location:', error);
+      }
+    };
 
-      geocodeAndAnalyze();
+    initializeBackgroundLocation();
 
-      return () => {
-        cancelled = true;
-      };
-    }, 1000); // 1 second debounce to prevent excessive geocoding
-
-    return () => clearTimeout(timeoutId);
-  }, [userLocation?.[0], userLocation?.[1], vibes.length, analyzeNearbyVibes, getVibeColor]); // More specific dependencies
+    // Cleanup function
+    return () => {
+      if (locationUnsubscribe) {
+        locationUnsubscribe();
+      }
+      backgroundLocationService.stop();
+    };
+  }, [vibes.length, analyzeNearbyVibes, getVibeColor]); // Only depend on vibes length and analysis functions
 
 
 
@@ -1019,6 +1058,10 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                           alignItems: 'center',
                           gap: '12px'
                         }}>
+                          <span style={{ fontSize: '1.5rem' }}>
+                            {getVibeIconComponent(localCurrentLocationVibe.type)}
+                          </span>
+                          {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)} Atmosphere
                         </div>
                       </div>
 
@@ -1189,7 +1232,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                             </div>
                           </div>
 
-                          {/* Premium Label - Moved lower to avoid overlaying pulse animation */}
+                          {/* Premium Label */}
                           <div style={{
                             textAlign: 'center',
                             padding: '12px 20px',
@@ -1199,7 +1242,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                             backdropFilter: 'blur(10px)',
                             WebkitBackdropFilter: 'blur(10px)',
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                            marginTop: '40px' // Added margin to move it below the pulse animation
+                            marginTop: '40px'
                           }}>
                             <div style={{
                               color: '#64748b',
@@ -1229,7 +1272,21 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                           padding: '20px',
                           textAlign: 'left'
                         }}>
-
+                          <div style={{
+                            fontSize: '1.25rem',
+                            fontWeight: '800',
+                            color: getVibeColor(localCurrentLocationVibe.type),
+                            marginBottom: '8px'
+                          }}>
+                            {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}
+                          </div>
+                          <div style={{
+                            color: '#64748b',
+                            fontSize: '0.875rem',
+                            lineHeight: '1.5'
+                          }}>
+                            {t(`vibes.${localCurrentLocationVibe.type}Desc`, `${localCurrentLocationVibe.type} atmosphere description`)}
+                          </div>
                         </div>
 
                         {/* Expandable Breakdown */}

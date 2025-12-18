@@ -151,59 +151,9 @@ const AppContent: React.FC = () => {
           setLastLocationUpdate(Date.now());
           console.log(`📍 Initial location set: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)} (${Math.round(position.accuracy)}m)`);
 
-          // Start watching for location updates
-          const watchId = await locationService.watchPosition(
-            (result) => {
-              const now = Date.now();
-              // Only update if it's been at least 30 seconds since last update
-              if (now - lastLocationUpdate < 30000) {
-                return;
-              }
-
-              setUserLocation([result.latitude, result.longitude]);
-              setLastLocationUpdate(now);
-              console.log(`🔄 Location updated: ${result.latitude.toFixed(6)}, ${result.longitude.toFixed(6)} (${Math.round(result.accuracy)}m)`);
-            },
-            (error) => {
-              console.log('⚠️ Location watch error:', error.message);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 30000,
-              maximumAge: 30000
-            }
-          );
-
-          // Set up automatic location refresh every 2 minutes
-          const refreshInterval = setInterval(async () => {
-            const now = Date.now();
-            const timeSinceLastUpdate = now - lastLocationUpdate;
-
-            // Only refresh if it's been more than 1.5 minutes since last update
-            if (timeSinceLastUpdate > 90 * 1000) {
-              try {
-                console.log('⏰ Automatic location refresh');
-                const newPosition = await locationService.getCurrentPosition({
-                  enableHighAccuracy: true,
-                  timeout: 10000
-                });
-                setUserLocation([newPosition.latitude, newPosition.longitude]);
-                setLastLocationUpdate(Date.now());
-              } catch (error) {
-                console.log('⚠️ Automatic location refresh failed:', error.message);
-              }
-            }
-          }, 2 * 60 * 1000); // 2 minutes
-
-          setLocationRefreshInterval(refreshInterval);
-
-          // Cleanup function
-          return () => {
-            locationService.clearWatch(watchId);
-            if (refreshInterval) {
-              clearInterval(refreshInterval);
-            }
-          };
+          // Location updates are now handled by backgroundLocationService
+          // No need for frequent UI updates here
+          console.log('📍 Location initialized - background service will handle updates');
 
         } catch (error: any) {
           console.log('❌ Initial location failed:', error?.message || error);
