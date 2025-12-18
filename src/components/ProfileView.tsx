@@ -1932,23 +1932,23 @@ const ProfileView: React.FC = () => {
           }}>
             {/* Modal Header - Clean and Simple */}
             <div style={{
-              padding: '32px 24px 0',
+              padding: '24px 20px 0',
               textAlign: 'center',
               background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)'
             }}>
               <h2 style={{
-                fontSize: '1.5rem',
+                fontSize: '1.25rem',
                 fontWeight: 700,
                 color: '#0f172a',
-                marginBottom: '8px',
+                marginBottom: '6px',
                 lineHeight: '1.2'
               }}>
                 {t('profile.editProfile')}
               </h2>
               <p style={{
-                fontSize: '1rem',
+                fontSize: '0.875rem',
                 color: '#475569',
-                marginBottom: '24px'
+                marginBottom: '20px'
               }}>
                 Update your profile information
               </p>
@@ -1957,16 +1957,16 @@ const ProfileView: React.FC = () => {
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
-                gap: '8px',
-                marginBottom: '24px'
+                gap: '6px',
+                marginBottom: '16px'
               }}>
                 {[1, 2, 3, 4, 5, 6].map(step => (
                   <div
                     key={step}
                     style={{
-                      width: '32px',
-                      height: '4px',
-                      borderRadius: '2px',
+                      width: '24px',
+                      height: '3px',
+                      borderRadius: '1.5px',
                       background: step <= editStep ? '#0066ff' : '#e2e8f0',
                       transition: 'all 0.3s ease',
                       transform: step <= editStep ? 'scale(1.1)' : 'scale(1)'
@@ -1990,18 +1990,18 @@ const ProfileView: React.FC = () => {
                 {editStep === 1 && (
                   <div>
                     <h3 style={{
-                      fontSize: '18px',
+                      fontSize: '16px',
                       fontWeight: '700',
                       color: '#1f2937',
-                      marginBottom: '8px',
+                      marginBottom: '6px',
                       textAlign: 'center'
                     }}>
                       Add a Profile Picture
                     </h3>
                     <p style={{
                       color: '#6b7280',
-                      marginBottom: '32px',
-                      fontSize: '14px',
+                      marginBottom: '24px',
+                      fontSize: '13px',
                       textAlign: 'center'
                     }}>
                       Help others recognize you in the community
@@ -2194,11 +2194,11 @@ const ProfileView: React.FC = () => {
                         autoFocus
                         style={{
                           width: '100%',
-                          maxWidth: '320px',
-                          padding: '16px 20px',
+                          maxWidth: '280px',
+                          padding: '12px 16px',
                           border: '2px solid #e5e7eb',
-                          borderRadius: '12px',
-                          fontSize: '18px',
+                          borderRadius: '10px',
+                          fontSize: '16px',
                           fontWeight: '500',
                           outline: 'none',
                           textAlign: 'center',
@@ -2248,11 +2248,11 @@ const ProfileView: React.FC = () => {
                         autoFocus
                         style={{
                           width: '100%',
-                          maxWidth: '320px',
-                          padding: '16px 20px',
+                          maxWidth: '280px',
+                          padding: '12px 16px',
                           border: '2px solid #e5e7eb',
-                          borderRadius: '12px',
-                          fontSize: '18px',
+                          borderRadius: '10px',
+                          fontSize: '16px',
                           fontWeight: '500',
                           outline: 'none',
                           textAlign: 'center',
@@ -2302,11 +2302,11 @@ const ProfileView: React.FC = () => {
                         autoFocus
                         style={{
                           width: '100%',
-                          maxWidth: '320px',
-                          padding: '16px 20px',
+                          maxWidth: '280px',
+                          padding: '12px 16px',
                           border: '2px solid #e5e7eb',
-                          borderRadius: '12px',
-                          fontSize: '18px',
+                          borderRadius: '10px',
+                          fontSize: '16px',
                           fontWeight: '500',
                           outline: 'none',
                           textAlign: 'center',
@@ -2356,10 +2356,10 @@ const ProfileView: React.FC = () => {
                         autoFocus
                         style={{
                           width: '100%',
-                          maxWidth: '320px',
-                          padding: '16px 20px',
+                          maxWidth: '280px',
+                          padding: '12px 16px',
                           border: '2px solid #e5e7eb',
-                          borderRadius: '12px',
+                          borderRadius: '10px',
                           fontSize: '16px',
                           fontWeight: '500',
                           outline: 'none',
@@ -2434,12 +2434,12 @@ const ProfileView: React.FC = () => {
                                   }));
                                 }}
                                 style={{
-                                  padding: '10px 18px',
-                                  borderRadius: '24px',
+                                  padding: '8px 14px',
+                                  borderRadius: '20px',
                                   border: editForm.interests.includes(item) ? '2px solid #3b82f6' : '2px solid #d1d5db',
                                   backgroundColor: editForm.interests.includes(item) ? '#eff6ff' : 'white',
                                   color: editForm.interests.includes(item) ? '#1d4ed8' : '#374151',
-                                  fontSize: '14px',
+                                  fontSize: '13px',
                                   fontWeight: '600',
                                   cursor: 'pointer',
                                   transition: 'all 0.2s ease',
@@ -2485,9 +2485,9 @@ const ProfileView: React.FC = () => {
                 onClick={editStep === 1 ? () => setShowEditModal(false) : () => setEditStep(editStep - 1)}
                 className="modal-action-btn"
                 style={{
-                  padding: '14px 20px',
-                  borderRadius: '8px',
-                  fontSize: '0.875rem',
+                  padding: '12px 16px',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   border: '1px solid #d1d5db',
@@ -2497,7 +2497,7 @@ const ProfileView: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
+                  gap: '6px',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseOver={(e) => {
@@ -2529,9 +2529,9 @@ const ProfileView: React.FC = () => {
                   }}
                   className="modal-action-btn"
                   style={{
-                    padding: '14px 20px',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
+                    padding: '12px 16px',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
                     fontWeight: 600,
                     cursor: 'pointer',
                     border: 'none',
@@ -2541,7 +2541,7 @@ const ProfileView: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
+                    gap: '6px',
                     transition: 'all 0.2s ease'
                   }}
                   onMouseOver={(e) => {
@@ -2616,9 +2616,9 @@ const ProfileView: React.FC = () => {
                   disabled={uploadingPicture}
                   className="modal-action-btn"
                   style={{
-                    padding: '14px 20px',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
+                    padding: '12px 16px',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
                     fontWeight: 600,
                     cursor: uploadingPicture ? 'not-allowed' : 'pointer',
                     border: 'none',
@@ -2628,7 +2628,7 @@ const ProfileView: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
+                    gap: '6px',
                     transition: 'all 0.2s ease',
                     opacity: uploadingPicture ? 0.6 : 1
                   }}
