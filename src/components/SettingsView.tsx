@@ -477,7 +477,7 @@ const SettingsView: React.FC = () => {
                   fontWeight: '600',
                   color: 'var(--text-primary)',
                   marginBottom: 'var(--space-1)',
-                  fontSize: '16px',
+                  fontSize: '14px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 'var(--space-2)',
@@ -486,12 +486,12 @@ const SettingsView: React.FC = () => {
                 }}>
                   <i className="fas fa-bell" style={{
                     color: 'var(--accent-primary)',
-                    fontSize: '14px'
+                    fontSize: '12px'
                   }}></i>
                   {t('settings.notifications')}
                 </div>
                 <div style={{
-                  fontSize: '14px',
+                  fontSize: '12px',
                   color: 'var(--text-muted)',
                   WebkitFontSmoothing: 'antialiased',
                   MozOsxFontSmoothing: 'grayscale'
@@ -620,7 +620,7 @@ const SettingsView: React.FC = () => {
                   fontWeight: '600',
                   color: 'var(--text-primary)',
                   marginBottom: 'var(--space-1)',
-                  fontSize: '16px',
+                  fontSize: '14px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 'var(--space-2)',
@@ -629,12 +629,12 @@ const SettingsView: React.FC = () => {
                 }}>
                   <i className="fas fa-map-marker-alt" style={{
                     color: 'var(--accent-primary)',
-                    fontSize: '14px'
+                    fontSize: '12px'
                   }}></i>
                   {t('settings.locationSharing')}
                 </div>
                 <div style={{
-                  fontSize: '14px',
+                  fontSize: '12px',
                   color: 'var(--text-muted)',
                   WebkitFontSmoothing: 'antialiased',
                   MozOsxFontSmoothing: 'grayscale'
