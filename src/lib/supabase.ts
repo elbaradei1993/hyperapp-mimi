@@ -44,7 +44,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     persistSession: true,
     detectSessionInUrl: true, // Enable for email confirmation redirects
     flowType: 'pkce', // Recommended for security
-    storage: capacitorStorageAdapter // Use custom storage adapter
+    storage: capacitorStorageAdapter, // Use custom storage adapter
+    debug: process.env.NODE_ENV === 'development' // Enable debug logging in development
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'hyperapp-mimi'
+    }
   }
 });
 

@@ -67,6 +67,44 @@
   --touch-target: 44px;
 }
 
+/* Premium Animations for Credibility Components */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Credibility Ring Animation */
+@keyframes credibilityRing {
+  0% {
+    stroke-dasharray: 0, 100;
+  }
+  100% {
+    stroke-dasharray: var(--percentage), 100;
+  }
+}
+
+/* Mobile-First Responsive Adjustments for Credibility Components */
+@media (max-width: 480px) {
+  /* Make credibility indicators extra compact on small screens */
+  .credibility-indicator-mobile {
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+
+  .credibility-ring-mobile {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .credibility-text-mobile {
+    font-size: 10px !important;
+  }
+}
+
 /* Dark Theme - Enhanced with Figma Design System */
 [data-theme="dark"] {
   /* Background Colors */

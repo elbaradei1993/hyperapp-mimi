@@ -8,6 +8,7 @@ interface LanguageContextType {
   isRTL: boolean;
   isInitialized: boolean;
   isChanging: boolean;
+  isTranslating: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -20,6 +21,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isInitialized, setIsInitialized] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   // RTL languages
   const rtlLanguages = ['ar'];
@@ -58,6 +60,27 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     };
 
     initializeLanguage();
+  }, []);
+
+  // Listen for translation events to update isTranslating state
+  useEffect(() => {
+    const handleMissingKey = () => {
+      setIsTranslating(true);
+      // Reset translating state after a short delay
+      setTimeout(() => setIsTranslating(false), 1000);
+    };
+
+    const handleLanguageChanged = () => {
+      setIsTranslating(false);
+    };
+
+    i18n.on('missingKey', handleMissingKey);
+    i18n.on('languageChanged', handleLanguageChanged);
+
+    return () => {
+      i18n.off('missingKey', handleMissingKey);
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
   }, []);
 
   const changeLanguage = async (language: string, updateProfile?: (data: any) => Promise<void>, user?: any) => {
@@ -120,7 +143,8 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       changeLanguage,
       isRTL,
       isInitialized,
-      isChanging
+      isChanging,
+      isTranslating
     }}>
       {children}
     </LanguageContext.Provider>

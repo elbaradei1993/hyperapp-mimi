@@ -10,7 +10,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { IconButton } from '@chakra-ui/react';
 import BreakingNewsBanner from './BreakingNewsBanner';
 import VibePulseCard from './VibePulseCard';
+import PremiumEmptyState from './PremiumEmptyState';
 import { backgroundLocationService } from '../services/backgroundLocationService';
+import { CredibilityIndicator, UserVerificationBadge, ValidationButtons } from './CredibilityIndicator';
+import { credibilityService } from '../services/credibilityService';
 import {
   ShieldCheck,
   CloudSnow,
@@ -164,7 +167,7 @@ const styles = {
     width: '100%',
   },
   locationAddress: {
-    fontSize: '1.375rem',
+    fontSize: window.innerWidth < 480 ? '1.125rem' : '1.375rem', // Smaller on mobile
     fontWeight: '800' as const,
     background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
     WebkitBackgroundClip: 'text' as const,
@@ -580,9 +583,19 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
   const [isActivityExpanded, setIsActivityExpanded] = useState(true); // Default expanded
+  const [communityCount, setCommunityCount] = useState(0);
+  const [recentUsers, setRecentUsers] = useState<Array<{
+    id: string;
+    username: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    profile_picture_url: string | null;
+  }>>([]);
+  const [userValidations, setUserValidations] = useState<Record<number, 'confirm' | 'deny' | null>>({});
+  const [validatingReportId, setValidatingReportId] = useState<number | null>(null);
 
   // Ref for subscription cleanup
-  const subscriptionsRef = useRef<{ reports?: any; votes?: any }>({});
+  const subscriptionsRef = useRef<{ reports?: any; votes?: any; credibility?: any }>({});
 
   // Memoize vibe color and icon maps for performance
   const vibeColorMap = useMemo(() => VIBE_CONFIG, []);
@@ -847,7 +860,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
         id: report.id,
         user: report.user_id.substring(0, 2).toUpperCase(),
         userId: getDisplayName(),
-        message: `${t('community.reportedAtmosphere', 'Reported {{vibe}} atmosphere', { vibe: report.vibe_type })}${report.notes ? ` - ${report.notes.substring(0, 40)}` : ''}`,
+        message: `${t('community.reportedAtmosphere', 'Reported {{vibe}} atmosphere', { vibe: t(`vibes.${report.vibe_type}`, report.vibe_type) })}${report.notes ? ` - ${report.notes.substring(0, 40)}` : ''}`,
         location: report.location || 'Unknown location',
         time: new Date(report.created_at).toLocaleTimeString('en-US', {
           hour: 'numeric',
@@ -857,19 +870,186 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
         type: report.emergency ? 'safe' : report.vibe_type,
         vibeType: report.vibe_type,
         notes: report.notes || '',
-        createdAt: report.created_at
+        createdAt: report.created_at,
+        credibilityScore: report.credibility_score || 0.5, // Default to 0.5 if not available
+        validationCount: report.validation_count || 0,
+        verificationLevel: report.profile?.verification_level || 'basic'
       };
     });
   }, [vibes]);
 
-  // Load user reports on component mount
+  // Load user reports and community count on component mount
   useEffect(() => {
     const loadReports = async () => {
       const reports = await loadUserReports();
       setUserReports(reports);
     };
     loadReports();
-  }, [loadUserReports]);
+
+    // Load community count and recent users
+    const loadCommunityData = async () => {
+      try {
+        const [count, users] = await Promise.all([
+          reportsService.getUniqueLocationCount(),
+          reportsService.getRecentReporters(4)
+        ]);
+        setCommunityCount(count);
+        setRecentUsers(users);
+      } catch (error) {
+        console.error('Failed to load community data:', error);
+        setCommunityCount(0);
+        setRecentUsers([]);
+      }
+    };
+    loadCommunityData();
+
+    // Load user validations for activity feed
+    if (user?.id) {
+      loadUserValidations();
+    }
+  }, [loadUserReports, user?.id]);
+
+  // Load user validations
+  const loadUserValidations = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      // Load validations for recent reports
+      const recentReportIds = activityFeed.map(activity => activity.id);
+      const validations: Record<number, 'confirm' | 'deny' | null> = {};
+
+      for (const reportId of recentReportIds) {
+        const validation = await credibilityService.getUserValidation(reportId, user.id);
+        validations[reportId] = validation;
+      }
+
+      setUserValidations(validations);
+    } catch (error) {
+      console.error('Error loading user validations:', error);
+    }
+  }, [user?.id, activityFeed]);
+
+  // Handle report validation
+  const handleValidation = useCallback(async (reportId: number, validationType: 'confirm' | 'deny') => {
+    console.log('CommunityDashboard: handleValidation called', { reportId, validationType, userId: user?.id });
+
+    if (!user?.id) {
+      console.log('CommunityDashboard: No user ID, skipping validation');
+      return;
+    }
+
+    // Set validating state
+    setValidatingReportId(reportId);
+
+    try {
+      console.log('CommunityDashboard: Calling credibilityService.validateReport');
+      const success = await credibilityService.validateReport(reportId, user.id, validationType);
+      console.log('CommunityDashboard: Validation result:', success);
+
+      if (success) {
+        console.log('CommunityDashboard: Updating local state');
+        setUserValidations(prev => ({
+          ...prev,
+          [reportId]: validationType
+        }));
+
+        // Show success toast
+        const toast = document.createElement('div');
+        toast.textContent = t(validationType === 'confirm' ? 'community.reportConfirmed' : 'community.reportDenied');
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(16, 185, 129, 0.9);
+          color: white;
+          padding: 12px 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          z-index: 10000;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          max-width: 300px;
+          text-align: center;
+          word-wrap: break-word;
+        `;
+
+        document.body.appendChild(toast);
+        setTimeout(() => toast.style.opacity = '1', 10);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => document.body.removeChild(toast), 300);
+        }, 2000);
+      } else {
+        // Show error toast
+        const toast = document.createElement('div');
+        toast.textContent = t('community.validationFailed');
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(239, 68, 68, 0.9);
+          color: white;
+          padding: 12px 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          z-index: 10000;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          max-width: 300px;
+          text-align: center;
+          word-wrap: break-word;
+        `;
+
+        document.body.appendChild(toast);
+        setTimeout(() => toast.style.opacity = '1', 10);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('CommunityDashboard: Error validating report:', error);
+
+      // Show error toast
+      const toast = document.createElement('div');
+      toast.textContent = t('community.validationError');
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 10000;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        max-width: 300px;
+        text-align: center;
+        word-wrap: break-word;
+      `;
+
+      document.body.appendChild(toast);
+      setTimeout(() => toast.style.opacity = '1', 10);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
+    } finally {
+      // Clear validating state
+      setValidatingReportId(null);
+    }
+  }, [user?.id]);
 
 
 
@@ -902,6 +1082,10 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
           console.log('New vibe report received:', newReport.id);
           // Update vibes state efficiently via callback
           onVibesUpdate?.([newReport, ...vibes.slice(0, 999)]);
+          // Update community count if new location was added
+          if (newReport.location) {
+            setCommunityCount(prev => prev + 1);
+          }
         }
       }, 100);
     });
@@ -923,6 +1107,30 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
             : report
         ));
       }, 100);
+    });
+
+    // Subscribe to credibility score updates
+    subscriptionsRef.current.credibility = reportsService.subscribeToCredibilityUpdates((update) => {
+      console.log('Credibility update received:', update.reportId, update.credibility_score);
+      // Update credibility scores in vibes and userReports
+      onVibesUpdate?.(vibes.map((vibe: Vibe) =>
+        vibe.id === update.reportId
+          ? {
+              ...vibe,
+              credibility_score: update.credibility_score,
+              validation_count: update.validation_count
+            }
+          : vibe
+      ));
+      setUserReports(prev => prev.map(report =>
+        report.id === update.reportId
+          ? {
+              ...report,
+              credibility_score: update.credibility_score,
+              validation_count: update.validation_count
+            }
+          : report
+      ));
     });
 
     // Cleanup function
@@ -948,24 +1156,11 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
   if (clusters.length === 0 && !isLoading) {
     return (
-      <div style={styles.emptyStateContainer}>
-        <EmptyState
-          icon={<i className="fas fa-users" style={{ fontSize: '48px' }}></i>}
-          title={t('community.noData', 'No Community Data')}
-          description={t('community.noDataDesc', 'Community vibe data will appear here as reports are submitted in your area.')}
-          action={
-            onNewReport && (
-              <button
-                onClick={onNewReport}
-                style={styles.retryButton}
-              >
-                <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
-                {t('app.submitFirstReport', 'Submit First Report')}
-              </button>
-            )
-          }
-        />
-      </div>
+      <PremiumEmptyState
+        onPrimaryAction={onNewReport}
+        communityCount={communityCount}
+        recentUsers={recentUsers}
+      />
     );
   }
 
@@ -1001,7 +1196,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                 position: 'relative',
                 zIndex: 1
               }}>
-                Loading location data...
+                {t('community.loadingLocationData')}
               </div>
             </div>
           ) : userLocation && currentLocationAddress ? (
@@ -1044,26 +1239,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                       position: 'relative',
                       zIndex: 1
                     }}>
-                      {/* Header */}
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '12px'
-                      }}>
-                        <div style={{
-                          fontSize: '1.5rem',
-                          fontWeight: '800',
-                          color: 'var(--text-primary)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px'
-                        }}>
-                          <span style={{ fontSize: '1.5rem' }}>
-                            {getVibeIconComponent(localCurrentLocationVibe.type)}
-                          </span>
-                          {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)} Atmosphere
-                        </div>
-                      </div>
+                      {/* Header removed as requested */}
 
                       {/* Main Content */}
                       <div style={{
@@ -1258,7 +1434,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                               fontWeight: '500',
                               marginTop: '2px'
                             }}>
-                              Real-time community sentiment
+                              {t('community.realTimeCommunitySentiment')}
                             </div>
                           </div>
                         </div>
@@ -1378,7 +1554,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                                         color: '#6b7280',
                                         textAlign: 'center'
                                       }}>
-                                        {vibe.count} reports
+                                        {t('community.reports', { count: vibe.count })}
                                       </div>
                                     </div>
                                   ))}
@@ -1589,7 +1765,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                   }}>
                     <i className="fas fa-chart-bar" style={{ fontSize: '24px', color: '#9ca3af', marginBottom: '8px' }}></i>
                     <div style={{ color: '#6b7280', fontSize: '16px', fontWeight: '500' }}>
-                      No Community Reports In Your Area Yet
+                      {t('community.noCommunityReportsYet')}
                     </div>
                   </div>
                 )}
@@ -1625,7 +1801,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                 position: 'relative',
                 zIndex: 1
               }}>
-                Location Not Available
+                {t('community.locationNotAvailable')}
               </div>
               <div style={{
                 color: '#94a3b8',
@@ -1633,7 +1809,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                 position: 'relative',
                 zIndex: 1
               }}>
-                Please enable location services to see your area's community vibe
+                {t('community.enableLocationServices')}
               </div>
             </div>
           )}
@@ -1725,10 +1901,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                       e.currentTarget.style.background = index % 2 === 0 ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.01)';
                       e.currentTarget.style.transform = 'translateX(0)';
                     }}>
-                      <div style={styles.activityAvatar}>
-                        {activity.user}
-                      </div>
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, marginLeft: 0 }}>
                         <div style={styles.activityMessage}>
                           {activity.message}
                         </div>
@@ -1763,8 +1936,15 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                             </span>
                           </div>
                         </div>
-                        <div style={styles.activityMeta}>
-                          <span>{activity.time}</span>
+                        {/* Credibility Indicators */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginTop: '12px',
+                          flexWrap: 'nowrap'
+                        }}>
+                          {/* Vibe Badge */}
                           <span style={{
                             padding: '2px 6px',
                             borderRadius: '4px',
@@ -1778,6 +1958,58 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                           }}>
                             {t(`vibes.${activity.type}`, activity.type)}
                           </span>
+
+                          {/* Separator */}
+                          <span style={{
+                            color: '#64748b',
+                            fontSize: '0.6rem',
+                            fontWeight: '500'
+                          }}>
+                            -
+                          </span>
+
+                          {/* User Verification Badge */}
+                          <UserVerificationBadge
+                            level={activity.verificationLevel}
+                            size="sm"
+                          />
+
+                          {/* Separator */}
+                          <span style={{
+                            color: '#64748b',
+                            fontSize: '0.6rem',
+                            fontWeight: '500'
+                          }}>
+                            -
+                          </span>
+
+                          {/* Credibility Indicator */}
+                          <CredibilityIndicator
+                            score={activity.credibilityScore}
+                            validationCount={activity.validationCount}
+                            size="sm"
+                          />
+                        </div>
+
+                        {/* Validation Buttons */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginTop: '12px'
+                        }}>
+                          <ValidationButtons
+                            reportId={activity.id}
+                            userValidation={userValidations[activity.id] || null}
+                            onValidate={(validationType) => handleValidation(activity.id, validationType)}
+                            size="sm"
+                            isAuthenticated={isAuthenticated}
+                            isValidating={validatingReportId === activity.id}
+                          />
+                        </div>
+
+                        <div style={styles.activityMeta}>
+                          <span>{activity.time}</span>
                         </div>
                       </div>
                     </div>

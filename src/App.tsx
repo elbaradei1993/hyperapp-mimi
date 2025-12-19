@@ -9,7 +9,6 @@ import TabNavigation, { TabType } from './components/TabNavigation';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import AuthCallback from './components/AuthCallback';
-import OnboardingModal from './components/OnboardingModal';
 import ReportTypeModal from './components/ReportTypeModal';
 import VibeReportModal from './components/VibeReportModal';
 import EmergencyReportModal from './components/EmergencyReportModal';
@@ -17,6 +16,7 @@ import LocationOverrideModal from './components/LocationOverrideModal';
 import LocationPermissionModal from './components/LocationPermissionModal';
 
 import SplashScreen from './components/SplashScreen';
+import LanguageSelectionScreen from './components/LanguageSelectionScreen';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LoadingSpinner } from './components/shared';
 import { reportsService } from './services/reports';
@@ -49,7 +49,7 @@ const AppContent: React.FC = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [isHeatmapVisible, setIsHeatmapVisible] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showLanguageSelection, setShowLanguageSelection] = useState(false);
   const [showReportTypeModal, setShowReportTypeModal] = useState(false);
   const [showVibeReportModal, setShowVibeReportModal] = useState(false);
   const [showEmergencyReportModal, setShowEmergencyReportModal] = useState(false);
@@ -67,10 +67,17 @@ const AppContent: React.FC = () => {
   const center: [number, number] = [30.0444, 31.2357];
   const zoom = 10;
 
-  // Show auth modal directly for non-authenticated users (moved to top with other hooks)
+  // Show language selection or auth modal for non-authenticated users
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      setShowAuthModal(true);
+      const savedLanguage = localStorage.getItem('language');
+      if (!savedLanguage) {
+        // New user - show language selection
+        setShowLanguageSelection(true);
+      } else {
+        // Existing user - show auth modal
+        setShowAuthModal(true);
+      }
     }
   }, [isLoading, isAuthenticated]);
 
@@ -122,19 +129,14 @@ const AppContent: React.FC = () => {
     // Check authentication state on app load
     if (!isLoading) {
       if (isAuthenticated) {
-        // Check if user needs onboarding (not completed yet)
-        if (!user?.onboarding_completed) {
-          setShowOnboardingModal(true);
-        } else {
-          // User is authenticated and onboarded, load app data
-          loadData();
-        }
+        // User is authenticated, load app data
+        loadData();
       }
       // If not authenticated, just show the app normally - no forced auth modal
     }
 
     // Only initialize location once
-    if (!locationInitialized && isAuthenticated && user?.onboarding_completed && settings.locationSharing) {
+    if (!locationInitialized && isAuthenticated && settings.locationSharing) {
       setLocationInitialized(true);
 
       // Initialize location service
@@ -345,28 +347,31 @@ const AppContent: React.FC = () => {
     setShowAuthModal(false);
   };
 
-  const handleOnboardingComplete = () => {
-    setShowOnboardingModal(false);
-    loadData(); // Load app data after onboarding
+  const handleLanguageSelect = async (language: 'en' | 'ar') => {
+    // Set language in localStorage
+    localStorage.setItem('language', language);
+
+    // Update i18n language directly
+    const i18n = (await import('./i18n')).default;
+    await i18n.changeLanguage(language);
+
+    // Set document direction and language
+    const direction = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = direction;
+    document.documentElement.lang = language;
+
+    if (language === 'ar') {
+      document.body.classList.add('rtl');
+    } else {
+      document.body.classList.remove('rtl');
+    }
+
+    // Hide language selection and show auth modal
+    setShowLanguageSelection(false);
+    setShowAuthModal(true);
   };
 
-  const handleOnboardingSkip = async () => {
-    if (user) {
-      // Mark onboarding as completed when skipped so user can access the app
-      try {
-        await updateProfile({
-          onboarding_completed: true,
-          onboarding_step: 4,
-          profile_completed_at: new Date().toISOString()
-        });
-      } catch (error) {
-        console.error('Error marking onboarding as completed:', error);
-        // Continue anyway - user should still be able to use the app
-      }
-    }
-    setShowOnboardingModal(false);
-    loadData(); // Load app data even if onboarding is skipped
-  };
+
 
   const handleNewReport = () => {
     setShowReportTypeModal(true);
@@ -613,18 +618,20 @@ const AppContent: React.FC = () => {
         </>
       )}
 
+      {/* Language Selection Screen */}
+      {showLanguageSelection && (
+        <LanguageSelectionScreen
+          onLanguageSelect={handleLanguageSelect}
+        />
+      )}
+
       {/* Auth Modal */}
       <AuthModal
         isOpen={showAuthModal}
         onClose={handleAuthModalClose}
       />
 
-      {/* Onboarding Modal */}
-      <OnboardingModal
-        isOpen={showOnboardingModal}
-        onComplete={handleOnboardingComplete}
-        onClose={handleOnboardingSkip}
-      />
+
 
       {/* Report Type Selection Modal */}
       <ReportTypeModal

@@ -495,6 +495,8 @@ const SettingsView: React.FC = () => {
 
 
 
+
+
           {/* Notifications */}
           <div style={{
             background: 'var(--bg-primary)',
@@ -712,6 +714,8 @@ const SettingsView: React.FC = () => {
 
         </div>
       </div>
+
+
 
       {/* About & Support Section */}
       <div style={{

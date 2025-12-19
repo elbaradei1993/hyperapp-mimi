@@ -16,7 +16,13 @@ export interface Report {
     first_name?: string;
     last_name?: string;
     profile_picture_url?: string;
+    reputation?: number;
+    verification_level?: 'basic' | 'verified' | 'trusted';
   };
+  // Credibility system fields
+  credibility_score?: number;
+  validation_count?: number;
+  last_validated_at?: string;
 }
 
 // Legacy interfaces for backward compatibility
@@ -61,6 +67,10 @@ export interface User {
   onboarding_step?: number;
   profile_completed_at?: string;
   created_at?: string;
+  // Credibility system fields
+  verification_level?: 'basic' | 'verified' | 'trusted';
+  verified_at?: string;
+  verification_badge_earned_at?: string;
 }
 
 export interface AuthState {
@@ -137,6 +147,14 @@ export const INTEREST_CATEGORIES = {
     items: ['DIY', 'Gardening', 'Home Improvement', 'Interior Design', 'Landscaping', 'Furniture', 'Tools', 'Renovation', 'Smart Home', 'Pets']
   }
 } as const;
+
+export interface ReportValidation {
+  id: number;
+  report_id: number;
+  user_id: string;
+  validation_type: 'confirm' | 'deny';
+  created_at: string;
+}
 
 export interface MapComponentProps {
   vibes: Vibe[];

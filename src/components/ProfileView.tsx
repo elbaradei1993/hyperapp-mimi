@@ -9,6 +9,7 @@ import { reverseGeocode } from '../lib/geocoding';
 import { Geolocation } from '@capacitor/geolocation';
 import type { User } from '../types';
 import { INTEREST_CATEGORIES } from '../types';
+import TranslationTest from './TranslationTest';
 
 interface UserStats {
   totalReports: number;
@@ -363,11 +364,11 @@ const ProfileView: React.FC = () => {
 
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) {
-      return t('profile.timeAgo.hoursAgo', { count: diffInHours, plural: diffInHours > 1 ? 's' : '' });
+      return t('profile.timeAgo.hoursAgo', { count: diffInHours });
     }
 
     const diffInDays = Math.floor(diffInHours / 24);
-    return t('profile.timeAgo.daysAgo', { count: diffInDays, plural: diffInDays > 1 ? 's' : '' });
+    return t('profile.timeAgo.daysAgo', { count: diffInDays });
   };
 
   const getVibeIcon = (vibeType: string): string => {
@@ -529,17 +530,80 @@ const ProfileView: React.FC = () => {
   };
 
   const createConfetti = () => {
-    const colors = ['#ff6b6b', '#4ecdc4', '#ffd166', '#06d6a0', '#118ab2'];
+    const premiumColors = [
+      'linear-gradient(45deg, #FFD700, #FFA500)', // Gold
+      'linear-gradient(45deg, #C0C0C0, #A8A8A8)', // Silver
+      'linear-gradient(45deg, #CD7F32, #A0522D)', // Bronze
+      'linear-gradient(45deg, #E91E63, #F06292)', // Rose Gold
+      'linear-gradient(45deg, #9C27B0, #BA68C8)', // Amethyst
+      'linear-gradient(45deg, #2196F3, #64B5F6)', // Sapphire
+      'linear-gradient(45deg, #4CAF50, #81C784)', // Emerald
+      'linear-gradient(45deg, #FF9800, #FFB74D)'  // Amber
+    ];
 
-    for (let i = 0; i < 50; i++) {
+    const shapes = ['circle', 'square', 'triangle', 'diamond', 'star'];
+
+    for (let i = 0; i < 80; i++) {
       const confetti = document.createElement('div');
-      confetti.className = 'confetti';
+      confetti.className = 'premium-confetti';
       confetti.style.left = Math.random() * 100 + 'vw';
-      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-      confetti.style.width = Math.random() * 10 + 5 + 'px';
-      confetti.style.height = Math.random() * 10 + 5 + 'px';
-      confetti.style.animation = `confetti ${Math.random() * 3 + 2}s linear forwards`;
-      confetti.style.animationDelay = Math.random() * 2 + 's';
+      confetti.style.top = '-10px';
+
+      // Random shape
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      const size = Math.random() * 12 + 6;
+
+      confetti.style.width = size + 'px';
+      confetti.style.height = size + 'px';
+      confetti.style.background = premiumColors[Math.floor(Math.random() * premiumColors.length)];
+      confetti.style.position = 'fixed';
+      confetti.style.zIndex = '9999';
+      confetti.style.pointerEvents = 'none';
+
+      // Shape-specific styling
+      switch (shape) {
+        case 'circle':
+          confetti.style.borderRadius = '50%';
+          break;
+        case 'square':
+          confetti.style.borderRadius = '2px';
+          break;
+        case 'triangle':
+          confetti.style.width = '0';
+          confetti.style.height = '0';
+          confetti.style.borderLeft = size/2 + 'px solid transparent';
+          confetti.style.borderRight = size/2 + 'px solid transparent';
+          confetti.style.borderBottom = size + 'px solid';
+          confetti.style.background = 'none';
+          confetti.style.borderBottomColor = premiumColors[Math.floor(Math.random() * premiumColors.length)].split(',')[1].replace(')', '');
+          break;
+        case 'diamond':
+          confetti.style.transform = 'rotate(45deg)';
+          confetti.style.borderRadius = '2px';
+          break;
+        case 'star':
+          confetti.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+          break;
+      }
+
+      // Premium shadow and glow effects
+      confetti.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.1)';
+      confetti.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.8))';
+
+      // Enhanced animation with multiple phases
+      const duration = Math.random() * 4 + 3;
+      const delay = Math.random() * 1.5;
+
+      confetti.style.animation = `
+        premiumConfettiFall ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s forwards,
+        premiumConfettiSpin ${duration * 0.8}s linear ${delay}s infinite,
+        premiumConfettiGlow 2s ease-in-out ${delay}s infinite alternate
+      `;
+
+      // Add sparkle effect
+      if (Math.random() > 0.7) {
+        confetti.style.animation += `, premiumConfettiSparkle 1.5s ease-in-out ${delay + 0.5}s infinite`;
+      }
 
       document.body.appendChild(confetti);
 
@@ -548,8 +612,16 @@ const ProfileView: React.FC = () => {
         if (confetti.parentNode) {
           confetti.parentNode.removeChild(confetti);
         }
-      }, 5000);
+      }, (duration + delay) * 1000 + 1000);
     }
+
+    // Add premium sound effect (visual feedback)
+    setTimeout(() => {
+      // Create a subtle vibration effect on mobile
+      if ('vibrate' in navigator) {
+        navigator.vibrate([50, 50, 50]);
+      }
+    }, 200);
   };
 
   // Get location address - simplified to share with Community Dashboard
@@ -789,6 +861,56 @@ const ProfileView: React.FC = () => {
             100% {
               transform: translateY(100vh) rotateZ(0deg);
               opacity: 0;
+            }
+          }
+
+          @keyframes premiumConfettiFall {
+            0% {
+              transform: translateY(-20px) translateX(0px) rotateZ(0deg) scale(1);
+              opacity: 0;
+            }
+            10% {
+              opacity: 1;
+            }
+            90% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(120vh) translateX(50px) rotateZ(720deg) scale(0.8);
+              opacity: 0;
+            }
+          }
+
+          @keyframes premiumConfettiSpin {
+            0% { transform: rotateZ(0deg); }
+            100% { transform: rotateZ(360deg); }
+          }
+
+          @keyframes premiumConfettiGlow {
+            0%, 100% {
+              filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)) brightness(1.2);
+            }
+            50% {
+              filter: drop-shadow(0 0 16px rgba(255, 215, 0, 1)) brightness(1.5);
+            }
+          }
+
+          @keyframes premiumConfettiSparkle {
+            0%, 100% {
+              transform: scale(1) rotate(0deg);
+              opacity: 1;
+            }
+            25% {
+              transform: scale(1.3) rotate(90deg);
+              opacity: 0.8;
+            }
+            50% {
+              transform: scale(0.8) rotate(180deg);
+              opacity: 0.9;
+            }
+            75% {
+              transform: scale(1.2) rotate(270deg);
+              opacity: 0.7;
             }
           }
         `}</style>
@@ -1554,11 +1676,11 @@ const ProfileView: React.FC = () => {
                 {t('profile.noBadges')}
               </p>
               <p style={{
-                fontSize: '14px',
+                fontSize: '13px',
                 margin: '8px 0 0 0',
                 opacity: 0.7
               }}>
-                Keep contributing to earn your first badge!
+                {t('profile.keepContributing')}
               </p>
             </div>
           ) : (
@@ -1796,13 +1918,13 @@ const ProfileView: React.FC = () => {
               }}>
                 {t('profile.noReports')}
               </p>
-              <p style={{
-                fontSize: '12px',
-                margin: '8px 0 0 0',
-                opacity: 0.7
-              }}>
-                Your safety reports will appear here
-              </p>
+                      <p style={{
+                        fontSize: '12px',
+                        margin: '8px 0 0 0',
+                        opacity: 0.7
+                      }}>
+                        {t('profile.reportsWillAppearHere')}
+                      </p>
             </div>
           ) : showMyReports && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -1906,6 +2028,8 @@ const ProfileView: React.FC = () => {
         </div>
       </div>
 
+
+
       {/* Edit Profile Modal - Matching OnboardingModal Style */}
       {showEditModal && (
         <div style={{
@@ -1952,7 +2076,7 @@ const ProfileView: React.FC = () => {
                 color: '#475569',
                 marginBottom: '20px'
               }}>
-                Update your profile information
+                {t('profile.updateProfileInfo')}
               </p>
 
               {/* Progress Indicator - Horizontal Bars like OnboardingModal */}
@@ -1992,21 +2116,21 @@ const ProfileView: React.FC = () => {
                 {editStep === 1 && (
                   <div>
                     <h3 style={{
-                      fontSize: '16px',
+                      fontSize: '18px',
                       fontWeight: '700',
                       color: '#1f2937',
-                      marginBottom: '6px',
+                      marginBottom: '8px',
                       textAlign: 'center'
                     }}>
-                      Add a Profile Picture
+                      {t('profile.interestsQuestion')}
                     </h3>
                     <p style={{
                       color: '#6b7280',
-                      marginBottom: '24px',
-                      fontSize: '13px',
+                      marginBottom: '32px',
+                      fontSize: '14px',
                       textAlign: 'center'
                     }}>
-                      Help others recognize you in the community
+                      {t('profile.interestsDescription')}
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
@@ -2107,7 +2231,7 @@ const ProfileView: React.FC = () => {
                           }}
                         >
                           <i className="fas fa-camera"></i>
-                          {editForm.profilePicture || user?.profile_picture_url ? 'Change Photo' : 'Upload Photo'}
+                          {editForm.profilePicture || user?.profile_picture_url ? t('profile.changePhoto') : t('profile.uploadPhoto')}
                         </button>
 
                         {(editForm.profilePicture || user?.profile_picture_url) && (
@@ -2147,8 +2271,8 @@ const ProfileView: React.FC = () => {
                               e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
                             }}
                           >
-                            <i className="fas fa-trash"></i>
-                            Remove
+                          <i className="fas fa-trash"></i>
+                            {t('profile.removePhoto')}
                           </button>
                         )}
                       </div>
@@ -2160,7 +2284,7 @@ const ProfileView: React.FC = () => {
                         margin: '0',
                         maxWidth: '280px'
                       }}>
-                        Upload a profile picture (max 5MB, JPG/PNG/WebP/GIF). You can skip this step and add one later.
+                        {t('profile.uploadPhotoHelp')}
                       </p>
                     </div>
                   </div>
@@ -2176,7 +2300,7 @@ const ProfileView: React.FC = () => {
                       marginBottom: '8px',
                       textAlign: 'center'
                     }}>
-                      What's your first name?
+                      {t('profile.firstNameQuestion')}
                     </h3>
                     <p style={{
                       color: '#6b7280',
@@ -2184,19 +2308,19 @@ const ProfileView: React.FC = () => {
                       fontSize: '14px',
                       textAlign: 'center'
                     }}>
-                      This will be used to personalize your experience
+                      {t('profile.firstNameDescription')}
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                       <label htmlFor="firstName" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                        First Name
+                        {t('profile.firstNameLabel')}
                       </label>
                       <input
                         id="firstName"
                         type="text"
                         value={editForm.firstName}
                         onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
-                        placeholder="Enter your first name"
+                        placeholder={t('profile.enterFirstName')}
                         autoFocus
                         style={{
                           width: '100%',
@@ -2234,7 +2358,7 @@ const ProfileView: React.FC = () => {
                       marginBottom: '8px',
                       textAlign: 'center'
                     }}>
-                      And your last name?
+                      {t('profile.lastNameQuestion')}
                     </h3>
                     <p style={{
                       color: '#6b7280',
@@ -2242,19 +2366,19 @@ const ProfileView: React.FC = () => {
                       fontSize: '14px',
                       textAlign: 'center'
                     }}>
-                      Your last name helps us create your profile
+                      {t('profile.lastNameDescription')}
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                       <label htmlFor="lastName" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                        Last Name
+                        {t('profile.lastNameLabel')}
                       </label>
                       <input
                         id="lastName"
                         type="text"
                         value={editForm.lastName}
                         onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
-                        placeholder="Enter your last name"
+                        placeholder={t('profile.enterLastName')}
                         autoFocus
                         style={{
                           width: '100%',
@@ -2292,7 +2416,7 @@ const ProfileView: React.FC = () => {
                       marginBottom: '8px',
                       textAlign: 'center'
                     }}>
-                      How can we reach you?
+                      {t('profile.phoneQuestion')}
                     </h3>
                     <p style={{
                       color: '#6b7280',
@@ -2300,19 +2424,19 @@ const ProfileView: React.FC = () => {
                       fontSize: '14px',
                       textAlign: 'center'
                     }}>
-                      We'll use this for important safety alerts (optional)
+                      {t('profile.phoneDescription')}
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                       <label htmlFor="phone" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                        Phone Number (Optional)
+                        {t('profile.phoneLabel')}
                       </label>
                       <input
                         id="phone"
                         type="tel"
                         value={editForm.phone}
                         onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder="+1 (555) 123-4567"
+                        placeholder={t('profile.phonePlaceholder')}
                         autoFocus
                         style={{
                           width: '100%',
@@ -2350,7 +2474,7 @@ const ProfileView: React.FC = () => {
                       marginBottom: '8px',
                       textAlign: 'center'
                     }}>
-                      Where are you located?
+                      {t('profile.locationQuestion')}
                     </h3>
                     <p style={{
                       color: '#6b7280',
@@ -2358,19 +2482,19 @@ const ProfileView: React.FC = () => {
                       fontSize: '14px',
                       textAlign: 'center'
                     }}>
-                      We'll use this to show relevant community reports and safety information in your area
+                      {t('profile.locationDescription')}
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                       <label htmlFor="location" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                        Location
+                        {t('profile.locationLabel')}
                       </label>
                       <input
                         id="location"
                         type="text"
                         value={editForm.location}
                         onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
-                        placeholder="Enter your city or address"
+                        placeholder={t('profile.enterLocation')}
                         autoFocus
                         style={{
                           width: '100%',
@@ -2408,7 +2532,7 @@ const ProfileView: React.FC = () => {
                       marginBottom: '8px',
                       textAlign: 'center'
                     }}>
-                      What community activities interest you?
+                      {t('profile.interestsQuestion')}
                     </h3>
                     <p style={{
                       color: '#6b7280',
@@ -2432,7 +2556,7 @@ const ProfileView: React.FC = () => {
                             gap: '8px'
                           }}>
                             <span style={{ fontSize: '18px' }}>{category.icon}</span>
-                            {category.label}
+                            {t(`profile.interests.categories.${key}`)}
                           </h4>
 
                           <div style={{
@@ -2476,7 +2600,7 @@ const ProfileView: React.FC = () => {
                                   }
                                 }}
                               >
-                                {item}
+                                {t(`profile.interests.items.${item}`)}
                               </button>
                             ))}
                           </div>
@@ -2527,7 +2651,7 @@ const ProfileView: React.FC = () => {
                   e.currentTarget.style.borderColor = '#d1d5db';
                 }}
               >
-                {editStep === 1 ? t('common.cancel') : 'Back'}
+                {editStep === 1 ? t('common.cancel') : t('common.back')}
               </button>
 
               {/* Right Button - Continue or Save */}
@@ -2573,11 +2697,11 @@ const ProfileView: React.FC = () => {
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
-                  {editStep === 1 ? 'Continue to First Name' :
-                   editStep === 2 ? 'Continue to Last Name' :
-                   editStep === 3 ? 'Continue to Phone' :
-                   editStep === 4 ? 'Continue to Address' :
-                   'Continue to Interests'}
+                {editStep === 1 ? t('profile.continueToFirstName') :
+                 editStep === 2 ? t('profile.continueToLastName') :
+                 editStep === 3 ? t('profile.continueToPhone') :
+                 editStep === 4 ? t('profile.continueToAddress') :
+                 t('profile.continueToInterests')}
                 </button>
               ) : (
                 <button
@@ -2665,7 +2789,7 @@ const ProfileView: React.FC = () => {
                     }
                   }}
                 >
-                  {uploadingPicture ? 'Uploading...' : t('profile.saveChanges')}
+                  {uploadingPicture ? t('profile.uploading') : t('profile.saveChanges')}
                 </button>
               )}
             </div>
