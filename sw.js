@@ -1,8 +1,8 @@
 // Service Worker for HyperApp - Offline Functionality with Authentication
-const CACHE_NAME = 'hyperapp-v1.0.0';
-const STATIC_CACHE = 'hyperapp-static-v1.0.0';
-const DYNAMIC_CACHE = 'hyperapp-dynamic-v1.0.0';
-const AUTH_CACHE = 'hyperapp-auth-v1.0.0';
+const CACHE_NAME = 'hyperapp-v1.0.1';
+const STATIC_CACHE = 'hyperapp-static-v1.0.1';
+const DYNAMIC_CACHE = 'hyperapp-dynamic-v1.0.1';
+const AUTH_CACHE = 'hyperapp-auth-v1.0.1';
 
 // Files to cache immediately
 const STATIC_FILES = [

@@ -67,6 +67,36 @@ const cleanupOneSignal = async () => {
 import { getMessaging, onMessage } from 'firebase/messaging';
 import { app } from './lib/firebase';
 
+// Register main service worker for caching and offline functionality
+const registerMainServiceWorker = async () => {
+  if ('serviceWorker' in navigator) {
+    try {
+      // Register main service worker for caching
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
+      });
+
+      console.log('Main service worker registered successfully:', registration.scope);
+
+      // Handle service worker updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New content is available, notify user
+              console.log('New content is available and will be used when all tabs for this page are closed.');
+            }
+          });
+        }
+      });
+
+    } catch (error) {
+      console.error('Main service worker registration failed:', error);
+    }
+  }
+};
+
 // Register Firebase service worker for push notifications
 const registerFirebaseServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
@@ -95,6 +125,9 @@ const registerFirebaseServiceWorker = async () => {
 
 // Clean up any cached OneSignal service workers and caches
 cleanupOneSignal();
+
+// Register main service worker for caching
+registerMainServiceWorker();
 
 // Register Firebase service worker
 registerFirebaseServiceWorker();
