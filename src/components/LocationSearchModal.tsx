@@ -188,7 +188,6 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
         <div className={styles.searchCard}>
           <div className={styles.searchHeader}>
             <h1 className={styles.searchTitle}>
-              <MapPin size={16} className="text-white" />
               Location Search
             </h1>
             <p className={styles.searchSubtitle}>Find places and check safety vibes in your area</p>
