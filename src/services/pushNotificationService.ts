@@ -38,6 +38,13 @@ class PushNotificationService {
     this.currentUserId = userId;
 
     try {
+      // Ensure Capacitor is ready before initializing push notifications
+      if (Capacitor.isNativePlatform()) {
+        console.log('📱 Waiting for Capacitor to be ready...');
+        await this.waitForCapacitorReady();
+        console.log('📱 Capacitor is ready, proceeding with push notification setup');
+      }
+
       // Check if notifications are supported
       if (!(await fcmService.isSupported())) {
         console.log('Push notifications not supported on this device');
@@ -79,6 +86,32 @@ class PushNotificationService {
     } catch (error) {
       console.error('Failed to initialize push notifications:', error);
     }
+  }
+
+  // Wait for Capacitor to be fully ready
+  private async waitForCapacitorReady(): Promise<void> {
+    return new Promise((resolve) => {
+      const checkReady = () => {
+        // Check if Capacitor plugins are available
+        if (typeof (window as any).Capacitor !== 'undefined' &&
+            typeof (window as any).Capacitor.Plugins !== 'undefined' &&
+            typeof (window as any).Capacitor.Plugins.PushNotifications !== 'undefined') {
+          resolve();
+        } else {
+          // Wait a bit and check again
+          setTimeout(checkReady, 100);
+        }
+      };
+
+      // Start checking immediately
+      checkReady();
+
+      // Also set a timeout to resolve anyway after 5 seconds to prevent hanging
+      setTimeout(() => {
+        console.log('📱 Capacitor ready check timeout - proceeding anyway');
+        resolve();
+      }, 5000);
+    });
   }
 
   // Set up Capacitor push notification listeners

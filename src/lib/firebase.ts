@@ -58,6 +58,32 @@ export class FCMService {
     return FCMService.instance;
   }
 
+  // Wait for Capacitor to be fully ready
+  private async waitForCapacitorReady(): Promise<void> {
+    return new Promise((resolve) => {
+      const checkReady = () => {
+        // Check if Capacitor plugins are available
+        if (typeof (window as any).Capacitor !== 'undefined' &&
+            typeof (window as any).Capacitor.Plugins !== 'undefined' &&
+            typeof (window as any).Capacitor.Plugins.PushNotifications !== 'undefined') {
+          resolve();
+        } else {
+          // Wait a bit and check again
+          setTimeout(checkReady, 100);
+        }
+      };
+
+      // Start checking immediately
+      checkReady();
+
+      // Also set a timeout to resolve anyway after 5 seconds to prevent hanging
+      setTimeout(() => {
+        console.log('📱 Capacitor ready check timeout - proceeding anyway');
+        resolve();
+      }, 5000);
+    });
+  }
+
   // Request notification permission and get FCM token
   async requestPermission(): Promise<string | null> {
     try {
@@ -65,38 +91,35 @@ export class FCMService {
         // On mobile, use Capacitor's PushNotifications plugin for native permission dialog
         console.log('📱 Requesting push notification permission via Capacitor');
 
-        // Register for push notifications first
-        await PushNotifications.register();
+        // Ensure Capacitor is ready before proceeding
+        await this.waitForCapacitorReady();
 
-        // Request permissions - this shows the native Android dialog
-        const { receive } = await PushNotifications.requestPermissions();
+        // Check current permission status first
+        const { receive } = await PushNotifications.checkPermissions();
+        console.log('📱 Current push notification permission status:', receive);
 
-        if (receive !== 'granted') {
-          console.log('📱 Push notification permission denied via Capacitor');
+        if (receive === 'denied') {
+          console.log('📱 Push notification permission was previously denied');
           return null;
+        }
+
+        // Request permissions if not already granted
+        if (receive !== 'granted') {
+          console.log('📱 Requesting push notification permissions...');
+          const permissionResult = await PushNotifications.requestPermissions();
+
+          if (permissionResult.receive !== 'granted') {
+            console.log('📱 Push notification permission denied via Capacitor');
+            return null;
+          }
         }
 
         console.log('📱 Push notification permission granted via Capacitor');
 
-        // Set up listeners for push notifications
-        PushNotifications.addListener('registration', (token) => {
-          console.log('📱 Push notification token received:', token.value);
-          // The token will be handled by the push notification service
-        });
-
-        PushNotifications.addListener('registrationError', (error) => {
-          console.error('📱 Push notification registration error:', error);
-        });
-
-        PushNotifications.addListener('pushNotificationReceived', (notification) => {
-          console.log('📱 Push notification received:', notification);
-          // Handle foreground push notifications
-        });
-
-        PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-          console.log('📱 Push notification action performed:', action);
-          // Handle notification tap actions
-        });
+        // Register for push notifications
+        console.log('📱 Registering for push notifications...');
+        await PushNotifications.register();
+        console.log('📱 Push notification registration initiated');
 
         // Return a placeholder - actual FCM token will be received via registration listener
         return 'capacitor-push-notifications-enabled';
