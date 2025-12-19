@@ -191,13 +191,15 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
+      // Load recent searches when modal opens
+      const recent = loadRecentSearches();
       setState(prev => ({
         query: '',
         results: [],
         isLoading: false,
         selectedIndex: -1,
         isFocused: false,
-        recentSearches: prev.recentSearches
+        recentSearches: recent
       }));
       // Focus input after modal animation
       setTimeout(() => {
@@ -251,21 +253,6 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                 autoComplete="off"
                 aria-label="Search for places, addresses, landmarks"
               />
-              <button
-                onClick={() => {
-                  // Handle current location
-                  setState(prev => ({ ...prev, query: "Getting your location..." }));
-                  // Simulate getting location
-                  setTimeout(() => {
-                    setState(prev => ({ ...prev, query: "Current Location" }));
-                  }, 1000);
-                }}
-                className={styles.currentLocationBtn}
-                aria-label="Use current location"
-                title="Use current location"
-              >
-                📍
-              </button>
             </div>
           </div>
 
@@ -331,7 +318,17 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                   <div className={styles.recentLabel}>Popular Locations</div>
 
                   {/* Popular Location Items */}
-                  <div className={styles.resultItem}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className={styles.resultItem}
+                    onClick={() => {
+                      const location = "Fisherman's Wharf, San Francisco, CA";
+                      setState(prev => ({ ...prev, query: location }));
+                      performSearch(location);
+                    }}
+                  >
                     <div className={styles.resultIcon}>
                       <i className="fas fa-map-pin"></i>
                     </div>
@@ -339,9 +336,19 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                       <div className={styles.resultTitle}>Fisherman's Wharf</div>
                       <div className={styles.resultAddress}>San Francisco, CA</div>
                     </div>
-                  </div>
+                  </motion.div>
 
-                  <div className={styles.resultItem}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className={styles.resultItem}
+                    onClick={() => {
+                      const location = "Mission District, San Francisco, CA";
+                      setState(prev => ({ ...prev, query: location }));
+                      performSearch(location);
+                    }}
+                  >
                     <div className={styles.resultIcon}>
                       <i className="fas fa-map-pin"></i>
                     </div>
@@ -349,9 +356,19 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                       <div className={styles.resultTitle}>Mission District</div>
                       <div className={styles.resultAddress}>San Francisco, CA</div>
                     </div>
-                  </div>
+                  </motion.div>
 
-                  <div className={styles.resultItem}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className={styles.resultItem}
+                    onClick={() => {
+                      const location = "Tenderloin District, San Francisco, CA";
+                      setState(prev => ({ ...prev, query: location }));
+                      performSearch(location);
+                    }}
+                  >
                     <div className={styles.resultIcon}>
                       <i className="fas fa-map-pin"></i>
                     </div>
@@ -359,7 +376,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                       <div className={styles.resultTitle}>Tenderloin District</div>
                       <div className={styles.resultAddress}>San Francisco, CA</div>
                     </div>
-                  </div>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -429,7 +429,7 @@
   }
 
   .searchInput {
-    padding: 14px 44px 14px 48px;
+    padding: 14px 16px 14px 48px;
     font-size: 0.95rem;
     border-radius: var(--radius);
   }
@@ -442,8 +442,8 @@
 
   .currentLocationBtn {
     right: 8px;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 
   .searchResults {
