@@ -310,24 +310,155 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
 
   if (showSuccess) {
     return (
-      <div className={styles.modalOverlay}>
-        <div className={styles.modal}>
-          <div className={styles.modalContent} style={{ textAlign: 'center', padding: '2rem' }}>
-            <div className={styles.successCheckmark}>
-              <div className={styles.checkIcon}>
-                <span className={`${styles.iconLine} ${styles.lineTip}`}></span>
-                <span className={`${styles.iconLine} ${styles.lineLong}`}></span>
-                <div className={styles.iconCircle}></div>
-                <div className={styles.iconFix}></div>
-              </div>
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.8)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        padding: window.innerWidth < 480 ? '16px' : '20px'
+      }}>
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderRadius: window.innerWidth < 480 ? '20px' : '24px',
+          width: '100%',
+          maxWidth: window.innerWidth < 480 ? '90vw' : '400px',
+          padding: window.innerWidth < 480 ? '2rem 1.5rem' : '3rem 2rem',
+          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25), 0 15px 35px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Premium Background Gradient */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(34, 197, 94, 0.06) 50%, rgba(16, 185, 129, 0.04) 100%)',
+            pointerEvents: 'none'
+          }}></div>
+
+          {/* Premium Inner Shadow */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)',
+            pointerEvents: 'none',
+            borderRadius: '24px'
+          }}></div>
+
+          {/* Success Checkmark Animation */}
+          <div style={{
+            position: 'relative',
+            zIndex: 1,
+            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem'
+          }}>
+            <div style={{
+              width: window.innerWidth < 480 ? '80px' : '100px',
+              height: window.innerWidth < 480 ? '80px' : '100px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto',
+              boxShadow: '0 20px 40px rgba(16, 185, 129, 0.3), 0 10px 20px rgba(16, 185, 129, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.2)',
+              animation: 'successPulse 2s ease-in-out infinite'
+            }}>
+              <svg
+                width={window.innerWidth < 480 ? "32" : "40"}
+                height={window.innerWidth < 480 ? "32" : "40"}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))'
+                }}
+              >
+                <polyline points="20,6 9,17 4,12" style={{
+                  strokeDasharray: '24',
+                  strokeDashoffset: '24',
+                  animation: 'successCheck 0.8s ease-in-out 0.2s forwards'
+                }}></polyline>
+              </svg>
             </div>
-            <h3 style={{ margin: '1.5rem 0 0.5rem', color: '#10b981' }}>
+          </div>
+
+          {/* Success Text */}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h3 style={{
+              margin: '0 0 0.75rem 0',
+              color: '#065f46',
+              fontSize: window.innerWidth < 480 ? '1.25rem' : '1.5rem',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              letterSpacing: '-0.025em',
+              lineHeight: '1.2'
+            }}>
               Report Submitted Successfully!
             </h3>
-            <p style={{ color: '#6b7280' }}>
+            <p style={{
+              color: '#6b7280',
+              fontSize: window.innerWidth < 480 ? '0.9rem' : '1rem',
+              fontWeight: '500',
+              margin: '0',
+              lineHeight: '1.5',
+              maxWidth: '280px',
+              marginLeft: 'auto',
+              marginRight: 'auto'
+            }}>
               Thank you for helping the community stay informed.
             </p>
           </div>
+
+          {/* Premium CSS Animations */}
+          <style>{`
+            @keyframes successPulse {
+              0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3), 0 10px 20px rgba(16, 185, 129, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.2);
+              }
+              50% {
+                transform: scale(1.05);
+                box-shadow: 0 25px 50px rgba(16, 185, 129, 0.4), 0 15px 30px rgba(16, 185, 129, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+              }
+            }
+
+            @keyframes successCheck {
+              0% {
+                stroke-dashoffset: 24;
+                opacity: 0;
+              }
+              50% {
+                opacity: 1;
+              }
+              100% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+              }
+            }
+          `}</style>
         </div>
       </div>
     );

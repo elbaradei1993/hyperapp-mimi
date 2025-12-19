@@ -941,9 +941,10 @@ const ProfileView: React.FC = () => {
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
+                objectFit: 'contain',
                 borderRadius: '50%',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                backgroundColor: 'white'
               }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -2030,7 +2031,7 @@ const ProfileView: React.FC = () => {
 
 
 
-      {/* Edit Profile Modal - Matching OnboardingModal Style */}
+      {/* Edit Profile Modal - Mobile Optimized */}
       {showEditModal && (
         <div style={{
           position: 'fixed',
@@ -2043,27 +2044,27 @@ const ProfileView: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 1000,
-          padding: '20px'
+          padding: window.innerWidth < 480 ? '12px' : '20px'
         }}>
           <div style={{
             background: '#ffffff',
-            borderRadius: '16px',
+            borderRadius: window.innerWidth < 480 ? '12px' : '16px',
             width: '100%',
-            maxWidth: '440px',
+            maxWidth: window.innerWidth < 480 ? '95vw' : '440px',
             maxHeight: '90vh',
             overflow: 'hidden',
             boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)',
             display: 'flex',
             flexDirection: 'column'
           }}>
-            {/* Modal Header - Clean and Simple */}
+            {/* Modal Header - Mobile Optimized */}
             <div style={{
-              padding: '24px 20px 0',
+              padding: window.innerWidth < 480 ? '16px 16px 0' : '24px 20px 0',
               textAlign: 'center',
               background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)'
             }}>
               <h2 style={{
-                fontSize: '1.25rem',
+                fontSize: window.innerWidth < 480 ? '1.1rem' : '1.25rem',
                 fontWeight: 700,
                 color: '#0f172a',
                 marginBottom: '6px',
@@ -2072,7 +2073,7 @@ const ProfileView: React.FC = () => {
                 {t('profile.editProfile')}
               </h2>
               <p style={{
-                fontSize: '0.875rem',
+                fontSize: window.innerWidth < 480 ? '0.8rem' : '0.875rem',
                 color: '#475569',
                 marginBottom: '20px'
               }}>
