@@ -40,18 +40,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
   const changeLanguage = async (language: string, updateProfile?: (data: any) => Promise<void>, user?: any) => {
     try {
-      setCurrentLanguage(language);
-      await i18n.changeLanguage(language);
-
-      // Save to localStorage
-      localStorage.setItem('language', language);
-
-      // Update user profile if authenticated and updateProfile function is provided
-      if (user && updateProfile) {
-        await updateProfile({ language });
-      }
-
-      // Update document direction after i18n change completes
+      // Update document direction and language immediately for instant visual feedback
       const direction = rtlLanguages.includes(language) ? 'rtl' : 'ltr';
       document.documentElement.dir = direction;
       document.documentElement.lang = language;
@@ -62,8 +51,33 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       } else {
         document.body.classList.remove('rtl');
       }
+
+      // Now change the i18n language
+      await i18n.changeLanguage(language);
+
+      // Update state after successful language change
+      setCurrentLanguage(language);
+
+      // Save to localStorage
+      localStorage.setItem('language', language);
+
+      // Update user profile if authenticated and updateProfile function is provided
+      if (user && updateProfile) {
+        await updateProfile({ language });
+      }
+
+      console.log(`Language changed to ${language} with direction ${direction}`);
     } catch (error) {
       console.error('Error changing language:', error);
+      // Revert direction changes on error
+      const currentDirection = rtlLanguages.includes(currentLanguage) ? 'rtl' : 'ltr';
+      document.documentElement.dir = currentDirection;
+      document.documentElement.lang = currentLanguage;
+      if (rtlLanguages.includes(currentLanguage)) {
+        document.body.classList.add('rtl');
+      } else {
+        document.body.classList.remove('rtl');
+      }
     }
   };
 

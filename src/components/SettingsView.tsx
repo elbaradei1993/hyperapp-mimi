@@ -516,19 +516,6 @@ const SettingsView: React.FC = () => {
                     fontSize: '12px'
                   }}></i>
                   {t('settings.notifications')}
-                  {notificationPermissionStatus !== 'unknown' && (
-                    <span style={{
-                      fontSize: '10px',
-                      padding: '2px 6px',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundColor: notificationPermissionStatus === 'granted' ? 'var(--success)' : 'var(--danger)',
-                      color: 'white',
-                      marginLeft: 'var(--space-2)',
-                      fontWeight: '500'
-                    }}>
-                      {notificationPermissionStatus === 'granted' ? 'ON' : 'OFF'}
-                    </span>
-                  )}
                 </div>
               </div>
               <ToggleSwitch
@@ -661,19 +648,6 @@ const SettingsView: React.FC = () => {
                     fontSize: '12px'
                   }}></i>
                   {t('settings.locationSharing')}
-                  {locationPermissionStatus !== 'unknown' && (
-                    <span style={{
-                      fontSize: '10px',
-                      padding: '2px 6px',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundColor: locationPermissionStatus === 'granted' ? 'var(--success)' : 'var(--danger)',
-                      color: 'white',
-                      marginLeft: 'var(--space-2)',
-                      fontWeight: '500'
-                    }}>
-                      {locationPermissionStatus === 'granted' ? 'ON' : 'OFF'}
-                    </span>
-                  )}
                 </div>
               </div>
               <ToggleSwitch
