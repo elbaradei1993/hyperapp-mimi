@@ -153,8 +153,8 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                 {/* Icon with glow effect */}
                 <Box position="relative">
                   <Box
-                    w={["100px", "120px"]}
-                    h={["100px", "120px"]}
+                    w={{ base: "80px", md: "120px" }}
+                    h={{ base: "80px", md: "120px" }}
                     bg="linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
                     borderRadius="30px"
                     display="flex"
@@ -173,16 +173,16 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                       top="50%"
                       left="50%"
                       transform="translate(-50%, -50%)"
-                      w={["60px", "80px"]}
-                      h={["60px", "80px"]}
+                      w={{ base: "50px", md: "80px" }}
+                      h={{ base: "50px", md: "80px" }}
                       bg="radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%)"
                       borderRadius="50%"
                     />
                     <Image
                       src="/hyperapp-logo.png"
                       alt="HyperApp Logo"
-                      w={["60px", "80px"]}
-                      h={["60px", "80px"]}
+                      w={{ base: "50px", md: "80px" }}
+                      h={{ base: "50px", md: "80px" }}
                       borderRadius="20px"
                       objectFit="cover"
                       position="relative"
@@ -207,7 +207,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                 {/* Title with premium typography */}
                 <VStack align="center" gap={1}>
                   <Text
-                    fontSize={["3xl", "4xl"]}
+                    fontSize={{ base: "2xl", md: "4xl" }}
                     fontWeight="800"
                     color="white"
                     textAlign="center"
@@ -223,7 +223,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                     HyperApp
                   </Text>
                   <Text
-                    fontSize={["xs", "sm"]}
+                    fontSize={{ base: "xs", md: "sm" }}
                     color="rgba(255, 255, 255, 0.7)"
                     textAlign="center"
                     fontWeight="500"
@@ -239,7 +239,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
             <motion.div variants={titleVariants}>
               <VStack w="full" align="center" gap={[6, 8]}>
                 <Text
-                  fontSize={["lg", "xl"]}
+                  fontSize={{ base: "md", md: "xl" }}
                   fontWeight="600"
                   color="white"
                   textAlign="center"
@@ -250,7 +250,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                   {/* Mobile responsive update */}
                 </Text>
 
-                <VStack w="full" maxW="320px" gap={[4, 5]}>
+                <VStack w="full" maxW="320px" gap={{ base: 3, md: 5 }}>
                   {/* English Button */}
                   <motion.div
                     custom={0}
@@ -262,13 +262,13 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                     <ChakraButton
                       onClick={() => onLanguageSelect('en')}
                       w="full"
-                      h={["60px", "70px"]}
+                      h={{ base: "50px", md: "70px" }}
                       bg="linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
                       backdropFilter="blur(30px)"
                       border="1px solid rgba(255, 255, 255, 0.25)"
                       borderRadius="20px"
                       color="white"
-                      fontSize={["md", "lg"]}
+                      fontSize={{ base: "sm", md: "lg" }}
                       fontWeight="700"
                       letterSpacing="0.5px"
                       _hover={{
@@ -282,7 +282,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                       display="flex"
                       alignItems="center"
                       justifyContent="space-between"
-                      px={[6, 8]}
+                      px={{ base: 4, md: 8 }}
                       boxShadow="0 15px 35px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                       position="relative"
                       overflow="hidden"
@@ -299,8 +299,8 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                         transition="opacity 0.3s ease"
                         _groupHover={{ opacity: 1 }}
                       />
-                      <Text fontSize={["md", "lg"]} fontWeight="700" zIndex="1">English</Text>
-                      <ChevronRight size={20} style={{ zIndex: 1 }} />
+                      <Text fontSize={{ base: "sm", md: "lg" }} fontWeight="700" zIndex="1">English</Text>
+                      <ChevronRight size={18} style={{ zIndex: 1 }} />
                     </ChakraButton>
                   </motion.div>
 
@@ -315,13 +315,13 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                     <ChakraButton
                       onClick={() => onLanguageSelect('ar')}
                       w="full"
-                      h={["60px", "70px"]}
+                      h={{ base: "50px", md: "70px" }}
                       bg="linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
                       backdropFilter="blur(30px)"
                       border="1px solid rgba(255, 255, 255, 0.25)"
                       borderRadius="20px"
                       color="white"
-                      fontSize={["md", "lg"]}
+                      fontSize={{ base: "sm", md: "lg" }}
                       fontWeight="700"
                       letterSpacing="0.5px"
                       _hover={{
@@ -335,7 +335,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                       display="flex"
                       alignItems="center"
                       justifyContent="space-between"
-                      px={[6, 8]}
+                      px={{ base: 4, md: 8 }}
                       boxShadow="0 15px 35px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                       position="relative"
                       overflow="hidden"
@@ -352,8 +352,8 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                         transition="opacity 0.3s ease"
                         _groupHover={{ opacity: 1 }}
                       />
-                      <Text fontSize={["md", "lg"]} fontWeight="700" zIndex="1">العربية</Text>
-                      <ChevronRight size={20} style={{ zIndex: 1 }} />
+                      <Text fontSize={{ base: "sm", md: "lg" }} fontWeight="700" zIndex="1">العربية</Text>
+                      <ChevronRight size={18} style={{ zIndex: 1 }} />
                     </ChakraButton>
                   </motion.div>
                 </VStack>
