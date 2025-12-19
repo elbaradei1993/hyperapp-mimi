@@ -68,6 +68,25 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
                          score >= 0.6 ? t('credibility.moderatelyCredible') :
                          t('credibility.lowCredibility');
 
+  // Mobile-responsive sizing
+  const isMobile = window.innerWidth < 480;
+  const getMobileSize = () => {
+    if (isMobile) {
+      return {
+        padding: '1px 3px',
+        fontSize: '0.5rem',
+        gap: '2px'
+      };
+    }
+    return {
+      padding: '2px 6px',
+      fontSize: '0.6rem',
+      gap: '4px'
+    };
+  };
+
+  const mobileSize = getMobileSize();
+
   const handleClick = () => {
     if (onClick) {
       onClick();
@@ -81,9 +100,8 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
     <span
       onClick={handleClick}
       style={{
-        padding: '2px 6px',
+        ...mobileSize,
         borderRadius: '4px',
-        fontSize: '0.6rem',
         fontWeight: '700',
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
@@ -92,9 +110,10 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
         border: `1px solid ${credibilityInfo.color}40`,
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '4px',
         cursor: 'pointer',
-        transition: 'all 0.2s ease'
+        transition: 'all 0.2s ease',
+        whiteSpace: 'nowrap',
+        flexShrink: 0
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'scale(1.05)';
@@ -109,7 +128,7 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
       {translatedLabel}
       {validationCount > 0 && (
         <span style={{
-          fontSize: '0.5rem',
+          fontSize: isMobile ? '0.4rem' : '0.5rem',
           opacity: 0.8,
           fontWeight: '600'
         }}>
@@ -207,10 +226,10 @@ export const ValidationButtons: React.FC<ValidationButtonsProps> = ({
       }
     : {
         ...baseButtonStyle,
-        background: 'rgba(255, 255, 255, 0.05)',
-        color: 'var(--text-secondary)',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+        background: 'rgba(239, 68, 68, 0.08)', // Subtle red background when not pressed
+        color: '#dc2626', // Red text color
+        borderColor: 'rgba(239, 68, 68, 0.2)', // Subtle red border
+        boxShadow: '0 1px 3px rgba(239, 68, 68, 0.1)' // Subtle red shadow
       };
 
   const handleValidation = (type: 'confirm' | 'deny') => {
@@ -311,6 +330,27 @@ export const UserVerificationBadge: React.FC<UserVerificationBadgeProps> = ({
                          level === 'verified' ? t('credibility.verifiedUser') :
                          t('credibility.basicUser');
 
+  // Mobile-responsive sizing
+  const isMobile = window.innerWidth < 480;
+  const getMobileSize = () => {
+    if (isMobile) {
+      return {
+        padding: '1px 3px',
+        fontSize: '0.5rem',
+        gap: '2px',
+        iconSize: '8px'
+      };
+    }
+    return {
+      padding: '2px 6px',
+      fontSize: '0.6rem',
+      gap: '4px',
+      iconSize: '10px'
+    };
+  };
+
+  const mobileSize = getMobileSize();
+
   const handleClick = () => {
     if (onClick) {
       onClick();
@@ -324,9 +364,8 @@ export const UserVerificationBadge: React.FC<UserVerificationBadgeProps> = ({
     <span
       onClick={handleClick}
       style={{
-        padding: '2px 6px',
+        ...mobileSize,
         borderRadius: '4px',
-        fontSize: '0.6rem',
         fontWeight: '700',
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
@@ -335,9 +374,10 @@ export const UserVerificationBadge: React.FC<UserVerificationBadgeProps> = ({
         border: `1px solid ${verificationInfo.color}40`,
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '4px',
         cursor: 'pointer',
-        transition: 'all 0.2s ease'
+        transition: 'all 0.2s ease',
+        whiteSpace: 'nowrap',
+        flexShrink: 0
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'scale(1.05)';
@@ -348,7 +388,7 @@ export const UserVerificationBadge: React.FC<UserVerificationBadgeProps> = ({
         e.currentTarget.style.boxShadow = 'none';
       }}
     >
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+      <svg width={mobileSize.iconSize} height={mobileSize.iconSize} viewBox="0 0 24 24" fill="none">
         <path
           d="M12 2L20 6V12C20 16.418 16.418 20 12 20C7.582 20 4 16.418 4 12V6L12 2Z"
           fill="currentColor"
