@@ -247,6 +247,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                   textShadow="0 2px 4px rgba(0, 0, 0, 0.3)"
                 >
                   Choose your language
+                  {/* Mobile responsive update */}
                 </Text>
 
                 <VStack w="full" maxW="320px" gap={[4, 5]}>
