@@ -1263,31 +1263,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                           </div>
                         </div>
 
-                        {/* Vibe Description */}
-                        <div style={{
-                          background: 'rgba(255, 255, 255, 0.9)',
-                          backdropFilter: 'blur(12px)',
-                          border: '1px solid rgba(255, 255, 255, 0.3)',
-                          borderRadius: '16px',
-                          padding: '20px',
-                          textAlign: 'left'
-                        }}>
-                          <div style={{
-                            fontSize: '1.25rem',
-                            fontWeight: '800',
-                            color: getVibeColor(localCurrentLocationVibe.type),
-                            marginBottom: '8px'
-                          }}>
-                            {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}
-                          </div>
-                          <div style={{
-                            color: '#64748b',
-                            fontSize: '0.875rem',
-                            lineHeight: '1.5'
-                          }}>
-                            {t(`vibes.${localCurrentLocationVibe.type}Desc`, `${localCurrentLocationVibe.type} atmosphere description`)}
-                          </div>
-                        </div>
+
 
                         {/* Expandable Breakdown */}
                         <div style={{
