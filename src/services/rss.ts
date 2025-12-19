@@ -17,6 +17,12 @@ interface RSSFeed {
   language?: string;
 }
 
+interface RSSFeedConfig {
+  url: string;
+  name: string;
+  proxy: string;
+}
+
 interface NewsAlert {
   id: string;
   time: string;
@@ -25,12 +31,6 @@ interface NewsAlert {
   category: 'NEWS' | 'UPDATE' | 'ALERT' | 'BREAKING' | 'FEATURE';
   priority: 'high' | 'medium' | 'low';
   url?: string;
-}
-
-interface RSSFeedConfig {
-  url: string;
-  name: string;
-  proxy: string;
 }
 
 // Import Capacitor for platform detection
@@ -151,24 +151,15 @@ class RSSService {
 
       // If no results succeeded within timeout, try a simpler approach
       console.log('🔄 No parallel results, trying sequential fetch...');
-      return await this.trySequentialFetch(preferredUrl);
+      const sequentialResult = await this.trySequentialFetch(preferredUrl);
+      return sequentialResult;
 
     } catch (error) {
       console.warn('Parallel fetch failed:', error);
       // Fallback to sequential approach
-      return await this.trySequentialFetch(preferredUrl);
+      const sequentialResult = await this.trySequentialFetch(preferredUrl);
+      return sequentialResult;
     }
-
-    // Fallback to any cached data
-    const fallbackData = this.getAnyCachedData();
-    if (fallbackData?.length) {
-      console.log('📁 Using fallback cached data');
-      return fallbackData;
-    }
-
-    // Last resort: default alerts
-    console.log('⚠️ Using default news alerts');
-    return this.getDefaultNewsAlerts();
   }
 
   /**

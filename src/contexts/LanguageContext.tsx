@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 
 interface LanguageContextType {
   currentLanguage: string;
   changeLanguage: (language: string, updateProfile?: (data: any) => Promise<void>, user?: any) => Promise<void>;
   isRTL: boolean;
+  isInitialized: boolean;
+  isChanging: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -14,31 +17,57 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const { i18n } = useTranslation();
   const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
 
   // RTL languages
   const rtlLanguages = ['ar'];
 
   useEffect(() => {
-    // Load language from localStorage or default to 'en'
-    const savedLanguage = localStorage.getItem('language') || 'en';
-    setCurrentLanguage(savedLanguage);
-    i18n.changeLanguage(savedLanguage).then(() => {
-      // Set initial direction after i18n is ready
-      const direction = rtlLanguages.includes(savedLanguage) ? 'rtl' : 'ltr';
-      document.documentElement.dir = direction;
-      document.documentElement.lang = savedLanguage;
+    const initializeLanguage = async () => {
+      try {
+        // Load language from localStorage or default to 'en'
+        const savedLanguage = localStorage.getItem('language') || 'en';
 
-      if (rtlLanguages.includes(savedLanguage)) {
-        document.body.classList.add('rtl');
-      } else {
-        document.body.classList.remove('rtl');
+        // Change i18n language first
+        await i18n.changeLanguage(savedLanguage);
+
+        // Then update state and DOM after i18n is ready
+        setCurrentLanguage(savedLanguage);
+
+        // Set initial direction after i18n is ready
+        const direction = rtlLanguages.includes(savedLanguage) ? 'rtl' : 'ltr';
+        document.documentElement.dir = direction;
+        document.documentElement.lang = savedLanguage;
+
+        if (rtlLanguages.includes(savedLanguage)) {
+          document.body.classList.add('rtl');
+        } else {
+          document.body.classList.remove('rtl');
+        }
+
+        setIsInitialized(true);
+        console.log(`Language initialized to ${savedLanguage} with direction ${direction}`);
+      } catch (error) {
+        console.error('Error initializing language:', error);
+        // Fallback to English
+        setCurrentLanguage('en');
+        setIsInitialized(true);
       }
-    });
-  }, [i18n]);
+    };
+
+    initializeLanguage();
+  }, []);
 
   const changeLanguage = async (language: string, updateProfile?: (data: any) => Promise<void>, user?: any) => {
+    // Prevent changing to the same language or if already changing
+    if (language === currentLanguage || isChanging) {
+      return;
+    }
+
+    setIsChanging(true);
+
     try {
       // Update document direction and language immediately for instant visual feedback
       const direction = rtlLanguages.includes(language) ? 'rtl' : 'ltr';
@@ -78,6 +107,8 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       } else {
         document.body.classList.remove('rtl');
       }
+    } finally {
+      setIsChanging(false);
     }
   };
 
@@ -87,7 +118,9 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     <LanguageContext.Provider value={{
       currentLanguage,
       changeLanguage,
-      isRTL
+      isRTL,
+      isInitialized,
+      isChanging
     }}>
       {children}
     </LanguageContext.Provider>

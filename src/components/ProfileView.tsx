@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth';
 import { reportsService } from '../services/reports';
 import { uploadService } from '../services/upload';
-import { LoadingSpinner, EmptyState } from './shared';
+import { LoadingSpinner } from './shared';
 import { reverseGeocode } from '../lib/geocoding';
 import { Geolocation } from '@capacitor/geolocation';
 import type { User } from '../types';
@@ -1734,30 +1734,32 @@ const ProfileView: React.FC = () => {
               </div>
               {t('profile.myReports')} ({myReports.length})
             </h2>
-            <button style={{
-              background: 'rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '12px',
-              color: 'var(--text-muted)',
-              fontSize: '16px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '12px',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-            }}>
+            <button
+              aria-label={showMyReports ? 'Hide my reports' : 'Show my reports'}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '12px',
+                color: 'var(--text-muted)',
+                fontSize: '16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '12px',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+              }}>
               <i className={`fas fa-chevron-${showMyReports ? 'up' : 'down'}`} style={{ fontSize: '14px' }}></i>
             </button>
           </div>
@@ -2186,7 +2188,11 @@ const ProfileView: React.FC = () => {
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <label htmlFor="firstName" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                        First Name
+                      </label>
                       <input
+                        id="firstName"
                         type="text"
                         value={editForm.firstName}
                         onChange={(e) => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
@@ -2240,7 +2246,11 @@ const ProfileView: React.FC = () => {
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <label htmlFor="lastName" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                        Last Name
+                      </label>
                       <input
+                        id="lastName"
                         type="text"
                         value={editForm.lastName}
                         onChange={(e) => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
@@ -2294,7 +2304,11 @@ const ProfileView: React.FC = () => {
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <label htmlFor="phone" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                        Phone Number (Optional)
+                      </label>
                       <input
+                        id="phone"
                         type="tel"
                         value={editForm.phone}
                         onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
@@ -2348,7 +2362,11 @@ const ProfileView: React.FC = () => {
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <label htmlFor="location" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                        Location
+                      </label>
                       <input
+                        id="location"
                         type="text"
                         value={editForm.location}
                         onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}

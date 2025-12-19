@@ -26,9 +26,10 @@ i18n
     react: {
       useSuspense: false
     },
+    // Disable automatic detection - LanguageContext handles this manually
     detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage']
+      order: [],
+      caches: []
     }
   });
 

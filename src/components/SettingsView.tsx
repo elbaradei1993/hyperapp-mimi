@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
+
 import { authService } from '../services/auth';
 import { pushNotificationService } from '../services/pushNotificationService';
 import { notificationService } from '../services/notificationService';
@@ -16,8 +18,11 @@ import TermsOfServiceModal from './TermsOfServiceModal';
 const SettingsView: React.FC = () => {
   const { t } = useTranslation();
   const { user, signOut, updateProfile } = useAuth();
-  const { currentLanguage, changeLanguage } = useLanguage();
+  const { currentLanguage, changeLanguage, isChanging } = useLanguage();
+
   const { settings, updateSettings, isLoading: settingsLoading } = useSettings();
+  const { theme } = useTheme();
+  const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
@@ -35,6 +40,11 @@ const SettingsView: React.FC = () => {
     { code: 'en', name: 'English' },
     { code: 'ar', name: 'العربية' }
   ];
+
+  // Sync selectedLanguage with currentLanguage
+  useEffect(() => {
+    setSelectedLanguage(currentLanguage);
+  }, [currentLanguage]);
 
   // Check permission statuses on mount
   useEffect(() => {
@@ -87,6 +97,7 @@ const SettingsView: React.FC = () => {
   };
 
   const handleLanguageChange = async (language: string) => {
+    setSelectedLanguage(language); // Update local state immediately
     await changeLanguage(language, updateProfile, user);
   };
 
@@ -447,18 +458,19 @@ const SettingsView: React.FC = () => {
                 </div>
               </div>
               <select
-                value={currentLanguage}
+                value={selectedLanguage}
                 onChange={(e) => handleLanguageChange(e.target.value)}
+                disabled={isChanging}
                 aria-label={t('settings.language')}
                 style={{
                   padding: 'var(--space-2) var(--space-3)',
                   border: '1px solid var(--border-color)',
                   borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
+                  backgroundColor: isChanging ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+                  color: isChanging ? 'var(--text-muted)' : 'var(--text-primary)',
                   fontSize: '14px',
                   fontWeight: '500',
-                  cursor: 'pointer',
+                  cursor: isChanging ? 'not-allowed' : 'pointer',
                   minWidth: '120px',
                   WebkitFontSmoothing: 'antialiased',
                   MozOsxFontSmoothing: 'grayscale',
@@ -468,7 +480,8 @@ const SettingsView: React.FC = () => {
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'right var(--space-2) center',
                   backgroundSize: '16px',
-                  paddingRight: 'var(--space-5)'
+                  paddingRight: 'var(--space-5)',
+                  opacity: isChanging ? 0.6 : 1
                 }}
               >
                 {languages.map(lang => (
@@ -818,6 +831,7 @@ const SettingsView: React.FC = () => {
                 console.log('Privacy Policy button clicked, setting modal to true');
                 setShowPrivacyPolicyModal(true);
               }}
+              title="Privacy Policy"
               style={{
                 padding: 'var(--space-3)',
                 border: '1px solid var(--border-color)',
@@ -878,6 +892,7 @@ const SettingsView: React.FC = () => {
                 console.log('Terms of Service button clicked, setting modal to true');
                 setShowTermsOfServiceModal(true);
               }}
+              title="Terms of Service"
               style={{
                 padding: 'var(--space-3)',
                 border: '1px solid var(--border-color)',
@@ -966,6 +981,7 @@ const SettingsView: React.FC = () => {
         }}>
           <button
             onClick={handleLogout}
+            title="Logout"
             style={{
               background: 'linear-gradient(135deg, var(--danger) 0%, rgba(239, 68, 68, 0.9) 100%)',
               color: 'white',
@@ -1356,6 +1372,7 @@ const SettingsView: React.FC = () => {
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => setShowDeleteModal(false)}
+                title="Cancel"
                 style={{
                   flex: 1,
                   padding: '12px',
@@ -1372,6 +1389,7 @@ const SettingsView: React.FC = () => {
               <button
                 onClick={handleDeleteAccount}
                 disabled={loading}
+                title="Delete Account"
                 style={{
                   flex: 1,
                   padding: '12px',

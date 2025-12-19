@@ -41,7 +41,7 @@ try {
   messaging = null;
 }
 
-export { messaging };
+export { messaging, app };
 export default app;
 
 // FCM Token Management
@@ -103,10 +103,17 @@ export class FCMService {
 
       } else {
         // On web, use Firebase messaging
-        if (!messaging) {
-          console.warn('Firebase Messaging not available');
+        console.log('🌐 Requesting notification permission via Firebase');
+
+        // Check if service worker is registered first
+        if (!('serviceWorker' in navigator)) {
+          console.warn('🌐 Service workers not supported');
           return null;
         }
+
+        // Wait for service worker to be ready
+        const registration = await navigator.serviceWorker.ready;
+        console.log('🌐 Service worker ready for Firebase messaging');
 
         // Request notification permission
         const permission = await Notification.requestPermission();
@@ -116,9 +123,17 @@ export class FCMService {
           return null;
         }
 
+        console.log('🌐 Notification permission granted');
+
         // Get FCM token
+        if (!messaging) {
+          console.warn('Firebase messaging not initialized');
+          return null;
+        }
+
         const token = await getToken(messaging, {
           vapidKey: this.vapidKey,
+          serviceWorkerRegistration: registration
         });
 
         if (token) {

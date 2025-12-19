@@ -64,8 +64,40 @@ const cleanupOneSignal = async () => {
   }
 };
 
+import { getMessaging, onMessage } from 'firebase/messaging';
+import { app } from './lib/firebase';
+
+// Register Firebase service worker for push notifications
+const registerFirebaseServiceWorker = async () => {
+  if ('serviceWorker' in navigator) {
+    try {
+      // Register Firebase messaging service worker
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+        scope: '/'
+      });
+
+      console.log('Firebase service worker registered successfully:', registration.scope);
+
+      // Initialize Firebase messaging after service worker is ready
+      const messaging = getMessaging(app);
+
+      // Listen for foreground messages
+      onMessage(messaging, (payload) => {
+        console.log('Foreground message received:', payload);
+        // Handle foreground messages here if needed
+      });
+
+    } catch (error) {
+      console.error('Firebase service worker registration failed:', error);
+    }
+  }
+};
+
 // Clean up any cached OneSignal service workers and caches
 cleanupOneSignal();
+
+// Register Firebase service worker
+registerFirebaseServiceWorker();
 
 // Initialize Google Auth plugin for mobile (disabled for now to fix 500 error)
 // GoogleAuth.initialize({

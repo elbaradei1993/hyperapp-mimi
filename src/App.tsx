@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import { useNotification } from './contexts/NotificationContext';
-import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { VibeProvider } from './contexts/VibeContext';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { NotificationManager } from './components/shared/Notification';
@@ -39,6 +39,7 @@ const CommunityDashboard = lazy(() => import('./components/CommunityDashboard'))
 
 const AppContent: React.FC = () => {
   const { user, isAuthenticated, isLoading, updateProfile } = useAuth();
+  const { currentLanguage } = useLanguage();
   const { notifications, removeNotification, addNotification, markAsRead, markAllAsRead, clearAll } = useNotification();
   const { settings } = useSettings();
   const [activeTab, setActiveTab] = useState<TabType>('map');
@@ -516,15 +517,18 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div style={{
-      height: '100vh',
-      width: '100vw',
-      backgroundColor: 'var(--bg-secondary)',
-      // Prevent horizontal scrolling on mobile
-      overflowX: 'hidden',
-      // Ensure proper mobile viewport handling
-      WebkitOverflowScrolling: 'touch'
-    }}>
+    <div
+      key={currentLanguage}
+      style={{
+        height: '100vh',
+        width: '100vw',
+        backgroundColor: 'var(--bg-secondary)',
+        // Prevent horizontal scrolling on mobile
+        overflowX: 'hidden',
+        // Ensure proper mobile viewport handling
+        WebkitOverflowScrolling: 'touch'
+      }}
+    >
       {/* GPS Help Notification - Mobile optimized */}
       {isAuthenticated && user?.onboarding_completed && activeTab === 'map' && showGPSHelp && (
         <div style={{
