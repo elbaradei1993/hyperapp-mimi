@@ -244,12 +244,13 @@ export const ValidationButtons: React.FC<ValidationButtonsProps> = ({
     onValidate(type);
   };
 
-  // Responsive container style
+  // Responsive container style - always side by side
   const containerStyle = {
     display: 'flex',
     gap: '6px', // Reduced gap
-    flexDirection: window.innerWidth < 480 ? 'column' as const : 'row' as const,
-    alignItems: window.innerWidth < 480 ? 'stretch' as const : 'center' as const
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    flexWrap: 'wrap' as const
   };
 
   return (
