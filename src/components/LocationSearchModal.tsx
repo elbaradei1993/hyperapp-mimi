@@ -264,7 +264,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                 aria-label="Use current location"
                 title="Use current location"
               >
-                <MapPin size={16} />
+                📍
               </button>
             </div>
           </div>
