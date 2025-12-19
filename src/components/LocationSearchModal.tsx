@@ -17,6 +17,7 @@ interface SearchState {
   isLoading: boolean;
   selectedIndex: number;
   isFocused: boolean;
+  recentSearches: string[];
 }
 
 const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
@@ -29,16 +30,47 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
     results: [],
     isLoading: false,
     selectedIndex: -1,
-    isFocused: false
+    isFocused: false,
+    recentSearches: []
   });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Load recent searches from localStorage
+  const loadRecentSearches = useCallback(() => {
+    try {
+      const stored = localStorage.getItem('hyperapp_recent_searches');
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Error loading recent searches:', error);
+      return [];
+    }
+  }, []);
+
+  // Save recent searches to localStorage
+  const saveRecentSearches = useCallback((searches: string[]) => {
+    try {
+      localStorage.setItem('hyperapp_recent_searches', JSON.stringify(searches));
+    } catch (error) {
+      console.error('Error saving recent searches:', error);
+    }
+  }, []);
+
+  // Add a search to recent searches
+  const addToRecentSearches = useCallback((search: string) => {
+    setState(prev => {
+      const filtered = prev.recentSearches.filter(s => s !== search);
+      const updated = [search, ...filtered].slice(0, 5); // Keep only 5 recent searches
+      saveRecentSearches(updated);
+      return { ...prev, recentSearches: updated };
+    });
+  }, [saveRecentSearches]);
+
   // Debounced search function
   const performSearch = useCallback(async (query: string) => {
     if (!query.trim() || query.length < 2) {
-      setState(prev => ({ ...prev, results: [], isLoading: false }));
+      setState(prev => ({ ...prev, results: [], isLoading: false, recentSearches: prev.recentSearches }));
       return;
     }
 
@@ -54,7 +86,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
       }));
     } catch (error) {
       console.error('Search failed:', error);
-      setState(prev => ({ ...prev, results: [], isLoading: false }));
+      setState(prev => ({ ...prev, results: [], isLoading: false, recentSearches: prev.recentSearches }));
     }
   }, []);
 
@@ -79,17 +111,21 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
     const coordinates = getCoordinatesFromResult(result);
     const address = formatSearchResult(result);
 
-    setState({
+    // Add to recent searches
+    addToRecentSearches(address);
+
+    setState(prev => ({
       query: '',
       results: [],
       isLoading: false,
       selectedIndex: -1,
-      isFocused: false
-    });
+      isFocused: false,
+      recentSearches: prev.recentSearches
+    }));
 
     onLocationSelect(coordinates, address);
     onClose();
-  }, [onLocationSelect, onClose]);
+  }, [onLocationSelect, onClose, addToRecentSearches]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -141,32 +177,40 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
 
   // Clear search
   const handleClear = useCallback(() => {
-    setState({
+    setState(prev => ({
       query: '',
       results: [],
       isLoading: false,
       selectedIndex: -1,
-      isFocused: false
-    });
+      isFocused: false,
+      recentSearches: prev.recentSearches
+    }));
     inputRef.current?.focus();
   }, []);
 
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setState({
+      setState(prev => ({
         query: '',
         results: [],
         isLoading: false,
         selectedIndex: -1,
-        isFocused: false
-      });
+        isFocused: false,
+        recentSearches: prev.recentSearches
+      }));
       // Focus input after modal animation
       setTimeout(() => {
         inputRef.current?.focus();
       }, 300);
     }
   }, [isOpen]);
+
+  // Load recent searches on mount
+  useEffect(() => {
+    const recent = loadRecentSearches();
+    setState(prev => ({ ...prev, recentSearches: recent }));
+  }, [loadRecentSearches]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -253,28 +297,35 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                   exit={{ opacity: 0 }}
                 >
                   {/* Recent Searches Label */}
-                  <div className={styles.recentLabel}>Recent Searches</div>
+                  {state.recentSearches.length > 0 && (
+                    <>
+                      <div className={styles.recentLabel}>Recent Searches</div>
 
-                  {/* Recent Search Items */}
-                  <div className={styles.resultItem}>
-                    <div className={styles.resultIcon}>
-                      <i className="fas fa-clock"></i>
-                    </div>
-                    <div className={styles.resultContent}>
-                      <div className={styles.resultTitle}>Golden Gate Park</div>
-                      <div className={styles.resultAddress}>San Francisco, CA</div>
-                    </div>
-                  </div>
-
-                  <div className={styles.resultItem}>
-                    <div className={styles.resultIcon}>
-                      <i className="fas fa-clock"></i>
-                    </div>
-                    <div className={styles.resultContent}>
-                      <div className={styles.resultTitle}>Union Square</div>
-                      <div className={styles.resultAddress}>San Francisco, CA</div>
-                    </div>
-                  </div>
+                      {/* Recent Search Items */}
+                      {state.recentSearches.map((search, index) => (
+                        <motion.div
+                          key={`recent-${index}`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className={styles.resultItem}
+                          onClick={() => {
+                            // Set the search query to the recent search
+                            setState(prev => ({ ...prev, query: search }));
+                            performSearch(search);
+                          }}
+                        >
+                          <div className={styles.resultIcon}>
+                            <i className="fas fa-clock"></i>
+                          </div>
+                          <div className={styles.resultContent}>
+                            <div className={styles.resultTitle}>{search}</div>
+                            <div className={styles.resultAddress}>Recent search</div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </>
+                  )}
 
                   {/* Popular Locations Label */}
                   <div className={styles.recentLabel}>Popular Locations</div>
