@@ -35,6 +35,7 @@ class PushNotificationService {
 
   // Initialize push notifications for a user
   async initialize(userId: string): Promise<void> {
+    console.log('🔔 Starting push notification initialization for user:', userId);
     this.currentUserId = userId;
 
     try {
@@ -46,16 +47,31 @@ class PushNotificationService {
       }
 
       // Check if notifications are supported
-      if (!(await fcmService.isSupported())) {
-        console.log('Push notifications not supported on this device');
+      const isSupported = await fcmService.isSupported();
+      console.log('🔔 Push notifications supported:', isSupported);
+
+      if (!isSupported) {
+        console.warn('⚠️ Push notifications not supported on this device/browser');
+        console.log('   This may be due to:');
+        console.log('   - Using an unsupported browser (try Chrome, Firefox, Safari, or Edge)');
+        console.log('   - Running in incognito/private mode');
+        console.log('   - Browser security settings blocking notifications');
+        console.log('   - Service worker registration issues');
         return;
       }
 
       // Request permission and get token
+      console.log('🔔 Requesting notification permission and token...');
       const token = await fcmService.requestPermission();
+      console.log('🔔 Token received:', token ? (token.length > 20 ? token.substring(0, 20) + '...' : token) : 'null');
 
       if (!token) {
-        console.log('Failed to get notification permission/token');
+        console.warn('⚠️ Failed to get notification permission/token');
+        console.log('   This may be due to:');
+        console.log('   - User denied permission');
+        console.log('   - Browser blocked the permission request');
+        console.log('   - Service worker failed to register');
+        console.log('   - Firebase configuration issues');
         return;
       }
 
@@ -66,25 +82,43 @@ class PushNotificationService {
         if (token === 'capacitor-push-notifications-enabled') {
           // Set up Capacitor push notification listeners
           this.setupCapacitorListeners();
-
           console.log('📱 Capacitor push notifications initialized - waiting for FCM token');
+        } else {
+          // Store FCM token directly if we got one
+          console.log('📱 Storing FCM token for Capacitor platform...');
+          await this.storePushSubscription(token);
         }
       } else {
         // Web platform - store FCM token directly
         if (token !== 'capacitor-push-notifications-enabled') {
+          console.log('🌐 Storing FCM token for web platform...');
           await this.storePushSubscription(token);
 
           // Listen for foreground messages (only on web)
           this.unsubscribeFromMessages = fcmService.onMessageReceived((payload) => {
             this.handleForegroundMessage(payload);
           });
+          console.log('🌐 Foreground message listener set up');
         }
       }
 
-      console.log('🔔 Push notifications initialized for user:', userId);
+      console.log('✅ Push notifications successfully initialized for user:', userId);
 
-    } catch (error) {
-      console.error('Failed to initialize push notifications:', error);
+    } catch (error: any) {
+      console.error('❌ Failed to initialize push notifications:', error);
+      console.log('   Error details:', {
+        message: error?.message,
+        code: error?.code,
+        stack: error?.stack?.substring(0, 200) + '...'
+      });
+      console.log('   Troubleshooting steps:');
+      console.log('   1. Check browser console for additional errors');
+      console.log('   2. Verify Firebase configuration in environment variables');
+      console.log('   3. Ensure service worker is properly registered');
+      console.log('   4. Check network connectivity');
+      console.log('   5. Try refreshing the page');
+
+      // Don't rethrow - we want the app to continue working even if push notifications fail
     }
   }
 

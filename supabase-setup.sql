@@ -152,3 +152,123 @@ drop trigger if exists report_validations_delete_trigger on public.report_valida
 create trigger report_validations_delete_trigger
   after delete on public.report_validations
   for each row execute function public.trigger_update_credibility();
+
+-- Marketing Email System
+-- Add marketing consent and preferences to users table
+alter table public.users add column if not exists marketing_consent boolean default false;
+alter table public.users add column if not exists marketing_preferences jsonb default '{
+  "product_updates": true,
+  "community_news": true,
+  "safety_alerts": true,
+  "weekly_digest": false,
+  "language": "en"
+}';
+alter table public.users add column if not exists unsubscribed_at timestamptz;
+alter table public.users add column if not exists last_email_sent_at timestamptz;
+
+-- Email campaigns table
+create table if not exists public.email_campaigns (
+  id bigint generated always as identity primary key,
+  name text not null,
+  subject text not null,
+  content_html text not null,
+  content_text text,
+  status text default 'draft' check (status in ('draft', 'scheduled', 'sending', 'sent', 'failed')),
+  scheduled_at timestamptz,
+  sent_at timestamptz,
+  recipient_count integer default 0,
+  open_count integer default 0,
+  click_count integer default 0,
+  created_by uuid references auth.users(id),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Email campaign recipients
+create table if not exists public.email_recipients (
+  id bigint generated always as identity primary key,
+  campaign_id bigint references public.email_campaigns(id) on delete cascade,
+  user_id text references public.users(user_id) on delete cascade,
+  email text not null,
+  status text default 'pending' check (status in ('pending', 'sent', 'delivered', 'opened', 'clicked', 'bounced', 'complained')),
+  sent_at timestamptz,
+  opened_at timestamptz,
+  clicked_at timestamptz,
+  error_message text,
+  created_at timestamptz default now(),
+  unique (campaign_id, user_id)
+);
+
+-- Magic link authentication tokens
+create table if not exists public.auth_tokens (
+  id bigint generated always as identity primary key,
+  user_id text not null references public.users(user_id) on delete cascade,
+  email text not null,
+  token text not null unique,
+  token_type text default 'magic_link' check (token_type in ('magic_link', 'password_reset')),
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  created_at timestamptz default now(),
+  unique (user_id, token_type)
+);
+
+-- Indexes for performance
+create index if not exists email_campaigns_status_idx on public.email_campaigns(status);
+create index if not exists email_campaigns_scheduled_at_idx on public.email_campaigns(scheduled_at);
+create index if not exists email_recipients_campaign_id_idx on public.email_recipients(campaign_id);
+create index if not exists email_recipients_user_id_idx on public.email_recipients(user_id);
+create index if not exists email_recipients_status_idx on public.email_recipients(status);
+
+-- Row Level Security
+alter table public.email_campaigns enable row level security;
+alter table public.email_recipients enable row level security;
+
+-- Allow authenticated admin users to manage campaigns
+drop policy if exists email_campaigns_admin_all on public.email_campaigns;
+create policy email_campaigns_admin_all on public.email_campaigns
+  for all to authenticated
+  using (auth.jwt() ->> 'role' = 'admin' or auth.uid() = created_by);
+
+-- Allow authenticated users to read their own recipient records
+drop policy if exists email_recipients_user_read on public.email_recipients;
+create policy email_recipients_user_read on public.email_recipients
+  for select to authenticated
+  using (user_id::text = auth.uid()::text);
+
+-- Function to get verified users for marketing
+create or replace function public.get_marketing_recipients(
+  p_preferences jsonb default null,
+  p_language text default null,
+  p_limit integer default 1000
+)
+returns table (
+  user_id text,
+  email text,
+  first_name text,
+  last_name text,
+  language text,
+  preferences jsonb
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  select
+    u.user_id,
+    u.email,
+    u.first_name,
+    u.last_name,
+    coalesce(u.language, 'en') as language,
+    u.marketing_preferences
+  from users u
+  where u.email_confirmed_at is not null
+    and u.marketing_consent = true
+    and u.unsubscribed_at is null
+    and (p_preferences is null or u.marketing_preferences @> p_preferences)
+    and (p_language is null or u.language = p_language)
+  order by u.created_at desc
+  limit p_limit;
+end;
+$$;

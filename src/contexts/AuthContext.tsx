@@ -8,7 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, username: string) => Promise<AuthResponse>;
+  signUp: (email: string, password: string, username: string, marketingConsent?: boolean) => Promise<AuthResponse>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -109,8 +109,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await authService.signIn(email, password);
   };
 
-  const signUp = async (email: string, password: string, username: string) => {
-    return await authService.signUp(email, password, username);
+  const signUp = async (email: string, password: string, username: string, marketingConsent?: boolean) => {
+    return await authService.signUp(email, password, username, marketingConsent);
   };
 
   const signInWithGoogle = async () => {

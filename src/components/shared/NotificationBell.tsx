@@ -4,9 +4,10 @@ import { useNotification } from '../../contexts/NotificationContext';
 
 interface NotificationBellProps {
   onNotificationClick?: (notificationId: string) => void;
+  permissionStatus?: 'granted' | 'denied' | 'default' | 'unknown';
 }
 
-const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick }) => {
+const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick, permissionStatus }) => {
   const { unreadCount, recentNotifications, markAsRead } = useNotification();
   const [isOpen, setIsOpen] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
@@ -110,8 +111,10 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{
-            color: 'var(--text-primary)',
-            position: 'relative'
+            color: permissionStatus === 'denied' ? 'var(--text-muted)' : 'var(--text-primary)',
+            position: 'relative',
+            opacity: permissionStatus === 'denied' ? 0.6 : 1,
+            transition: 'all 0.2s ease'
           }}
         >
           <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />

@@ -37,6 +37,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [signupInterests, setSignupInterests] = useState<string[]>([]);
   const [signupProfilePicture, setSignupProfilePicture] = useState<File | null>(null);
   const [signupProfilePicturePreview, setSignupProfilePicturePreview] = useState('');
+  const [signupMarketingConsent, setSignupMarketingConsent] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -134,21 +135,39 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         }
       }
 
-      const response = await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername);
+      const response = await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername, signupMarketingConsent);
       console.log('Signup response:', response);
 
       if (response.data.user && !response.data.session) {
         // Email confirmation required
         console.log('Email confirmation required for user:', response.data.user.email);
-        addNotification({
-          type: 'info',
-          title: t('auth.checkYourEmail'),
-          message: t('auth.confirmationLinkSent'),
-          duration: 10000
-        });
+
+        // Clear form and close modal
+        setFormData(prev => ({
+          ...prev,
+          signupUsername: '',
+          signupEmail: '',
+          signupPassword: '',
+          signupPasswordConfirm: '',
+          signupFirstName: '',
+          signupLastName: '',
+          signupPhone: '',
+          signupLocation: ''
+        }));
+        setSignupInterests([]);
+        setSignupProfilePicture(null);
+        setSignupProfilePicturePreview('');
 
         setError(''); // Clear any errors
         onClose(); // Close the modal
+
+        // Show success message for email confirmation
+        addNotification({
+          type: 'success',
+          title: t('auth.accountCreated'),
+          message: t('auth.checkEmailForConfirmation'),
+          duration: 8000
+        });
       } else if (response.data.session) {
         // Auto-confirmed (if disabled in Supabase)
         console.log('Auto-confirmed signup successful');
@@ -393,6 +412,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               accept="image/*"
               onChange={handleProfilePictureChange}
               style={{ display: 'none' }}
+              aria-label="Profile picture upload"
             />
             <button
               type="button"
@@ -577,6 +597,25 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Marketing Consent */}
+            <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer', fontSize: '14px', lineHeight: '1.5' }}>
+                <input
+                  type="checkbox"
+                  checked={signupMarketingConsent}
+                  onChange={(e) => setSignupMarketingConsent(e.target.checked)}
+                  style={{ marginTop: '2px', width: '16px', height: '16px' }}
+                />
+                <div>
+                  <strong>Stay Updated</strong>
+                  <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13px' }}>
+                    I'd like to receive occasional updates about new features, community highlights, and safety tips from HyperApp.
+                    You can unsubscribe at any time.
+                  </p>
+                </div>
+              </label>
             </div>
 
             <button

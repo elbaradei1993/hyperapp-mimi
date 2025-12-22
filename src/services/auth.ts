@@ -5,7 +5,7 @@ import type { User as AppUser, OnboardingData } from '../types';
 
 class AuthService {
   // Authentication methods
-  async signUp(email: string, password: string, username: string): Promise<AuthResponse> {
+  async signUp(email: string, password: string, username: string, marketingConsent: boolean = false): Promise<AuthResponse> {
     // Validate inputs
     if (!email?.trim()) throw new Error('Email is required');
     if (!password || password.length < 6) throw new Error('Password must be at least 6 characters');
@@ -26,7 +26,8 @@ class AuthService {
           language: 'en',
           onboarding_completed: false,
           onboarding_step: 0,
-          signup_timestamp: new Date().toISOString()
+          signup_timestamp: new Date().toISOString(),
+          marketing_consent: marketingConsent
         }
       }
     });

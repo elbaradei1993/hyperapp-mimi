@@ -99,7 +99,7 @@ export class FCMService {
         console.log('📱 Current push notification permission status:', receive);
 
         if (receive === 'denied') {
-          console.log('📱 Push notification permission was previously denied');
+          console.log('❌ 📱 Push notification permission was previously denied');
           return null;
         }
 
@@ -107,19 +107,20 @@ export class FCMService {
         if (receive !== 'granted') {
           console.log('📱 Requesting push notification permissions...');
           const permissionResult = await PushNotifications.requestPermissions();
+          console.log('📱 Permission request result:', permissionResult);
 
           if (permissionResult.receive !== 'granted') {
-            console.log('📱 Push notification permission denied via Capacitor');
+            console.log('❌ 📱 Push notification permission denied via Capacitor');
             return null;
           }
         }
 
-        console.log('📱 Push notification permission granted via Capacitor');
+        console.log('✅ 📱 Push notification permission granted via Capacitor');
 
         // Register for push notifications
         console.log('📱 Registering for push notifications...');
         await PushNotifications.register();
-        console.log('📱 Push notification registration initiated');
+        console.log('✅ 📱 Push notification registration initiated');
 
         // Return a placeholder - actual FCM token will be received via registration listener
         return 'capacitor-push-notifications-enabled';
@@ -130,45 +131,47 @@ export class FCMService {
 
         // Check if service worker is registered first
         if (!('serviceWorker' in navigator)) {
-          console.warn('🌐 Service workers not supported');
+          console.warn('❌ 🌐 Service workers not supported');
           return null;
         }
 
         // Wait for service worker to be ready
         const registration = await navigator.serviceWorker.ready;
-        console.log('🌐 Service worker ready for Firebase messaging');
+        console.log('✅ 🌐 Service worker ready for Firebase messaging');
 
         // Request notification permission
         const permission = await Notification.requestPermission();
+        console.log('🌐 Notification permission result:', permission);
 
         if (permission !== 'granted') {
-          console.log('🌐 Notification permission denied');
+          console.log('❌ 🌐 Notification permission denied');
           return null;
         }
 
-        console.log('🌐 Notification permission granted');
+        console.log('✅ 🌐 Notification permission granted');
 
         // Get FCM token
         if (!messaging) {
-          console.warn('Firebase messaging not initialized');
+          console.warn('❌ Firebase messaging not initialized');
           return null;
         }
 
+        console.log('🌐 Getting FCM token with VAPID key...');
         const token = await getToken(messaging, {
           vapidKey: this.vapidKey,
           serviceWorkerRegistration: registration
         });
 
         if (token) {
-          console.log('🌐 FCM token obtained:', token.substring(0, 20) + '...');
+          console.log('✅ 🌐 FCM token obtained:', token.substring(0, 20) + '...');
           return token;
         } else {
-          console.warn('🌐 No FCM token available');
+          console.warn('❌ 🌐 No FCM token available - check Firebase configuration');
           return null;
         }
       }
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
+      console.error('❌ Error requesting notification permission:', error);
       return null;
     }
   }

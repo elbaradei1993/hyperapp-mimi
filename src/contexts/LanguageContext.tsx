@@ -65,9 +65,12 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   // Listen for translation events to update isTranslating state
   useEffect(() => {
     const handleMissingKey = () => {
-      setIsTranslating(true);
-      // Reset translating state after a short delay
-      setTimeout(() => setIsTranslating(false), 1000);
+      // Use setTimeout to avoid updating state during render
+      setTimeout(() => {
+        setIsTranslating(true);
+        // Reset translating state after a short delay
+        setTimeout(() => setIsTranslating(false), 1000);
+      }, 0);
     };
 
     const handleLanguageChanged = () => {

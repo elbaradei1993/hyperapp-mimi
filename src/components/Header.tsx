@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useVibe } from '../contexts/VibeContext';
@@ -7,6 +7,7 @@ import { Box } from '@chakra-ui/react';
 import VibeFigure from './VibeFigure';
 import NotificationBell from './shared/NotificationBell';
 import { VIBE_CONFIG } from '../constants/vibes';
+import { fcmService } from '../lib/firebase';
 
 // Pulsing Line Animation Component - Simple heartbeat effect
 const PulsingLineAnimation: React.FC<{ vibeType: string }> = ({ vibeType }) => {
@@ -83,6 +84,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
   const { user } = useAuth();
   const { currentLocationVibe } = useVibe();
   const [showVibeText, setShowVibeText] = React.useState(false);
+  const [notificationPermissionStatus, setNotificationPermissionStatus] = useState<'granted' | 'denied' | 'default' | 'unknown'>('unknown');
 
   // Helper function to get user initials for avatar fallback
   const getUserInitials = () => {
@@ -140,6 +142,21 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
   };
 
   const vibeInfo = getVibeDisplayInfo();
+
+  // Check notification permission status
+  useEffect(() => {
+    const checkNotificationPermission = async () => {
+      try {
+        const permissionStatus = await fcmService.getPermissionStatus();
+        setNotificationPermissionStatus(permissionStatus);
+      } catch (error) {
+        console.warn('Error checking notification permission:', error);
+        setNotificationPermissionStatus('unknown');
+      }
+    };
+
+    checkNotificationPermission();
+  }, []);
 
   // Inject styles on component mount
   useEffect(() => {
@@ -323,10 +340,13 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
           }}
         >
           {/* Notification Bell */}
-          <NotificationBell onNotificationClick={(notificationId) => {
-            // Handle notification click - could navigate to specific location or show details
-            console.log('Notification clicked:', notificationId);
-          }} />
+          <NotificationBell
+            permissionStatus={notificationPermissionStatus}
+            onNotificationClick={(notificationId) => {
+              // Handle notification click - could navigate to specific location or show details
+              console.log('Notification clicked:', notificationId);
+            }}
+          />
 
           {/* Profile Picture */}
           <button

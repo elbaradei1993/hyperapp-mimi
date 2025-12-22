@@ -10,10 +10,12 @@ import { pushNotificationService } from '../services/pushNotificationService';
 import { notificationService } from '../services/notificationService';
 import { fcmService } from '../lib/firebase';
 import { Capacitor } from '@capacitor/core';
+import { storageManager } from '../lib/storage';
 
 import ToggleSwitch from './shared/ToggleSwitch';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsOfServiceModal from './TermsOfServiceModal';
+import MarketingEmailAdmin from './MarketingEmailAdmin';
 
 const SettingsView: React.FC = () => {
   const { t } = useTranslation();
@@ -33,8 +35,10 @@ const SettingsView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
   const [showTermsOfServiceModal, setShowTermsOfServiceModal] = useState(false);
+  const [showMarketingEmailAdmin, setShowMarketingEmailAdmin] = useState(false);
   const [notificationPermissionStatus, setNotificationPermissionStatus] = useState<'granted' | 'denied' | 'default' | 'unknown'>('unknown');
   const [locationPermissionStatus, setLocationPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -503,18 +507,9 @@ const SettingsView: React.FC = () => {
             border: '1px solid var(--border-color)',
             borderRadius: 'var(--radius-md)',
             padding: 'var(--space-3)',
-            transition: 'all 0.2s ease',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'none';
+            transition: 'all 0.2s ease'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: notificationPermissionStatus === 'denied' ? 'var(--space-2)' : 0 }}>
               <div style={{ flex: 1 }}>
                 <div style={{
                   fontWeight: '600',
@@ -527,51 +522,89 @@ const SettingsView: React.FC = () => {
                   MozOsxFontSmoothing: 'grayscale'
                 }}>
                   <i className="fas fa-bell" style={{
-                    color: 'var(--accent-primary)',
+                    color: notificationPermissionStatus === 'denied' ? 'var(--text-muted)' : 'var(--accent-primary)',
                     fontSize: '12px'
                   }}></i>
                   {t('settings.notifications')}
                 </div>
+                {notificationPermissionStatus === 'denied' && (
+                  <div style={{
+                    fontSize: '12px',
+                    color: 'var(--danger)',
+                    marginTop: 'var(--space-1)',
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale'
+                  }}>
+                    <i className="fas fa-exclamation-triangle" style={{ marginRight: 'var(--space-1)' }}></i>
+                    Permission denied - enable in browser settings
+                  </div>
+                )}
               </div>
               <ToggleSwitch
-                checked={settings.notifications}
+                checked={settings.notifications && notificationPermissionStatus === 'granted'}
                 onChange={async (enabled) => {
-                  updateSettings({ notifications: enabled });
+                  setIsRequestingPermission(true);
 
                   if (enabled) {
+                    // Clear any previous permission request flags to allow prompting again
+                    if (user?.id) {
+                      await storageManager.remove(`notificationPermissionRequested_${user.id}`);
+                    }
+
                     // Request permission if not granted
                     if (notificationPermissionStatus !== 'granted') {
                       try {
+                        console.log('🔔 Requesting notification permission...');
                         const token = await fcmService.requestPermission();
+
                         if (token) {
                           setNotificationPermissionStatus('granted');
-                          console.log('🔔 Notification permission granted');
+                          updateSettings({ notifications: true });
+                          console.log('✅ Notification permission granted');
+
+                          // Initialize push notifications
+                          if (user?.id) {
+                            await pushNotificationService.initialize(user.id);
+                          }
                         } else {
                           setNotificationPermissionStatus('denied');
-                          console.log('🔔 Notification permission denied');
+                          updateSettings({ notifications: false });
+                          console.log('❌ Notification permission denied');
                         }
                       } catch (error) {
                         console.error('Error requesting notification permission:', error);
                         setNotificationPermissionStatus('denied');
+                        updateSettings({ notifications: false });
                       }
+                    } else {
+                      // Permission already granted, just update settings
+                      updateSettings({ notifications: true });
+                    }
+                  } else {
+                    // Turn off notifications
+                    updateSettings({ notifications: false });
+
+                    // Update push notification preferences
+                    try {
+                      await pushNotificationService.updatePreferences({
+                        emergency_alerts: false,
+                        safety_reports: false
+                      });
+                      console.log('🔔 Push notification preferences disabled');
+                    } catch (error) {
+                      console.error('Error updating push notification preferences:', error);
                     }
                   }
 
-                  // Update push notification preferences
-                  try {
-                    await pushNotificationService.updatePreferences({
-                      emergency_alerts: enabled,
-                      safety_reports: enabled
-                    });
-                    console.log('🔔 Push notification preferences updated');
-                  } catch (error) {
-                    console.error('Error updating push notification preferences:', error);
-                  }
+                  setIsRequestingPermission(false);
                 }}
+                disabled={isRequestingPermission}
                 size="md"
               />
             </div>
           </div>
+
+
         </div>
       </div>
 

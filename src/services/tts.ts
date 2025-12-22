@@ -5,34 +5,22 @@ interface TTSOptions {
   volume?: number;
 }
 
-// Type declarations for Puter.js global
-declare global {
-  const puter: {
-    ai: {
-      txt2speech: (text: string, options: {
-        provider: string;
-        model?: string;
-        voice?: string;
-        response_format?: string;
-        instructions?: string;
-      }) => Promise<HTMLAudioElement | {success: boolean, error: {message: string}}>;
-      chat: (message: string, options?: {
-        model?: string;
-        stream?: boolean;
-      }) => AsyncIterable<{ text?: string }> | Promise<string>;
-    };
-  };
-}
-
-// Minimal TTS Service using Puter.js OpenAI TTS (exactly as per documentation)
+// Simple TTS Service using Web Speech API
 class TTSService {
-  private currentAudio: HTMLAudioElement | null = null;
-  private readonly safetyVoice = 'alloy'; // Single consistent voice for safety assistant
+  private speechSynthesis: SpeechSynthesis | null = null;
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private readonly safetyVoice = 'default'; // Use default system voice
+
+  constructor() {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      this.speechSynthesis = window.speechSynthesis;
+    }
+  }
 
   async speak(text: string, options: TTSOptions = {}): Promise<void> {
-    const { voice = this.safetyVoice } = options;
+    const { voice = this.safetyVoice, speed = 1.0, pitch = 1.0, volume = 1.0 } = options;
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       // Stop any ongoing speech
       this.stop();
 
@@ -43,73 +31,72 @@ class TTSService {
           return;
         }
 
-        // Check if Puter.js is available
-        if (typeof puter === 'undefined' || !puter.ai || !puter.ai.txt2speech) {
-          throw new Error('OpenAI TTS not available - Puter.js not loaded');
+        // Check if Web Speech API is available
+        if (!this.speechSynthesis) {
+          throw new Error('Web Speech API not available');
         }
 
-        // Generate audio using OpenAI TTS via Puter.js (exact example from docs)
-        const ttsResult = await puter.ai.txt2speech(text, {
-          provider: 'openai',
-          model: 'gpt-4o-mini-tts',
-          voice: voice,
-          response_format: 'mp3',
-          instructions: 'Speak clearly and confidently, with appropriate emphasis for safety information.',
-        });
+        // Create utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        this.currentUtterance = utterance;
 
-        // Check if the result is an error object
-        if (ttsResult && typeof ttsResult === 'object' && 'success' in ttsResult && !ttsResult.success) {
-          const errorObj = ttsResult as {success: boolean, error: {message: string}};
-          throw new Error(`OpenAI TTS API error: ${errorObj.error?.message || 'Unknown TTS error'}`);
+        // Configure voice settings
+        utterance.rate = Math.max(0.1, Math.min(10, speed)); // Clamp between 0.1 and 10
+        utterance.pitch = Math.max(0, Math.min(2, pitch)); // Clamp between 0 and 2
+        utterance.volume = Math.max(0, Math.min(1, volume)); // Clamp between 0 and 1
+
+        // Try to find a suitable voice
+        const voices = this.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          // Look for English voices first
+          const englishVoice = voices.find(v => v.lang.startsWith('en'));
+          if (englishVoice) {
+            utterance.voice = englishVoice;
+          } else {
+            // Fallback to first available voice
+            utterance.voice = voices[0];
+          }
         }
 
-        // Check if it's a valid HTMLAudioElement
-        if (!(ttsResult instanceof HTMLAudioElement)) {
-          throw new Error('Invalid TTS response format');
-        }
-
-        const audio = ttsResult;
-
-        // Set up audio playback
-        this.currentAudio = audio;
-
-        // Handle audio events
-        this.currentAudio.onended = () => {
-          this.currentAudio = null;
+        // Handle speech events
+        utterance.onend = () => {
+          this.currentUtterance = null;
           resolve();
         };
 
-        this.currentAudio.onerror = (error) => {
-          console.error('OpenAI TTS audio error:', error);
-          this.currentAudio = null;
-          reject(new Error('Failed to play OpenAI TTS audio'));
+        utterance.onerror = (event) => {
+          console.error('Web Speech API error:', event.error);
+          this.currentUtterance = null;
+          reject(new Error(`Speech synthesis failed: ${event.error}`));
         };
 
-        // Start playback
-        await this.currentAudio.play();
+        // Start speech
+        this.speechSynthesis.speak(utterance);
 
       } catch (error) {
-        console.error('OpenAI TTS error:', error);
-        this.currentAudio = null;
+        console.error('TTS error:', error);
+        this.currentUtterance = null;
         reject(error);
       }
     });
   }
 
   stop(): void {
-    if (this.currentAudio) {
-      this.currentAudio.pause();
-      this.currentAudio.currentTime = 0;
-      this.currentAudio = null;
+    if (this.speechSynthesis && this.currentUtterance) {
+      this.speechSynthesis.cancel();
+      this.currentUtterance = null;
     }
   }
 
   isReady(): boolean {
-    return typeof puter !== 'undefined' && puter.ai && typeof puter.ai.txt2speech === 'function';
+    return !!this.speechSynthesis;
   }
 
   getAvailableVoices(): string[] {
-    return ['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'nova', 'onyx', 'sage', 'shimmer'];
+    if (!this.speechSynthesis) return [];
+
+    const voices = this.speechSynthesis.getVoices();
+    return voices.map(voice => voice.name || voice.lang);
   }
 
   getSafetyVoice(): string {
