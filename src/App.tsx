@@ -9,6 +9,7 @@ import TabNavigation, { TabType } from './components/TabNavigation';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import AuthCallback from './components/AuthCallback';
+import MagicLinkAuth from './components/MagicLinkAuth';
 import ReportTypeModal from './components/ReportTypeModal';
 import VibeReportModal from './components/VibeReportModal';
 import EmergencyReportModal from './components/EmergencyReportModal';
@@ -17,6 +18,7 @@ import LocationPermissionModal from './components/LocationPermissionModal';
 
 import SplashScreen from './components/SplashScreen';
 import LanguageSelectionScreen from './components/LanguageSelectionScreen';
+
 import ErrorBoundary from './components/ErrorBoundary';
 import { LoadingSpinner } from './components/shared';
 import { reportsService } from './services/reports';
@@ -81,49 +83,107 @@ const AppContent: React.FC = () => {
     }
   }, [isLoading, isAuthenticated]);
 
-  // Request notification permission on app startup (only if notifications are enabled)
+  // Show persistent reminder for denied permissions on every app startup
+  useEffect(() => {
+    const showPermissionReminder = async () => {
+      // Only show reminder if user is authenticated and has completed onboarding
+      if (!isAuthenticated || !user?.onboarding_completed) {
+        return;
+      }
+
+      // Check current permission status
+      const currentPermission = await fcmService.getPermissionStatus();
+      console.log('🔔 Checking permission status for reminder:', currentPermission);
+
+      // If permission is denied, show persistent reminder on every app startup
+      if (currentPermission === 'denied') {
+        console.log('🔔 Permission is denied - showing persistent reminder on app startup');
+        // Add a notification to remind user to enable notifications
+        addNotification({
+          type: 'warning',
+          title: 'Notifications Disabled',
+          message: 'Enable notifications in your browser settings to receive safety alerts. Click the lock icon in the address bar.',
+          duration: 10000 // Show for 10 seconds
+        });
+      }
+    };
+
+    // Show reminder when user is authenticated and onboarding is complete
+    if (isAuthenticated && user?.onboarding_completed) {
+      showPermissionReminder();
+    }
+  }, [isAuthenticated, user?.onboarding_completed, user?.id, addNotification]);
+
+  // Request notification permission when user is authenticated and onboarding is complete
   useEffect(() => {
     const requestNotificationPermission = async () => {
-      // Only request if notifications are enabled in settings
+      // Only request if user is authenticated and has completed onboarding
+      if (!isAuthenticated || !user?.onboarding_completed) {
+        console.log('🔔 Skipping notification permission request - user not ready');
+        return;
+      }
+
+      // Check current permission status
+      const currentPermission = await fcmService.getPermissionStatus();
+      console.log('🔔 Current notification permission status:', currentPermission);
+
+      // If permission is already granted and notifications are enabled, initialize
+      if (currentPermission === 'granted' && settings.notifications) {
+        console.log('🔔 Permission already granted, initializing push notifications...');
+        await pushNotificationService.initialize(user.id);
+        return;
+      }
+
+      // If permission is denied, skip (reminder is handled by separate effect above)
+      if (currentPermission === 'denied') {
+        console.log('🔔 Permission is denied - reminder handled by separate effect');
+        return;
+      }
+
+      // If notifications are disabled in settings, don't prompt
       if (!settings.notifications) {
         console.log('🔔 Notifications disabled in settings, skipping permission request');
         return;
       }
 
-      try {
-        console.log('🔔 Requesting notification permission on app startup...');
+      // Check if we've already requested permission for this user in this session
+      const permissionRequestedKey = `notificationPermissionRequested_${user.id}`;
+      const permissionRequested = await storageManager.get(permissionRequestedKey);
 
-        // Check if we've already requested permission this session
-        const permissionRequested = await storageManager.get('notificationPermissionRequested');
-        if (permissionRequested === 'true') {
-          console.log('🔔 Notification permission already requested this session');
-          return;
-        }
+      // Only prompt once per user per session to avoid being annoying
+      if (permissionRequested === 'true') {
+        console.log('🔔 Notification permission already requested for this user this session');
+        return;
+      }
+
+      try {
+        console.log('🔔 Requesting notification permission for authenticated user...');
 
         // Request permission
         const token = await fcmService.requestPermission();
 
         if (token) {
-          console.log('🔔 Notification permission granted on startup');
-          // Mark as requested to avoid repeated prompts
-          await storageManager.set('notificationPermissionRequested', 'true');
+          console.log('🔔 Notification permission granted, initializing push notifications...');
+          // Mark as requested to avoid repeated prompts in this session
+          await storageManager.set(permissionRequestedKey, 'true');
+
+          // Initialize push notifications with the token
+          await pushNotificationService.initialize(user.id);
         } else {
           console.log('🔔 Notification permission denied or not supported');
-          // Still mark as requested to avoid repeated prompts
-          await storageManager.set('notificationPermissionRequested', 'true');
+          // Mark as requested to avoid repeated prompts in this session
+          await storageManager.set(permissionRequestedKey, 'true');
         }
       } catch (error) {
-        console.error('Error requesting notification permission on startup:', error);
+        console.error('Error requesting notification permission:', error);
       }
     };
 
-    // Only request permission after a short delay to ensure the app is fully loaded
-    const timer = setTimeout(() => {
+    // Request permission after user authentication is confirmed
+    if (isAuthenticated && user?.onboarding_completed) {
       requestNotificationPermission();
-    }, 2000); // 2 second delay
-
-    return () => clearTimeout(timer);
-  }, [settings.notifications]);
+    }
+  }, [isAuthenticated, user?.onboarding_completed, user?.id, settings.notifications]);
 
   useEffect(() => {
     // Check authentication state on app load
@@ -161,6 +221,9 @@ const AppContent: React.FC = () => {
         } catch (error: any) {
           console.log('❌ Initial location failed:', error?.message || error);
 
+          // Check if this is a permission-related error
+          const isPermissionError = error?.code === 1 || error?.message?.toLowerCase().includes('permission');
+
           // Fallback to IP-based location for web
           if (!Capacitor.isNativePlatform()) {
             try {
@@ -178,6 +241,11 @@ const AppContent: React.FC = () => {
               const defaultLocation: [number, number] = [30.0444, 31.2357]; // Cairo, Egypt
               setUserLocation(defaultLocation);
               console.log(`📍 Using default location: ${defaultLocation[0]}, ${defaultLocation[1]}`);
+            }
+
+            // Show permission modal on web if it was a permission error
+            if (isPermissionError) {
+              setShowLocationPermissionModal(true);
             }
           } else {
             // On mobile, show permission guidance
@@ -223,9 +291,7 @@ const AppContent: React.FC = () => {
           notificationService.setUserLocation(userLocation);
         }
 
-        // Initialize push notifications
-        pushNotificationService.initialize(user.id);
-
+        // Push notifications are now initialized in the permission request flow above
         // Start monitoring reports for notifications
         notificationService.startMonitoring();
 
@@ -419,15 +485,21 @@ const AppContent: React.FC = () => {
 
   // Check for auth callback URL
   const isAuthCallback = window.location.pathname === '/auth/callback';
+  const isMagicLinkAuth = window.location.pathname === '/auth/magic-link';
 
   // Show loading screen while checking auth
-  if (isLoading && !isAuthCallback) {
+  if (isLoading && !isAuthCallback && !isMagicLinkAuth) {
     return <SplashScreen />;
   }
 
   // Handle auth callback
   if (isAuthCallback) {
     return <AuthCallback />;
+  }
+
+  // Handle magic link authentication
+  if (isMagicLinkAuth) {
+    return <MagicLinkAuth />;
   }
 
 
