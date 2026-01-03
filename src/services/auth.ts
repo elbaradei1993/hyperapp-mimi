@@ -245,16 +245,47 @@ class AuthService {
         // Continue to create profile instead of throwing
       }
 
+      // Check for pending profile data from signup
+      const pendingProfileKey = `pendingProfile_${authUser.id}`;
+      const pendingProfileData = typeof localStorage !== 'undefined' ? localStorage.getItem(pendingProfileKey) : null;
+      let pendingProfile = null;
+      if (pendingProfileData) {
+        try {
+          pendingProfile = JSON.parse(pendingProfileData);
+          console.log('Found pending profile data for user:', authUser.id, pendingProfile);
+        } catch (parseError) {
+          console.error('Error parsing pending profile data:', parseError);
+        }
+      }
+
       if (profile) {
-        // Profile exists, return combined data
+        // Profile exists, merge with any pending data and update if needed
         console.log('Found existing profile for user:', authUser.id);
-        return {
+
+        let mergedProfile = {
           id: authUser.id,
           email: authUser.email!,
           email_verified: authUser.email_confirmed_at ? true : false,
           email_verified_at: authUser.email_confirmed_at,
           ...profile
         };
+
+        // If we have pending profile data and the profile is incomplete, update it
+        if (pendingProfile && (!profile.onboarding_completed || !profile.first_name)) {
+          console.log('Updating existing profile with pending data');
+          try {
+            await this.updateUserProfile(authUser.id, pendingProfile);
+            mergedProfile = { ...mergedProfile, ...pendingProfile };
+            // Clear the pending data
+            if (typeof localStorage !== 'undefined') {
+              localStorage.removeItem(pendingProfileKey);
+            }
+          } catch (updateError) {
+            console.error('Error updating profile with pending data:', updateError);
+          }
+        }
+
+        return mergedProfile;
       } else {
         // Profile doesn't exist, create it
         console.log('Creating new profile for user:', authUser.id);

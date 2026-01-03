@@ -197,7 +197,10 @@ initializeServiceWorkers();
 
 // Capacitor-ready app wrapper
 const CapacitorApp: React.FC = () => {
+  console.log('🚀 CapacitorApp component rendering...');
+
   useEffect(() => {
+    console.log('🔧 CapacitorApp useEffect running...');
     const initializeCapacitor = async () => {
       try {
         console.log('🔧 Initializing Capacitor...');
@@ -228,6 +231,7 @@ const CapacitorApp: React.FC = () => {
     initializeCapacitor();
   }, []);
 
+  console.log('📦 Rendering ChakraProvider...');
   return (
     <ErrorBoundary>
       <ChakraProvider value={defaultSystem}>

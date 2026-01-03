@@ -50,10 +50,12 @@ const AdminLocationDashboard = lazy(() => import('./components/AdminLocationDash
 
 
 const AppContent: React.FC = () => {
+  console.log('🎯 AppContent component rendering...');
   const { user, isAuthenticated, isLoading, updateProfile } = useAuth();
   const { currentLanguage } = useLanguage();
   const { notifications, removeNotification, addNotification, markAsRead, markAllAsRead, clearAll } = useNotification();
   const { settings } = useSettings();
+  console.log('📊 AppContent state:', { isAuthenticated, isLoading, user: !!user });
   const [activeTab, setActiveTab] = useState<TabType>('map');
   const [vibes, setVibes] = useState<Vibe[]>([]);
   const [sosAlerts, setSosAlerts] = useState<SOS[]>([]);
@@ -84,11 +86,13 @@ const AppContent: React.FC = () => {
 
   // Show language selection for non-authenticated users
   useEffect(() => {
+    console.log('🔍 Language selection check:', { isLoading, isAuthenticated, user: !!user, onboardingCompleted: user?.onboarding_completed });
     if (!isLoading && !isAuthenticated) {
       // Always show language selection for non-authenticated users
+      console.log('🌐 Showing language selection for non-authenticated user');
       setShowLanguageSelection(true);
     }
-  }, [isLoading, isAuthenticated]);
+  }, [isLoading, isAuthenticated, user?.onboarding_completed]);
 
   // Handle post-authentication redirects (e.g., from guardian invitations)
   useEffect(() => {
@@ -296,7 +300,7 @@ const AppContent: React.FC = () => {
             console.log('📍 Location initialized successfully - marker should appear on map');
 
           } catch (error) {
-            console.log('❌ GPS location failed:', (error as any)?.message || error, 'Code:', (error as any)?.code);
+            console.log('❌ GPS location failed:', error instanceof Error ? error.message : error, 'Code:', (error as any)?.code);
 
             // Check if this is a permission-related error
             const isPermissionError = (error as any)?.code === 1 || (error as any)?.message?.toLowerCase().includes('permission');
@@ -322,7 +326,7 @@ const AppContent: React.FC = () => {
                   throw new Error('Invalid IP geolocation response');
                 }
               } catch (ipError: any) {
-                console.log('❌ IP geolocation fallback failed:', ipError?.message || ipError);
+                console.log('❌ IP geolocation fallback failed:', ipError instanceof Error ? ipError.message : ipError);
                 // Use default location as last resort
                 const defaultLocation: [number, number] = [30.0444, 31.2357]; // Cairo, Egypt
                 console.log('✅ Setting default location:', defaultLocation);
@@ -881,7 +885,7 @@ const AppContent: React.FC = () => {
 
 
       {/* Main App Content - Mobile optimized */}
-      {isAuthenticated && user?.onboarding_completed && (
+      {isAuthenticated && (
         <>
           {/* Header */}
           <Header
