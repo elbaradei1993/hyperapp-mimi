@@ -214,89 +214,117 @@ const AppContent: React.FC = () => {
       // If not authenticated, just show the app normally - no forced auth modal
     }
 
-    // Only initialize location once
-    if (!locationInitialized && isAuthenticated && settings.locationSharing) {
-      setLocationInitialized(true);
+    // Initialize location - simplified logic to ensure it always tries
+    if (!locationInitialized) {
+      // Only prevent re-initialization, but allow location to be obtained even without full auth
+      if (isAuthenticated || (!isAuthenticated && !isLoading)) {
+        setLocationInitialized(true);
 
-      // Initialize location service
-      const initializeLocation = async () => {
-        try {
-          console.log('🚀 Initializing location service...');
+        // Initialize location service
+        const initializeLocation = async () => {
+          try {
+            console.log('🚀 Initializing location service...');
+            console.log('📊 Auth status:', { isAuthenticated, isLoading, locationSharing: settings?.locationSharing });
 
-          // Try to get current position first
-          const position = await locationService.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 30000
-          });
+            // Try to get current position first
+            const position = await locationService.getCurrentPosition({
+              enableHighAccuracy: true,
+              timeout: 30000
+            });
 
-          setUserLocation([position.latitude, position.longitude]);
-          setLastLocationUpdate(Date.now());
-          console.log(`📍 Initial location set: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)} (${Math.round(position.accuracy)}m)`);
+            const location: [number, number] = [position.latitude, position.longitude];
+            setUserLocation(location);
+            setLastLocationUpdate(Date.now());
+            console.log(`📍 GPS location set: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)} (${Math.round(position.accuracy)}m)`);
 
-          // Fetch nearby users unless setting is to hide them
-          if (user?.id && !settings.hideNearbyUsers) {
-            try {
-              const nearby = await userLocationService.findNearbyUsers(
-                position.latitude,
-                position.longitude,
-                10, // 10km radius
-                user.id, // exclude current user
-                20 // limit to 20 users
-              );
-              setNearbyUsers(nearby);
-              console.log(`👥 Found ${nearby.length} nearby users`);
-            } catch (error) {
-              console.error('Error fetching nearby users:', error);
+            // Only fetch nearby users if authenticated and location sharing is enabled
+            if (isAuthenticated && user?.id && settings?.locationSharing && !settings?.hideNearbyUsers) {
+              try {
+                const nearby = await userLocationService.findNearbyUsers(
+                  position.latitude,
+                  position.longitude,
+                  10, // 10km radius
+                  user.id, // exclude current user
+                  20 // limit to 20 users
+                );
+                setNearbyUsers(nearby);
+                console.log(`👥 Found ${nearby.length} nearby users`);
+              } catch (error) {
+                console.error('Error fetching nearby users:', error);
+                setNearbyUsers([]);
+              }
+            } else if (settings?.hideNearbyUsers) {
+              // Clear nearby users if setting is to hide them
               setNearbyUsers([]);
             }
-          } else if (settings.hideNearbyUsers) {
-            // Clear nearby users if setting is to hide them
-            setNearbyUsers([]);
-          }
 
-          // Location updates are now handled by backgroundLocationService
-          // No need for frequent UI updates here
-          console.log('📍 Location initialized - background service will handle updates');
+            // Location updates are now handled by backgroundLocationService
+            // No need for frequent UI updates here
+            console.log('📍 Location initialized successfully - marker should appear on map');
 
-        } catch (error: any) {
-          console.log('❌ Initial location failed:', error?.message || error);
+          } catch (error: any) {
+            console.log('❌ GPS location failed:', error?.message || error, 'Code:', error?.code);
 
-          // Check if this is a permission-related error
-          const isPermissionError = error?.code === 1 || error?.message?.toLowerCase().includes('permission');
+            // Check if this is a permission-related error
+            const isPermissionError = error?.code === 1 || error?.message?.toLowerCase().includes('permission');
 
-          // Fallback to IP-based location for web
-          if (!Capacitor.isNativePlatform()) {
-            try {
-              // Use IP geolocation as fallback
-              const response = await fetch('https://ipapi.co/json/');
-              const data = await response.json();
-              if (data.latitude && data.longitude) {
-                const location: [number, number] = [data.latitude, data.longitude];
-                setUserLocation(location);
-                console.log(`📍 IP Location fallback: ${data.latitude}, ${data.longitude} (${data.city || 'Unknown'})`);
+            // Always try IP-based fallback for better UX
+            if (!Capacitor.isNativePlatform()) {
+              try {
+                console.log('🌐 Attempting IP-based geolocation fallback...');
+                // Use IP geolocation as fallback
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data.latitude && data.longitude) {
+                  const location: [number, number] = [data.latitude, data.longitude];
+                  setUserLocation(location);
+                  console.log(`📍 IP Location fallback successful: ${data.latitude}, ${data.longitude} (${data.city || 'Unknown'})`);
+                } else {
+                  throw new Error('Invalid IP geolocation response');
+                }
+              } catch (ipError) {
+                console.log('❌ IP geolocation fallback failed:', ipError?.message || ipError);
+                // Use default location as last resort
+                const defaultLocation: [number, number] = [30.0444, 31.2357]; // Cairo, Egypt
+                setUserLocation(defaultLocation);
+                console.log(`📍 Using default location: ${defaultLocation[0]}, ${defaultLocation[1]} - marker should still appear`);
               }
-            } catch (ipError) {
-              console.log('❌ IP geolocation fallback failed');
-              // Use default location
-              const defaultLocation: [number, number] = [30.0444, 31.2357]; // Cairo, Egypt
-              setUserLocation(defaultLocation);
-              console.log(`📍 Using default location: ${defaultLocation[0]}, ${defaultLocation[1]}`);
+            } else {
+              // On mobile, try IP fallback too
+              try {
+                console.log('📱 Mobile: Attempting IP-based geolocation fallback...');
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data.latitude && data.longitude) {
+                  const location: [number, number] = [data.latitude, data.longitude];
+                  setUserLocation(location);
+                  console.log(`📍 Mobile IP Location fallback: ${data.latitude}, ${data.longitude}`);
+                } else {
+                  // Use default for mobile too
+                  const defaultLocation: [number, number] = [30.0444, 31.2357];
+                  setUserLocation(defaultLocation);
+                  console.log(`📍 Mobile using default location: ${defaultLocation[0]}, ${defaultLocation[1]}`);
+                }
+              } catch (mobileError) {
+                console.log('❌ Mobile IP fallback failed:', mobileError?.message || mobileError);
+                // Still show permission modal for mobile
+                if (isPermissionError) {
+                  setShowLocationPermissionModal(true);
+                }
+              }
             }
 
             // Show permission modal on web if it was a permission error
-            if (isPermissionError) {
+            if (!Capacitor.isNativePlatform() && isPermissionError) {
               setShowLocationPermissionModal(true);
             }
-          } else {
-            // On mobile, show permission guidance
-            setShowLocationPermissionModal(true);
           }
-        }
-      };
+        };
 
-      initializeLocation();
+        initializeLocation();
+      }
     }
-  }, [isAuthenticated, isLoading, locationInitialized, lastLocationUpdate, locationPermissionStatus, settings.locationSharing]);
+  }, [isAuthenticated, isLoading, locationInitialized, settings?.locationSharing, settings?.hideNearbyUsers, user?.id]);
 
   // Initialize notification service when user is authenticated - with guards to prevent re-initialization
   useEffect(() => {
