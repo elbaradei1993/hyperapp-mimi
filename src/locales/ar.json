@@ -517,6 +517,11 @@
       "hoursAgo": "منذ {{count}} ساعة",
       "daysAgo": "منذ {{count}} يوم"
     },
+    "firstName": "الاسم الأول",
+    "lastName": "الاسم الأخير",
+    "interestsOptional": "اهتمامات المجتمع (اختياري)",
+    "selectActivities": "اختر الأنشطة التي تستمتع بها للتواصل مع أشخاص متشابهين في مجتمعك",
+    "uploadProfilePictureOptional": "ارفع صورة لتخصيص ملفك الشخصي (اختياري)",
     "interests": {
       "categories": {
         "sports-fitness": "الرياضة واللياقة البدنية",
