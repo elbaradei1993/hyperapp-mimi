@@ -225,17 +225,21 @@ const AppContent: React.FC = () => {
           try {
             console.log('🚀 Initializing location service...');
             console.log('📊 Auth status:', { isAuthenticated, isLoading, locationSharing: settings?.locationSharing });
+            console.log('🔍 Capacitor platform check:', Capacitor.isNativePlatform());
 
             // Try to get current position first
+            console.log('📡 Attempting to get GPS location...');
             const position = await locationService.getCurrentPosition({
               enableHighAccuracy: true,
               timeout: 30000
             });
 
             const location: [number, number] = [position.latitude, position.longitude];
+            console.log('✅ GPS location obtained:', location);
             setUserLocation(location);
             setLastLocationUpdate(Date.now());
             console.log(`📍 GPS location set: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)} (${Math.round(position.accuracy)}m)`);
+            console.log('🎯 User location state should now be set - marker should appear on map');
 
             // Only fetch nearby users if authenticated and location sharing is enabled
             if (isAuthenticated && user?.id && settings?.locationSharing && !settings?.hideNearbyUsers) {
@@ -269,46 +273,59 @@ const AppContent: React.FC = () => {
             const isPermissionError = error?.code === 1 || error?.message?.toLowerCase().includes('permission');
 
             // Always try IP-based fallback for better UX
+            console.log('🔄 GPS failed, trying fallback methods...');
             if (!Capacitor.isNativePlatform()) {
               try {
                 console.log('🌐 Attempting IP-based geolocation fallback...');
                 // Use IP geolocation as fallback
                 const response = await fetch('https://ipapi.co/json/');
+                console.log('🌐 IP API response status:', response.status);
                 const data = await response.json();
+                console.log('🌐 IP API response data:', data);
+
                 if (data.latitude && data.longitude) {
                   const location: [number, number] = [data.latitude, data.longitude];
+                  console.log('✅ Setting IP location:', location);
                   setUserLocation(location);
-                  console.log(`📍 IP Location fallback successful: ${data.latitude}, ${data.longitude} (${data.city || 'Unknown'})`);
+                  console.log(`📍 IP Location fallback successful: ${data.latitude}, ${data.longitude} (${data.city || 'Unknown'}) - marker should appear`);
                 } else {
+                  console.log('❌ IP API returned invalid data:', data);
                   throw new Error('Invalid IP geolocation response');
                 }
-              } catch (ipError) {
+              } catch (ipError: any) {
                 console.log('❌ IP geolocation fallback failed:', ipError?.message || ipError);
                 // Use default location as last resort
                 const defaultLocation: [number, number] = [30.0444, 31.2357]; // Cairo, Egypt
+                console.log('✅ Setting default location:', defaultLocation);
                 setUserLocation(defaultLocation);
-                console.log(`📍 Using default location: ${defaultLocation[0]}, ${defaultLocation[1]} - marker should still appear`);
+                console.log(`📍 Using default location: ${defaultLocation[0]}, ${defaultLocation[1]} - marker should appear on map`);
               }
             } else {
               // On mobile, try IP fallback too
               try {
                 console.log('📱 Mobile: Attempting IP-based geolocation fallback...');
                 const response = await fetch('https://ipapi.co/json/');
+                console.log('📱 Mobile IP API response status:', response.status);
                 const data = await response.json();
+                console.log('📱 Mobile IP API response data:', data);
+
                 if (data.latitude && data.longitude) {
                   const location: [number, number] = [data.latitude, data.longitude];
+                  console.log('✅ Setting mobile IP location:', location);
                   setUserLocation(location);
-                  console.log(`📍 Mobile IP Location fallback: ${data.latitude}, ${data.longitude}`);
+                  console.log(`📍 Mobile IP Location fallback: ${data.latitude}, ${data.longitude} - marker should appear`);
                 } else {
                   // Use default for mobile too
                   const defaultLocation: [number, number] = [30.0444, 31.2357];
+                  console.log('✅ Setting mobile default location:', defaultLocation);
                   setUserLocation(defaultLocation);
-                  console.log(`📍 Mobile using default location: ${defaultLocation[0]}, ${defaultLocation[1]}`);
+                  console.log(`📍 Mobile using default location: ${defaultLocation[0]}, ${defaultLocation[1]} - marker should appear`);
                 }
               } catch (mobileError) {
                 console.log('❌ Mobile IP fallback failed:', mobileError?.message || mobileError);
                 // Still show permission modal for mobile
                 if (isPermissionError) {
+                  console.log('🚨 Showing permission modal for mobile due to permission error');
                   setShowLocationPermissionModal(true);
                 }
               }
