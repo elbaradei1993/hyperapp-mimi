@@ -1,0 +1,430 @@
+import { AuthResponse, User } from '@supabase/supabase-js';
+// import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'; // Disabled to fix 500 error
+import { supabase } from '../lib/supabase';
+import type { User as AppUser, OnboardingData } from '../types';
+
+class AuthService {
+  // Authentication methods
+  async signUp(email: string, password: string, username: string, marketingConsent: boolean = false): Promise<AuthResponse> {
+    // Validate inputs
+    if (!email?.trim()) throw new Error('Email is required');
+    if (!password || password.length < 6) throw new Error('Password must be at least 6 characters');
+    if (!username?.trim()) throw new Error('Username is required');
+
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanUsername = username.trim();
+
+    const response = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          username: cleanUsername,
+          display_name: cleanUsername,
+          reputation: 0,
+          language: 'en',
+          onboarding_completed: false,
+          onboarding_step: 0,
+          signup_timestamp: new Date().toISOString(),
+          marketing_consent: marketingConsent
+        }
+      }
+    });
+
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+
+    return response;
+  }
+
+  async signIn(email: string, password: string): Promise<AuthResponse> {
+    if (!email?.trim()) throw new Error('Email is required');
+    if (!password) throw new Error('Password is required');
+
+    const response = await supabase.auth.signInWithPassword({
+      email: email.toLowerCase().trim(),
+      password
+    });
+
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+
+    return response;
+  }
+
+  async signInWithGoogle(): Promise<void> {
+    // Google Auth disabled to fix 500 error
+    throw new Error('Google Sign-In is currently disabled');
+    // try {
+    //   // Use native Google Sign-In for mobile
+    //   const googleUser = await GoogleAuth.signIn();
+
+    //   // Sign in with Supabase using the Google ID token
+    //   const { data, error } = await supabase.auth.signInWithIdToken({
+    //     provider: 'google',
+    //     token: googleUser.authentication.idToken
+    //   });
+
+    //   if (error) {
+    //     throw new Error(error.message);
+    //   }
+
+    // } catch (error: any) {
+    //   console.error('Google Sign-In error:', error);
+    //   throw new Error(error.message || 'Google Sign-In failed');
+    // }
+  }
+
+  async signOut(): Promise<{ error: any }> {
+    return supabase.auth.signOut();
+  }
+
+  // Clear corrupted authentication state
+  async clearAuthState(): Promise<void> {
+    try {
+      console.log('🧹 Clearing authentication state...');
+
+      // Clear local storage
+      if (typeof localStorage !== 'undefined') {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.includes('supabase') || key.includes('auth'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+      }
+
+      // Clear session storage
+      if (typeof sessionStorage !== 'undefined') {
+        const sessionKeysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && (key.includes('supabase') || key.includes('auth'))) {
+            sessionKeysToRemove.push(key);
+          }
+        }
+        sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
+      }
+
+      // Force sign out from Supabase
+      await supabase.auth.signOut();
+
+      console.log('✅ Authentication state cleared');
+    } catch (error) {
+      console.error('❌ Failed to clear authentication state:', error);
+    }
+  }
+
+  async getCurrentUser(): Promise<User | null> {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return user;
+  }
+
+  async getSession() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return data;
+  }
+
+  // User profile methods
+  async createUserProfile(userId: string, profileData: Partial<AppUser>): Promise<any> {
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{
+        user_id: userId,
+        ...profileData,
+        reputation: 0,
+        language: 'en',
+        onboarding_completed: false,
+        onboarding_step: 0
+      }])
+      .select()
+      .single();
+
+    return { data, error };
+  }
+
+  async getUserProfile(userId: string): Promise<any> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    return { data, error };
+  }
+
+  async updateUserProfile(userId: string, updates: Partial<AppUser>): Promise<any> {
+    const { data, error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    return { data, error };
+  }
+
+  // Onboarding methods
+  async completeOnboarding(userId: string, onboardingData: OnboardingData): Promise<any> {
+    const profileUpdates = {
+      first_name: onboardingData.firstName,
+      last_name: onboardingData.lastName,
+      phone: onboardingData.phone,
+      location: onboardingData.location.address, // Save only the address string, not the full object
+      interests: onboardingData.interests,
+      language: onboardingData.language,
+      onboarding_completed: true,
+      onboarding_step: 4,
+      profile_completed_at: new Date().toISOString()
+    };
+
+    return this.updateUserProfile(userId, profileUpdates);
+  }
+
+  async updateOnboardingStep(userId: string, step: number): Promise<any> {
+    return this.updateUserProfile(userId, {
+      onboarding_step: step
+    });
+  }
+
+  // Sync user data between auth and profile
+  async syncUserWithProfile(authUser: User): Promise<AppUser> {
+    try {
+      // First check if profile exists
+      const { data: profile, error } = await this.getUserProfile(authUser.id);
+
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is expected for new users
+        console.warn('Profile fetch error:', error);
+        // Continue to create profile instead of throwing
+      }
+
+      if (profile) {
+        // Profile exists, return combined data
+        console.log('Found existing profile for user:', authUser.id);
+        return {
+          id: authUser.id,
+          email: authUser.email!,
+          email_verified: authUser.email_confirmed_at ? true : false,
+          email_verified_at: authUser.email_confirmed_at,
+          ...profile
+        };
+      } else {
+        // Profile doesn't exist, create it
+        console.log('Creating new profile for user:', authUser.id);
+
+        const username = authUser.user_metadata?.username ||
+                        authUser.user_metadata?.display_name ||
+                        authUser.email?.split('@')[0] ||
+                        'User';
+
+        const profileData = {
+          username: username,
+          email: authUser.email,
+          reputation: 0,
+          language: authUser.user_metadata?.language || 'en',
+          onboarding_completed: false,
+          onboarding_step: 0,
+          email_verified: authUser.email_confirmed_at ? true : false
+        };
+
+        const { data: newProfile, error: createError } = await this.createUserProfile(authUser.id, profileData);
+
+        if (createError) {
+          console.error('Profile creation failed:', createError);
+          // For existing auth users without profiles, create a minimal profile
+          console.log('Creating minimal profile as fallback');
+          const minimalProfile: AppUser = {
+            id: authUser.id,
+            email: authUser.email!,
+            username: username,
+            reputation: 0,
+            language: 'en',
+            onboarding_completed: false,
+            onboarding_step: 0,
+            email_verified: authUser.email_confirmed_at ? true : false,
+            email_verified_at: authUser.email_confirmed_at
+          };
+          return minimalProfile;
+        }
+
+        console.log('Profile created successfully');
+        return {
+          id: authUser.id,
+          email: authUser.email!,
+          email_verified: authUser.email_confirmed_at ? true : false,
+          email_verified_at: authUser.email_confirmed_at,
+          ...newProfile
+        };
+      }
+    } catch (error) {
+      console.error('Profile sync failed:', error);
+      // Return minimal user object to prevent auth failure
+      const fallbackUser: AppUser = {
+        id: authUser.id,
+        email: authUser.email!,
+        username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
+        reputation: 0,
+        language: 'en',
+        onboarding_completed: false,
+        onboarding_step: 0,
+        email_verified: authUser.email_confirmed_at ? true : false,
+        email_verified_at: authUser.email_confirmed_at
+      };
+      console.log('Using fallback user profile');
+      return fallbackUser;
+    }
+  }
+
+  // Auth state listener
+  onAuthStateChange(callback: (user: User | null) => void) {
+    return supabase.auth.onAuthStateChange((event, session) => {
+      callback(session?.user || null);
+    });
+  }
+
+  // Password reset
+  async resetPassword(email: string): Promise<{ error: any }> {
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    });
+  }
+
+  // Update password
+  async updatePassword(newPassword: string): Promise<any> {
+    return supabase.auth.updateUser({ password: newPassword });
+  }
+
+  // Profile data methods for components
+  async getUserReports(userId: string): Promise<any> {
+    return supabase
+      .from('reports')
+      .select('upvotes, downvotes')
+      .eq('user_id', userId);
+  }
+
+  async getUserRecentReports(userId: string, limit: number = 5): Promise<any> {
+    return supabase
+      .from('reports')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+  }
+
+  async getAllUsersByReputation(): Promise<any> {
+    return supabase
+      .from('users')
+      .select('user_id, reputation')
+      .order('reputation', { ascending: false });
+  }
+
+  async getUserReportsCount(userId: string): Promise<any> {
+    return supabase
+      .from('reports')
+      .select('id', { count: 'exact' })
+      .eq('user_id', userId);
+  }
+
+  // Voting methods
+  async getUserVote(userId: string, reportId: number): Promise<any> {
+    return supabase
+      .from('votes')
+      .select('vote_type')
+      .eq('user_id', userId)
+      .eq('report_id', reportId)
+      .maybeSingle();
+  }
+
+  async addVote(userId: string, reportId: number, voteType: 'upvote' | 'downvote'): Promise<any> {
+    return supabase
+      .from('votes')
+      .insert([{
+        user_id: userId,
+        report_id: reportId,
+        vote_type: voteType
+      }]);
+  }
+
+  async removeVote(userId: string, reportId: number): Promise<any> {
+    return supabase
+      .from('votes')
+      .delete()
+      .eq('user_id', userId)
+      .eq('report_id', reportId);
+  }
+
+  async updateVote(userId: string, reportId: number, voteType: 'upvote' | 'downvote'): Promise<any> {
+    return supabase
+      .from('votes')
+      .update({ vote_type: voteType })
+      .eq('user_id', userId)
+      .eq('report_id', reportId);
+  }
+
+  // Reports methods for profile
+  async getNearbyReports(limit: number = 10): Promise<any> {
+    return supabase
+      .from('reports')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+  }
+
+  // Account management methods
+  async deleteAccount(userId: string): Promise<any> {
+    // Delete user profile data first
+    const { error: profileError } = await supabase
+      .from('users')
+      .delete()
+      .eq('user_id', userId);
+
+    if (profileError) {
+      console.error('Error deleting user profile:', profileError);
+      return { error: profileError };
+    }
+
+    // Delete user votes
+    const { error: votesError } = await supabase
+      .from('votes')
+      .delete()
+      .eq('user_id', userId);
+
+    if (votesError) {
+      console.error('Error deleting user votes:', votesError);
+      // Continue with account deletion even if votes deletion fails
+    }
+
+    // Delete user reports
+    const { error: reportsError } = await supabase
+      .from('reports')
+      .delete()
+      .eq('user_id', userId);
+
+    if (reportsError) {
+      console.error('Error deleting user reports:', reportsError);
+      // Continue with account deletion even if reports deletion fails
+    }
+
+    // Finally delete the auth user
+    const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+
+    if (authError) {
+      console.error('Error deleting auth user:', authError);
+      return { error: authError };
+    }
+
+    return { error: null };
+  }
+}
+
+// Export singleton instance
+export const authService = new AuthService();
+export default authService;
