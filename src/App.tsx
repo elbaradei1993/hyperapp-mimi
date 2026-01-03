@@ -241,8 +241,36 @@ const AppContent: React.FC = () => {
             console.log(`📍 GPS location set: ${position.latitude.toFixed(6)}, ${position.longitude.toFixed(6)} (${Math.round(position.accuracy)}m)`);
             console.log('🎯 User location state should now be set - marker should appear on map');
 
-            // Only fetch nearby users if authenticated and location sharing is enabled
-            if (isAuthenticated && user?.id && settings?.locationSharing && !settings?.hideNearbyUsers) {
+            // Save location to database only if location sharing is enabled
+            if (isAuthenticated && user?.id && settings?.locationSharing) {
+              try {
+                const saveResult = await userLocationService.updateUserLocation(
+                  user.id,
+                  position.latitude,
+                  position.longitude,
+                  position.accuracy
+                );
+                if (saveResult) {
+                  console.log('📍 User location saved to database successfully');
+                } else {
+                  console.error('❌ Failed to save location to database - updateUserLocation returned false');
+                }
+              } catch (error) {
+                console.error('❌ Failed to save location to database:', error as any);
+              }
+            } else if (isAuthenticated && user?.id && !settings?.locationSharing) {
+              // If location sharing is disabled, remove user's location from database
+              try {
+                console.log('📍 Location sharing disabled - not saving location to database');
+                // Note: We could add a delete method to userLocationService, but for now we'll just skip saving
+                // This means old locations might persist until they expire naturally
+              } catch (error) {
+                console.error('❌ Failed to remove location from database:', error as any);
+              }
+            }
+
+            // Always fetch nearby users if authenticated (observer mode allows seeing others)
+            if (isAuthenticated && user?.id) {
               try {
                 const nearby = await userLocationService.findNearbyUsers(
                   position.latitude,
@@ -257,20 +285,21 @@ const AppContent: React.FC = () => {
                 console.error('Error fetching nearby users:', error);
                 setNearbyUsers([]);
               }
-            } else if (settings?.hideNearbyUsers) {
-              // Clear nearby users if setting is to hide them
+            } else {
+              // Clear nearby users if not authenticated
               setNearbyUsers([]);
+              console.log('👥 Nearby users cleared (not authenticated)');
             }
 
             // Location updates are now handled by backgroundLocationService
             // No need for frequent UI updates here
             console.log('📍 Location initialized successfully - marker should appear on map');
 
-          } catch (error: any) {
-            console.log('❌ GPS location failed:', error?.message || error, 'Code:', error?.code);
+          } catch (error) {
+            console.log('❌ GPS location failed:', (error as any)?.message || error, 'Code:', (error as any)?.code);
 
             // Check if this is a permission-related error
-            const isPermissionError = error?.code === 1 || error?.message?.toLowerCase().includes('permission');
+            const isPermissionError = (error as any)?.code === 1 || (error as any)?.message?.toLowerCase().includes('permission');
 
             // Always try IP-based fallback for better UX
             console.log('🔄 GPS failed, trying fallback methods...');
@@ -490,40 +519,50 @@ const AppContent: React.FC = () => {
     };
   }, [isAuthenticated, user?.onboarding_completed]);
 
-  // Handle nearby users fetching when setting changes
+  // Handle nearby users fetching when authenticated
   useEffect(() => {
-    const updateNearbyUsers = async () => {
-      if (!isAuthenticated || !user?.id || !userLocation) return;
+    console.log('🔍 useEffect for nearby users triggered with:', {
+      isAuthenticated,
+      userId: user?.id,
+      userLocation,
+      locationSharing: settings?.locationSharing
+    });
 
-      if (!settings.hideNearbyUsers) {
-        try {
-          const nearby = await userLocationService.findNearbyUsers(
-            userLocation[0],
-            userLocation[1],
-            10, // 10km radius
-            user.id, // exclude current user
-            20 // limit to 20 users
-          );
-          setNearbyUsers(nearby);
-          setLastNearbyUsersUpdate(Date.now());
-          console.log(`👥 Updated nearby users: ${nearby.length} found`);
-        } catch (error) {
-          console.error('Error fetching nearby users:', error);
-          setNearbyUsers([]);
-        }
-      } else {
-        // Clear nearby users if setting is to hide them
+    const updateNearbyUsers = async () => {
+      if (!isAuthenticated || !user?.id || !userLocation) {
+        console.log('❌ Skipping nearby users fetch - missing requirements:', {
+          isAuthenticated,
+          userId: user?.id,
+          userLocation
+        });
+        return;
+      }
+
+      // Always fetch nearby users if authenticated (observer mode allows seeing others)
+      console.log('🚀 Calling findNearbyUsers...');
+      try {
+        const nearby = await userLocationService.findNearbyUsers(
+          userLocation[0],
+          userLocation[1],
+          10, // 10km radius
+          user.id, // exclude current user
+          20 // limit to 20 users
+        );
+        setNearbyUsers(nearby);
+        setLastNearbyUsersUpdate(Date.now());
+        console.log(`👥 Updated nearby users: ${nearby.length} found`);
+      } catch (error) {
+        console.error('Error fetching nearby users:', error);
         setNearbyUsers([]);
-        console.log('👥 Nearby users cleared (setting enabled)');
       }
     };
 
     updateNearbyUsers();
-  }, [settings.hideNearbyUsers, userLocation, user?.id, isAuthenticated]);
+  }, [userLocation, user?.id, isAuthenticated]);
 
-  // Periodic nearby users refresh
+  // Periodic nearby users refresh - more frequent to catch sharing changes
   useEffect(() => {
-    if (!isAuthenticated || !user?.id || !userLocation || settings.hideNearbyUsers) {
+    if (!isAuthenticated || !user?.id || !userLocation) {
       // Clear any existing interval
       if (nearbyUsersRefreshInterval) {
         clearInterval(nearbyUsersRefreshInterval);
@@ -532,28 +571,26 @@ const AppContent: React.FC = () => {
       return;
     }
 
-    // Set up periodic refresh every 2 minutes
+    // Set up periodic refresh every 30 seconds to catch location sharing changes
     const interval = setInterval(async () => {
       try {
         const now = Date.now();
-        // Only refresh if it's been more than 1.5 minutes since last update
-        if (now - lastNearbyUsersUpdate > 1.5 * 60 * 1000) {
-          console.log('🔄 Refreshing nearby users...');
-          const nearby = await userLocationService.refreshNearbyUsers(
-            userLocation[0],
-            userLocation[1],
-            10, // 10km radius
-            user.id, // exclude current user
-            20 // limit to 20 users
-          );
-          setNearbyUsers(nearby);
-          setLastNearbyUsersUpdate(now);
-          console.log(`👥 Refreshed nearby users: ${nearby.length} found`);
-        }
+        // Always refresh nearby users to catch sharing preference changes
+        console.log('🔄 Refreshing nearby users (checking for sharing changes)...');
+        const nearby = await userLocationService.refreshNearbyUsers(
+          userLocation[0],
+          userLocation[1],
+          10, // 10km radius
+          user.id, // exclude current user
+          20 // limit to 20 users
+        );
+        setNearbyUsers(nearby);
+        setLastNearbyUsersUpdate(now);
+        console.log(`👥 Refreshed nearby users: ${nearby.length} found`);
       } catch (error) {
         console.error('Error refreshing nearby users:', error);
       }
-    }, 2 * 60 * 1000); // 2 minutes
+    }, 30 * 1000); // 30 seconds - more frequent to catch sharing changes
 
     setNearbyUsersRefreshInterval(interval);
 
@@ -563,11 +600,11 @@ const AppContent: React.FC = () => {
         clearInterval(interval);
       }
     };
-  }, [isAuthenticated, user?.id, userLocation, settings.hideNearbyUsers, lastNearbyUsersUpdate]);
+  }, [isAuthenticated, user?.id, userLocation]);
 
   // Integrate with background location service for location-based updates
   useEffect(() => {
-    if (!isAuthenticated || !user?.id || settings.hideNearbyUsers) return;
+    if (!isAuthenticated || !user?.id) return;
 
     let unsubscribe: (() => void) | undefined;
 
@@ -606,7 +643,7 @@ const AppContent: React.FC = () => {
         unsubscribe();
       }
     };
-  }, [isAuthenticated, user?.id, settings.hideNearbyUsers]);
+  }, [isAuthenticated, user?.id]);
 
   // Helper function to calculate distance between two coordinates in kilometers
   const calculateDistance = (coord1: [number, number], coord2: [number, number]): number => {

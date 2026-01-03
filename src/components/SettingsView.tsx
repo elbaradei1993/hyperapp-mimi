@@ -38,6 +38,7 @@ const SettingsView: React.FC = () => {
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
   const [showTermsOfServiceModal, setShowTermsOfServiceModal] = useState(false);
   const [showMarketingEmailAdmin, setShowMarketingEmailAdmin] = useState(false);
+  const [showLocationSharingAgreement, setShowLocationSharingAgreement] = useState(false);
   const [notificationPermissionStatus, setNotificationPermissionStatus] = useState<'granted' | 'denied' | 'default' | 'unknown'>('unknown');
   const [locationPermissionStatus, setLocationPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
@@ -185,34 +186,44 @@ const SettingsView: React.FC = () => {
   };
 
   const handleLocationToggle = async (enabled: boolean) => {
-    updateSettings({ locationSharing: enabled });
-
     if (enabled) {
-      if (locationPermissionStatus !== 'granted') {
-        if (navigator.geolocation) {
-          try {
-            await new Promise((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(
-                () => {
-                  setLocationPermissionStatus('granted');
-                  resolve(void 0);
-                },
-                (error) => {
-                  setLocationPermissionStatus('denied');
-                  reject(error);
-                },
-                { timeout: 10000 }
-              );
-            });
-          } catch (error) {
-            setLocationPermissionStatus('denied');
-          }
+      // Show agreement dialog when enabling location sharing
+      setShowLocationSharingAgreement(true);
+    } else {
+      // Disable location sharing immediately
+      updateSettings({ locationSharing: false });
+    }
+  };
+
+  const confirmLocationSharing = async () => {
+    setShowLocationSharingAgreement(false);
+    updateSettings({ locationSharing: true });
+
+    // Request location permission if not already granted
+    if (locationPermissionStatus !== 'granted') {
+      if (navigator.geolocation) {
+        try {
+          await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+              () => {
+                setLocationPermissionStatus('granted');
+                resolve(void 0);
+              },
+              (error) => {
+                setLocationPermissionStatus('denied');
+                reject(error);
+              },
+              { timeout: 10000 }
+            );
+          });
+        } catch (error) {
+          setLocationPermissionStatus('denied');
         }
       }
+    }
 
-      if (user?.id) {
-        notificationService.setCurrentUserId(user.id);
-      }
+    if (user?.id) {
+      notificationService.setCurrentUserId(user.id);
     }
   };
 
@@ -376,25 +387,7 @@ const SettingsView: React.FC = () => {
                 </HStack>
               </Box>
 
-              {/* Hide Nearby Users */}
-              <Box bg="gray.50" borderRadius="12px" p={4} border="1px solid" borderColor="gray.200">
-                <HStack justify="space-between" align="center">
-                  <HStack gap={3}>
-                    <Box w="10" h="10" borderRadius="8px" bg="purple.100" display="flex" alignItems="center" justifyContent="center">
-                      <Users size={16} color="#7c3aed" />
-                    </Box>
-                    <Box>
-                      <Text fontSize="14px" fontWeight="600" color="gray.900">{t('settings.hideNearbyUsersTitle')}</Text>
-                      <Text fontSize="12px" color="gray.600">{t('settings.hideNearbyUsersDescription')}</Text>
-                    </Box>
-                  </HStack>
-                  <ToggleSwitch
-                    checked={settings.hideNearbyUsers}
-                    onChange={(enabled) => updateSettings({ hideNearbyUsers: enabled })}
-                    size="md"
-                  />
-                </HStack>
-              </Box>
+
             </VStack>
           </Box>
 
@@ -419,7 +412,7 @@ const SettingsView: React.FC = () => {
                     </Box>
                     <Box>
                       <Text fontSize="14px" fontWeight="600" color="gray.900">{t('settings.locationSharingTitle')}</Text>
-                      <Text fontSize="12px" color="gray.600">{t('settings.locationSharingDescription')}</Text>
+                      <Text fontSize="12px" color="gray.600">Share your location and see other community members on the map</Text>
                     </Box>
                   </HStack>
                   <ToggleSwitch
@@ -702,6 +695,118 @@ const SettingsView: React.FC = () => {
         isOpen={showTermsOfServiceModal}
         onClose={() => setShowTermsOfServiceModal(false)}
       />
+
+      {/* Location Sharing Agreement Modal */}
+      {showLocationSharingAgreement && (
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="rgba(0, 0, 0, 0.5)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex={2000}
+          p={4}
+        >
+          <Box
+            bg="white"
+            borderRadius="16px"
+            p={6}
+            maxW="450px"
+            w="full"
+            boxShadow="0 20px 25px rgba(0, 0, 0, 0.1)"
+          >
+            <VStack gap={6} align="stretch">
+              <HStack justify="space-between" align="center">
+                <HStack gap={3}>
+                  <Box w="10" h="10" borderRadius="8px" bg="green.100" display="flex" alignItems="center" justifyContent="center">
+                    <MapPin size={16} color="#059669" />
+                  </Box>
+                  <Text fontSize="20px" fontWeight="700">Location Sharing Agreement</Text>
+                </HStack>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  borderRadius="full"
+                  p={2}
+                  minW="auto"
+                  h="auto"
+                  onClick={() => setShowLocationSharingAgreement(false)}
+                >
+                  ✕
+                </Button>
+              </HStack>
+
+              <VStack gap={4} align="stretch">
+                <Text fontSize="16px" fontWeight="600" color="gray.900">
+                  By enabling location sharing, you agree to:
+                </Text>
+
+                <VStack gap={3} align="start">
+                  <HStack gap={3} align="start">
+                    <Box w="6" h="6" borderRadius="full" bg="green.500" display="flex" alignItems="center" justifyContent="center" mt={0.5} flexShrink={0}>
+                      <Text fontSize="12px" color="white" fontWeight="bold">✓</Text>
+                    </Box>
+                    <Text fontSize="14px" color="gray.700">
+                      Share your location with other community members on the map
+                    </Text>
+                  </HStack>
+
+                  <HStack gap={3} align="start">
+                    <Box w="6" h="6" borderRadius="full" bg="green.500" display="flex" alignItems="center" justifyContent="center" mt={0.5} flexShrink={0}>
+                      <Text fontSize="12px" color="white" fontWeight="bold">✓</Text>
+                    </Box>
+                    <Text fontSize="14px" color="gray.700">
+                      Allow other users to see you as a nearby community member
+                    </Text>
+                  </HStack>
+
+                  <HStack gap={3} align="start">
+                    <Box w="6" h="6" borderRadius="full" bg="green.500" display="flex" alignItems="center" justifyContent="center" mt={0.5} flexShrink={0}>
+                      <Text fontSize="12px" color="white" fontWeight="bold">✓</Text>
+                    </Box>
+                    <Text fontSize="14px" color="gray.700">
+                      Help build a safer community by connecting with nearby users
+                    </Text>
+                  </HStack>
+                </VStack>
+
+                <Box p={4} bg="gray.50" borderRadius="8px">
+                  <Text fontSize="13px" color="gray.600" lineHeight="1.5">
+                    <strong>Privacy Note:</strong> Your location data is used only for community safety features and is not shared with third parties. You can disable this at any time.
+                  </Text>
+                </Box>
+              </VStack>
+
+              <HStack gap={3}>
+                <Button
+                  flex={1}
+                  variant="outline"
+                  borderRadius="8px"
+                  py={3}
+                  onClick={() => setShowLocationSharingAgreement(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  flex={1}
+                  bg="green.500"
+                  color="white"
+                  borderRadius="8px"
+                  py={3}
+                  onClick={confirmLocationSharing}
+                  _hover={{ bg: "green.600" }}
+                >
+                  I Agree - Enable Sharing
+                </Button>
+              </HStack>
+            </VStack>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };

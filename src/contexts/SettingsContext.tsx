@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { storageManager } from '../lib/storage';
+import { userLocationService } from '../services/userLocationService';
+import { supabase } from '../lib/supabase';
+
+// Callback type for location sharing changes
+export type LocationSharingChangeCallback = () => void;
 
 interface Settings {
   notifications: boolean;
@@ -16,7 +21,7 @@ interface SettingsContextType {
 
 const defaultSettings: Settings = {
   notifications: true,
-  locationSharing: true,
+  locationSharing: false,
   notificationRadius: 5,
   hideNearbyUsers: false
 };
@@ -59,6 +64,21 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     try {
       await storageManager.set('userSettings', JSON.stringify(updatedSettings));
       console.log('Settings updated:', updatedSettings);
+
+      // Sync location sharing preference with server if it changed
+      if (newSettings.locationSharing !== undefined && newSettings.locationSharing !== settings.locationSharing) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const success = await userLocationService.updateLocationSharingPreference(user.id, newSettings.locationSharing);
+            if (!success) {
+              console.error('Failed to sync location sharing preference with server');
+            }
+          }
+        } catch (error) {
+          console.error('Error syncing location sharing with server:', error);
+        }
+      }
     } catch (error) {
       console.error('Error saving settings:', error);
     }

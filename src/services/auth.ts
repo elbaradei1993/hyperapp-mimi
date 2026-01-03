@@ -3,9 +3,13 @@ import { AuthResponse, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { User as AppUser, OnboardingData } from '../types';
 
+// Supabase configuration
+const supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+
 class AuthService {
   // Authentication methods
-  async signUp(email: string, password: string, username: string, marketingConsent: boolean = false): Promise<AuthResponse> {
+  async signUp(email: string, password: string, username: string, marketingConsent: boolean = false, language: string = 'en'): Promise<AuthResponse> {
     // Validate inputs
     if (!email?.trim()) throw new Error('Email is required');
     if (!password || password.length < 6) throw new Error('Password must be at least 6 characters');
@@ -14,6 +18,7 @@ class AuthService {
     const cleanEmail = email.toLowerCase().trim();
     const cleanUsername = username.trim();
 
+    // First create the user account with Supabase (without sending default email)
     const response = await supabase.auth.signUp({
       email: cleanEmail,
       password,
@@ -23,7 +28,7 @@ class AuthService {
           username: cleanUsername,
           display_name: cleanUsername,
           reputation: 0,
-          language: 'en',
+          language: language,
           onboarding_completed: false,
           onboarding_step: 0,
           signup_timestamp: new Date().toISOString(),
@@ -34,6 +39,40 @@ class AuthService {
 
     if (response.error) {
       throw new Error(response.error.message);
+    }
+
+    // If user was created successfully, send our custom verification email
+    if (response.data.user && !response.data.session) {
+      try {
+        console.log('Sending custom verification email for user:', response.data.user.id);
+
+        // Call our custom auth email function
+        const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-auth-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`
+          },
+          body: JSON.stringify({
+            email: cleanEmail,
+            userId: response.data.user.id,
+            userName: cleanUsername,
+            language: language
+          })
+        });
+
+        const emailResult = await emailResponse.json();
+
+        if (!emailResult.success) {
+          console.error('Failed to send custom verification email:', emailResult.error);
+          // Don't throw here - user account was created successfully, just log the email error
+        } else {
+          console.log('Custom verification email sent successfully');
+        }
+      } catch (emailError) {
+        console.error('Error sending custom verification email:', emailError);
+        // Don't throw - user account creation succeeded
+      }
     }
 
     return response;

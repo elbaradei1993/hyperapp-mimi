@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18next from 'i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { Box, VStack, HStack, Text, Button, Input, Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
@@ -212,7 +213,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         }
       }
 
-      const response = await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername, signupMarketingConsent);
+      // Get current language from i18n
+      const currentLanguage = i18next.language || 'en';
+
+      const response = await signUp(formData.signupEmail, formData.signupPassword, formData.signupUsername, signupMarketingConsent, currentLanguage);
       console.log('Signup response:', response);
 
       if (response.data.user && !response.data.session) {
@@ -309,7 +313,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       } else {
         // Unexpected response
         console.warn('Unexpected signup response:', response);
-        setError('Account created but something went wrong. Please try logging in.');
+        setError(t('auth.signupError'));
       }
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -698,7 +702,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <HStack gap={3} align="stretch">
                     <Box flex={1}>
                       <Text fontSize="12px" fontWeight="600" color="gray.700" mb={2}>
-                        Phone Number
+                        {t('profile.phoneNumber')}
                       </Text>
                       <Input
                         id="signupPhone"
@@ -721,7 +725,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         type="text"
                         value={formData.signupLocation}
                         onChange={(e) => handleInputChange('signupLocation', e.target.value)}
-                        placeholder={locationLoading ? 'Detecting location...' : t('profile.enterLocation')}
+                        placeholder={locationLoading ? t('auth.detectingLocation') : t('profile.enterLocation')}
                         borderRadius="12px"
                         border="1px solid"
                         borderColor="gray.200"

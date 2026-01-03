@@ -70,7 +70,10 @@
     "checkEmailForVerificationLink": "Please check your email for the verification link.",
     "resendFailed": "Resend Failed",
     "tryAgainLater": "Please try again later.",
-    "forgotPassword": "Forgot Password?"
+    "forgotPassword": "Forgot Password?",
+    "emailAddress": "Email Address",
+    "detectingLocation": "Detecting location...",
+    "signupError": "Account created but something went wrong. Please try logging in."
   },
   "settings": {
     "title": "Settings",
@@ -86,11 +89,10 @@
     "languageDescription": "Choose your preferred language",
     "notificationsTitle": "Notifications",
     "notificationsPermissionDenied": "Enable notifications in your browser settings to receive alerts",
-    "hideNearbyUsersTitle": "Hide Nearby Users",
-    "hideNearbyUsersDescription": "Hide other users from appearing on the map",
+
     "privacySecurityTitle": "Privacy & Security",
     "locationSharingTitle": "Location Sharing",
-    "locationSharingDescription": "Allow the app to access your location",
+    "locationSharingDescription": "Share your location with other community members",
     "aboutSupportTitle": "About & Support",
     "version": "HyperApp v1.0.0",
     "appDescription": "Community Safety & Vibe Mapping",

@@ -277,7 +277,13 @@ const vibeColorsHex: Record<VibeType, string> = {
   [VibeType.Suspicious]: '#a855f7', // Deep purple
   [VibeType.Dangerous]: '#ef4444',  // Crimson red
   [VibeType.Noisy]: '#06b6d4',     // Electric cyan
-  [VibeType.Quiet]: '#2dd4bf'      // Soft teal
+  [VibeType.Quiet]: '#2dd4bf',     // Soft teal
+  [VibeType.Streetlight]: '#64748b', // Slate gray
+  [VibeType.Sidewalk]: '#94a3b8',   // Light slate
+  [VibeType.Construction]: '#f59e0b', // Amber
+  [VibeType.Pothole]: '#92400e',    // Brown
+  [VibeType.Traffic]: '#dc2626',    // Red
+  [VibeType.Other]: '#6b7280'       // Gray
 };
 
 // Memoized gradient calculation to avoid recalculation on every render
@@ -322,7 +328,13 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
       [VibeType.Suspicious]: [],
       [VibeType.Dangerous]: [],
       [VibeType.Noisy]: [],
-      [VibeType.Quiet]: []
+      [VibeType.Quiet]: [],
+      [VibeType.Streetlight]: [],
+      [VibeType.Sidewalk]: [],
+      [VibeType.Construction]: [],
+      [VibeType.Pothole]: [],
+      [VibeType.Traffic]: [],
+      [VibeType.Other]: []
     };
 
     vibes.forEach(vibe => {
@@ -670,27 +682,27 @@ const OtherUserMarker: React.FC<{
     html: `
       <div style="
         position: relative;
-        width: 32px;
-        height: 32px;
+        width: 18px;
+        height: 18px;
         background: #3b82f6;
-        border: 3px solid white;
+        border: 1px solid white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
         cursor: pointer;
         transition: all 0.2s ease;
       ">
         <!-- Person icon -->
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="evenodd" clip-rule="evenodd" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
         </svg>
       </div>
     `,
     className: 'custom-other-user-marker',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16]
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
   });
 
   return (

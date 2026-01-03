@@ -22,28 +22,53 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  user_sharing_enabled BOOLEAN := false; -- Default to false for safety
 BEGIN
-  -- PostGIS not available, store location as NULL
-  -- The admin console will need to be updated to work without PostGIS
-  RAISE LOG 'Storing user location as NULL (PostGIS not available) for user %', p_user_id;
+  -- Check if user has location sharing enabled
+  SELECT location_sharing INTO user_sharing_enabled
+  FROM users
+  WHERE user_id = p_user_id::text;
 
-  -- Delete existing location for this user
+  -- If location sharing is disabled, remove any existing location data and return
+  IF user_sharing_enabled IS FALSE THEN
+    RAISE LOG 'Location sharing disabled for user %, removing location data', p_user_id;
+    DELETE FROM user_locations WHERE user_id = p_user_id;
+    RETURN TRUE;
+  END IF;
+
+  -- If location sharing is enabled, ensure we don't create duplicate records
+  -- Delete any existing records first to prevent duplicates
   DELETE FROM user_locations WHERE user_id = p_user_id;
 
-  -- Insert new location with NULL geometry
+  -- Store location as separate lat/lng columns (PostGIS not available)
+  RAISE LOG 'Storing user location with lat/lng columns for user %', p_user_id;
+
+  -- Insert or update location
   INSERT INTO user_locations (
     user_id,
+    latitude,
+    longitude,
     location,
     accuracy,
     last_updated,
     created_at
   ) VALUES (
     p_user_id,
+    p_latitude,
+    p_longitude,
     NULL,  -- No PostGIS geometry available
     p_accuracy,
     NOW(),
     NOW()
-  );
+  )
+  ON CONFLICT (user_id)
+  DO UPDATE SET
+    latitude = EXCLUDED.latitude,
+    longitude = EXCLUDED.longitude,
+    location = EXCLUDED.location,
+    accuracy = EXCLUDED.accuracy,
+    last_updated = NOW();
 
   RETURN TRUE;
 EXCEPTION
@@ -53,7 +78,7 @@ EXCEPTION
 END;
 $$;
 
--- Function to find nearby users for map display
+-- Function to find nearby users for map display (without PostGIS)
 CREATE OR REPLACE FUNCTION find_nearby_users_for_map(
   center_lat DOUBLE PRECISION,
   center_lng DOUBLE PRECISION,
@@ -70,32 +95,19 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- Check if PostGIS functions are available
-  BEGIN
-    RETURN QUERY
-    SELECT
-      ul.user_id,
-      ST_Y(ul.location::geometry) as user_location_lat,
-      ST_X(ul.location::geometry) as user_location_lng,
-      ST_Distance(
-        ul.location,
-        ST_GeomFromText('POINT(' || center_lng || ' ' || center_lat || ')', 4326)
-      ) / 1000 as distance -- Convert meters to kilometers
-    FROM user_locations ul
-    WHERE ul.location IS NOT NULL
-      AND ST_DWithin(
-        ul.location,
-        ST_GeomFromText('POINT(' || center_lng || ' ' || center_lat || ')', 4326),
-        radius_km * 1000 -- Convert km to meters
-      )
-      AND ul.last_updated > NOW() - INTERVAL '24 hours' -- Only recent locations
-    ORDER BY distance ASC;
-  EXCEPTION
-    WHEN undefined_function THEN
-      -- PostGIS not available, return empty result set
-      RAISE LOG 'PostGIS not available for find_nearby_users_for_map';
-      RETURN;
-  END;
+  -- Return all users with recent locations (within 24 hours)
+  -- Distance calculation will be done in JavaScript
+  RETURN QUERY
+  SELECT
+    ul.user_id,
+    ul.latitude as user_location_lat,
+    ul.longitude as user_location_lng,
+    0.0 as distance -- Placeholder, will be calculated client-side
+  FROM user_locations ul
+  WHERE ul.latitude IS NOT NULL
+    AND ul.longitude IS NOT NULL
+    AND ul.last_updated > NOW() - INTERVAL '24 hours' -- Only recent locations
+  ORDER BY ul.last_updated DESC;
 END;
 $$;
 
