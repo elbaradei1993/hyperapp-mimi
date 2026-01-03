@@ -830,10 +830,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       />
                       <VStack gap={1} align="start">
                         <Text fontSize="14px" fontWeight="600" color="gray.900">
-                          Stay Updated
+                          {t('profile.marketingConsent.title')}
                         </Text>
                         <Text fontSize="12px" color="gray.600" lineHeight="1.4">
-                          I'd like to receive occasional updates about new features, community highlights, and safety tips from HyperApp. You can unsubscribe at any time.
+                          {t('profile.marketingConsent.description')}
                         </Text>
                       </VStack>
                     </HStack>
@@ -850,6 +850,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           borderTop="1px solid"
           borderColor="gray.200"
           bg="gray.50"
+          position="sticky"
+          bottom={0}
+          zIndex={10}
         >
           {showForgotPassword ? (
             <HStack gap={3}>

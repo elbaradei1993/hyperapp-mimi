@@ -501,6 +501,8 @@
     "personalInformation": "المعلومات الشخصية",
     "email": "البريد الإلكتروني",
     "phone": "الهاتف",
+    "phoneNumber": "رقم الهاتف",
+    "phonePlaceholder": "+20 (123) 456-7890",
     "location": "الموقع",
     "noEmailProvided": "لم يتم توفير بريد إلكتروني",
     "notProvided": "غير محدد",
@@ -514,6 +516,44 @@
       "minutesAgo": "منذ {{count}} دقيقة",
       "hoursAgo": "منذ {{count}} ساعة",
       "daysAgo": "منذ {{count}} يوم"
+    },
+    "interests": {
+      "categories": {
+        "sports-fitness": "الرياضة واللياقة البدنية",
+        "music-arts": "الموسيقى والفنون",
+        "food-dining": "الطعام والتناول",
+        "education-learning": "التعليم والتعلم",
+        "environment-nature": "البيئة والطبيعة",
+        "gaming-tech": "الألعاب والتكنولوجيا",
+        "social-community": "الاجتماعي والمجتمع",
+        "shopping-lifestyle": "التسوق وأسلوب الحياة",
+        "transportation": "النقل",
+        "home-garden": "المنزل والحديقة"
+      }
+    },
+    "marketingConsent": {
+      "title": "ابق على اطلاع",
+      "description": "أود تلقي تحديثات عرضية حول الميزات الجديدة وأبرز المجتمع ونصائح الأمان من HyperApp. يمكنك إلغاء الاشتراك في أي وقت."
+    },
+    "editProfileModal": {
+      "title": "تعديل الملف الشخصي",
+      "subtitle": "تحديث معلومات ملفك الشخصي",
+      "firstName": "الاسم الأول",
+      "lastName": "الاسم الأخير",
+      "firstNamePlaceholder": "أدخل اسمك الأول",
+      "lastNamePlaceholder": "أدخل اسمك الأخير",
+      "emailAddress": "عنوان البريد الإلكتروني",
+      "emailPlaceholder": "أدخل عنوان بريدك الإلكتروني",
+      "phoneNumber": "رقم الهاتف",
+      "phonePlaceholder": "أدخل رقم هاتفك",
+      "location": "الموقع",
+      "locationPlaceholder": "أدخل موقعك",
+      "interestsTitle": "اهتمامات المجتمع",
+      "interestsDescription": "اختر الأنشطة التي تهتم بها",
+      "changePhoto": "تغيير الصورة",
+      "cancel": "إلغاء",
+      "saveChanges": "حفظ التغييرات",
+      "saving": "جارٍ الحفظ..."
     },
     "badges": {
       "communityGuard": {
@@ -581,7 +621,7 @@
     },
     "urbanAlmanac": {
       "eventRadar": {
-        "title": "رادار الأحداث الحية",
+        "title": "رادار الأحداث",
         "noEvents": "لا توجد أحداث في منطقتك",
         "noEventsDesc": "ستظهر الأحداث هنا عند توفرها"
       },

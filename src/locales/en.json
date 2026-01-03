@@ -621,6 +621,30 @@
         "Smart Home": "Smart Home",
         "Pets": "Pets"
       }
+    },
+    "marketingConsent": {
+      "title": "Stay Updated",
+      "description": "I'd like to receive occasional updates about new features, community highlights, and safety tips from HyperApp. You can unsubscribe at any time."
+    },
+    "editProfileModal": {
+      "title": "Edit Profile",
+      "subtitle": "Update your profile information",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastNamePlaceholder": "Enter your last name",
+      "emailAddress": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "phoneNumber": "Phone Number",
+      "phonePlaceholder": "Enter your phone number",
+      "location": "Location",
+      "locationPlaceholder": "Enter your location",
+      "interestsTitle": "Community Interests",
+      "interestsDescription": "Select the activities you're interested in",
+      "changePhoto": "Change Photo",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "saving": "Saving..."
     }
   },
   "vibes": {
