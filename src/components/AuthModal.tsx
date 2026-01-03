@@ -698,7 +698,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <HStack gap={3} align="stretch">
                     <Box flex={1}>
                       <Text fontSize="12px" fontWeight="600" color="gray.700" mb={2}>
-                        'Phone Number'
+                        Phone Number
                       </Text>
                       <Input
                         id="signupPhone"
