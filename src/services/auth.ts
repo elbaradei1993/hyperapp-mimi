@@ -1,7 +1,7 @@
 import { AuthResponse, User } from '@supabase/supabase-js';
 // import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'; // Disabled to fix 500 error
 import { supabase } from '../lib/supabase';
-import type { User as AppUser, OnboardingData } from '../types';
+import type { User as AppUser } from '../types';
 
 // Supabase configuration
 const supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
@@ -29,8 +29,6 @@ class AuthService {
           display_name: cleanUsername,
           reputation: 0,
           language: language,
-          onboarding_completed: false,
-          onboarding_step: 0,
           signup_timestamp: new Date().toISOString(),
           marketing_consent: marketingConsent
         }
@@ -179,9 +177,7 @@ class AuthService {
         user_id: userId,
         ...profileData,
         reputation: 0,
-        language: 'en',
-        onboarding_completed: false,
-        onboarding_step: 0
+        language: 'en'
       }])
       .select()
       .single();
@@ -210,28 +206,7 @@ class AuthService {
     return { data, error };
   }
 
-  // Onboarding methods
-  async completeOnboarding(userId: string, onboardingData: OnboardingData): Promise<any> {
-    const profileUpdates = {
-      first_name: onboardingData.firstName,
-      last_name: onboardingData.lastName,
-      phone: onboardingData.phone,
-      location: onboardingData.location.address, // Save only the address string, not the full object
-      interests: onboardingData.interests,
-      language: onboardingData.language,
-      onboarding_completed: true,
-      onboarding_step: 4,
-      profile_completed_at: new Date().toISOString()
-    };
 
-    return this.updateUserProfile(userId, profileUpdates);
-  }
-
-  async updateOnboardingStep(userId: string, step: number): Promise<any> {
-    return this.updateUserProfile(userId, {
-      onboarding_step: step
-    });
-  }
 
   // Sync user data between auth and profile
   async syncUserWithProfile(authUser: User): Promise<AppUser> {
@@ -271,7 +246,7 @@ class AuthService {
         };
 
         // If we have pending profile data and the profile is incomplete, update it
-        if (pendingProfile && (!profile.onboarding_completed || !profile.first_name)) {
+        if (pendingProfile && !profile.first_name) {
           console.log('Updating existing profile with pending data');
           try {
             await this.updateUserProfile(authUser.id, pendingProfile);
@@ -300,8 +275,6 @@ class AuthService {
           email: authUser.email,
           reputation: 0,
           language: authUser.user_metadata?.language || 'en',
-          onboarding_completed: false,
-          onboarding_step: 0,
           email_verified: authUser.email_confirmed_at ? true : false
         };
 
@@ -317,8 +290,6 @@ class AuthService {
             username: username,
             reputation: 0,
             language: 'en',
-            onboarding_completed: false,
-            onboarding_step: 0,
             email_verified: authUser.email_confirmed_at ? true : false,
             email_verified_at: authUser.email_confirmed_at
           };
@@ -343,8 +314,6 @@ class AuthService {
         username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'User',
         reputation: 0,
         language: 'en',
-        onboarding_completed: false,
-        onboarding_step: 0,
         email_verified: authUser.email_confirmed_at ? true : false,
         email_verified_at: authUser.email_confirmed_at
       };

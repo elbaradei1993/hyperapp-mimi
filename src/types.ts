@@ -66,8 +66,6 @@ export interface User {
   interests?: string[];
   reputation?: number;
   language?: string;
-  onboarding_completed?: boolean;
-  onboarding_step?: number;
   profile_completed_at?: string;
   created_at?: string;
   // Credibility system fields
@@ -83,22 +81,7 @@ export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  onboardingCompleted: boolean;
   emailUnconfirmed?: boolean;
-}
-
-export interface OnboardingData {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  location: {
-    latitude: number;
-    longitude: number;
-    address: string;
-  };
-  interests: string[];
-  language: string;
-  notifications: boolean;
 }
 
 export const INTEREST_CATEGORIES = {

@@ -201,9 +201,12 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
   notifications,
   onRemove
 }) => {
+  // Limit to maximum 3 notifications to prevent screen coverage
+  const visibleNotifications = notifications.slice(0, 3);
+
   return (
     <>
-      {notifications.map((notification, index) => (
+      {visibleNotifications.map((notification, index) => (
         <Notification
           key={notification.id}
           type={notification.type}

@@ -230,7 +230,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           phone: formData.signupPhone,
           location: formData.signupLocation,
           interests: signupInterests,
-          onboarding_completed: true, // Mark as completed since all data is collected
           profile_completed_at: new Date().toISOString()
         };
         localStorage.setItem(`pendingProfile_${response.data.user.id}`, JSON.stringify(profileData));
@@ -259,7 +258,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           type: 'success',
           title: t('auth.accountCreated'),
           message: t('auth.checkEmailForConfirmation'),
-          duration: 8000
+          duration: 4000
         });
       } else if (response.data.session) {
         // Auto-confirmed (if disabled in Supabase) - save profile immediately
@@ -273,7 +272,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             phone: formData.signupPhone,
             location: formData.signupLocation,
             interests: signupInterests,
-            onboarding_completed: true, // Mark as completed since all data is collected
             profile_completed_at: new Date().toISOString()
           };
 
@@ -350,12 +348,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       await resetPassword(formData.resetEmail);
       console.log('Password reset email sent');
 
-      addNotification({
-        type: 'success',
-        title: t('auth.passwordResetSent'),
-        message: t('auth.passwordResetInstructions'),
-        duration: 8000
-      });
+        addNotification({
+          type: 'success',
+          title: t('auth.passwordResetSent'),
+          message: t('auth.passwordResetInstructions'),
+          duration: 4000
+        });
 
       setShowForgotPassword(false);
       setFormData(prev => ({ ...prev, resetEmail: '' }));
