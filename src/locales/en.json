@@ -69,7 +69,8 @@
     "verificationEmailSent": "Verification Email Sent",
     "checkEmailForVerificationLink": "Please check your email for the verification link.",
     "resendFailed": "Resend Failed",
-    "tryAgainLater": "Please try again later."
+    "tryAgainLater": "Please try again later.",
+    "forgotPassword": "Forgot Password?"
   },
   "settings": {
     "title": "Settings",

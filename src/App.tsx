@@ -82,17 +82,11 @@ const AppContent: React.FC = () => {
   const center: [number, number] = [30.0444, 31.2357];
   const zoom = 10;
 
-  // Show language selection or auth modal for non-authenticated users
+  // Show language selection for non-authenticated users
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      const savedLanguage = localStorage.getItem('language');
-      if (!savedLanguage) {
-        // New user - show language selection
-        setShowLanguageSelection(true);
-      } else {
-        // Existing user - show auth modal
-        setShowAuthModal(true);
-      }
+      // Always show language selection for non-authenticated users
+      setShowLanguageSelection(true);
     }
   }, [isLoading, isAuthenticated]);
 
