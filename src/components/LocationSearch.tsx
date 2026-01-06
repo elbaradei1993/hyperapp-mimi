@@ -17,6 +17,7 @@ interface SearchState {
   isLoading: boolean;
   isOpen: boolean;
   selectedIndex: number;
+  isInteracting: boolean; // Track when user is actively interacting with dropdown
 }
 
 const LocationSearch: React.FC<LocationSearchProps> = ({
@@ -30,6 +31,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
     isLoading: false,
     isOpen: false,
     selectedIndex: -1,
+    isInteracting: false,
   });
 
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
@@ -157,17 +159,28 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       ...prev,
       isOpen: true,
       // Reset selected index when focusing
-      selectedIndex: prev.results.length > 0 ? 0 : -1
+      selectedIndex: prev.results.length > 0 ? 0 : -1,
+      isInteracting: false, // Reset interaction state on focus
     }));
   }, [updateDropdownPosition]);
+
+  // Handle dropdown mouse enter (user is interacting)
+  const handleDropdownMouseEnter = useCallback(() => {
+    setState(prev => ({ ...prev, isInteracting: true }));
+  }, []);
+
+  // Handle dropdown mouse leave (user stopped interacting)
+  const handleDropdownMouseLeave = useCallback(() => {
+    setState(prev => ({ ...prev, isInteracting: false }));
+  }, []);
 
   // Handle input blur with delay to allow result clicks
   const handleBlur = useCallback(() => {
     // Don't close immediately if we're still loading or have results
     setTimeout(() => {
       setState(prev => {
-        // Don't close if we're still loading or have results and user might be interacting
-        if (prev.isLoading || (prev.results.length > 0 && prev.query.length >= 2)) {
+        // Don't close if we're still loading, have results, or user is actively interacting
+        if (prev.isLoading || prev.isInteracting || (prev.results.length > 0 && prev.query.length >= 2)) {
           return prev;
         }
         return { ...prev, isOpen: false, selectedIndex: -1 };
@@ -183,6 +196,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       isLoading: false,
       isOpen: false,
       selectedIndex: -1,
+      isInteracting: false,
     });
     inputRef.current?.focus();
   }, []);
@@ -190,9 +204,9 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Don't close if we're still loading or have results that user might interact with
+      // Don't close if we're still loading, have results, or user is actively interacting
       setState(prev => {
-        if (prev.isLoading || (prev.results.length > 0 && prev.query.length >= 2)) {
+        if (prev.isLoading || prev.isInteracting || (prev.results.length > 0 && prev.query.length >= 2)) {
           // Only close if click is definitely outside both input and dropdown
           if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
               inputRef.current && !inputRef.current.contains(event.target as Node)) {
@@ -299,6 +313,8 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
                 left: dropdownPosition?.left || 0,
               }}
               onClick={(e) => e.stopPropagation()}
+              onMouseEnter={handleDropdownMouseEnter}
+              onMouseLeave={handleDropdownMouseLeave}
             >
               {/* Loading State */}
               {state.isLoading && state.results.length === 0 && (
