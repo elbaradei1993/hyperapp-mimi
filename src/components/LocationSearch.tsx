@@ -150,11 +150,29 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
     setState(prev => ({ ...prev, isOpen: true }));
   }, [updateDropdownPosition]);
 
+  // Handle input focus with better UX
+  const handleFocusEnhanced = useCallback(() => {
+    updateDropdownPosition();
+    setState(prev => ({
+      ...prev,
+      isOpen: true,
+      // Reset selected index when focusing
+      selectedIndex: prev.results.length > 0 ? 0 : -1
+    }));
+  }, [updateDropdownPosition]);
+
   // Handle input blur with delay to allow result clicks
   const handleBlur = useCallback(() => {
+    // Don't close immediately if we're still loading or have results
     setTimeout(() => {
-      setState(prev => ({ ...prev, isOpen: false, selectedIndex: -1 }));
-    }, 150);
+      setState(prev => {
+        // Don't close if we're still loading or have results and user might be interacting
+        if (prev.isLoading || (prev.results.length > 0 && prev.query.length >= 2)) {
+          return prev;
+        }
+        return { ...prev, isOpen: false, selectedIndex: -1 };
+      });
+    }, 300); // Increased from 150ms to 300ms
   }, []);
 
   // Clear search
@@ -172,10 +190,23 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setState(prev => ({ ...prev, isOpen: false, selectedIndex: -1 }));
-      }
+      // Don't close if we're still loading or have results that user might interact with
+      setState(prev => {
+        if (prev.isLoading || (prev.results.length > 0 && prev.query.length >= 2)) {
+          // Only close if click is definitely outside both input and dropdown
+          if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+              inputRef.current && !inputRef.current.contains(event.target as Node)) {
+            return { ...prev, isOpen: false, selectedIndex: -1 };
+          }
+          return prev;
+        }
+        // Normal behavior for empty states
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+            inputRef.current && !inputRef.current.contains(event.target as Node)) {
+          return { ...prev, isOpen: false, selectedIndex: -1 };
+        }
+        return prev;
+      });
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -212,7 +243,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
           type="text"
           value={state.query}
           onChange={handleInputChange}
-          onFocus={handleFocus}
+          onFocus={handleFocusEnhanced}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           placeholder=""
