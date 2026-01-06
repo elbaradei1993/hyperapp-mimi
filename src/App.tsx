@@ -16,10 +16,6 @@ import AuthCallback from './components/AuthCallback';
 import MagicLinkAuth from './components/MagicLinkAuth';
 import GuardianInvitationHandler from './components/GuardianInvitationHandler';
 import ReportTypeModal from './components/ReportTypeModal';
-import VibeReportModal from './components/VibeReportModal';
-import EmergencyReportModal from './components/EmergencyReportModal';
-import LocationOverrideModal from './components/LocationOverrideModal';
-import LocationPermissionModal from './components/LocationPermissionModal';
 import SplashScreen from './components/SplashScreen';
 import LanguageSelectionScreen from './components/LanguageSelectionScreen';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -40,6 +36,14 @@ const SettingsView = React.lazy(() => import('./components/SettingsView'));
 const CommunityDashboard = React.lazy(() => import('./components/CommunityDashboard'));
 const GuardianView = React.lazy(() => import('./components/GuardianView'));
 const HubView = React.lazy(() => import('./components/HubView'));
+
+// Additional lazy loading for even better performance
+const EditProfileModal = React.lazy(() => import('./components/EditProfileModal'));
+const EmergencyReportModal = React.lazy(() => import('./components/EmergencyReportModal'));
+const VibeReportModal = React.lazy(() => import('./components/VibeReportModal'));
+const LocationOverrideModal = React.lazy(() => import('./components/LocationOverrideModal'));
+const LocationPermissionModal = React.lazy(() => import('./components/LocationPermissionModal'));
+const GuardianEmergencyModal = React.lazy(() => import('./components/GuardianEmergencyModal'));
 
 
 const AppContent: React.FC = () => {
@@ -190,9 +194,9 @@ const AppContent: React.FC = () => {
           // Mark as requested to avoid repeated prompts in this session
           await storageManager.set(permissionRequestedKey, 'true');
         }
-      } catch (error) {
-        console.error('Error requesting notification permission:', error);
-      }
+              } catch (error) {
+                console.error('❌ Failed to save location to database:', error instanceof Error ? error.message : String(error));
+              }
     };
 
     // Request permission after user authentication is confirmed
