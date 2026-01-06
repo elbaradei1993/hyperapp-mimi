@@ -11,7 +11,7 @@ interface LocationPermissionModalProps {
 const LocationPermissionModal: React.FC<LocationPermissionModalProps> = ({
   isOpen,
   onClose,
-  onManualLocation
+  onManualLocation,
 }) => {
   const primaryActionRef = useRef<HTMLButtonElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +44,7 @@ const LocationPermissionModal: React.FC<LocationPermissionModalProps> = ({
       // Modern API with better error handling
       if ('permissions' in navigator && 'geolocation' in navigator) {
         const permissionStatus = await navigator.permissions.query({
-          name: 'geolocation' as PermissionName
+          name: 'geolocation' as PermissionName,
         });
 
         if (permissionStatus.state === 'prompt') {
@@ -61,8 +61,8 @@ const LocationPermissionModal: React.FC<LocationPermissionModalProps> = ({
             {
               enableHighAccuracy: true,
               timeout: 5000,
-              maximumAge: 0
-            }
+              maximumAge: 0,
+            },
           );
         } else {
           setIsLoading(false);
@@ -85,7 +85,9 @@ const LocationPermissionModal: React.FC<LocationPermissionModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Box
@@ -205,7 +207,7 @@ const LocationPermissionModal: React.FC<LocationPermissionModalProps> = ({
               color="white"
               onClick={onManualLocation}
               borderRadius="12px"
-              _hover={{ bg: "blue.600" }}
+              _hover={{ bg: 'blue.600' }}
             >
               Set Location Manually
             </Button>
@@ -228,7 +230,7 @@ const LocationPermissionModal: React.FC<LocationPermissionModalProps> = ({
               borderRadius="12px"
               disabled={isLoading}
               color="blue.500"
-              _hover={{ bg: "blue.50" }}
+              _hover={{ bg: 'blue.50' }}
             >
               {isLoading ? 'Trying...' : 'Try Again'}
             </Button>

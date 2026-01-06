@@ -12,11 +12,13 @@ interface PrivacyPolicyModalProps {
 const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
   isOpen,
   onClose,
-  onAccept
+  onAccept,
 }) => {
   const { t } = useTranslation();
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Box
@@ -158,7 +160,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
                 onClose();
               }}
               borderRadius="12px"
-              _hover={{ bg: "blue.600" }}
+              _hover={{ bg: 'blue.600' }}
             >
               {t('privacy.acceptButton', 'Accept Privacy Policy')}
             </Button>

@@ -8,7 +8,7 @@ export const VIBE_CONFIG = {
   dangerous: { color: '#dc2626', icon: '🚨', label: 'Dangerous' },
   noisy: { color: '#eab308', icon: '🔊', label: 'Noisy' },
   quiet: { color: '#06b6d4', icon: '🤫', label: 'Quiet' },
-  unknown: { color: '#6b7280', icon: '❓', label: 'Unknown' }
+  unknown: { color: '#6b7280', icon: '❓', label: 'Unknown' },
 } as const;
 
 export type VibeType = keyof typeof VIBE_CONFIG;

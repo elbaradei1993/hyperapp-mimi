@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Text, VStack, Button, Spinner } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
+
 import { supabase } from '../lib/supabase';
 
 interface MagicLinkAuthProps {}
@@ -29,13 +30,13 @@ const MagicLinkAuth: React.FC<MagicLinkAuthProps> = () => {
         // we can proceed with authentication. Let's try OTP sign-in
         // which should work since the email is already verified
         const { data, error } = await supabase.auth.signInWithOtp({
-          email: email,
+          email,
           options: {
             shouldCreateUser: false,
             data: {
-              magic_link_verified: true
-            }
-          }
+              magic_link_verified: true,
+            },
+          },
         });
 
         if (error) {
@@ -181,8 +182,8 @@ const MagicLinkAuth: React.FC<MagicLinkAuthProps> = () => {
                   color="white"
                   border="1px solid rgba(255, 255, 255, 0.3)"
                   _hover={{
-                    bg: "rgba(255, 255, 255, 0.3)",
-                    borderColor: "rgba(255, 255, 255, 0.4)"
+                    bg: 'rgba(255, 255, 255, 0.3)',
+                    borderColor: 'rgba(255, 255, 255, 0.4)',
                   }}
                 >
                   Go to Login

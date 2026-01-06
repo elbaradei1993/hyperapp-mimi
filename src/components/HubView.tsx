@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, Text, VStack, HStack, Grid, GridItem, Badge } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../contexts/AuthContext';
-import { hubService } from '../services/hub';
-import { reverseGeocode } from '../lib/geocoding';
-import { backgroundLocationService } from '../services/backgroundLocationService';
-import { supabase } from '../lib/supabase';
-import { formatNumber, formatPercentage, formatDistance, formatTemperature } from '../lib/arabicUtils';
 import {
   CloudRain,
   Calendar,
@@ -35,8 +29,15 @@ import {
   Loader,
   Shield,
   Users,
-  Bell
+  Bell,
 } from 'lucide-react';
+
+import { useAuth } from '../contexts/AuthContext';
+import { hubService } from '../services/hub';
+import { reverseGeocode } from '../lib/geocoding';
+import { backgroundLocationService } from '../services/backgroundLocationService';
+import { supabase } from '../lib/supabase';
+import { formatNumber, formatPercentage, formatDistance, formatTemperature } from '../lib/arabicUtils';
 
 interface HubViewProps {
   userLocation: [number, number] | null;
@@ -69,7 +70,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
       temperature: number;
       condition: string;
       precipitationProbability: number;
-    }>
+    }>,
   });
 
   const [events, setEvents] = useState<Array<{
@@ -87,7 +88,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
     traffic: 0,
     other: 0,
     reports: [] as string[],
-    hasReports: false
+    hasReports: false,
   });
 
   const [neighborhoodRhythm, setNeighborhoodRhythm] = useState<{
@@ -99,7 +100,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
     timeRange: string;
     activityLevels: ('low' | 'medium' | 'high')[];
     insights: string[];
-  } | null>(null);
+      } | null>(null);
 
   const [currentAddress, setCurrentAddress] = useState('Downtown Financial District');
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
@@ -144,7 +145,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
           setInfrastructureData(infrastructureData);
         },
         userLocation[0],
-        userLocation[1]
+        userLocation[1],
       );
 
       return () => {
@@ -167,7 +168,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
         windDirection: 180,
         humidity: 65,
         uvIndex: 3.2,
-        hourlyForecast: []
+        hourlyForecast: [],
       });
       setEvents([]);
       setInfrastructureData({
@@ -178,7 +179,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
         traffic: 0,
         other: 0,
         reports: [],
-        hasReports: false
+        hasReports: false,
       });
       setNeighborhoodRhythm(null);
       setCurrentAddress('Location not available');
@@ -202,7 +203,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
         windDirection: weather.windDirection || 180,
         humidity: weather.humidity || 65,
         uvIndex: weather.uvIndex || 3.2,
-        hourlyForecast: weather.hourlyForecast || []
+        hourlyForecast: weather.hourlyForecast || [],
       });
       setIsLoadingWeather(false);
 
@@ -249,7 +250,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
         windDirection: 180,
         humidity: 65,
         uvIndex: 3.2,
-        hourlyForecast: []
+        hourlyForecast: [],
       });
       setEvents([]);
       setInfrastructureData({
@@ -260,7 +261,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
         traffic: 0,
         other: 0,
         reports: [],
-        hasReports: false
+        hasReports: false,
       });
       setCurrentAddress('Unable to load location');
       setIsLoadingWeather(false);
@@ -273,8 +274,8 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
       id: 'venue-search',
       icon: QrCode,
       name: t('hub.ambientTrust.verificationHub.findVenues'),
-      desc: t('hub.verificationModal.venueSearch.description')
-    }
+      desc: t('hub.verificationModal.venueSearch.description'),
+    },
   ];
 
 
@@ -291,7 +292,9 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
   };
 
   const loadNearbyVenues = async () => {
-    if (!userLocation) return;
+    if (!userLocation) {
+      return;
+    }
 
     setIsLoadingNearbyVenues(true);
     try {
@@ -308,7 +311,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
               console.error('Error checking update permission for venue:', venue.id, error);
               return { ...venue, canUpdate: false };
             }
-          })
+          }),
         );
         setNearbyVerifiedVenues(venuesWithUpdateStatus);
       } else {
@@ -323,7 +326,9 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
   };
 
   const loadNearbyTrustedUsers = async () => {
-    if (!userLocation) return;
+    if (!userLocation) {
+      return;
+    }
 
     setIsLoadingTrustedUsers(true);
     try {
@@ -344,7 +349,9 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
   };
 
   const loadNeighborhoodWatchData = async () => {
-    if (!userLocation) return;
+    if (!userLocation) {
+      return;
+    }
 
     setIsLoadingNeighborhoodWatch(true);
     try {
@@ -364,24 +371,24 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
     setShowVerificationModal(true);
   };
 
-    const VerificationModal: React.FC<{ type: string; userLocation: [number, number] | null; selectedVenue: any; onClose: () => void; onVenueUpdate?: () => void }> = React.memo(({ type, userLocation, selectedVenue: propSelectedVenue, onClose, onVenueUpdate }) => {
+  const VerificationModal: React.FC<{ type: string; userLocation: [number, number] | null; selectedVenue: any; onClose: () => void; onVenueUpdate?: () => void }> = React.memo(({ type, userLocation, selectedVenue: propSelectedVenue, onClose, onVenueUpdate }) => {
     console.log('VerificationModal rendered with type:', type);
 
     const [isVerifying, setIsVerifying] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [nearbyVenues, setNearbyVenues] = useState<any[]>([]);
-  const [selectedVenue, setSelectedVenue] = useState<any>(null);
-  const [venueSafetyDetails, setVenueSafetyDetails] = useState<any>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isLoadingNearby, setIsLoadingNearby] = useState(false);
-  const [showCriteriaForm, setShowCriteriaForm] = useState(false);
+    const [selectedVenue, setSelectedVenue] = useState<any>(null);
+    const [venueSafetyDetails, setVenueSafetyDetails] = useState<any>(null);
+    const [isSearching, setIsSearching] = useState(false);
+    const [isLoadingNearby, setIsLoadingNearby] = useState(false);
+    const [showCriteriaForm, setShowCriteriaForm] = useState(false);
     const [verificationCriteria, setVerificationCriteria] = useState({
       lighting: 5,
       security: 5,
       cleanliness: 5,
       accessibility: 5,
-      staffPresence: 5
+      staffPresence: 5,
     });
     const [verificationNotes, setVerificationNotes] = useState('');
 
@@ -414,7 +421,9 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
     };
 
     const checkAndPreFillUserVerification = async (venueId: string) => {
-      if (!user) return;
+      if (!user) {
+        return;
+      }
 
       try {
         // Check if user has submitted verification for this venue
@@ -435,7 +444,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
               security: userVerification.security_score,
               cleanliness: userVerification.cleanliness_score,
               accessibility: userVerification.accessibility_score,
-              staffPresence: userVerification.staff_presence_score
+              staffPresence: userVerification.staff_presence_score,
             });
             setVerificationNotes(userVerification.notes || '');
           }
@@ -456,7 +465,9 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
     }, [searchQuery, type]);
 
     const loadNearbyVenues = async () => {
-      if (!userLocation) return;
+      if (!userLocation) {
+        return;
+      }
 
       console.log('loadNearbyVenues called with userLocation:', userLocation);
       setIsLoadingNearby(true);
@@ -472,7 +483,9 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
     };
 
     const handleSearch = async (query: string) => {
-      if (!query.trim() || !userLocation) return;
+      if (!query.trim() || !userLocation) {
+        return;
+      }
 
       setIsSearching(true);
       try {
@@ -514,7 +527,9 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
     };
 
     const handleSubmitVerification = async () => {
-      if (!propSelectedVenue || !user || !userLocation) return;
+      if (!propSelectedVenue || !user || !userLocation) {
+        return;
+      }
 
       setIsVerifying(true);
       try {
@@ -529,7 +544,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
             user.id,
             propSelectedVenue.id,
             verificationCriteria,
-            verificationNotes
+            verificationNotes,
           );
           console.log('Venue verification updated successfully');
         } else {
@@ -542,7 +557,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
             category: propSelectedVenue?.category || 'other',
             verificationCriteria,
             userLocation: { latitude: userLocation[0], longitude: userLocation[1] },
-            notes: verificationNotes
+            notes: verificationNotes,
           });
           console.log('Venue verification submitted successfully');
         }
@@ -565,241 +580,241 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
 
     const renderModalContent = () => {
       switch (type) {
-        case 'venue-search':
-          return (
-            <Box>
-              <Text fontSize="14px" color="gray.600" textAlign="center" mb={4}>
-                {t('hub.verificationModal.venueSearch.description')}
-              </Text>
+      case 'venue-search':
+        return (
+          <Box>
+            <Text fontSize="14px" color="gray.600" textAlign="center" mb={4}>
+              {t('hub.verificationModal.venueSearch.description')}
+            </Text>
 
-              {/* Search Input */}
-              <Box mb={4}>
-                <input
-                  type="text"
-                  placeholder={t('hub.verificationModal.venueSearch.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    outline: 'none'
-                  }}
-                />
-                {isSearching && (
-                  <Text fontSize="12px" color="gray.500" mt={1}>
+            {/* Search Input */}
+            <Box mb={4}>
+              <input
+                type="text"
+                placeholder={t('hub.verificationModal.venueSearch.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  outline: 'none',
+                }}
+              />
+              {isSearching && (
+                <Text fontSize="12px" color="gray.500" mt={1}>
                     Searching...
-                  </Text>
-                )}
-              </Box>
+                </Text>
+              )}
+            </Box>
 
-              {/* Search Results */}
+            {/* Search Results */}
+            <Box maxH="300px" overflowY="auto">
+              {searchResults.length > 0 ? (
+                <VStack gap={2} align="stretch">
+                  {searchResults.map((venue, index) => (
+                    <Box
+                      key={index}
+                      p={3}
+                      bg={selectedVenue?.id === venue.id ? 'black' : 'gray.50'}
+                      color={selectedVenue?.id === venue.id ? 'white' : 'black'}
+                      borderRadius="12px"
+                      cursor="pointer"
+                      border="1px solid"
+                      borderColor={selectedVenue?.id === venue.id ? 'black' : 'gray.200'}
+                      onClick={() => handleVenueSelect(venue)}
+                      _hover={{ bg: selectedVenue?.id === venue.id ? 'black' : 'gray.100' }}
+                    >
+                      <Text fontWeight="600" mb={1}>{venue.name}</Text>
+                      <Text fontSize="12px" opacity={0.8}>
+                        {venue.address || `${venue.distance}m away`}
+                      </Text>
+                    </Box>
+                  ))}
+                </VStack>
+              ) : searchQuery && !isSearching ? (
+                <Box textAlign="center" py={8}>
+                  <Text fontSize="14px" color="gray.500">
+                      No venues found
+                  </Text>
+                </Box>
+              ) : (
+                <Box textAlign="center" py={8}>
+                  <Text fontSize="14px" color="gray.500">
+                    {t('hub.verificationModal.venueSearch.emptyState')}
+                  </Text>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        );
+
+      case 'nearby-venues':
+        return (
+          <Box>
+            <Text fontSize="14px" color="gray.600" textAlign="center" mb={4}>
+                Verified venues near you
+            </Text>
+
+            {/* Loading State */}
+            {isLoadingNearby && (
+              <Box textAlign="center" py={8}>
+                <Text fontSize="14px" color="gray.500">
+                    Loading nearby venues...
+                </Text>
+              </Box>
+            )}
+
+            {/* Nearby Venues */}
+            {!isLoadingNearby && (
               <Box maxH="300px" overflowY="auto">
-                {searchResults.length > 0 ? (
+                {nearbyVenues.length > 0 ? (
                   <VStack gap={2} align="stretch">
-                    {searchResults.map((venue, index) => (
+                    {nearbyVenues.map((venue, index) => (
                       <Box
-                        key={index}
+                        key={venue.id || index}
                         p={3}
-                        bg={selectedVenue?.id === venue.id ? "black" : "gray.50"}
-                        color={selectedVenue?.id === venue.id ? "white" : "black"}
+                        bg={selectedVenue?.id === venue.id ? 'black' : 'gray.50'}
+                        color={selectedVenue?.id === venue.id ? 'white' : 'black'}
                         borderRadius="12px"
                         cursor="pointer"
                         border="1px solid"
-                        borderColor={selectedVenue?.id === venue.id ? "black" : "gray.200"}
+                        borderColor={selectedVenue?.id === venue.id ? 'black' : 'gray.200'}
                         onClick={() => handleVenueSelect(venue)}
-                        _hover={{ bg: selectedVenue?.id === venue.id ? "black" : "gray.100" }}
+                        _hover={{ bg: selectedVenue?.id === venue.id ? 'black' : 'gray.100' }}
                       >
-                        <Text fontWeight="600" mb={1}>{venue.name}</Text>
-                        <Text fontSize="12px" opacity={0.8}>
-                          {venue.address || `${venue.distance}m away`}
-                        </Text>
+                        <HStack justify="space-between" align="flex-start">
+                          <Box flex={1}>
+                            <Text fontWeight="600" mb={1}>{venue.name}</Text>
+                            <Text fontSize="12px" opacity={0.8}>
+                              {venue.type} • {venue.distance}m away
+                            </Text>
+                            <Badge
+                              bg={venue.verificationStatus === 'verified' ? 'green.100' : 'orange.100'}
+                              color={venue.verificationStatus === 'verified' ? 'green.800' : 'orange.800'}
+                              px={2}
+                              py={1}
+                              borderRadius="8px"
+                              fontSize="10px"
+                              fontWeight="500"
+                              mt={1}
+                            >
+                              {venue.verificationStatus}
+                            </Badge>
+                          </Box>
+                        </HStack>
                       </Box>
                     ))}
                   </VStack>
-                ) : searchQuery && !isSearching ? (
-                  <Box textAlign="center" py={8}>
-                    <Text fontSize="14px" color="gray.500">
-                      No venues found
-                    </Text>
-                  </Box>
                 ) : (
                   <Box textAlign="center" py={8}>
                     <Text fontSize="14px" color="gray.500">
-                      {t('hub.verificationModal.venueSearch.emptyState')}
+                        No venues found nearby
                     </Text>
                   </Box>
                 )}
               </Box>
-            </Box>
-          );
+            )}
+          </Box>
+        );
 
-        case 'nearby-venues':
+      case 'safety-score':
+        // Ensure we have a venue to work with
+        if (!propSelectedVenue) {
           return (
             <Box>
               <Text fontSize="14px" color="gray.600" textAlign="center" mb={4}>
-                Verified venues near you
-              </Text>
-
-              {/* Loading State */}
-              {isLoadingNearby && (
-                <Box textAlign="center" py={8}>
-                  <Text fontSize="14px" color="gray.500">
-                    Loading nearby venues...
-                  </Text>
-                </Box>
-              )}
-
-              {/* Nearby Venues */}
-              {!isLoadingNearby && (
-                <Box maxH="300px" overflowY="auto">
-                  {nearbyVenues.length > 0 ? (
-                    <VStack gap={2} align="stretch">
-                      {nearbyVenues.map((venue, index) => (
-                        <Box
-                          key={venue.id || index}
-                          p={3}
-                          bg={selectedVenue?.id === venue.id ? "black" : "gray.50"}
-                          color={selectedVenue?.id === venue.id ? "white" : "black"}
-                          borderRadius="12px"
-                          cursor="pointer"
-                          border="1px solid"
-                          borderColor={selectedVenue?.id === venue.id ? "black" : "gray.200"}
-                          onClick={() => handleVenueSelect(venue)}
-                          _hover={{ bg: selectedVenue?.id === venue.id ? "black" : "gray.100" }}
-                        >
-                          <HStack justify="space-between" align="flex-start">
-                            <Box flex={1}>
-                              <Text fontWeight="600" mb={1}>{venue.name}</Text>
-                              <Text fontSize="12px" opacity={0.8}>
-                                {venue.type} • {venue.distance}m away
-                              </Text>
-                              <Badge
-                                bg={venue.verificationStatus === 'verified' ? 'green.100' : 'orange.100'}
-                                color={venue.verificationStatus === 'verified' ? 'green.800' : 'orange.800'}
-                                px={2}
-                                py={1}
-                                borderRadius="8px"
-                                fontSize="10px"
-                                fontWeight="500"
-                                mt={1}
-                              >
-                                {venue.verificationStatus}
-                              </Badge>
-                            </Box>
-                          </HStack>
-                        </Box>
-                      ))}
-                    </VStack>
-                  ) : (
-                    <Box textAlign="center" py={8}>
-                      <Text fontSize="14px" color="gray.500">
-                        No venues found nearby
-                      </Text>
-                    </Box>
-                  )}
-                </Box>
-              )}
-            </Box>
-          );
-
-        case 'safety-score':
-          // Ensure we have a venue to work with
-          if (!propSelectedVenue) {
-            return (
-              <Box>
-                <Text fontSize="14px" color="gray.600" textAlign="center" mb={4}>
                   Venue safety score analysis
-                </Text>
-                <Box textAlign="center" py={8}>
-                  <Text fontSize="16px" color="gray.600" mt={4}>
-                    {t('hub.verificationModal.safetyScore.noVenueSelected')}
-                  </Text>
-                  <Text fontSize="14px" color="gray.500" mt={2}>
-                    {t('hub.verificationModal.safetyScore.selectVenuePrompt')}
-                  </Text>
-                </Box>
-              </Box>
-            );
-          }
-
-          // Always try to show safety data, even if it's fallback data
-          const venueName = propSelectedVenue?.name || 'Unknown Venue';
-          const venueScore = venueSafetyDetails?.venue?.safetyScore || 7.0;
-          const hasRealVerificationData = venueSafetyDetails?.statistics?.totalReports > 0;
-
-          // Use venue safety details if available, otherwise create fallback data
-          const venueFactors = venueSafetyDetails ? [
-            { label: 'Lighting', value: venueSafetyDetails.factors.lighting },
-            { label: 'Security', value: venueSafetyDetails.factors.security },
-            { label: 'Cleanliness', value: venueSafetyDetails.factors.cleanliness },
-            { label: 'Accessibility', value: venueSafetyDetails.factors.accessibility },
-            { label: 'Staff Presence', value: venueSafetyDetails.factors.staffPresence }
-          ] : [
-            { label: 'Lighting', value: 70 },
-            { label: 'Security', value: 70 },
-            { label: 'Cleanliness', value: 70 },
-            { label: 'Accessibility', value: 70 },
-            { label: 'Staff Presence', value: 70 }
-          ];
-
-          const statistics = venueSafetyDetails?.statistics || {
-            totalReports: 0,
-            officialInspections: 0,
-            incidentResponses: 0,
-            lastUpdated: new Date().toISOString()
-          };
-
-          return (
-            <Box>
-              <Text fontSize="14px" color="gray.600" textAlign="center" mb={4}>
-                {t('hub.verificationModal.safetyScore.description')}
               </Text>
-              {!venueSafetyDetails && (
-                <Box bg="orange.50" borderRadius="8px" p={3} mb={4} border="1px solid" borderColor="orange.200">
-                  <Text fontSize="12px" color="orange.800">
-                    ⚠️ This venue's data may be limited. Help improve it by adding your verification below.
-                  </Text>
-                </Box>
-              )}
-              <Box bg="gray.50" borderRadius="16px" p={4} mb={4}>
-                <HStack justify="space-between" align="center" mb={4}>
-                  <Text fontWeight="600">{venueName}</Text>
-                  <Text fontSize="24px" fontWeight="700">{venueScore}</Text>
-                </HStack>
-                {venueFactors.map((item, index) => (
-                  <Box key={index} mb={3}>
-                    <HStack justify="space-between" mb={1}>
-                      <Text fontSize="12px">{item.label}</Text>
-                      <Text fontSize="12px">{formatNumber(item.value)}%</Text>
-                    </HStack>
-                    <Box h="4px" bg="gray.200" borderRadius="2px" overflow="hidden">
-                      <Box
-                        h="100%"
-                        bg="black"
-                        borderRadius="2px"
-                        w={`${item.value}%`}
-                        transition="width 0.3s ease"
-                      />
-                    </Box>
-                  </Box>
-                ))}
+              <Box textAlign="center" py={8}>
+                <Text fontSize="16px" color="gray.600" mt={4}>
+                  {t('hub.verificationModal.safetyScore.noVenueSelected')}
+                </Text>
+                <Text fontSize="14px" color="gray.500" mt={2}>
+                  {t('hub.verificationModal.safetyScore.selectVenuePrompt')}
+                </Text>
               </Box>
-              <Box textAlign="left">
-                <Text fontWeight="600" mb={2} fontSize="14px">Based on:</Text>
-                <Text fontSize="13px" color="gray.700">
+            </Box>
+          );
+        }
+
+        // Always try to show safety data, even if it's fallback data
+        const venueName = propSelectedVenue?.name || 'Unknown Venue';
+        const venueScore = venueSafetyDetails?.venue?.safetyScore || 7.0;
+        const hasRealVerificationData = venueSafetyDetails?.statistics?.totalReports > 0;
+
+        // Use venue safety details if available, otherwise create fallback data
+        const venueFactors = venueSafetyDetails ? [
+          { label: 'Lighting', value: venueSafetyDetails.factors.lighting },
+          { label: 'Security', value: venueSafetyDetails.factors.security },
+          { label: 'Cleanliness', value: venueSafetyDetails.factors.cleanliness },
+          { label: 'Accessibility', value: venueSafetyDetails.factors.accessibility },
+          { label: 'Staff Presence', value: venueSafetyDetails.factors.staffPresence },
+        ] : [
+          { label: 'Lighting', value: 70 },
+          { label: 'Security', value: 70 },
+          { label: 'Cleanliness', value: 70 },
+          { label: 'Accessibility', value: 70 },
+          { label: 'Staff Presence', value: 70 },
+        ];
+
+        const statistics = venueSafetyDetails?.statistics || {
+          totalReports: 0,
+          officialInspections: 0,
+          incidentResponses: 0,
+          lastUpdated: new Date().toISOString(),
+        };
+
+        return (
+          <Box>
+            <Text fontSize="14px" color="gray.600" textAlign="center" mb={4}>
+              {t('hub.verificationModal.safetyScore.description')}
+            </Text>
+            {!venueSafetyDetails && (
+              <Box bg="orange.50" borderRadius="8px" p={3} mb={4} border="1px solid" borderColor="orange.200">
+                <Text fontSize="12px" color="orange.800">
+                    ⚠️ This venue's data may be limited. Help improve it by adding your verification below.
+                </Text>
+              </Box>
+            )}
+            <Box bg="gray.50" borderRadius="16px" p={4} mb={4}>
+              <HStack justify="space-between" align="center" mb={4}>
+                <Text fontWeight="600">{venueName}</Text>
+                <Text fontSize="24px" fontWeight="700">{venueScore}</Text>
+              </HStack>
+              {venueFactors.map((item, index) => (
+                <Box key={index} mb={3}>
+                  <HStack justify="space-between" mb={1}>
+                    <Text fontSize="12px">{item.label}</Text>
+                    <Text fontSize="12px">{formatNumber(item.value)}%</Text>
+                  </HStack>
+                  <Box h="4px" bg="gray.200" borderRadius="2px" overflow="hidden">
+                    <Box
+                      h="100%"
+                      bg="black"
+                      borderRadius="2px"
+                      w={`${item.value}%`}
+                      transition="width 0.3s ease"
+                    />
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+            <Box textAlign="left">
+              <Text fontWeight="600" mb={2} fontSize="14px">Based on:</Text>
+              <Text fontSize="13px" color="gray.700">
                   • {formatNumber(statistics.totalReports)} community reports<br/>
                   • {formatNumber(statistics.officialInspections)} official inspections<br/>
                   • {formatNumber(statistics.incidentResponses)} incident responses<br/>
                   • Updated: {new Date(statistics.lastUpdated).toLocaleDateString()}
-                </Text>
-              </Box>
+              </Text>
             </Box>
-          );
-        default:
-          return null;
+          </Box>
+        );
+      default:
+        return null;
       }
     };
 
@@ -973,7 +988,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                         fontSize: '14px',
                         minHeight: '60px',
                         outline: 'none',
-                        resize: 'vertical'
+                        resize: 'vertical',
                       }}
                     />
                   </Box>
@@ -1020,7 +1035,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                         security: Math.round(venueSafetyDetails.factors.security / 10),
                         cleanliness: Math.round(venueSafetyDetails.factors.cleanliness / 10),
                         accessibility: Math.round(venueSafetyDetails.factors.accessibility / 10),
-                        staffPresence: Math.round(venueSafetyDetails.factors.staffPresence / 10)
+                        staffPresence: Math.round(venueSafetyDetails.factors.staffPresence / 10),
                       });
                     }
                     setShowCriteriaForm(true);
@@ -1169,7 +1184,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
 
               <VStack gap={4} align="stretch">
                 {events.length > 0 ? events.slice(0, 5).map((event, index) => (
-                  <Box key={index} pb={4} borderBottom={index < events.length - 1 ? "1px solid" : "none"} borderColor="gray.200">
+                  <Box key={index} pb={4} borderBottom={index < events.length - 1 ? '1px solid' : 'none'} borderColor="gray.200">
                     <HStack align="flex-start" gap={4}>
                       <Text w="60px" fontSize="12px" color="gray.600" fontWeight="500" pt={1}>
                         {event.time}
@@ -1349,13 +1364,13 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                       {neighborhoodRhythm.activityData.map((height, index) => {
                         const activityLevel = neighborhoodRhythm.activityLevels[index];
                         const barColor = activityLevel === 'high' ? 'red.500' :
-                                        activityLevel === 'medium' ? 'yellow.500' : 'gray.400';
+                          activityLevel === 'medium' ? 'yellow.500' : 'gray.400';
                         return (
                           <Box
                             key={index}
                             w="4px"
                             borderRadius="2px 2px 0 0"
-                            bg={index === new Date().getHours() ? "blue.500" : barColor}
+                            bg={index === new Date().getHours() ? 'blue.500' : barColor}
                             style={{ height: `${Math.max(5, height)}%` }}
                             title={`${activityLevel} activity at ${index}:00`}
                           />
@@ -1374,9 +1389,9 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                           const isCurrentHour = i === currentHour;
                           const label = isCurrentHour ? 'NOW' : `${displayHour} ${period}`;
                           labels.push(
-                            <Text key={i} color={isCurrentHour ? "blue.600" : "gray.500"} fontWeight={isCurrentHour ? "600" : "400"}>
+                            <Text key={i} color={isCurrentHour ? 'blue.600' : 'gray.500'} fontWeight={isCurrentHour ? '600' : '400'}>
                               {label}
-                            </Text>
+                            </Text>,
                           );
                         }
                         return labels;
@@ -1487,7 +1502,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                     border="1px solid"
                     borderColor="gray.200"
                     onClick={() => handleVerificationClick(item.id)}
-                    _hover={{ bg: "gray.100", borderColor: "black", transform: "translateY(-2px)" }}
+                    _hover={{ bg: 'gray.100', borderColor: 'black', transform: 'translateY(-2px)' }}
                   >
                     <Box fontSize="24px" mb={3} color="black">
                       <item.icon />
@@ -1522,7 +1537,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                   borderColor="gray.200"
                   cursor="pointer"
                   onClick={() => setShowTrustedUsersList(true)}
-                  _hover={{ bg: "gray.100", borderColor: "black" }}
+                  _hover={{ bg: 'gray.100', borderColor: 'black' }}
                   transition="all 0.2s"
                 >
                   <Text fontSize="12px" color="gray.600" mb={2}>{t('hub.ambientTrust.neighborhoodWatch.trustedNearby')}</Text>
@@ -1574,7 +1589,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                     fontSize="12px"
                     fontWeight="700"
                     onClick={() => setShowGuardianAlertModal(true)}
-                    _hover={{ bg: "linear-gradient(135deg, #FFA500 0%, #FF8C00 100%)" }}
+                    _hover={{ bg: 'linear-gradient(135deg, #FFA500 0%, #FF8C00 100%)' }}
                   >
                     Create Alert
                   </Button>
@@ -1593,7 +1608,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                     borderColor="red.200"
                     cursor="pointer"
                     onClick={() => setShowGuardianAlertModal(true)}
-                    _hover={{ bg: "red.100", borderColor: "red.300" }}
+                    _hover={{ bg: 'red.100', borderColor: 'red.300' }}
                     transition="all 0.2s"
                   >
                     <Box w="32px" h="32px" borderRadius="8px" bg="red.500" display="flex" alignItems="center" justifyContent="center" mb={3}>
@@ -1611,7 +1626,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                     borderColor="orange.200"
                     cursor="pointer"
                     onClick={() => setShowGuardianAlertModal(true)}
-                    _hover={{ bg: "orange.100", borderColor: "orange.300" }}
+                    _hover={{ bg: 'orange.100', borderColor: 'orange.300' }}
                     transition="all 0.2s"
                   >
                     <Box w="32px" h="32px" borderRadius="8px" bg="orange.500" display="flex" alignItems="center" justifyContent="center" mb={3}>
@@ -1649,8 +1664,8 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                     const baseDetails = score >= 8.0
                       ? t('hub.ambientTrust.nearbySafetyScores.venueDetails.highScore')
                       : score >= 6.0
-                      ? t('hub.ambientTrust.nearbySafetyScores.venueDetails.mediumScore')
-                      : t('hub.ambientTrust.nearbySafetyScores.venueDetails.lowScore');
+                        ? t('hub.ambientTrust.nearbySafetyScores.venueDetails.mediumScore')
+                        : t('hub.ambientTrust.nearbySafetyScores.venueDetails.lowScore');
 
                     // Add distance information
                     const distanceKm = venue.distance / 1000;
@@ -1705,7 +1720,7 @@ const HubView: React.FC<HubViewProps> = ({ userLocation: initialUserLocation }) 
                       px={8}
                       py={3}
                       onClick={() => handleVerificationClick('venue-search')}
-                      _hover={{ bg: "gray.800" }}
+                      _hover={{ bg: 'gray.800' }}
                     >
                       Find Venues
                     </Button>
@@ -1840,7 +1855,7 @@ const TrustedUsersListModal: React.FC<{
                   borderColor="gray.200"
                   cursor="pointer"
                   onClick={() => onNavigateToUser(user)}
-                  _hover={{ bg: "gray.100", borderColor: "#FFD700" }}
+                  _hover={{ bg: 'gray.100', borderColor: '#FFD700' }}
                   transition="all 0.2s"
                 >
                   <HStack justify="space-between" align="flex-start">
@@ -1873,7 +1888,7 @@ const TrustedUsersListModal: React.FC<{
                         e.stopPropagation();
                         onNavigateToUser(user);
                       }}
-                      _hover={{ bg: "#FFD700", borderColor: "#FFD700", color: "black" }}
+                      _hover={{ bg: '#FFD700', borderColor: '#FFD700', color: 'black' }}
                     >
                       View on Map
                     </Button>
@@ -1910,7 +1925,9 @@ const GuardianAlertModal: React.FC<{
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreateAlert = async () => {
-    if (!user || !userLocation || !title.trim() || !message.trim()) return;
+    if (!user || !userLocation || !title.trim() || !message.trim()) {
+      return;
+    }
 
     setIsCreating(true);
     try {
@@ -1925,7 +1942,7 @@ const GuardianAlertModal: React.FC<{
         longitude: userLocation[1],
         radius_km: radius,
         expires_at: expiresAt,
-        user_id: user.id
+        user_id: user.id,
       });
 
       onAlertCreated();
@@ -1942,26 +1959,26 @@ const GuardianAlertModal: React.FC<{
       value: 'emergency' as const,
       label: '🚨 Emergency Alert',
       description: 'Immediate danger or crisis requiring urgent attention',
-      color: 'red'
+      color: 'red',
     },
     {
       value: 'warning' as const,
       label: '⚠️ Safety Warning',
       description: 'Potential hazards or concerning situations',
-      color: 'orange'
+      color: 'orange',
     },
     {
       value: 'announcement' as const,
       label: '📢 Community Announcement',
       description: 'Important community information or updates',
-      color: 'blue'
+      color: 'blue',
     },
     {
       value: 'safety' as const,
       label: '🛡️ Safety Advisory',
       description: 'General safety tips and recommendations',
-      color: 'green'
-    }
+      color: 'green',
+    },
   ];
 
   return (
@@ -2019,10 +2036,10 @@ const GuardianAlertModal: React.FC<{
                   <Box
                     key={option.value}
                     p={4}
-                    bg={alertType === option.value ? `${option.color}.50` : "gray.50"}
+                    bg={alertType === option.value ? `${option.color}.50` : 'gray.50'}
                     borderRadius="12px"
                     border="2px solid"
-                    borderColor={alertType === option.value ? `${option.color}.300` : "gray.200"}
+                    borderColor={alertType === option.value ? `${option.color}.300` : 'gray.200'}
                     cursor="pointer"
                     onClick={() => setAlertType(option.value)}
                     transition="all 0.2s"
@@ -2056,7 +2073,7 @@ const GuardianAlertModal: React.FC<{
                       border: '2px solid #e2e8f0',
                       borderRadius: '10px',
                       fontSize: '14px',
-                      outline: 'none'
+                      outline: 'none',
                     }}
                   />
                 </Box>
@@ -2075,7 +2092,7 @@ const GuardianAlertModal: React.FC<{
                       borderRadius: '10px',
                       fontSize: '14px',
                       outline: 'none',
-                      resize: 'vertical'
+                      resize: 'vertical',
                     }}
                   />
                 </Box>
@@ -2099,7 +2116,7 @@ const GuardianAlertModal: React.FC<{
                       border: '2px solid #e2e8f0',
                       borderRadius: '8px',
                       fontSize: '14px',
-                      outline: 'none'
+                      outline: 'none',
                     }}
                   >
                     <option value={0.5}>0.5 km</option>
@@ -2122,7 +2139,7 @@ const GuardianAlertModal: React.FC<{
                       border: '2px solid #e2e8f0',
                       borderRadius: '8px',
                       fontSize: '14px',
-                      outline: 'none'
+                      outline: 'none',
                     }}
                   >
                     <option value={1}>1 hour</option>
@@ -2166,7 +2183,7 @@ const GuardianAlertModal: React.FC<{
             flex={1}
             onClick={handleCreateAlert}
             disabled={isCreating || !title.trim() || !message.trim()}
-            _hover={{ bg: "linear-gradient(135deg, #FFA500 0%, #FF8C00 100%)" }}
+            _hover={{ bg: 'linear-gradient(135deg, #FFA500 0%, #FF8C00 100%)' }}
           >
             {isCreating ? 'Creating...' : 'Create Alert'}
           </Button>

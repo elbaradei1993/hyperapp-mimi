@@ -9,7 +9,7 @@ console.log('🔧 Supabase client initialization', {
   hasKey: !!supabaseKey,
   keyLength: supabaseKey.length,
   isNative: Capacitor.isNativePlatform(),
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 });
 
 // Custom storage adapter for Capacitor to avoid ITP issues
@@ -35,7 +35,7 @@ const capacitorStorageAdapter = {
     } catch (error) {
       console.warn('Storage removeItem failed:', error);
     }
-  }
+  },
 };
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
@@ -45,13 +45,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     detectSessionInUrl: true, // Enable for email confirmation redirects
     flowType: 'pkce', // Recommended for security
     storage: capacitorStorageAdapter, // Use custom storage adapter
-    debug: process.env.NODE_ENV === 'development' // Enable debug logging in development
+    debug: process.env.NODE_ENV === 'development', // Enable debug logging in development
   },
   global: {
     headers: {
-      'X-Client-Info': 'hyperapp-mimi'
-    }
-  }
+      'X-Client-Info': 'hyperapp-mimi',
+    },
+  },
 });
 
 // Test the connection
@@ -61,7 +61,7 @@ supabase.auth.getSession().then(({ data, error }) => {
   } else {
     console.log('✅ Supabase connection test successful', {
       hasSession: !!data.session,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }).catch((error) => {

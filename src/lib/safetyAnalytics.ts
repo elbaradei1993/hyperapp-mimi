@@ -18,7 +18,9 @@ export interface SafetyDataPoint {
  * Returns a percentage (0-100) where higher is safer
  */
 export function calculateSafetyScore(reports: Report[]): number {
-  if (reports.length === 0) return 50; // Neutral score when no data
+  if (reports.length === 0) {
+    return 50;
+  } // Neutral score when no data
 
   const positiveCount = reports.filter(r => POSITIVE_SAFETY_VIBES.includes(r.vibe_type)).length;
   const totalCount = reports.length;
@@ -56,7 +58,7 @@ export function calculateSafetyTrends(reports: Report[], hoursBack: number = 24)
     // Format hour label
     const hourLabel = hourStart.toLocaleTimeString('en-US', {
       hour: 'numeric',
-      hour12: true
+      hour12: true,
     });
 
     dataPoints.push({
@@ -65,7 +67,7 @@ export function calculateSafetyTrends(reports: Report[], hoursBack: number = 24)
       totalReports,
       positiveReports,
       negativeReports,
-      hourLabel
+      hourLabel,
     });
   }
 
@@ -84,25 +86,25 @@ export function getSafetyLevel(score: number): {
     return {
       level: 'safe',
       color: '#10b981',
-      description: 'Safe'
+      description: 'Safe',
     };
   } else if (score >= 40) {
     return {
       level: 'moderate',
       color: '#f59e0b',
-      description: 'Moderate'
+      description: 'Moderate',
     };
   } else if (score >= 0) {
     return {
       level: 'caution',
       color: '#ef4444',
-      description: 'Caution'
+      description: 'Caution',
     };
   } else {
     return {
       level: 'unknown',
       color: '#6b7280',
-      description: 'Unknown'
+      description: 'Unknown',
     };
   }
 }
@@ -111,18 +113,26 @@ export function getSafetyLevel(score: number): {
  * Get trend direction based on recent data points
  */
 export function getSafetyTrend(dataPoints: SafetyDataPoint[]): 'improving' | 'declining' | 'stable' | 'unknown' {
-  if (dataPoints.length < 3) return 'unknown';
+  if (dataPoints.length < 3) {
+    return 'unknown';
+  }
 
   const recent = dataPoints.slice(-3); // Last 3 hours
   const scores = recent.map(d => d.safetyScore).filter(s => s !== null);
 
-  if (scores.length < 2) return 'unknown';
+  if (scores.length < 2) {
+    return 'unknown';
+  }
 
   const first = scores[0];
   const last = scores[scores.length - 1];
   const diff = last - first;
 
-  if (diff > 5) return 'improving';
-  if (diff < -5) return 'declining';
+  if (diff > 5) {
+    return 'improving';
+  }
+  if (diff < -5) {
+    return 'declining';
+  }
   return 'stable';
 }

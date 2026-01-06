@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { VIBE_CONFIG, VibeType } from '../constants/vibes';
 
 interface VibePulseCardProps {
@@ -20,7 +21,7 @@ interface VibePulseCardProps {
 const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
   localCurrentLocationVibe,
   currentLocationVibeDistribution,
-  isGeocoding
+  isGeocoding,
 }) => {
   const { t } = useTranslation();
 
@@ -37,7 +38,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
       dangerous: '🚨',
       noisy: '🔊',
       quiet: '🤫',
-      unknown: '❓'
+      unknown: '❓',
     };
     return iconMap;
   }, []);
@@ -48,26 +49,26 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
 
   const getVibeIconComponent = (vibeType: string) => {
     switch (vibeType) {
-      case 'safe':
-        return '🛡️';
-      case 'calm':
-        return '😌';
-      case 'lively':
-        return '🎉';
-      case 'festive':
-        return '🎊';
-      case 'crowded':
-        return '👥';
-      case 'suspicious':
-        return '⚠️';
-      case 'dangerous':
-        return '🚨';
-      case 'noisy':
-        return '🔊';
-      case 'quiet':
-        return '🤫';
-      default:
-        return '🛡️';
+    case 'safe':
+      return '🛡️';
+    case 'calm':
+      return '😌';
+    case 'lively':
+      return '🎉';
+    case 'festive':
+      return '🎊';
+    case 'crowded':
+      return '👥';
+    case 'suspicious':
+      return '⚠️';
+    case 'dangerous':
+      return '🚨';
+    case 'noisy':
+      return '🔊';
+    case 'quiet':
+      return '🤫';
+    default:
+      return '🛡️';
     }
   };
 
@@ -83,7 +84,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
         textAlign: 'center',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}>
         <div style={{
           color: '#64748b',
@@ -91,7 +92,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
           fontWeight: '600',
           marginTop: '16px',
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
         }}>
           Analyzing community vibe...
         </div>
@@ -106,7 +107,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
         background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
         border: '2px solid #e5e7eb',
         borderRadius: '16px',
-        textAlign: 'center'
+        textAlign: 'center',
       }}>
         <i className="fas fa-chart-bar" style={{ fontSize: '24px', color: '#9ca3af', marginBottom: '8px' }}></i>
         <div style={{ color: '#6b7280', fontSize: '16px', fontWeight: '500' }}>
@@ -124,7 +125,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
       padding: '28px 24px',
       marginTop: '20px',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
     }}>
       {/* Subtle background pattern */}
       <div style={{
@@ -135,7 +136,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
         height: '120px',
         background: `radial-gradient(circle, ${getVibeColor(localCurrentLocationVibe.type)}10 0%, transparent 70%)`,
         borderRadius: '50%',
-        transform: 'translate(40px, -40px)'
+        transform: 'translate(40px, -40px)',
       }}></div>
 
       <div style={{
@@ -143,13 +144,13 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
         flexDirection: 'column',
         gap: '24px',
         position: 'relative',
-        zIndex: 1
+        zIndex: 1,
       }}>
         {/* Header */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px'
+          gap: '12px',
         }}>
           <div style={{
             fontSize: '1.5rem',
@@ -157,7 +158,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
             color: 'var(--text-primary)',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            gap: '12px',
           }}>
             <span style={{ fontSize: '1.5rem' }}>
               {getVibeIconComponent(localCurrentLocationVibe.type)}
@@ -170,19 +171,19 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '24px'
+          gap: '24px',
         }}>
           {/* Premium Circular Progress Chart */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '20px'
+            gap: '20px',
           }}>
             <div style={{
               position: 'relative',
               borderRadius: '50%',
-              filter: 'drop-shadow(0 8px 32px rgba(0, 0, 0, 0.12))'
+              filter: 'drop-shadow(0 8px 32px rgba(0, 0, 0, 0.12))',
             }}>
               {/* Premium Background Glow */}
               <div style={{
@@ -195,7 +196,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                 borderRadius: '50%',
                 background: `radial-gradient(circle, ${getVibeColor(localCurrentLocationVibe.type)}15 0%, ${getVibeColor(localCurrentLocationVibe.type)}08 40%, transparent 70%)`,
                 animation: 'premiumGlow 3s ease-in-out infinite',
-                zIndex: -1
+                zIndex: -1,
               }}></div>
 
               {/* Sophisticated Pulsing Rings */}
@@ -210,7 +211,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                 border: `1.5px solid ${getVibeColor(localCurrentLocationVibe.type)}60`,
                 boxShadow: `0 0 20px ${getVibeColor(localCurrentLocationVibe.type)}40, inset 0 0 20px ${getVibeColor(localCurrentLocationVibe.type)}20`,
                 animation: 'premiumPulse1 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite',
-                zIndex: 0
+                zIndex: 0,
               }}></div>
               <div style={{
                 position: 'absolute',
@@ -223,7 +224,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                 border: `1px solid ${getVibeColor(localCurrentLocationVibe.type)}45`,
                 boxShadow: `0 0 15px ${getVibeColor(localCurrentLocationVibe.type)}30`,
                 animation: 'premiumPulse2 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite 0.8s',
-                zIndex: 0
+                zIndex: 0,
               }}></div>
               <div style={{
                 position: 'absolute',
@@ -236,7 +237,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                 border: `0.8px solid ${getVibeColor(localCurrentLocationVibe.type)}30`,
                 boxShadow: `0 0 10px ${getVibeColor(localCurrentLocationVibe.type)}20`,
                 animation: 'premiumPulse3 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite 1.6s',
-                zIndex: 0
+                zIndex: 0,
               }}></div>
 
               {/* Metallic Particles Effect */}
@@ -247,7 +248,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                 transform: 'translate(-50%, -50%)',
                 width: '220px',
                 height: '220px',
-                zIndex: -1
+                zIndex: -1,
               }}>
                 {[...Array(8)].map((_, i) => (
                   <div key={i} style={{
@@ -260,7 +261,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                     top: `${50 + 35 * Math.sin((i * 45) * Math.PI / 180)}%`,
                     left: `${50 + 35 * Math.cos((i * 45) * Math.PI / 180)}%`,
                     animation: `particleFloat 4s ease-in-out infinite ${i * 0.5}s`,
-                    opacity: 0.7
+                    opacity: 0.7,
                   }}></div>
                 ))}
               </div>
@@ -269,7 +270,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
               <div style={{
                 position: 'relative',
                 zIndex: 2,
-                filter: 'drop-shadow(0 4px 16px rgba(0, 0, 0, 0.15))'
+                filter: 'drop-shadow(0 4px 16px rgba(0, 0, 0, 0.15))',
               }}>
                 <div style={{
                   width: '140px',
@@ -279,12 +280,12 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  position: 'relative'
+                  position: 'relative',
                 }}>
                   {/* Center Content */}
                   <div style={{
                     textAlign: 'center',
-                    position: 'relative'
+                    position: 'relative',
                   }}>
                     {/* Premium Center Glow */}
                     <div style={{
@@ -297,7 +298,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                       borderRadius: '50%',
                       background: `radial-gradient(circle, ${getVibeColor(localCurrentLocationVibe.type)}20 0%, transparent 70%)`,
                       animation: 'centerGlow 3s ease-in-out infinite',
-                      zIndex: -1
+                      zIndex: -1,
                     }}></div>
 
                     <div style={{
@@ -310,7 +311,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
                       textShadow: `0 2px 8px ${getVibeColor(localCurrentLocationVibe.type)}40`,
-                      animation: 'textGlow 2s ease-in-out infinite alternate'
+                      animation: 'textGlow 2s ease-in-out infinite alternate',
                     }}>
                       {localCurrentLocationVibe.percentage}%
                     </div>
@@ -321,7 +322,7 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
                       letterSpacing: '0.15em',
                       color: `${getVibeColor(localCurrentLocationVibe.type)}ee`,
                       textShadow: `0 1px 3px ${getVibeColor(localCurrentLocationVibe.type)}30`,
-                      animation: 'textPulse 2s ease-in-out infinite alternate'
+                      animation: 'textPulse 2s ease-in-out infinite alternate',
                     }}>
                       {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}
                     </div>
@@ -340,13 +341,13 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-              marginTop: '20px'
+              marginTop: '20px',
             }}>
               <div style={{
                 color: '#64748b',
                 fontSize: '0.875rem',
                 fontWeight: '600',
-                letterSpacing: '0.02em'
+                letterSpacing: '0.02em',
               }}>
                 {t('community.sentimentDistribution')}
               </div>
@@ -360,20 +361,20 @@ const VibePulseCard: React.FC<VibePulseCardProps> = memo(({
             border: '1px solid rgba(255, 255, 255, 0.3)',
             borderRadius: '16px',
             padding: '20px',
-            textAlign: 'left'
+            textAlign: 'left',
           }}>
             <div style={{
               fontSize: '1.25rem',
               fontWeight: '800',
               color: getVibeColor(localCurrentLocationVibe.type),
-              marginBottom: '8px'
+              marginBottom: '8px',
             }}>
               {t(`vibes.${localCurrentLocationVibe.type}`, localCurrentLocationVibe.type)}
             </div>
             <div style={{
               color: '#64748b',
               fontSize: '0.875rem',
-              lineHeight: '1.5'
+              lineHeight: '1.5',
             }}>
               {t(`vibes.${localCurrentLocationVibe.type}Desc`, `${localCurrentLocationVibe.type} atmosphere description`)}
             </div>

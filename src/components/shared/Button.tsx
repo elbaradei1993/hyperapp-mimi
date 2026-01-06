@@ -24,67 +24,67 @@ const Button: React.FC<ButtonProps> = ({
   const responsiveSize = useBreakpointValue({
     base: size === 'lg' ? 'md' : size, // Only reduce large buttons on mobile
     sm: size,
-    md: size
+    md: size,
   }) as 'sm' | 'md' | 'lg';
 
   // Map our custom variants to Chakra variants
   const getChakraVariant = (variant: string) => {
     switch (variant) {
-      case 'primary':
-        return 'solid';
-      case 'secondary':
-        return 'solid';
-      case 'outline':
-        return 'outline';
-      case 'ghost':
-        return 'ghost';
-      default:
-        return 'solid';
+    case 'primary':
+      return 'solid';
+    case 'secondary':
+      return 'solid';
+    case 'outline':
+      return 'outline';
+    case 'ghost':
+      return 'ghost';
+    default:
+      return 'solid';
     }
   };
 
   const getChakraColorScheme = (variant: string) => {
     switch (variant) {
-      case 'primary':
-        return 'brand';
-      case 'success':
-        return 'green';
-      case 'danger':
-        return 'red';
-      case 'secondary':
-        return 'gray';
-      default:
-        return 'brand';
+    case 'primary':
+      return 'brand';
+    case 'success':
+      return 'green';
+    case 'danger':
+      return 'red';
+    case 'secondary':
+      return 'gray';
+    default:
+      return 'brand';
     }
   };
 
   // Improved size configurations with consistent scaling
   const getSizeStyles = (size: string) => {
     switch (size) {
-      case 'sm':
-        return {
-          fontSize: 'sm',
-          px: 3,
-          py: 2,
-          minH: '40px', // Increased for better touch targets
-          minW: '40px',
-        };
-      case 'lg':
-        return {
-          fontSize: 'md', // Reduced from lg to maintain proportion
-          px: 5,
-          py: 2.5,
-          minH: '48px', // Reduced from 52px for better proportion
-          minW: '48px',
-        };
-      default: // md
-        return {
-          fontSize: 'md',
-          px: 4,
-          py: 2.5,
-          minH: '44px',
-          minW: '44px',
-        };
+    case 'sm':
+      return {
+        fontSize: 'sm',
+        px: 3,
+        py: 2,
+        minH: '40px', // Increased for better touch targets
+        minW: '40px',
+      };
+    case 'lg':
+      return {
+        fontSize: 'md', // Reduced from lg to maintain proportion
+        px: 5,
+        py: 2.5,
+        minH: '48px', // Reduced from 52px for better proportion
+        minW: '48px',
+      };
+    default: // md
+      return {
+        fontSize: 'md',
+        px: 4,
+        py: 2.5,
+        minH: '44px',
+        minW: '44px',
+      };
     }
   };
 

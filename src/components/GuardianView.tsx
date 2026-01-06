@@ -1,12 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { Box, Button, Text, VStack, HStack, Grid, GridItem, Badge, Input, Textarea } from '@chakra-ui/react';
+import {
+  Shield,
+  Plus,
+  Users,
+  MapPin,
+  Bell,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Send,
+  Settings,
+  Heart,
+  Phone,
+  Mail,
+  MessageSquare,
+} from 'lucide-react';
+
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { guardianService, GuardianRelationship, GuardianInvitation, GuardianSOSAlert } from '../services/guardian';
+
 import { LoadingSpinner } from './shared';
-import { motion } from 'framer-motion';
 import EmergencyReportModal from './EmergencyReportModal';
-import { Box, Button, Text, VStack, HStack, Grid, GridItem, Badge, Input, Textarea } from '@chakra-ui/react';
+
 
 // Custom Guardian Emergency Modal that uses the same UI as EmergencyReportModal
 // but sends alerts to guardians instead of creating community reports
@@ -31,29 +51,29 @@ const GuardianEmergencyModal: React.FC<{
       label: t('guardian.emergencyTypes.medical'),
       icon: AlertTriangle,
       color: '#dc2626',
-      description: t('guardian.emergencyTypes.medicalDesc')
+      description: t('guardian.emergencyTypes.medicalDesc'),
     },
     {
       id: 'safety',
       label: t('guardian.emergencyTypes.personalSafety'),
       icon: Heart,
       color: '#ea580c',
-      description: t('guardian.emergencyTypes.personalSafetyDesc')
+      description: t('guardian.emergencyTypes.personalSafetyDesc'),
     },
     {
       id: 'location',
       label: t('guardian.emergencyTypes.locationCheckIn'),
       icon: MapPin,
       color: '#059669',
-      description: t('guardian.emergencyTypes.locationCheckInDesc')
+      description: t('guardian.emergencyTypes.locationCheckInDesc'),
     },
     {
       id: 'custom',
       label: t('guardian.emergencyTypes.custom'),
       icon: MessageSquare,
       color: '#7c3aed',
-      description: t('guardian.emergencyTypes.customDesc')
-    }
+      description: t('guardian.emergencyTypes.customDesc'),
+    },
   ];
 
   useEffect(() => {
@@ -87,7 +107,7 @@ const GuardianEmergencyModal: React.FC<{
           setLocation('Location not available');
           setLocationLoading(false);
         },
-        { timeout: 10000, enableHighAccuracy: true }
+        { timeout: 10000, enableHighAccuracy: true },
       );
     } else {
       setLocation('Location not available');
@@ -96,7 +116,9 @@ const GuardianEmergencyModal: React.FC<{
   };
 
   const handleSubmit = async () => {
-    if (!selectedEmergency || !description.trim()) return;
+    if (!selectedEmergency || !description.trim()) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -114,7 +136,9 @@ const GuardianEmergencyModal: React.FC<{
   };
 
   // Use the same UI structure as EmergencyReportModal but simplified
-  if (!isOpen && !showSuccess) return null;
+  if (!isOpen && !showSuccess) {
+    return null;
+  }
 
   if (showSuccess) {
     return (
@@ -131,7 +155,7 @@ const GuardianEmergencyModal: React.FC<{
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-        padding: window.innerWidth < 480 ? '16px' : '20px'
+        padding: window.innerWidth < 480 ? '16px' : '20px',
       }}>
         <div style={{
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
@@ -145,7 +169,7 @@ const GuardianEmergencyModal: React.FC<{
           border: '1px solid rgba(255, 255, 255, 0.2)',
           textAlign: 'center',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}>
           <div style={{
             position: 'absolute',
@@ -154,13 +178,13 @@ const GuardianEmergencyModal: React.FC<{
             right: 0,
             bottom: 0,
             background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.06) 50%, rgba(185, 28, 28, 0.04) 100%)',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
           }}></div>
 
           <div style={{
             position: 'relative',
             zIndex: 1,
-            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem'
+            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem',
           }}>
             <div style={{
               width: window.innerWidth < 480 ? '80px' : '100px',
@@ -172,9 +196,9 @@ const GuardianEmergencyModal: React.FC<{
               justifyContent: 'center',
               margin: '0 auto',
               boxShadow: '0 20px 40px rgba(239, 68, 68, 0.3), 0 10px 20px rgba(239, 68, 68, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.2)',
-              animation: 'guardianSuccessPulse 2s ease-in-out infinite'
+              animation: 'guardianSuccessPulse 2s ease-in-out infinite',
             }}>
-              <CheckCircle size={window.innerWidth < 480 ? "32" : "40"} color="white" />
+              <CheckCircle size={window.innerWidth < 480 ? '32' : '40'} color="white" />
             </div>
           </div>
 
@@ -189,7 +213,7 @@ const GuardianEmergencyModal: React.FC<{
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               letterSpacing: '-0.025em',
-              lineHeight: '1.2'
+              lineHeight: '1.2',
             }}>
               {t('guardian.alertSent')}
             </h3>
@@ -201,7 +225,7 @@ const GuardianEmergencyModal: React.FC<{
               lineHeight: '1.5',
               maxWidth: '280px',
               marginLeft: 'auto',
-              marginRight: 'auto'
+              marginRight: 'auto',
             }}>
               {t('guardian.alertSentDesc')}
             </p>
@@ -236,7 +260,7 @@ const GuardianEmergencyModal: React.FC<{
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
-      padding: '20px'
+      padding: '20px',
     }}>
       <div style={{
         background: 'white',
@@ -245,7 +269,7 @@ const GuardianEmergencyModal: React.FC<{
         maxWidth: '500px',
         maxHeight: '90vh',
         overflow: 'auto',
-        position: 'relative'
+        position: 'relative',
       }}>
         <button
           onClick={onClose}
@@ -264,7 +288,7 @@ const GuardianEmergencyModal: React.FC<{
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '4px',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--bg-tertiary)';
@@ -290,7 +314,7 @@ const GuardianEmergencyModal: React.FC<{
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 16px',
-              boxShadow: '0 8px 24px rgba(239, 68, 68, 0.3)'
+              boxShadow: '0 8px 24px rgba(239, 68, 68, 0.3)',
             }}>
               <AlertTriangle size={28} color="white" />
             </div>
@@ -298,7 +322,7 @@ const GuardianEmergencyModal: React.FC<{
               fontSize: '20px',
               fontWeight: '700',
               color: 'var(--text-primary)',
-              margin: '0 0 8px 0'
+              margin: '0 0 8px 0',
             }}>
               {t('guardian.modal.sendEmergencyAlert')}
             </h2>
@@ -306,7 +330,7 @@ const GuardianEmergencyModal: React.FC<{
               color: 'var(--text-muted)',
               fontSize: '14px',
               margin: 0,
-              lineHeight: '1.5'
+              lineHeight: '1.5',
             }}>
               {t('guardian.modal.chooseEmergencyType')}
             </p>
@@ -317,14 +341,14 @@ const GuardianEmergencyModal: React.FC<{
               fontSize: '16px',
               fontWeight: '600',
               color: 'var(--text-primary)',
-              marginBottom: '16px'
+              marginBottom: '16px',
             }}>
               {t('guardian.modal.whatType')}
             </h3>
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-              gap: '12px'
+              gap: '12px',
             }}>
               {emergencyTypes.map((emergency) => {
                 const IconComponent = emergency.icon;
@@ -344,21 +368,21 @@ const GuardianEmergencyModal: React.FC<{
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '8px'
+                      gap: '8px',
                     }}
                   >
                     <IconComponent size={24} color={selectedEmergency === emergency.id ? emergency.color : '#6b7280'} />
                     <div style={{
                       fontSize: '14px',
                       fontWeight: '600',
-                      color: selectedEmergency === emergency.id ? emergency.color : 'var(--text-primary)'
+                      color: selectedEmergency === emergency.id ? emergency.color : 'var(--text-primary)',
                     }}>
                       {emergency.label}
                     </div>
                     <div style={{
                       fontSize: '12px',
                       color: 'var(--text-muted)',
-                      lineHeight: '1.3'
+                      lineHeight: '1.3',
                     }}>
                       {emergency.description}
                     </div>
@@ -374,7 +398,7 @@ const GuardianEmergencyModal: React.FC<{
               fontSize: '14px',
               fontWeight: '600',
               color: 'var(--text-primary)',
-              marginBottom: '8px'
+              marginBottom: '8px',
             }}>
               {t('guardian.modal.messageRequired')}
             </label>
@@ -391,7 +415,7 @@ const GuardianEmergencyModal: React.FC<{
                 outline: 'none',
                 minHeight: '80px',
                 resize: 'vertical',
-                fontFamily: 'inherit'
+                fontFamily: 'inherit',
               }}
               onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
               onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
@@ -401,7 +425,7 @@ const GuardianEmergencyModal: React.FC<{
               fontSize: '12px',
               color: 'var(--text-muted)',
               textAlign: 'right',
-              marginTop: '4px'
+              marginTop: '4px',
             }}>
               {description.length}/500
             </div>
@@ -414,7 +438,7 @@ const GuardianEmergencyModal: React.FC<{
             marginBottom: '24px',
             padding: '16px',
             background: '#f8fafc',
-            borderRadius: '12px'
+            borderRadius: '12px',
           }}>
             <input
               type="checkbox"
@@ -424,13 +448,13 @@ const GuardianEmergencyModal: React.FC<{
               style={{
                 width: '18px',
                 height: '18px',
-                accentColor: '#3b82f6'
+                accentColor: '#3b82f6',
               }}
             />
             <label htmlFor="shareLocation" style={{
               fontSize: '14px',
               color: 'var(--text-primary)',
-              flex: 1
+              flex: 1,
             }}>
               <MapPin size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
               {locationLoading ? t('guardian.modal.gettingLocation') : (userLocation ? t('guardian.modal.shareLocation') : t('guardian.modal.locationNotAvailable'))}
@@ -442,7 +466,7 @@ const GuardianEmergencyModal: React.FC<{
             gap: '12px',
             justifyContent: 'space-between',
             alignItems: 'center',
-            flexWrap: 'wrap'
+            flexWrap: 'wrap',
           }}>
             <button
               onClick={onClose}
@@ -457,7 +481,7 @@ const GuardianEmergencyModal: React.FC<{
                 fontSize: '16px',
                 fontWeight: '600',
                 color: 'var(--text-primary)',
-                minHeight: '44px'
+                minHeight: '44px',
               }}
             >
               {t('common.cancel')}
@@ -480,7 +504,7 @@ const GuardianEmergencyModal: React.FC<{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
               }}
             >
               {isSubmitting ? (
@@ -501,23 +525,6 @@ const GuardianEmergencyModal: React.FC<{
     </div>
   );
 };
-import {
-  Shield,
-  Plus,
-  Users,
-  MapPin,
-  Bell,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Send,
-  Settings,
-  Heart,
-  Phone,
-  Mail,
-  MessageSquare
-} from 'lucide-react';
 
 interface GuardianStats {
   totalGuardians: number;
@@ -536,7 +543,7 @@ const GuardianView: React.FC = () => {
   const [stats, setStats] = useState<GuardianStats>({
     totalGuardians: 0,
     activeSOSAlerts: 0,
-    pendingInvitations: 0
+    pendingInvitations: 0,
   });
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -555,7 +562,9 @@ const GuardianView: React.FC = () => {
   }, [user?.id]);
 
   const loadGuardianData = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      return;
+    }
 
     try {
       setLoading(true);
@@ -563,7 +572,7 @@ const GuardianView: React.FC = () => {
         guardianService.getUserGuardians(user.id),
         guardianService.getPendingInvitations(user.id),
         guardianService.getSOSAlerts(user.id),
-        guardianService.getGuardianStats(user.id)
+        guardianService.getGuardianStats(user.id),
       ]);
 
       setGuardians(guardiansData);
@@ -576,7 +585,7 @@ const GuardianView: React.FC = () => {
         type: 'error',
         title: 'Error',
         message: 'Failed to load guardian data. Please try again.',
-        duration: 5000
+        duration: 5000,
       });
     } finally {
       setLoading(false);
@@ -584,13 +593,15 @@ const GuardianView: React.FC = () => {
   };
 
   const handleInviteGuardian = async () => {
-    if (!user?.id || !inviteEmail.trim()) return;
+    if (!user?.id || !inviteEmail.trim()) {
+      return;
+    }
 
     try {
       setInviting(true);
       const result = await guardianService.addGuardian(user.id, inviteEmail.trim(), 'guardian', {
         locationSharing: false,
-        sosAlerts: true
+        sosAlerts: true,
       });
 
       if (result.invitation) {
@@ -600,7 +611,7 @@ const GuardianView: React.FC = () => {
           type: 'success',
           title: 'Invitation Sent!',
           message: `Guardian invitation sent to ${inviteEmail}`,
-          duration: 5000
+          duration: 5000,
         });
       } else if (result.relationship) {
         setGuardians(prev => [...prev, result.relationship!]);
@@ -609,7 +620,7 @@ const GuardianView: React.FC = () => {
           type: 'success',
           title: 'Guardian Added!',
           message: `${inviteEmail} has been added as your guardian`,
-          duration: 5000
+          duration: 5000,
         });
       }
 
@@ -622,7 +633,7 @@ const GuardianView: React.FC = () => {
         type: 'error',
         title: 'Invitation Failed',
         message: 'Failed to send guardian invitation. Please try again.',
-        duration: 5000
+        duration: 5000,
       });
     } finally {
       setInviting(false);
@@ -630,7 +641,9 @@ const GuardianView: React.FC = () => {
   };
 
   const handleSendSOS = async (alertType: 'sos' | 'emergency' | 'check_in') => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      return;
+    }
 
     try {
       setSendingSOS(true);
@@ -643,7 +656,7 @@ const GuardianView: React.FC = () => {
           type: 'success',
           title: 'SOS Alert Sent!',
           message: `Emergency alert sent to ${alerts.length} guardian${alerts.length > 1 ? 's' : ''}`,
-          duration: 5000
+          duration: 5000,
         });
       }
 
@@ -655,7 +668,7 @@ const GuardianView: React.FC = () => {
         type: 'error',
         title: 'SOS Failed',
         message: 'Failed to send emergency alert. Please try again.',
-        duration: 5000
+        duration: 5000,
       });
     } finally {
       setSendingSOS(false);
@@ -663,7 +676,9 @@ const GuardianView: React.FC = () => {
   };
 
   const handleSendGuardianAlert = async (alertType: string, message: string, shareLocation: boolean) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      return;
+    }
 
     try {
       setSendingSOS(true);
@@ -675,13 +690,13 @@ const GuardianView: React.FC = () => {
           const position = await new Promise<GeolocationPosition>((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, {
               timeout: 10000,
-              enableHighAccuracy: true
+              enableHighAccuracy: true,
             });
           });
           location = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy
+            accuracy: position.coords.accuracy,
           };
         } catch (locationError) {
           console.warn('Could not get location:', locationError);
@@ -695,7 +710,7 @@ const GuardianView: React.FC = () => {
         type: 'success',
         title: 'Alert Sent Successfully!',
         message: `Emergency alert sent to ${result.totalGuardians} guardian${result.totalGuardians > 1 ? 's' : ''} (${result.pushSent} push, ${result.emailSent} email)`,
-        duration: 5000
+        duration: 5000,
       });
 
       setShowSOSModal(false);
@@ -705,7 +720,7 @@ const GuardianView: React.FC = () => {
         type: 'error',
         title: 'Alert Failed',
         message: 'Failed to send emergency alert. Please try again.',
-        duration: 5000
+        duration: 5000,
       });
       throw error; // Re-throw to let the modal handle the error
     } finally {
@@ -714,7 +729,9 @@ const GuardianView: React.FC = () => {
   };
 
   const handleRemoveGuardian = async (guardianId: string) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      return;
+    }
 
     try {
       await guardianService.removeGuardian(user.id, guardianId);
@@ -724,7 +741,7 @@ const GuardianView: React.FC = () => {
         type: 'success',
         title: 'Guardian Removed',
         message: 'Guardian has been removed from your network',
-        duration: 3000
+        duration: 3000,
       });
     } catch (error) {
       console.error('Error removing guardian:', error);
@@ -732,7 +749,7 @@ const GuardianView: React.FC = () => {
         type: 'error',
         title: 'Error',
         message: 'Failed to remove guardian. Please try again.',
-        duration: 5000
+        duration: 5000,
       });
     }
   };
@@ -746,7 +763,7 @@ const GuardianView: React.FC = () => {
         type: 'success',
         title: 'Invitation Cancelled',
         message: 'Guardian invitation has been cancelled',
-        duration: 3000
+        duration: 3000,
       });
     } catch (error) {
       console.error('Error cancelling invitation:', error);
@@ -754,25 +771,27 @@ const GuardianView: React.FC = () => {
         type: 'error',
         title: 'Error',
         message: 'Failed to cancel invitation. Please try again.',
-        duration: 5000
+        duration: 5000,
       });
     }
   };
 
   const handleResolveSOS = async (alertId: number) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      return;
+    }
 
     try {
       await guardianService.resolveSOSAlert(alertId, user.id);
       setSosAlerts(prev => prev.map(alert =>
-        alert.id === alertId ? { ...alert, status: 'resolved' as const } : alert
+        alert.id === alertId ? { ...alert, status: 'resolved' as const } : alert,
       ));
       setStats(prev => ({ ...prev, activeSOSAlerts: Math.max(0, prev.activeSOSAlerts - 1) }));
       addNotification({
         type: 'success',
         title: 'Alert Resolved',
         message: 'SOS alert has been marked as resolved',
-        duration: 3000
+        duration: 3000,
       });
     } catch (error) {
       console.error('Error resolving SOS alert:', error);
@@ -780,7 +799,7 @@ const GuardianView: React.FC = () => {
         type: 'error',
         title: 'Error',
         message: 'Failed to resolve alert. Please try again.',
-        duration: 5000
+        duration: 5000,
       });
     }
   };
@@ -1005,7 +1024,7 @@ const GuardianView: React.FC = () => {
                     borderRadius="12px"
                     border="2px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500" }}
+                    _focus={{ borderColor: 'blue.500' }}
                   />
                 </Box>
 
@@ -1019,7 +1038,7 @@ const GuardianView: React.FC = () => {
                     borderRadius="12px"
                     border="2px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500" }}
+                    _focus={{ borderColor: 'blue.500' }}
                   />
                 </Box>
               </VStack>
@@ -1040,7 +1059,7 @@ const GuardianView: React.FC = () => {
                   onClick={handleInviteGuardian}
                   disabled={inviting || !inviteEmail.trim()}
                   borderRadius="12px"
-                  _hover={{ bg: "green.600" }}
+                  _hover={{ bg: 'green.600' }}
                 >
                   {inviting ? t('guardian.sending') : t('guardian.sendInvite')}
                 </Button>

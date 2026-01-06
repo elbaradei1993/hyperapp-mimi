@@ -14,11 +14,13 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
   isOpen,
   onClose,
   onSelectVibe,
-  onSelectEmergency
+  onSelectEmergency,
 }) => {
   const { t } = useTranslation();
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Box
@@ -107,9 +109,9 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
               position="relative"
               overflow="hidden"
               _hover={{
-                transform: "translateY(-2px)",
-                boxShadow: "0 8px 25px rgba(59, 130, 246, 0.15)",
-                borderColor: "blue.300"
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)',
+                borderColor: 'blue.300',
               }}
             >
               <Box
@@ -121,7 +123,7 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
                 bg="linear-gradient(90deg, #3b82f6, #8b5cf6)"
                 transform="scaleX(0)"
                 transition="transform 0.3s ease"
-                _groupHover={{ transform: "scaleX(1)" }}
+                _groupHover={{ transform: 'scaleX(1)' }}
               />
               <Box
                 w="16"
@@ -162,9 +164,9 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
               position="relative"
               overflow="hidden"
               _hover={{
-                transform: "translateY(-2px)",
-                boxShadow: "0 8px 25px rgba(239, 68, 68, 0.15)",
-                borderColor: "red.300"
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 25px rgba(239, 68, 68, 0.15)',
+                borderColor: 'red.300',
               }}
             >
               <Box
@@ -176,7 +178,7 @@ const ReportTypeModal: React.FC<ReportTypeModalProps> = ({
                 bg="linear-gradient(90deg, #ef4444, #dc2626)"
                 transform="scaleX(0)"
                 transition="transform 0.3s ease"
-                _groupHover={{ transform: "scaleX(1)" }}
+                _groupHover={{ transform: 'scaleX(1)' }}
               />
               <Box
                 w="16"

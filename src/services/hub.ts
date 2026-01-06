@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+
 import { weatherService } from './weatherService';
 import { geocodingService } from './geocodingService';
 import { eventService } from './eventService';
@@ -130,12 +131,12 @@ class HubService {
           timeString = startTime.toLocaleTimeString('en-US', {
             hour: 'numeric',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
           });
         } else {
           timeString = startTime.toLocaleDateString('en-US', {
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
           });
         }
 
@@ -165,7 +166,7 @@ class HubService {
             impact += ` • Ends: ${endTime.toLocaleTimeString('en-US', {
               hour: 'numeric',
               minute: '2-digit',
-              hour12: true
+              hour12: true,
             })}`;
           }
         }
@@ -174,10 +175,10 @@ class HubService {
           id: event.id,
           time: timeString,
           event: event.title,
-          impact: impact,
-          tag: tag,
+          impact,
+          tag,
           latitude: event.latitude,
-          longitude: event.longitude
+          longitude: event.longitude,
         };
       });
     } catch (error) {
@@ -196,14 +197,16 @@ class HubService {
         .order('created_at', { ascending: false })
         .limit(50); // Increased limit to get more reports
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Filter reports by distance
       const nearbyReports = (data || []).filter(report => {
         const distance = this.calculateDistance(
           latitude, longitude,
           parseFloat(report.latitude),
-          parseFloat(report.longitude)
+          parseFloat(report.longitude),
         );
         return distance <= 1; // 1km radius
       });
@@ -217,7 +220,7 @@ class HubService {
 
       // Determine sidewalk status based on actual reports
       const sidewalkIssues = nearbyReports.filter(r =>
-        r.report_type === 'sidewalk' || r.report_type === 'construction'
+        r.report_type === 'sidewalk' || r.report_type === 'construction',
       );
       let sidewalkStatus: 'Clear' | 'Blocked' | 'Under Repair' | 'No Reports' = 'No Reports';
       if (sidewalkIssues.length > 0) {
@@ -231,7 +234,7 @@ class HubService {
         const distance = this.calculateDistance(
           latitude, longitude,
           parseFloat(report.latitude),
-          parseFloat(report.longitude)
+          parseFloat(report.longitude),
         );
         const distanceText = distance < 0.1 ? 'very close' : `${Math.round(distance * 1000)}m away`;
         return `${report.description} (${distanceText})`;
@@ -245,7 +248,7 @@ class HubService {
         traffic: trafficIssues,
         other: otherIssues,
         reports,
-        hasReports: nearbyReports.length > 0
+        hasReports: nearbyReports.length > 0,
       };
     } catch (error) {
       console.error('Error fetching infrastructure data:', error);
@@ -257,7 +260,7 @@ class HubService {
         traffic: 0,
         other: 0,
         reports: [],
-        hasReports: false
+        hasReports: false,
       };
     }
   }
@@ -275,7 +278,9 @@ class HubService {
         .order('created_at', { ascending: false })
         .limit(200);
 
-      if (infraError) throw infraError;
+      if (infraError) {
+        throw infraError;
+      }
 
       // Get vibe/emergency reports
       const { data: vibeReports, error: vibeError } = await supabase
@@ -284,25 +289,27 @@ class HubService {
         .order('created_at', { ascending: false })
         .limit(200);
 
-      if (vibeError) throw vibeError;
+      if (vibeError) {
+        throw vibeError;
+      }
 
       // Combine and filter reports by distance
       const allReports = [
         ...(infraReports || []).map(r => ({
           created_at: r.created_at,
           latitude: parseFloat(r.latitude),
-          longitude: parseFloat(r.longitude)
+          longitude: parseFloat(r.longitude),
         })),
         ...(vibeReports || []).map(r => ({
           created_at: r.created_at,
           latitude: parseFloat(r.latitude),
-          longitude: parseFloat(r.longitude)
-        }))
+          longitude: parseFloat(r.longitude),
+        })),
       ].filter(report => {
         const distance = this.calculateDistance(
           latitude, longitude,
           report.latitude,
-          report.longitude
+          report.longitude,
         );
         return distance <= radiusKm;
       });
@@ -317,7 +324,7 @@ class HubService {
           totalReports: 0,
           timeRange: 'No data available',
           activityLevels: new Array(24).fill('low'),
-          insights: ['No activity data available for this location']
+          insights: ['No activity data available for this location'],
         };
       }
 
@@ -347,7 +354,7 @@ class HubService {
           totalReports: 0,
           timeRange: 'No recent activity',
           activityLevels: new Array(24).fill('low'),
-          insights: ['No recent activity reports in the last 30 days']
+          insights: ['No recent activity reports in the last 30 days'],
         };
       }
 
@@ -374,20 +381,27 @@ class HubService {
       // Normalize smoothed activity data to 0-100 scale
       const maxReports = Math.max(...smoothedActivity);
       const activityData = smoothedActivity.map(count =>
-        maxReports > 0 ? Math.round((count / maxReports) * 100) : 0
+        maxReports > 0 ? Math.round((count / maxReports) * 100) : 0,
       );
 
       // Determine activity levels for each hour
       const activityLevels: ('low' | 'medium' | 'high')[] = activityData.map(level => {
-        if (level >= 70) return 'high';
-        if (level >= 30) return 'medium';
+        if (level >= 70) {
+          return 'high';
+        }
+        if (level >= 30) {
+          return 'medium';
+        }
         return 'low';
       });
 
       // Determine data quality
       let dataQuality: 'low' | 'medium' | 'high' = 'low';
-      if (totalReportsWithin30Days >= 50) dataQuality = 'high';
-      else if (totalReportsWithin30Days >= 20) dataQuality = 'medium';
+      if (totalReportsWithin30Days >= 50) {
+        dataQuality = 'high';
+      } else if (totalReportsWithin30Days >= 20) {
+        dataQuality = 'medium';
+      }
 
       // Calculate time range
       const timeRange = totalReportsWithin30Days > 0 ? 'Last 30 days' : 'No data';
@@ -416,12 +430,12 @@ class HubService {
       return {
         peakActivity: formattedPeak,
         quietPeriod: formattedQuiet,
-        activityData: activityData,
+        activityData,
         dataQuality,
         totalReports: totalReportsWithin30Days,
         timeRange,
         activityLevels,
-        insights
+        insights,
       };
     } catch (error) {
       console.error('Error fetching neighborhood rhythm:', error);
@@ -434,7 +448,7 @@ class HubService {
         totalReports: 0,
         timeRange: 'Error loading data',
         activityLevels: new Array(24).fill('low'),
-        insights: ['Unable to load activity data']
+        insights: ['Unable to load activity data'],
       };
     }
   }
@@ -485,10 +499,12 @@ class HubService {
       const { error } = await supabase.rpc('calculate_activity_patterns', {
         lat: latitude,
         lon: longitude,
-        radius_km: 1
+        radius_km: 1,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
     } catch (error) {
       console.error('Error calculating activity patterns:', error);
     }
@@ -525,10 +541,18 @@ class HubService {
     for (let hour = 0; hour < 24; hour++) {
       // Create a pattern that peaks during typical active hours
       let multiplier = 1;
-      if (hour >= 6 && hour <= 9) multiplier = 0.3; // Morning commute
-      else if (hour >= 11 && hour <= 14) multiplier = 0.6; // Lunch time
-      else if (hour >= 17 && hour <= 21) multiplier = 1.0; // Evening peak
-      else if (hour >= 22 || hour <= 5) multiplier = 0.1; // Night time
+      if (hour >= 6 && hour <= 9) {
+        multiplier = 0.3;
+      } // Morning commute
+      else if (hour >= 11 && hour <= 14) {
+        multiplier = 0.6;
+      } // Lunch time
+      else if (hour >= 17 && hour <= 21) {
+        multiplier = 1.0;
+      } // Evening peak
+      else if (hour >= 22 || hour <= 5) {
+        multiplier = 0.1;
+      } // Night time
 
       activityData.push(Math.round(baseActivity * multiplier * 100));
     }
@@ -629,12 +653,12 @@ class HubService {
     return {
       peakActivity: this.formatTimeFromHour(peakActivity),
       quietPeriod: this.formatTimeFromHour(quietPeriod),
-      activityData: activityData,
+      activityData,
       dataQuality: 'low',
       totalReports: 0,
       timeRange: 'Generated data',
       activityLevels: new Array(24).fill('low'),
-      insights: ['Generated activity patterns based on typical urban behavior']
+      insights: ['Generated activity patterns based on typical urban behavior'],
     };
   }
 
@@ -651,7 +675,9 @@ class HubService {
         .order('score', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Combine and enhance with OSM data
       const safetyScores: SafetyScore[] = [];
@@ -666,12 +692,12 @@ class HubService {
             lighting: Math.round(venue.score * 10 + Math.random() * 20),
             security: Math.round(venue.score * 10 + Math.random() * 20),
             staffTraining: Math.round(venue.score * 10 + Math.random() * 20),
-            emergencyAccess: Math.round(venue.score * 10 + Math.random() * 20)
+            emergencyAccess: Math.round(venue.score * 10 + Math.random() * 20),
           },
           lastUpdated: venue.last_updated,
           totalReports: venue.total_reports || Math.floor(Math.random() * 200) + 50,
           officialInspections: venue.official_inspections || Math.floor(Math.random() * 10) + 1,
-          incidentResponses: venue.incident_responses || Math.floor(Math.random() * 15)
+          incidentResponses: venue.incident_responses || Math.floor(Math.random() * 15),
         });
       });
 
@@ -690,12 +716,12 @@ class HubService {
                 lighting: Math.round(generatedScore * 10 + Math.random() * 20),
                 security: Math.round(generatedScore * 10 + Math.random() * 20),
                 staffTraining: Math.round(generatedScore * 10 + Math.random() * 20),
-                emergencyAccess: Math.round(generatedScore * 10 + Math.random() * 20)
+                emergencyAccess: Math.round(generatedScore * 10 + Math.random() * 20),
               },
               lastUpdated: new Date().toISOString(),
               totalReports: Math.floor(Math.random() * 100) + 20,
               officialInspections: Math.floor(Math.random() * 5) + 1,
-              incidentResponses: Math.floor(Math.random() * 8)
+              incidentResponses: Math.floor(Math.random() * 8),
             });
           }
         });
@@ -720,7 +746,7 @@ class HubService {
       'hospital': 9.0,
       'school': 8.8,
       'library': 9.2,
-      'police': 9.5
+      'police': 9.5,
     };
 
     const baseScore = baseScores[venueType] || 7.0;
@@ -733,21 +759,21 @@ class HubService {
       'Well-lit entrance • Security measures in place',
       'Clean and well-maintained • Good visibility',
       'Security cameras • Emergency exits clearly marked',
-      'Well-lit surroundings • Staff presence'
+      'Well-lit surroundings • Staff presence',
     ];
 
     const mediumScoreDetails = [
       'Adequate lighting • Basic security',
       'Some security measures • Emergency exits present',
       'Moderate lighting • Staff occasionally present',
-      'Basic safety features • Could be improved'
+      'Basic safety features • Could be improved',
     ];
 
     const lowScoreDetails = [
       'Poor exterior lighting • Limited security',
       'Dark areas nearby • No visible security',
       'Emergency exits not clearly marked • Needs improvement',
-      'Poor visibility • Safety concerns'
+      'Poor visibility • Safety concerns',
     ];
 
     let detailsPool: string[];
@@ -772,12 +798,12 @@ class HubService {
           lighting: 92,
           security: 85,
           staffTraining: 87,
-          emergencyAccess: 78
+          emergencyAccess: 78,
         },
         lastUpdated: new Date().toISOString(),
         totalReports: 142,
         officialInspections: 8,
-        incidentResponses: 3
+        incidentResponses: 3,
       },
       {
         venue: 'Midnight Bar',
@@ -787,12 +813,12 @@ class HubService {
           lighting: 75,
           security: 80,
           staffTraining: 65,
-          emergencyAccess: 60
+          emergencyAccess: 60,
         },
         lastUpdated: new Date().toISOString(),
         totalReports: 89,
         officialInspections: 5,
-        incidentResponses: 7
+        incidentResponses: 7,
       },
       {
         venue: '24/7 Convenience',
@@ -802,13 +828,13 @@ class HubService {
           lighting: 25,
           security: 20,
           staffTraining: 45,
-          emergencyAccess: 30
+          emergencyAccess: 30,
         },
         lastUpdated: new Date().toISOString(),
         totalReports: 67,
         officialInspections: 3,
-        incidentResponses: 12
-      }
+        incidentResponses: 12,
+      },
     ];
   }
 
@@ -821,7 +847,9 @@ class HubService {
         .eq('id', venueId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return {
         id: data.id,
@@ -830,7 +858,7 @@ class HubService {
         qrCode: data.qr_code,
         status: 'verified',
         lastVerified: new Date().toISOString(),
-        verificationCount: data.verification_count || 1
+        verificationCount: data.verification_count || 1,
       };
     } catch (error) {
       console.error('Error verifying venue:', error);
@@ -852,7 +880,9 @@ class HubService {
         .from('verifiable_venues')
         .select('*', { count: 'exact', head: true });
 
-      if (totalError) throw totalError;
+      if (totalError) {
+        throw totalError;
+      }
 
       // Get verified venues count
       const { count: verifiedVenues, error: verifiedError } = await supabase
@@ -860,7 +890,9 @@ class HubService {
         .select('*', { count: 'exact', head: true })
         .eq('verification_status', 'verified');
 
-      if (verifiedError) throw verifiedError;
+      if (verifiedError) {
+        throw verifiedError;
+      }
 
       // Calculate verification rate: (verified venues / total venues) * 100
       const totalCount = totalVenues || 0;
@@ -873,7 +905,9 @@ class HubService {
         .select('*', { count: 'exact', head: true })
         .eq('verification_level', 'trusted');
 
-      if (trustedError) throw trustedError;
+      if (trustedError) {
+        throw trustedError;
+      }
 
       // Estimate trusted nearby users (simplified - would need user location tracking)
       // For now, use a portion of total trusted users as "nearby"
@@ -885,14 +919,14 @@ class HubService {
       return {
         trustedNearby,
         verificationRate,
-        activeVerifiers
+        activeVerifiers,
       };
     } catch (error) {
       console.error('Error fetching neighborhood watch data:', error);
       return {
         trustedNearby: 7,
         verificationRate: 0,
-        activeVerifiers: 12
+        activeVerifiers: 12,
       };
     }
   }
@@ -916,10 +950,12 @@ class HubService {
           description: reportData.description,
           severity: reportData.severity,
           user_id: reportData.userId,
-          status: 'reported'
+          status: 'reported',
         });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error('Error submitting infrastructure report:', error);
@@ -1008,7 +1044,9 @@ class HubService {
         .ilike('name', `%${query}%`)
         .limit(20);
 
-      if (error) console.warn('Error fetching existing venues:', error);
+      if (error) {
+        console.warn('Error fetching existing venues:', error);
+      }
 
       // Combine and enhance results
       const venues: VerifiableVenue[] = [];
@@ -1028,7 +1066,7 @@ class HubService {
             verificationCount: venue.verification_count || 0,
             lastVerified: venue.last_verified,
             category: venue.category,
-            safetyScore: venue.safety_score
+            safetyScore: venue.safety_score,
           });
         }
       });
@@ -1048,7 +1086,7 @@ class HubService {
             verificationStatus: 'unverified',
             verificationCount: 0,
             category: this.mapVenueTypeToCategory(result.type),
-            safetyScore: undefined
+            safetyScore: undefined,
           });
         }
       });
@@ -1071,7 +1109,9 @@ class HubService {
         .order('safety_score', { ascending: false })
         .limit(100);
 
-      if (error) console.warn('Error fetching verified venues:', error);
+      if (error) {
+        console.warn('Error fetching verified venues:', error);
+      }
 
       const allVenues: VerifiableVenue[] = [];
 
@@ -1090,7 +1130,7 @@ class HubService {
           verificationCount: venue.verification_count || 0,
           lastVerified: venue.last_verified,
           category: venue.category,
-          safetyScore: venue.safety_score
+          safetyScore: venue.safety_score,
         });
       });
 
@@ -1102,7 +1142,9 @@ class HubService {
         return localVenues
           .sort((a, b) => {
             const scoreDiff = (b.safetyScore || 0) - (a.safetyScore || 0);
-            if (scoreDiff !== 0) return scoreDiff;
+            if (scoreDiff !== 0) {
+              return scoreDiff;
+            }
             return a.distance - b.distance;
           })
           .slice(0, 10);
@@ -1116,7 +1158,9 @@ class HubService {
         return cityVenues
           .sort((a, b) => {
             const scoreDiff = (b.safetyScore || 0) - (a.safetyScore || 0);
-            if (scoreDiff !== 0) return scoreDiff;
+            if (scoreDiff !== 0) {
+              return scoreDiff;
+            }
             return a.distance - b.distance;
           })
           .slice(0, 20);
@@ -1140,7 +1184,9 @@ class HubService {
         .order('verification_count', { ascending: true })
         .limit(20);
 
-      if (error) console.warn('Error fetching existing venues:', error);
+      if (error) {
+        console.warn('Error fetching existing venues:', error);
+      }
 
       const venues: VerifiableVenue[] = [];
 
@@ -1160,7 +1206,7 @@ class HubService {
             verificationCount: venue.verification_count || 0,
             lastVerified: venue.last_verified,
             category: venue.category,
-            safetyScore: venue.safety_score
+            safetyScore: venue.safety_score,
           });
         }
       });
@@ -1171,7 +1217,9 @@ class HubService {
           .sort((a, b) => {
             const statusOrder = { unverified: 0, pending: 1, verified: 2, flagged: 3 };
             const statusDiff = statusOrder[a.verificationStatus] - statusOrder[b.verificationStatus];
-            if (statusDiff !== 0) return statusDiff;
+            if (statusDiff !== 0) {
+              return statusDiff;
+            }
             return a.distance - b.distance;
           })
           .slice(0, 8);
@@ -1185,7 +1233,7 @@ class HubService {
         'cafe near me',
         'shop near me',
         'bank near me',
-        'pharmacy near me'
+        'pharmacy near me',
       ];
 
       const searchResults: any[][] = [];
@@ -1212,7 +1260,7 @@ class HubService {
           const exists = venues.some(v =>
             v.name.toLowerCase() === result.name.toLowerCase() &&
             Math.abs(v.latitude - result.latitude) < 0.001 &&
-            Math.abs(v.longitude - result.longitude) < 0.001
+            Math.abs(v.longitude - result.longitude) < 0.001,
           );
 
           if (!exists) {
@@ -1224,11 +1272,11 @@ class HubService {
               address: result.address,
               latitude: result.latitude,
               longitude: result.longitude,
-              distance: distance,
+              distance,
               verificationStatus: 'unverified',
               verificationCount: 0,
               category: this.mapVenueTypeToCategory(result.type) || category,
-              safetyScore: undefined
+              safetyScore: undefined,
             });
           }
         });
@@ -1242,8 +1290,8 @@ class HubService {
         index === self.findIndex(v =>
           v.name.toLowerCase() === venue.name.toLowerCase() &&
           Math.abs(v.latitude - venue.latitude) < 0.001 &&
-          Math.abs(v.longitude - venue.longitude) < 0.001
-        )
+          Math.abs(v.longitude - venue.longitude) < 0.001,
+        ),
       );
 
       // Prioritize unverified or low-verification venues, then by distance
@@ -1251,7 +1299,9 @@ class HubService {
         .sort((a, b) => {
           const statusOrder = { unverified: 0, pending: 1, verified: 2, flagged: 3 };
           const statusDiff = statusOrder[a.verificationStatus] - statusOrder[b.verificationStatus];
-          if (statusDiff !== 0) return statusDiff;
+          if (statusDiff !== 0) {
+            return statusDiff;
+          }
           return a.distance - b.distance;
         })
         .slice(0, 8);
@@ -1279,7 +1329,7 @@ class HubService {
       };
       userLocation?: { latitude: number; longitude: number };
       notes?: string;
-    }
+    },
   ): Promise<boolean> {
     try {
       // Skip location validation for testing purposes
@@ -1301,7 +1351,7 @@ class HubService {
       // Calculate overall safety score from criteria
       const criteria = venueData.verificationCriteria;
       const safetyScore = Math.round(
-        (criteria.lighting + criteria.security + criteria.cleanliness + criteria.accessibility + criteria.staffPresence) / 5
+        (criteria.lighting + criteria.security + criteria.cleanliness + criteria.accessibility + criteria.staffPresence) / 5,
       );
 
       // First, ensure venue exists in database
@@ -1327,7 +1377,7 @@ class HubService {
             verification_status: 'verified',
             last_verified: new Date().toISOString(),
             safety_score: safetyScore,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', venueId);
       } else {
@@ -1344,12 +1394,14 @@ class HubService {
             verification_status: 'verified',
             verification_count: 1,
             last_verified: new Date().toISOString(),
-            safety_score: safetyScore
+            safety_score: safetyScore,
           })
           .select('id')
           .single();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          throw insertError;
+        }
         venueId = newVenue.id;
       }
 
@@ -1368,10 +1420,12 @@ class HubService {
           user_latitude: venueData.userLocation?.latitude,
           user_longitude: venueData.userLocation?.longitude,
           notes: venueData.notes,
-          verified_at: new Date().toISOString()
+          verified_at: new Date().toISOString(),
         });
 
-      if (verificationError) throw verificationError;
+      if (verificationError) {
+        throw verificationError;
+      }
 
       return true;
     } catch (error) {
@@ -1390,7 +1444,9 @@ class HubService {
         .eq('venue_id', venueId)
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return (data && data.length > 0);
     } catch (error) {
@@ -1410,12 +1466,12 @@ class HubService {
       accessibility: number;
       staffPresence: number;
     },
-    notes?: string
+    notes?: string,
   ): Promise<boolean> {
     try {
       // Calculate overall safety score from criteria
       const safetyScore = Math.round(
-        (verificationCriteria.lighting + verificationCriteria.security + verificationCriteria.cleanliness + verificationCriteria.accessibility + verificationCriteria.staffPresence) / 5
+        (verificationCriteria.lighting + verificationCriteria.security + verificationCriteria.cleanliness + verificationCriteria.accessibility + verificationCriteria.staffPresence) / 5,
       );
 
       // Update the existing verification record
@@ -1428,13 +1484,15 @@ class HubService {
           accessibility_score: verificationCriteria.accessibility,
           staff_presence_score: verificationCriteria.staffPresence,
           overall_score: safetyScore,
-          notes: notes,
-          verified_at: new Date().toISOString()
+          notes,
+          verified_at: new Date().toISOString(),
         })
         .eq('user_id', userId)
         .eq('venue_id', venueId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        throw updateError;
+      }
 
       // Recalculate the venue's overall safety score based on all verifications
       await this.recalculateVenueSafetyScore(venueId);
@@ -1455,7 +1513,9 @@ class HubService {
         .select('overall_score')
         .eq('venue_id', venueId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       if (verifications && verifications.length > 0) {
         // Calculate average score
@@ -1468,7 +1528,7 @@ class HubService {
           .update({
             safety_score: averageScore,
             last_verified: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', venueId);
       }
@@ -1506,7 +1566,9 @@ class HubService {
         .order('verified_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return (data || []).map(item => ({
         id: item.id,
@@ -1516,8 +1578,8 @@ class HubService {
         verifiedAt: item.verified_at,
         location: {
           latitude: item.user_latitude || (item.verifiable_venues as any)?.latitude || 0,
-          longitude: item.user_longitude || (item.verifiable_venues as any)?.longitude || 0
-        }
+          longitude: item.user_longitude || (item.verifiable_venues as any)?.longitude || 0,
+        },
       }));
     } catch (error) {
       console.error('Error fetching user verification history:', error);
@@ -1575,7 +1637,7 @@ class HubService {
           security: Math.round(fallbackScore * 10),
           cleanliness: Math.round(fallbackScore * 10),
           accessibility: Math.round(fallbackScore * 10),
-          staffPresence: Math.round(fallbackScore * 10)
+          staffPresence: Math.round(fallbackScore * 10),
         };
 
         return {
@@ -1591,15 +1653,15 @@ class HubService {
             verificationCount: venue.verification_count || 0,
             lastVerified: venue.last_verified,
             category: venue.category,
-            safetyScore: venue.safety_score
+            safetyScore: venue.safety_score,
           },
           factors: fallbackFactors,
           statistics: {
             totalReports: 0,
             officialInspections: 0,
             incidentResponses: 0,
-            lastUpdated: venue.last_verified || venue.updated_at || new Date().toISOString()
-          }
+            lastUpdated: venue.last_verified || venue.updated_at || new Date().toISOString(),
+          },
         };
       }
 
@@ -1644,7 +1706,7 @@ class HubService {
         security: verificationCount > 0 ? Math.round(totalSecurity / verificationCount) : Math.round((venue.safety_score || 7) * 10),
         cleanliness: verificationCount > 0 ? Math.round(totalCleanliness / verificationCount) : Math.round((venue.safety_score || 7) * 10),
         accessibility: verificationCount > 0 ? Math.round(totalAccessibility / verificationCount) : Math.round((venue.safety_score || 7) * 10),
-        staffPresence: verificationCount > 0 ? Math.round(totalStaffPresence / verificationCount) : Math.round((venue.safety_score || 7) * 10)
+        staffPresence: verificationCount > 0 ? Math.round(totalStaffPresence / verificationCount) : Math.round((venue.safety_score || 7) * 10),
       };
 
       console.log('Calculated factors:', factors);
@@ -1654,7 +1716,7 @@ class HubService {
         totalReports: verificationCount,
         officialInspections: Math.max(1, Math.floor(verificationCount * 0.3)), // Estimate based on verifications
         incidentResponses: Math.floor(Math.random() * Math.max(1, verificationCount)) + 1, // Some randomization for demo
-        lastUpdated: venue.last_verified || verificationRecords[0]?.verified_at || new Date().toISOString()
+        lastUpdated: venue.last_verified || verificationRecords[0]?.verified_at || new Date().toISOString(),
       };
 
       console.log('Calculated statistics:', statistics);
@@ -1672,10 +1734,10 @@ class HubService {
           verificationCount: venue.verification_count,
           lastVerified: venue.last_verified,
           category: venue.category,
-          safetyScore: venue.safety_score
+          safetyScore: venue.safety_score,
         },
         factors,
-        statistics
+        statistics,
       };
 
       console.log('Returning venue safety details:', result);
@@ -1701,7 +1763,7 @@ class HubService {
       'supermarket': 'shop',
       'mall': 'shop',
       'bank': 'shop',
-      'pharmacy': 'shop'
+      'pharmacy': 'shop',
     };
 
     return typeMapping[osmType] || 'other';

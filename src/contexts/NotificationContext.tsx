@@ -51,7 +51,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       id,
       timestamp: new Date(),
       read: false,
-      duration
+      duration,
     };
 
     setNotifications(prev => [...prev, newNotification]);
@@ -72,7 +72,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const markAsRead = (id: string) => {
     setNotifications(prev => prev.map(notification =>
-      notification.id === id ? { ...notification, read: true } : notification
+      notification.id === id ? { ...notification, read: true } : notification,
     ));
   };
 
@@ -92,7 +92,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     removeNotification,
     markAsRead,
     markAllAsRead,
-    clearAll
+    clearAll,
   };
 
   return (

@@ -33,7 +33,7 @@ class AuthLogger {
     console.log(`✅ ${event}`, {
       ...data,
       email: this.sanitizeEmail(data.email),
-      timestamp: this.formatTimestamp()
+      timestamp: this.formatTimestamp(),
     });
   }
 
@@ -43,7 +43,7 @@ class AuthLogger {
       ...data,
       email: this.sanitizeEmail(data.email),
       timestamp: this.formatTimestamp(),
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     });
   }
 
@@ -55,13 +55,13 @@ class AuthLogger {
         name: error.name,
         status: error.status,
         stack: error.stack,
-        details: error.details
+        details: error.details,
       },
       context: {
         ...context,
         email: this.sanitizeEmail(context?.email),
-        timestamp: this.formatTimestamp()
-      }
+        timestamp: this.formatTimestamp(),
+      },
     });
   }
 
@@ -70,7 +70,7 @@ class AuthLogger {
     console.warn(`⚠️ ${event}`, {
       ...data,
       email: this.sanitizeEmail(data.email),
-      timestamp: this.formatTimestamp()
+      timestamp: this.formatTimestamp(),
     });
   }
 
@@ -82,13 +82,13 @@ class AuthLogger {
         name: error.name,
         status: error.status,
         stack: error.stack,
-        details: error.details
+        details: error.details,
       },
       context: {
         ...context,
         email: this.sanitizeEmail(context?.email),
-        timestamp: this.formatTimestamp()
-      }
+        timestamp: this.formatTimestamp(),
+      },
     });
   }
 
@@ -99,8 +99,8 @@ class AuthLogger {
       context: {
         ...context,
         email: this.sanitizeEmail(context?.email),
-        timestamp: this.formatTimestamp()
-      }
+        timestamp: this.formatTimestamp(),
+      },
     });
   }
 
@@ -109,7 +109,7 @@ class AuthLogger {
     console.warn(`📝 ${event}`, {
       ...data,
       email: this.sanitizeEmail(data.email),
-      timestamp: this.formatTimestamp()
+      timestamp: this.formatTimestamp(),
     });
   }
 }

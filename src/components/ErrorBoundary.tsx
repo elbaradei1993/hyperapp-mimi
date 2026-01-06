@@ -1,8 +1,10 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Box, Text, Button, VStack } from '@chakra-ui/react';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -11,93 +13,50 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false
-  };
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-  public static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    this.props.onError?.(error, errorInfo);
   }
 
-  public render() {
+  render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
       return (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100%',
-          padding: '20px',
-          textAlign: 'center',
-          backgroundColor: 'var(--bg-secondary)',
-          color: 'var(--text-primary)'
-        }}>
-          <div style={{
-            fontSize: '48px',
-            marginBottom: '16px',
-            opacity: 0.5
-          }}>
-            ⚠️
-          </div>
-          <h2 style={{
-            margin: '0 0 8px 0',
-            color: 'var(--error-color, #ef4444)'
-          }}>
-            Something went wrong
-          </h2>
-          <p style={{
-            margin: '0 0 16px 0',
-            color: 'var(--text-secondary)',
-            maxWidth: '400px'
-          }}>
-            We encountered an unexpected error. Please try refreshing the page.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: 'var(--primary-color, #3b82f6)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            Refresh Page
-          </button>
-          {process.env.NODE_ENV === 'development' && this.state.error && (
-            <details style={{
-              marginTop: '16px',
-              textAlign: 'left',
-              maxWidth: '600px',
-              fontSize: '12px',
-              color: 'var(--text-muted)'
-            }}>
-              <summary style={{ cursor: 'pointer', marginBottom: '8px' }}>
-                Error Details (Development)
-              </summary>
-              <pre style={{
-                backgroundColor: 'var(--bg-primary)',
-                padding: '8px',
-                borderRadius: '4px',
-                overflow: 'auto',
-                fontFamily: 'monospace'
-              }}>
-                {this.state.error.toString()}
-              </pre>
-            </details>
-          )}
-        </div>
+        <Box
+          p={8}
+          textAlign="center"
+          bg="red.50"
+          borderRadius="lg"
+          border="1px solid"
+          borderColor="red.200"
+        >
+          <VStack gap={4}>
+            <Text fontSize="lg" fontWeight="bold" color="red.800">
+              Something went wrong
+            </Text>
+            <Text color="red.600">
+              {this.state.error?.message || 'An unexpected error occurred'}
+            </Text>
+            <Button
+              colorScheme="red"
+              onClick={() => this.setState({ hasError: false, error: undefined })}
+            >
+              Try Again
+            </Button>
+          </VStack>
+        </Box>
       );
     }
 

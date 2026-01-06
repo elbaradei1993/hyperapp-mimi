@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { VIBE_CONFIG } from '../constants/vibes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+
+import { VIBE_CONFIG } from '../constants/vibes';
 
 const VibeLegend: React.FC = () => {
   const { t } = useTranslation();

@@ -93,7 +93,9 @@ class TTSService {
   }
 
   getAvailableVoices(): string[] {
-    if (!this.speechSynthesis) return [];
+    if (!this.speechSynthesis) {
+      return [];
+    }
 
     const voices = this.speechSynthesis.getVoices();
     return voices.map(voice => voice.name || voice.lang);

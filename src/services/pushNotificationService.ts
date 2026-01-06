@@ -1,8 +1,9 @@
 // Push Notification Service - Firebase FCM + Supabase Integration
-import { fcmService } from '../lib/firebase';
-import { supabase } from '../lib/supabase';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
+
+import { fcmService } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import type { Vibe, SOS } from '../types';
 
 interface PushSubscription {
@@ -109,7 +110,7 @@ class PushNotificationService {
       console.log('   Error details:', {
         message: error?.message,
         code: error?.code,
-        stack: error?.stack?.substring(0, 200) + '...'
+        stack: error?.stack?.substring(0, 200) + '...',
       });
       console.log('   Troubleshooting steps:');
       console.log('   1. Check browser console for additional errors');
@@ -150,7 +151,9 @@ class PushNotificationService {
 
   // Set up Capacitor push notification listeners
   private setupCapacitorListeners(): void {
-    if (!Capacitor.isNativePlatform()) return;
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
 
     // Listen for FCM token registration
     PushNotifications.addListener('registration', async (token) => {
@@ -170,9 +173,9 @@ class PushNotificationService {
       this.handleForegroundMessage({
         notification: {
           title: notification.title,
-          body: notification.body
+          body: notification.body,
         },
-        data: notification.data
+        data: notification.data,
       });
     });
 
@@ -189,7 +192,9 @@ class PushNotificationService {
 
   // Store FCM token in Supabase
   private async storePushSubscription(token: string): Promise<void> {
-    if (!this.currentUserId) return;
+    if (!this.currentUserId) {
+      return;
+    }
 
     try {
       console.log('📱 Storing push subscription for user:', this.currentUserId);
@@ -203,9 +208,9 @@ class PushNotificationService {
           notification_radius: 5,
           emergency_alerts: true,
           safety_reports: true,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         }, {
-          onConflict: 'user_id,fcm_token'
+          onConflict: 'user_id,fcm_token',
         });
 
       if (upsertError) {
@@ -214,7 +219,7 @@ class PushNotificationService {
           message: upsertError.message,
           code: upsertError.code,
           details: upsertError.details,
-          hint: upsertError.hint
+          hint: upsertError.hint,
         });
       } else {
         console.log('📱 Push subscription stored successfully in database');
@@ -243,8 +248,8 @@ class PushNotificationService {
             if (data.url) {
               window.location.href = data.url;
             }
-          }
-        } : undefined
+          },
+        } : undefined,
       });
     }
   }
@@ -267,10 +272,10 @@ class PushNotificationService {
       // Call Supabase Edge Function to handle push sending
       const { data, error } = await supabase.functions.invoke('send-push-notifications', {
         body: {
-          report: report,
+          report,
           location: reportLocation,
-          radius: 5 // 5km radius
-        }
+          radius: 5, // 5km radius
+        },
       });
 
       if (error) {
@@ -285,7 +290,9 @@ class PushNotificationService {
 
   // Update user location for targeted notifications
   async updateUserLocation(location: [number, number]): Promise<void> {
-    if (!this.currentUserId) return;
+    if (!this.currentUserId) {
+      return;
+    }
 
     try {
       await supabase
@@ -293,7 +300,7 @@ class PushNotificationService {
         .update({
           user_location_lat: location[0],
           user_location_lng: location[1],
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('user_id', this.currentUserId);
 
@@ -309,14 +316,16 @@ class PushNotificationService {
     safety_reports?: boolean;
     notification_radius?: number;
   }): Promise<void> {
-    if (!this.currentUserId) return;
+    if (!this.currentUserId) {
+      return;
+    }
 
     try {
       await supabase
         .from('push_subscriptions')
         .update({
           ...preferences,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('user_id', this.currentUserId);
 

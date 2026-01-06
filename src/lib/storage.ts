@@ -19,9 +19,13 @@ class StorageManager {
 
   // Initialize IndexedDB
   private async initDB(): Promise<IDBDatabase> {
-    if (this.db) return this.db;
+    if (this.db) {
+      return this.db;
+    }
 
-    if (this.dbPromise) return this.dbPromise;
+    if (this.dbPromise) {
+      return this.dbPromise;
+    }
 
     this.dbPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, 1);
@@ -155,7 +159,9 @@ class StorageManager {
     // Try IndexedDB
     try {
       const value = await this.idbGet(key);
-      if (value !== null) return value;
+      if (value !== null) {
+        return value;
+      }
     } catch (e) {
       console.warn('IndexedDB get failed, trying sessionStorage');
     }
@@ -255,5 +261,5 @@ export const safeLocalStorage = {
     } catch (e) {
       console.warn('localStorage access blocked:', e);
     }
-  }
+  },
 };

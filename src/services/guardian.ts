@@ -82,7 +82,9 @@ class GuardianService {
       `)
       .eq('user_id', userId);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return data || [];
   }
 
@@ -101,7 +103,9 @@ class GuardianService {
       `)
       .eq('guardian_id', userId);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return data || [];
   }
 
@@ -112,7 +116,7 @@ class GuardianService {
     options: {
       locationSharing?: boolean;
       sosAlerts?: boolean;
-    } = {}
+    } = {},
   ): Promise<{ success: boolean; invitation?: GuardianInvitation; relationship?: GuardianRelationship }> {
     // Always create invitation to avoid user lookup issues
     // The invitation acceptance process will handle user existence
@@ -133,7 +137,9 @@ class GuardianService {
       .select()
       .single();
 
-    if (invitationError) throw invitationError;
+    if (invitationError) {
+      throw invitationError;
+    }
 
     // Send invitation email
     await this.sendGuardianInvitationEmail(invitation);
@@ -148,7 +154,9 @@ class GuardianService {
       .eq('user_id', userId)
       .eq('guardian_id', guardianId);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   }
 
   async updateGuardianSettings(
@@ -156,7 +164,7 @@ class GuardianService {
     settings: {
       location_sharing_enabled?: boolean;
       sos_alerts_enabled?: boolean;
-    }
+    },
   ): Promise<void> {
     const { error } = await supabase
       .from('user_guardians')
@@ -166,7 +174,9 @@ class GuardianService {
       })
       .eq('id', relationshipId);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   }
 
   // Guardian Invitations
@@ -178,7 +188,9 @@ class GuardianService {
       .eq('status', 'pending')
       .gt('expires_at', new Date().toISOString());
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return data || [];
   }
 
@@ -192,8 +204,12 @@ class GuardianService {
       .gt('expires_at', new Date().toISOString())
       .single();
 
-    if (invitationError) throw invitationError;
-    if (!invitation) throw new Error('Invalid or expired invitation');
+    if (invitationError) {
+      throw invitationError;
+    }
+    if (!invitation) {
+      throw new Error('Invalid or expired invitation');
+    }
 
     // Create the guardian relationship
     const { data: relationship, error: relationshipError } = await supabase
@@ -217,7 +233,9 @@ class GuardianService {
       `)
       .single();
 
-    if (relationshipError) throw relationshipError;
+    if (relationshipError) {
+      throw relationshipError;
+    }
 
     // Update invitation status
     await supabase
@@ -238,7 +256,9 @@ class GuardianService {
       .update({ status: 'cancelled' })
       .eq('id', invitationId);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   }
 
   // SOS Alerts
@@ -246,7 +266,7 @@ class GuardianService {
     userId: string,
     alertType: 'sos' | 'emergency' | 'check_in',
     location?: { latitude: number; longitude: number; accuracy?: number },
-    message?: string
+    message?: string,
   ): Promise<GuardianSOSAlert[]> {
     // Get user's guardians
     const guardians = await this.getUserGuardians(userId);
@@ -267,7 +287,9 @@ class GuardianService {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
         alerts.push(alert);
       }
     }
@@ -282,7 +304,9 @@ class GuardianService {
       .or(`user_id.eq.${userId},guardian_id.eq.${userId}`)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return data || [];
   }
 
@@ -296,14 +320,16 @@ class GuardianService {
       })
       .eq('id', alertId);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   }
 
   // Location Sharing
   async shareLocation(
     relationshipId: number,
     location: { latitude: number; longitude: number; accuracy?: number },
-    expiresAt?: string
+    expiresAt?: string,
   ): Promise<GuardianLocationShare> {
     const { data, error } = await supabase
       .from('guardian_location_shares')
@@ -318,7 +344,9 @@ class GuardianService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return data;
   }
 
@@ -336,7 +364,9 @@ class GuardianService {
       .gt('expires_at', new Date().toISOString())
       .order('shared_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return data || [];
   }
 
@@ -346,7 +376,7 @@ class GuardianService {
     alertType: string,
     message?: string,
     shareLocation?: boolean,
-    location?: { latitude: number; longitude: number; accuracy?: number }
+    location?: { latitude: number; longitude: number; accuracy?: number },
   ): Promise<{ pushSent: number; emailSent: number; totalGuardians: number }> {
     try {
       const { data, error } = await supabase.functions.invoke('send-guardian-alerts', {
@@ -355,11 +385,13 @@ class GuardianService {
           alertType,
           message,
           shareLocation,
-          location
-        }
+          location,
+        },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error('Error sending guardian alert:', error);
@@ -407,7 +439,7 @@ class GuardianService {
       email: invitation.invitee_email,
       invitationUrl,
       token: invitation.invitation_token,
-      expires: invitation.expires_at
+      expires: invitation.expires_at,
     });
 
     // Skip actual email sending in development to avoid function errors
@@ -435,7 +467,9 @@ class GuardianService {
       .eq('email', guardianEmail)
       .single();
 
-    if (!existingUser) return false;
+    if (!existingUser) {
+      return false;
+    }
 
     const { data: relationship } = await supabase
       .from('user_guardians')

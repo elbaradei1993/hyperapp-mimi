@@ -20,7 +20,7 @@ const ArabicPluralTest: React.FC = () => {
             color: i18n.language === 'en' ? 'white' : 'black',
             border: '1px solid #ddd',
             borderRadius: '5px',
-            cursor: 'pointer'
+            cursor: 'pointer',
           }}
         >
           English
@@ -33,7 +33,7 @@ const ArabicPluralTest: React.FC = () => {
             color: i18n.language === 'ar' ? 'white' : 'black',
             border: '1px solid #ddd',
             borderRadius: '5px',
-            cursor: 'pointer'
+            cursor: 'pointer',
           }}
         >
           العربية

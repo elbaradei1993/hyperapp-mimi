@@ -6,18 +6,18 @@ export const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'column' as const
+    flexDirection: 'column' as const,
   },
   loadingText: {
     color: 'var(--text-muted)',
-    marginTop: '16px'
+    marginTop: '16px',
   },
   emptyStateContainer: {
     height: '100vh',
     width: '100vw',
     backgroundColor: 'var(--bg-secondary)',
     overflow: 'hidden',
-    position: 'relative' as const
+    position: 'relative' as const,
   },
   container: {
     height: '100vh',
@@ -26,11 +26,11 @@ export const styles = {
     overflowY: 'auto' as const,
     overflowX: 'hidden' as const,
     padding: '16px',
-    paddingBottom: '100px'
+    paddingBottom: '100px',
   },
   header: {
     marginBottom: '32px',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   },
   headerBadge: {
     display: 'inline-flex',
@@ -41,20 +41,20 @@ export const styles = {
     padding: '12px 24px',
     borderRadius: '50px',
     boxShadow: '0 8px 32px rgba(59, 130, 246, 0.3)',
-    marginBottom: '16px'
+    marginBottom: '16px',
   },
   headerIcon: {
-    fontSize: '20px'
+    fontSize: '20px',
   },
   headerTitle: {
     fontSize: '18px',
-    fontWeight: '600' as const
+    fontWeight: '600' as const,
   },
   headerSubtitle: {
     color: '#64748b',
     fontSize: '16px',
     fontWeight: '500' as const,
-    margin: '0'
+    margin: '0',
   },
   locationCard: {
     background: 'white',
@@ -65,7 +65,7 @@ export const styles = {
     position: 'relative' as const,
     overflow: 'hidden',
     maxWidth: '600px',
-    margin: '0 auto'
+    margin: '0 auto',
   },
   locationCardGradient: {
     position: 'absolute' as const,
@@ -73,13 +73,13 @@ export const styles = {
     left: 0,
     right: 0,
     height: '6px',
-    background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)'
+    background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)',
   },
   locationCardContent: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
-    gap: '24px'
+    gap: '24px',
   },
   locationIcon: {
     width: '80px',
@@ -90,10 +90,10 @@ export const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     color: 'white',
-    boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)'
+    boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)',
   },
   locationIconInner: {
-    fontSize: '32px'
+    fontSize: '32px',
   },
   locationAddress: {
     color: '#1f2937',
@@ -102,7 +102,7 @@ export const styles = {
     marginBottom: '8px',
     lineHeight: '1.3',
     textAlign: 'center' as const,
-    width: '100%'
+    width: '100%',
   },
   locationArea: {
     display: 'flex',
@@ -111,13 +111,13 @@ export const styles = {
     gap: '8px',
     fontSize: '16px',
     color: '#6b7280',
-    marginBottom: '24px'
+    marginBottom: '24px',
   },
   locationPinIcon: {
-    color: '#3b82f6'
+    color: '#3b82f6',
   },
   locationAreaText: {
-    margin: '0'
+    margin: '0',
   },
   vibeCard: {
     padding: '24px',
@@ -125,17 +125,17 @@ export const styles = {
     border: '2px solid #e5e7eb',
     borderRadius: '16px',
     textAlign: 'center' as const,
-    width: '100%'
+    width: '100%',
   },
   vibeCardIcon: {
     fontSize: '24px',
     color: '#9ca3af',
-    marginBottom: '8px'
+    marginBottom: '8px',
   },
   vibeCardTitle: {
     color: '#6b7280',
     fontSize: '16px',
-    fontWeight: '500' as const
+    fontWeight: '500' as const,
   },
   noLocationCard: {
     background: 'white',
@@ -145,22 +145,22 @@ export const styles = {
     border: '1px solid #e5e7eb',
     maxWidth: '500px',
     margin: '0 auto',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   },
   noLocationIcon: {
     fontSize: '48px',
     color: '#d1d5db',
-    marginBottom: '16px'
+    marginBottom: '16px',
   },
   noLocationTitle: {
     color: '#6b7280',
     fontSize: '18px',
     fontWeight: '600' as const,
-    marginBottom: '8px'
+    marginBottom: '8px',
   },
   noLocationText: {
     color: '#9ca3af',
-    fontSize: '14px'
+    fontSize: '14px',
   },
   errorCard: {
     background: 'white',
@@ -170,23 +170,23 @@ export const styles = {
     border: '1px solid #e5e7eb',
     maxWidth: '500px',
     margin: '0 auto',
-    textAlign: 'center' as const
+    textAlign: 'center' as const,
   },
   errorIcon: {
     fontSize: '48px',
     color: '#ef4444',
-    marginBottom: '16px'
+    marginBottom: '16px',
   },
   errorTitle: {
     color: '#6b7280',
     fontSize: '18px',
     fontWeight: '600' as const,
-    marginBottom: '8px'
+    marginBottom: '8px',
   },
   errorText: {
     color: '#9ca3af',
     fontSize: '14px',
-    marginBottom: '24px'
+    marginBottom: '24px',
   },
   retryButton: {
     background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
@@ -196,9 +196,9 @@ export const styles = {
     padding: '12px 24px',
     fontWeight: '600' as const,
     cursor: 'pointer',
-    marginTop: '16px'
+    marginTop: '16px',
   },
   insightsSection: {
-    marginTop: '32px'
-  }
+    marginTop: '32px',
+  },
 } as const;

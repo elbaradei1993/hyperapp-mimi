@@ -14,7 +14,7 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
   isOpen,
   onClose,
   onLocationSet,
-  currentLocation
+  currentLocation,
 }) => {
   const { t } = useTranslation();
   const [manualLat, setManualLat] = useState('');
@@ -76,7 +76,7 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
     { name: 'Luxor, Egypt', lat: 25.6872, lng: 32.6396 },
     { name: 'Aswan, Egypt', lat: 24.0889, lng: 32.8998 },
     { name: 'Sharm El Sheikh, Egypt', lat: 27.9158, lng: 34.3299 },
-    { name: 'Hurghada, Egypt', lat: 27.2579, lng: 33.8116 }
+    { name: 'Hurghada, Egypt', lat: 27.2579, lng: 33.8116 },
   ];
 
   // Simple validation
@@ -109,7 +109,9 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
   };
 
   const handleManualSubmit = async () => {
-    if (!validateCoordinates(manualLat, manualLng)) return;
+    if (!validateCoordinates(manualLat, manualLng)) {
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
@@ -133,8 +135,8 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
     const newRecent = [
       { ...location, timestamp: Date.now() },
       ...recentLocations.filter(loc =>
-        loc.lat !== location.lat || loc.lng !== location.lng
-      ).slice(0, 4) // Keep only 5 most recent
+        loc.lat !== location.lat || loc.lng !== location.lng,
+      ).slice(0, 4), // Keep only 5 most recent
     ];
 
     setRecentLocations(newRecent);
@@ -144,7 +146,9 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Box
@@ -322,7 +326,7 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
                     borderRadius="12px"
                     border="1px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                   />
                 </Box>
                 <Box flex={1}>
@@ -340,7 +344,7 @@ const LocationOverrideModal: React.FC<LocationOverrideModalProps> = ({
                     borderRadius="12px"
                     border="1px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                   />
                 </Box>
               </HStack>

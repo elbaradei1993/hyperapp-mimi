@@ -68,6 +68,8 @@ export interface User {
   language?: string;
   profile_completed_at?: string;
   created_at?: string;
+  // Onboarding fields
+  onboarding_completed?: boolean;
   // Credibility system fields
   verification_level?: 'basic' | 'verified' | 'trusted';
   verified_at?: string;
@@ -75,6 +77,7 @@ export interface User {
   // Email verification fields
   email_verified?: boolean;
   email_verified_at?: string;
+  email_confirmed_at?: string; // Alternative field name used in some places
 }
 
 export interface AuthState {
@@ -88,53 +91,53 @@ export const INTEREST_CATEGORIES = {
   'sports-fitness': {
     label: 'Sports & Fitness',
     icon: '🏃',
-    items: ['Running', 'Gym', 'Yoga', 'Football', 'Basketball', 'Swimming', 'Cycling', 'Tennis', 'Martial Arts', 'Dance']
+    items: ['Running', 'Gym', 'Yoga', 'Football', 'Basketball', 'Swimming', 'Cycling', 'Tennis', 'Martial Arts', 'Dance'],
   },
   'music-arts': {
     label: 'Music & Arts',
     icon: '🎵',
-    items: ['Concerts', 'Theater', 'Painting', 'Photography', 'Music Production', 'Film', 'Writing', 'Sculpture', 'Design', 'Crafts']
+    items: ['Concerts', 'Theater', 'Painting', 'Photography', 'Music Production', 'Film', 'Writing', 'Sculpture', 'Design', 'Crafts'],
   },
   'food-dining': {
     label: 'Food & Dining',
     icon: '🍽️',
-    items: ['Restaurants', 'Cooking', 'Baking', 'Coffee Shops', 'Fine Dining', 'Street Food', 'Vegan', 'Wine', 'Beer', 'Cocktails']
+    items: ['Restaurants', 'Cooking', 'Baking', 'Coffee Shops', 'Fine Dining', 'Street Food', 'Vegan', 'Wine', 'Beer', 'Cocktails'],
   },
   'education-learning': {
     label: 'Education & Learning',
     icon: '📚',
-    items: ['Courses', 'Workshops', 'Books', 'Online Learning', 'Languages', 'Science', 'History', 'Technology', 'Business', 'Art History']
+    items: ['Courses', 'Workshops', 'Books', 'Online Learning', 'Languages', 'Science', 'History', 'Technology', 'Business', 'Art History'],
   },
   'environment-nature': {
     label: 'Environment & Nature',
     icon: '🌱',
-    items: ['Hiking', 'Camping', 'Gardening', 'Sustainability', 'Wildlife', 'Photography', 'Conservation', 'Fishing', 'Bird Watching', 'Eco-friendly Living']
+    items: ['Hiking', 'Camping', 'Gardening', 'Sustainability', 'Wildlife', 'Photography', 'Conservation', 'Fishing', 'Bird Watching', 'Eco-friendly Living'],
   },
   'gaming-tech': {
     label: 'Gaming & Tech',
     icon: '🎮',
-    items: ['Video Games', 'Programming', 'Gadgets', 'AI/ML', 'Cybersecurity', 'Mobile Apps', 'Web Development', 'Hardware', 'Virtual Reality', 'Board Games']
+    items: ['Video Games', 'Programming', 'Gadgets', 'AI/ML', 'Cybersecurity', 'Mobile Apps', 'Web Development', 'Hardware', 'Virtual Reality', 'Board Games'],
   },
   'social-community': {
     label: 'Social & Community',
     icon: '👥',
-    items: ['Meetups', 'Volunteering', 'Clubs', 'Networking', 'Charity', 'Community Events', 'Book Clubs', 'Sports Teams', 'Cultural Events', 'Religious Groups']
+    items: ['Meetups', 'Volunteering', 'Clubs', 'Networking', 'Charity', 'Community Events', 'Book Clubs', 'Sports Teams', 'Cultural Events', 'Religious Groups'],
   },
   'shopping-lifestyle': {
     label: 'Shopping & Lifestyle',
     icon: '🛍️',
-    items: ['Markets', 'Fashion', 'Beauty', 'Home Decor', 'Antiques', 'Vintage', 'Luxury', 'Thrifting', 'Art Galleries', 'Craft Markets']
+    items: ['Markets', 'Fashion', 'Beauty', 'Home Decor', 'Antiques', 'Vintage', 'Luxury', 'Thrifting', 'Art Galleries', 'Craft Markets'],
   },
   'transportation': {
     label: 'Transportation',
     icon: '🚗',
-    items: ['Cycling', 'Public Transport', 'Electric Vehicles', 'Motorcycles', 'Car Sharing', 'Ride Sharing', 'Walking', 'Scooters', 'Boats', 'Aviation']
+    items: ['Cycling', 'Public Transport', 'Electric Vehicles', 'Motorcycles', 'Car Sharing', 'Ride Sharing', 'Walking', 'Scooters', 'Boats', 'Aviation'],
   },
   'home-garden': {
     label: 'Home & Garden',
     icon: '🏠',
-    items: ['DIY', 'Gardening', 'Home Improvement', 'Interior Design', 'Landscaping', 'Furniture', 'Tools', 'Renovation', 'Smart Home', 'Pets']
-  }
+    items: ['DIY', 'Gardening', 'Home Improvement', 'Interior Design', 'Landscaping', 'Furniture', 'Tools', 'Renovation', 'Smart Home', 'Pets'],
+  },
 } as const;
 
 export interface ReportValidation {

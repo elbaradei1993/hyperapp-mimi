@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import type { Report } from '../types';
+
 import { LoadingSpinner, Modal } from './shared';
 import SafetyTrendChart from './SafetyTrendChart';
-import type { Report } from '../types';
 
 interface CommunityInsightsProps {
   reports: Report[];
@@ -19,7 +21,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
   userLocation,
   onNewReport,
   onNavigateToMap,
-  onNavigateToProfile
+  onNavigateToProfile,
 }) => {
   const { t } = useTranslation();
   const [showAllChallengesModal, setShowAllChallengesModal] = useState(false);
@@ -31,7 +33,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '40px'
+        padding: '40px',
       }}>
         <LoadingSpinner size="lg" />
       </div>
@@ -42,7 +44,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
     <div style={{
       width: '100%',
       background: 'transparent',
-      padding: '0'
+      padding: '0',
     }}>
       {/* Compact Header */}
       <div style={{
@@ -51,7 +53,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
         justifyContent: 'space-between',
         marginBottom: '24px',
         paddingBottom: '16px',
-        borderBottom: '1px solid #e5e7eb'
+        borderBottom: '1px solid #e5e7eb',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
@@ -62,7 +64,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white'
+            color: 'white',
           }}>
             <i className="fas fa-users" style={{ fontSize: '14px' }}></i>
           </div>
@@ -72,14 +74,14 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
               fontSize: '20px',
               fontWeight: '700',
               margin: '0',
-              lineHeight: '1.2'
+              lineHeight: '1.2',
             }}>
               {t('communityInsights.title')}
             </h2>
             <p style={{
               color: '#6b7280',
               fontSize: '14px',
-              margin: '4px 0 0 0'
+              margin: '4px 0 0 0',
             }}>
               {reports.length} {t('communityInsights.subtitle')}
             </p>
@@ -91,7 +93,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '24px'
+        gap: '24px',
       }}>
         {/* Live Activity Feed */}
         <InteractiveCard
@@ -170,20 +172,20 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
           textAlign: 'center',
           boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
           border: '1px solid #f3f4f6',
-          marginTop: '20px'
+          marginTop: '20px',
         }}>
           <i className="fas fa-map-marker-alt" style={{ fontSize: '32px', color: '#d1d5db', marginBottom: '12px' }}></i>
           <div style={{
             color: '#6b7280',
             fontSize: '16px',
             fontWeight: '500',
-            marginBottom: '4px'
+            marginBottom: '4px',
           }}>
             {t('communityInsights.noNearbyActivity')}
           </div>
           <div style={{
             color: '#9ca3af',
-            fontSize: '14px'
+            fontSize: '14px',
           }}>
             {t('communityInsights.noNearbyActivityDesc')}
           </div>
@@ -201,7 +203,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
             fontSize: '20px',
             fontWeight: '700',
             margin: '0 0 20px 0',
-            textAlign: 'center'
+            textAlign: 'center',
           }}>
             {t('communityInsights.allChallenges')}
           </h2>
@@ -211,7 +213,7 @@ const CommunityInsights: React.FC<CommunityInsightsProps> = ({
             gap: '16px',
             maxHeight: '70vh',
             overflowY: 'auto',
-            padding: '8px'
+            padding: '8px',
           }}>
             <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
               {t('communityInsights.challengesComingSoon')}
@@ -247,7 +249,7 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({ title, icon, color, o
       position: 'relative',
       overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
     }}
     onMouseEnter={(e) => {
       e.currentTarget.style.transform = 'translateY(-2px)';
@@ -262,7 +264,7 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({ title, icon, color, o
       display: 'flex',
       alignItems: 'center',
       gap: '10px',
-      marginBottom: '16px'
+      marginBottom: '16px',
     }}>
       <div style={{
         width: '32px',
@@ -272,7 +274,7 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({ title, icon, color, o
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'white'
+        color: 'white',
       }}>
         <i className={icon} style={{ fontSize: '14px' }}></i>
       </div>
@@ -280,7 +282,7 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({ title, icon, color, o
         color: '#1f2937',
         fontSize: '16px',
         fontWeight: '600',
-        margin: 0
+        margin: 0,
       }}>
         {title}
       </h3>
@@ -303,7 +305,7 @@ const ActivityFeed: React.FC<{
         background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
         borderRadius: '12px',
         padding: '16px',
-        border: '1px solid #e5e7eb'
+        border: '1px solid #e5e7eb',
       }}>
         <SafetyTrendChart reports={reports} height={120} />
       </div>
@@ -327,7 +329,7 @@ const ActivityFeed: React.FC<{
                 borderRadius: '6px',
                 border: '1px solid #e5e7eb',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = '#f1f5f9';
@@ -351,7 +353,7 @@ const ActivityFeed: React.FC<{
                   overflow: 'hidden',
                   border: '2px solid #e5e7eb',
                   cursor: 'pointer',
-                  flexShrink: 0
+                  flexShrink: 0,
                 }}
               >
                 {report.profile?.profile_picture_url ? (
@@ -361,13 +363,15 @@ const ActivityFeed: React.FC<{
                     style={{
                       width: '100%',
                       height: '100%',
-                      objectFit: 'cover'
+                      objectFit: 'cover',
                     }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
                       const fallback = target.parentElement?.querySelector('.profile-fallback') as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
+                      if (fallback) {
+                        fallback.style.display = 'flex';
+                      }
                     }}
                   />
                 ) : null}
@@ -382,7 +386,7 @@ const ActivityFeed: React.FC<{
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     color: 'white',
                     fontSize: '14px',
-                    fontWeight: '600'
+                    fontWeight: '600',
                   }}
                 >
                   {(report.profile?.username || report.profile?.first_name || 'U')[0]?.toUpperCase() || 'U'}
@@ -393,13 +397,13 @@ const ActivityFeed: React.FC<{
                 <div style={{
                   color: '#1f2937',
                   fontSize: '13px',
-                  fontWeight: '600'
+                  fontWeight: '600',
                 }}>
                   {report.vibe_type} Report
                 </div>
                 <div style={{
                   color: '#6b7280',
-                  fontSize: '11px'
+                  fontSize: '11px',
                 }}>
                   by {report.profile?.username || report.profile?.first_name || 'Anonymous'} • {new Date(report.created_at).toLocaleDateString()}
                 </div>
@@ -414,7 +418,7 @@ const ActivityFeed: React.FC<{
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'white',
-                fontSize: '10px'
+                fontSize: '10px',
               }}>
                 {report.emergency ? '🚨' : '📍'}
               </div>
@@ -430,10 +434,10 @@ const ActivityFeed: React.FC<{
 const SafetyOverview: React.FC<{ data: any }> = ({ data }) => {
   const getSafetyColor = (level: string) => {
     switch (level) {
-      case 'safe': return '#10b981';
-      case 'moderate': return '#f59e0b';
-      case 'caution': return '#ef4444';
-      default: return '#6b7280';
+    case 'safe': return '#10b981';
+    case 'moderate': return '#f59e0b';
+    case 'caution': return '#ef4444';
+    default: return '#6b7280';
     }
   };
 
@@ -448,7 +452,7 @@ const SafetyOverview: React.FC<{ data: any }> = ({ data }) => {
         alignItems: 'center',
         justifyContent: 'center',
         margin: '0 auto 16px',
-        position: 'relative'
+        position: 'relative',
       }}>
         <div style={{
           width: '60px',
@@ -457,12 +461,12 @@ const SafetyOverview: React.FC<{ data: any }> = ({ data }) => {
           background: 'white',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }}>
           <span style={{
             color: getSafetyColor(data.level),
             fontSize: '18px',
-            fontWeight: '700'
+            fontWeight: '700',
           }}>
             {data.score}%
           </span>
@@ -473,13 +477,13 @@ const SafetyOverview: React.FC<{ data: any }> = ({ data }) => {
         fontSize: '16px',
         fontWeight: '600',
         marginBottom: '4px',
-        textTransform: 'capitalize'
+        textTransform: 'capitalize',
       }}>
         {data.level} Area
       </div>
       <div style={{
         color: '#6b7280',
-        fontSize: '12px'
+        fontSize: '12px',
       }}>
         Based on {data.totalReports} reports
       </div>
@@ -497,7 +501,7 @@ const CommunityStats: React.FC<{ reports: Report[] }> = ({ reports }) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return new Date(r.created_at) >= today;
-    }).length
+    }).length,
   };
 
   return (
@@ -544,7 +548,7 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px'
+          gap: '8px',
         }}
       >
         <i className="fas fa-plus" style={{ fontSize: '12px' }}></i>
@@ -568,7 +572,7 @@ const QuickActions: React.FC<{ onNewReport?: () => void }> = ({ onNewReport }) =
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px'
+          gap: '8px',
         }}
       >
         <i className="fas fa-phone" style={{ fontSize: '12px' }}></i>
@@ -590,27 +594,27 @@ const CommunityChallenges: React.FC<{
         background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
         borderRadius: '8px',
         border: '1px solid #f59e0b',
-        textAlign: 'center'
+        textAlign: 'center',
       }}>
         <div style={{
           color: '#92400e',
           fontSize: '16px',
           fontWeight: '600',
-          marginBottom: '4px'
+          marginBottom: '4px',
         }}>
           Daily Reporter
         </div>
         <div style={{
           color: '#78350f',
           fontSize: '12px',
-          marginBottom: '8px'
+          marginBottom: '8px',
         }}>
           Make 3 reports today
         </div>
         <div style={{
           color: '#92400e',
           fontSize: '14px',
-          fontWeight: '600'
+          fontWeight: '600',
         }}>
           Progress: {Math.min(reports.length, 3)}/3
         </div>
@@ -626,7 +630,7 @@ const CommunityChallenges: React.FC<{
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            textDecoration: 'underline'
+            textDecoration: 'underline',
           }}
         >
           View All Challenges →
@@ -644,15 +648,15 @@ const PersonalAchievements: React.FC<{ reports: Report[] }> = ({ reports }) => {
       description: 'Made your first report',
       unlocked: reports.length >= 1,
       progress: Math.min(reports.length, 1),
-      total: 1
+      total: 1,
     },
     {
       title: 'Safety Guardian',
       description: 'Helped 5 emergency situations',
       unlocked: reports.filter(r => r.emergency).length >= 5,
       progress: Math.min(reports.filter(r => r.emergency).length, 5),
-      total: 5
-    }
+      total: 5,
+    },
   ];
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
@@ -668,7 +672,7 @@ const PersonalAchievements: React.FC<{ reports: Report[] }> = ({ reports }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          margin: '0 auto 8px'
+          margin: '0 auto 8px',
         }}>
           <div style={{
             width: '45px',
@@ -677,12 +681,12 @@ const PersonalAchievements: React.FC<{ reports: Report[] }> = ({ reports }) => {
             background: 'white',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
           }}>
             <span style={{
               color: '#8b5cf6',
               fontSize: '16px',
-              fontWeight: '700'
+              fontWeight: '700',
             }}>
               {unlockedCount}
             </span>
@@ -692,13 +696,13 @@ const PersonalAchievements: React.FC<{ reports: Report[] }> = ({ reports }) => {
           color: '#1f2937',
           fontSize: '14px',
           fontWeight: '600',
-          marginBottom: '2px'
+          marginBottom: '2px',
         }}>
           {unlockedCount} Achievements
         </div>
         <div style={{
           color: '#6b7280',
-          fontSize: '12px'
+          fontSize: '12px',
         }}>
           {achievements.length - unlockedCount} remaining
         </div>
@@ -715,7 +719,7 @@ const PersonalAchievements: React.FC<{ reports: Report[] }> = ({ reports }) => {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '14px',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
           }}>
             🏆
           </div>

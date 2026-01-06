@@ -1,26 +1,29 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from 'react-leaflet';
+import { Crosshair, Layers, Mic, Heart, MapPin, Clock, MessageCircle, ZoomIn, ZoomOut, Users } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import L from 'leaflet';
+
 import type { Vibe, SOS } from '../types';
 import { VibeType } from '../types';
+import { reportsService } from '../services/reports';
+import { userLocationService, NearbyUser } from '../services/userLocationService';
+import { useAuth } from '../contexts/AuthContext';
+
 import { IconHeartPulse } from './Icons';
 import { getVibeIcon, sosIcon, userLocationIcon } from './MapIcons';
 import { MapMarker } from './MapMarker';
-import { reportsService } from '../services/reports';
-import { userLocationService, NearbyUser } from '../services/userLocationService';
-import { Crosshair, Layers, Mic, Heart, MapPin, Clock, MessageCircle, ZoomIn, ZoomOut, Users } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import VibeReportModal from './VibeReportModal';
 import LocationSearchModal from './LocationSearchModal';
 import LocationSearchButton from './LocationSearchButton';
 import SafetyWaveOverlay from './SafetyWaveOverlay';
 import VibeLegend from './VibeLegend';
-import { useAuth } from '../contexts/AuthContext';
+
 import 'leaflet/dist/leaflet.css';
 // Import heatmap plugin
 import 'leaflet.heat';
 
 // Fix for default markers in react-leaflet
-import L from 'leaflet';
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -56,7 +59,7 @@ const MapFlyController: React.FC<{ center: [number, number], zoom: number }> = (
     }
   }, [center, zoom, map]);
   return null;
-}
+};
 
 const SearchFlyController: React.FC<{ searchLocation: [number, number] | null }> = ({ searchLocation }) => {
   const map = useMap();
@@ -68,7 +71,7 @@ const SearchFlyController: React.FC<{ searchLocation: [number, number] | null }>
   }, [searchLocation, map]);
 
   return null;
-}
+};
 
 const TargetLocationController: React.FC<{ targetLocation: [number, number] | null | undefined }> = ({ targetLocation }) => {
   const map = useMap();
@@ -81,7 +84,7 @@ const TargetLocationController: React.FC<{ targetLocation: [number, number] | nu
   }, [targetLocation, map]);
 
   return null;
-}
+};
 
 const ControlButton: React.FC<{
   children: React.ReactNode;
@@ -94,14 +97,14 @@ const ControlButton: React.FC<{
   // Use theme variables for backgrounds
   const getGradient = (variant: string) => {
     switch (variant) {
-      case 'heatmap':
-        return 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)';
-      case 'voice':
-        return 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)';
-      case 'recenter':
-        return 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)';
-      default:
-        return 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)';
+    case 'heatmap':
+      return 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)';
+    case 'voice':
+      return 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)';
+    case 'recenter':
+      return 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)';
+    default:
+      return 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)';
     }
   };
 
@@ -139,7 +142,7 @@ const ControlButton: React.FC<{
         minHeight: '44px',
         // Positioning
         position: 'absolute',
-        top: top,
+        top,
         ...(left ? { left } : { right: '10px' }),
         zIndex: 1000,
         // Modern transitions
@@ -241,16 +244,22 @@ const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
   return result ? {
     r: parseInt(result[1], 16),
     g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
+    b: parseInt(result[3], 16),
   } : null;
 };
 
 // Get time ago utility function (from reference)
 const getTimeAgo = (date: Date) => {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 60) {
+    return 'Just now';
+  }
+  if (seconds < 3600) {
+    return `${Math.floor(seconds / 60)}m ago`;
+  }
+  if (seconds < 86400) {
+    return `${Math.floor(seconds / 3600)}h ago`;
+  }
   return `${Math.floor(seconds / 86400)}d ago`;
 };
 
@@ -264,7 +273,7 @@ const vibeColors: Record<string, { bg: string; text: string }> = {
   suspicious: { bg: 'bg-orange-500', text: 'text-orange-600' },
   dangerous: { bg: 'bg-red-600', text: 'text-red-600' },
   noisy: { bg: 'bg-yellow-500', text: 'text-yellow-600' },
-  quiet: { bg: 'bg-cyan-500', text: 'text-cyan-600' }
+  quiet: { bg: 'bg-cyan-500', text: 'text-cyan-600' },
 };
 
 // Vibe type colors for heatmap layers (hex format for Leaflet.heat compatibility)
@@ -283,7 +292,7 @@ const vibeColorsHex: Record<VibeType, string> = {
   [VibeType.Construction]: '#f59e0b', // Amber
   [VibeType.Pothole]: '#92400e',    // Brown
   [VibeType.Traffic]: '#dc2626',    // Red
-  [VibeType.Other]: '#6b7280'       // Gray
+  [VibeType.Other]: '#6b7280',       // Gray
 };
 
 // Memoized gradient calculation to avoid recalculation on every render
@@ -334,7 +343,7 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
       [VibeType.Construction]: [],
       [VibeType.Pothole]: [],
       [VibeType.Traffic]: [],
-      [VibeType.Other]: []
+      [VibeType.Other]: [],
     };
 
     vibes.forEach(vibe => {
@@ -349,7 +358,7 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
   useEffect(() => {
     const L = (window as any).L;
     if (!L || !L.heatLayer) {
-      console.warn("Leaflet.heat plugin not found. Heatmap will not be rendered.");
+      console.warn('Leaflet.heat plugin not found. Heatmap will not be rendered.');
       return;
     }
 
@@ -369,7 +378,9 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
     }
     layersRef.current = [];
 
-    if (!isVisible) return;
+    if (!isVisible) {
+      return;
+    }
 
     // Define rendering order (safe vibes first, dangerous last for proper layering)
     const renderOrder: VibeType[] = [
@@ -381,14 +392,16 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
       VibeType.Crowded,
       VibeType.Noisy,
       VibeType.Suspicious,
-      VibeType.Dangerous
+      VibeType.Dangerous,
     ];
 
     // Create heatmap layers for each vibe type with error handling
     renderOrder.forEach(vibeType => {
       try {
         const typeVibes = groupedVibes[vibeType];
-        if (typeVibes.length === 0) return;
+        if (typeVibes.length === 0) {
+          return;
+        }
 
         const gradient = gradients[vibeType];
         if (!gradient) {
@@ -400,7 +413,7 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
         const points = typeVibes.map(vibe => [
           vibe.latitude!,
           vibe.longitude!,
-          0.8 // Consistent intensity for all points of this type
+          0.8, // Consistent intensity for all points of this type
         ]);
 
         // Create heatmap layer with memoized gradient
@@ -410,7 +423,7 @@ const HeatmapLayer: React.FC<{ vibes: Vibe[], isVisible: boolean }> = React.memo
           maxZoom: 17,
           minOpacity: 0.4,
           maxOpacity: 0.9,
-          gradient: gradient
+          gradient,
         });
 
         // Fix Canvas2D performance warning by setting willReadFrequently
@@ -486,7 +499,9 @@ const BoostButton: React.FC<{
   }, [id, type, userId]);
 
   const handleBoost = async () => {
-    if (isLoading || !userId) return;
+    if (isLoading || !userId) {
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -523,7 +538,7 @@ const BoostButton: React.FC<{
         color: isBoosted ? '#b91c1c' : '#374151',
         borderColor: isBoosted ? '#fecaca' : '#d1d5db',
         opacity: isLoading ? 0.5 : 1,
-        cursor: isLoading ? 'not-allowed' : 'pointer'
+        cursor: isLoading ? 'not-allowed' : 'pointer',
       }}
       title={isBoosted ? 'Remove boost' : 'Raise awareness'}
     >
@@ -559,7 +574,7 @@ const VibeMarker: React.FC<{
           transition={{
             duration: 2,
             repeat: Infinity,
-            repeatType: "reverse"
+            repeatType: 'reverse',
           }}
           className={`w-4 h-4 rounded-full ${vibeColor.bg} opacity-30 absolute top-0 left-1/2 -translate-x-1/2`}
         />
@@ -702,7 +717,7 @@ const OtherUserMarker: React.FC<{
     `,
     className: 'custom-other-user-marker',
     iconSize: [18, 18],
-    iconAnchor: [9, 9]
+    iconAnchor: [9, 9],
   });
 
   return (
@@ -718,7 +733,7 @@ const OtherUserMarker: React.FC<{
           borderRadius: '8px',
           boxShadow: 'var(--shadow-lg)',
           border: '1px solid var(--border-color)',
-          maxWidth: '280px'
+          maxWidth: '280px',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -772,7 +787,7 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({
   onToggleHeatmap,
   onReportSuccess,
   userId,
-  targetLocation
+  targetLocation,
 }) => {
   const { user } = useAuth();
 
@@ -788,7 +803,7 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({
     if (L && L.Map) {
       // Disable zoom controls globally
       L.Map.mergeOptions({
-        zoomControl: false
+        zoomControl: false,
       });
 
       // Also remove any existing zoom controls
@@ -832,14 +847,14 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({
     vibes.filter(vibe =>
       vibe.latitude &&
       vibe.longitude &&
-      Object.values(VibeType).includes(vibe.vibe_type)
-    ), [vibes]
+      Object.values(VibeType).includes(vibe.vibe_type),
+    ), [vibes],
   );
 
   // Memoize filtered and validated SOS alerts
   const validSOSAlerts = useMemo(() =>
     sosAlerts.filter(sos => sos.latitude && sos.longitude),
-    [sosAlerts]
+  [sosAlerts],
   );
 
   return (
@@ -873,13 +888,13 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({
                 boxShadow: 'var(--shadow-lg)',
                 border: '1px solid var(--border-color)',
                 maxWidth: '280px',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
               }}>
                 <div style={{
                   fontSize: '18px',
                   fontWeight: '600',
                   color: 'var(--text-primary)',
-                  textAlign: 'center'
+                  textAlign: 'center',
                 }}>
                   {user?.username || 'Anonymous User'}
                 </div>
@@ -943,7 +958,7 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({
               `,
               className: 'custom-vibe-marker',
               iconSize: [28, 40],
-              iconAnchor: [14, 40]
+              iconAnchor: [14, 40],
             })}
           >
             <Popup className="custom-popup">
@@ -953,7 +968,7 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({
                 borderRadius: '8px',
                 boxShadow: 'var(--shadow-lg)',
                 border: '1px solid var(--border-color)',
-                maxWidth: '320px'
+                maxWidth: '320px',
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -972,7 +987,7 @@ const MapComponent: React.FC<MapComponentProps> = React.memo(({
                         fontWeight: '700',
                         color: 'white',
                         borderRadius: '9999px',
-                        backgroundColor: vibeColorsHex[vibe.vibe_type as VibeType] || '#6366f1'
+                        backgroundColor: vibeColorsHex[vibe.vibe_type as VibeType] || '#6366f1',
                       }}
                     >
                       {vibe.vibe_type}

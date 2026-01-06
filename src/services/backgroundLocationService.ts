@@ -1,6 +1,8 @@
-import { supabase } from '../lib/supabase';
-import { locationService, LocationResult } from './locationService';
 import { Capacitor } from '@capacitor/core';
+
+import { supabase } from '../lib/supabase';
+
+import { locationService, LocationResult } from './locationService';
 
 export interface LocationChangeCallback {
   (newLocation: [number, number], oldLocation: [number, number] | null): void;
@@ -31,7 +33,9 @@ class BackgroundLocationService {
 
   // Initialize background location tracking
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+      return;
+    }
 
     try {
       console.log('🔄 Initializing background location service...');
@@ -39,7 +43,7 @@ class BackgroundLocationService {
       // Get initial location
       const initialPosition = await locationService.getCurrentPosition({
         enableHighAccuracy: true,
-        timeout: 30000
+        timeout: 30000,
       });
 
       this.currentLocation = [initialPosition.latitude, initialPosition.longitude];
@@ -70,8 +74,8 @@ class BackgroundLocationService {
       {
         enableHighAccuracy: true,
         timeout: 30000,
-        maximumAge: 30000
-      }
+        maximumAge: 30000,
+      },
     );
 
     // Set up periodic background refresh
@@ -79,7 +83,7 @@ class BackgroundLocationService {
       try {
         const position = await locationService.getCurrentPosition({
           enableHighAccuracy: true,
-          timeout: 10000
+          timeout: 10000,
         });
         this.handleLocationUpdate(position);
       } catch (error: any) {
@@ -131,7 +135,7 @@ class BackgroundLocationService {
         p_heading: null,
         p_speed: null,
         p_altitude: null,
-        p_location_source: 'gps'
+        p_location_source: 'gps',
       });
 
       if (error) {
@@ -146,7 +150,9 @@ class BackgroundLocationService {
 
   // Check if location change is significant enough to trigger updates
   private isSignificantLocationChange(newLocation: [number, number], oldLocation: [number, number] | null): boolean {
-    if (!oldLocation) return true; // First location is always significant
+    if (!oldLocation) {
+      return true;
+    } // First location is always significant
 
     // Calculate distance in meters
     const distance = this.calculateDistance(newLocation, oldLocation);
@@ -215,7 +221,7 @@ class BackgroundLocationService {
     try {
       const position = await locationService.getCurrentPosition({
         enableHighAccuracy: true,
-        timeout: 10000
+        timeout: 10000,
       });
 
       const newLocation: [number, number] = [position.latitude, position.longitude];

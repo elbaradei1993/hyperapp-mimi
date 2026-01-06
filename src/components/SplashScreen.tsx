@@ -9,14 +9,14 @@ const SplashScreen: React.FC = () => { // Removed onComplete prop
     { emoji: '📢', className: 'noisy' },
     { emoji: '👥', className: 'crowded' },
     { emoji: '🎉', className: 'lively' },
-    { emoji: '⚠️', className: 'dangerous' }
+    { emoji: '⚠️', className: 'dangerous' },
   ];
 
   const loadingTexts = [
-    "Initializing safety systems",
-    "Connecting to community network",
-    "Securing your location",
-    "Ready to protect"
+    'Initializing safety systems',
+    'Connecting to community network',
+    'Securing your location',
+    'Ready to protect',
   ];
 
   useEffect(() => {
@@ -48,20 +48,20 @@ const SplashScreen: React.FC = () => { // Removed onComplete prop
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
-      perspective: '1200px'
+      perspective: '1200px',
     }}>
       <div style={{
         textAlign: 'center',
         color: '#ffffff',
         maxWidth: '500px',
-        width: '90%'
+        width: '90%',
       }}>
         <h1 style={{
           fontSize: '3.5em',
           fontWeight: 700,
           marginBottom: '20px',
           letterSpacing: '-1.5px',
-          animation: 'fadeIn 1s ease-out'
+          animation: 'fadeIn 1s ease-out',
         }}>
           HyperApp
         </h1>
@@ -71,7 +71,7 @@ const SplashScreen: React.FC = () => { // Removed onComplete prop
           marginBottom: '80px',
           color: 'rgba(255, 255, 255, 0.7)',
           letterSpacing: '0.5px',
-          animation: 'fadeIn 1s ease-out 0.3s both'
+          animation: 'fadeIn 1s ease-out 0.3s both',
         }}>
           Stay Safe...Stay Connected
         </p>
@@ -83,7 +83,7 @@ const SplashScreen: React.FC = () => { // Removed onComplete prop
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          perspective: '1200px'
+          perspective: '1200px',
         }}>
           {/* Center glow */}
           <div style={{
@@ -96,7 +96,7 @@ const SplashScreen: React.FC = () => { // Removed onComplete prop
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(76, 201, 240, 0.15) 0%, transparent 70%)',
             filter: 'blur(20px)',
-            animation: 'pulseGlow 1.5s ease-in-out infinite'
+            animation: 'pulseGlow 1.5s ease-in-out infinite',
           }} />
 
           {/* Icons */}
@@ -113,27 +113,27 @@ const SplashScreen: React.FC = () => { // Removed onComplete prop
                 alignItems: 'center',
                 borderRadius: '20px',
                 background: icon.className === 'calm' ? 'linear-gradient(135deg, rgba(76, 201, 240, 0.2), rgba(76, 201, 240, 0.08))' :
-                           icon.className === 'noisy' ? 'linear-gradient(135deg, rgba(255, 209, 102, 0.2), rgba(255, 209, 102, 0.08))' :
-                           icon.className === 'crowded' ? 'linear-gradient(135deg, rgba(6, 214, 160, 0.2), rgba(6, 214, 160, 0.08))' :
-                           icon.className === 'lively' ? 'linear-gradient(135deg, rgba(239, 71, 111, 0.2), rgba(239, 71, 111, 0.08))' :
-                           'linear-gradient(135deg, rgba(17, 138, 178, 0.2), rgba(17, 138, 178, 0.08))',
+                  icon.className === 'noisy' ? 'linear-gradient(135deg, rgba(255, 209, 102, 0.2), rgba(255, 209, 102, 0.08))' :
+                    icon.className === 'crowded' ? 'linear-gradient(135deg, rgba(6, 214, 160, 0.2), rgba(6, 214, 160, 0.08))' :
+                      icon.className === 'lively' ? 'linear-gradient(135deg, rgba(239, 71, 111, 0.2), rgba(239, 71, 111, 0.08))' :
+                        'linear-gradient(135deg, rgba(17, 138, 178, 0.2), rgba(17, 138, 178, 0.08))',
                 backdropFilter: 'blur(15px)',
                 border: icon.className === 'calm' ? '1px solid rgba(76, 201, 240, 0.4)' :
-                        icon.className === 'noisy' ? '1px solid rgba(255, 209, 102, 0.4)' :
-                        icon.className === 'crowded' ? '1px solid rgba(6, 214, 160, 0.4)' :
-                        icon.className === 'lively' ? '1px solid rgba(239, 71, 111, 0.4)' :
+                  icon.className === 'noisy' ? '1px solid rgba(255, 209, 102, 0.4)' :
+                    icon.className === 'crowded' ? '1px solid rgba(6, 214, 160, 0.4)' :
+                      icon.className === 'lively' ? '1px solid rgba(239, 71, 111, 0.4)' :
                         '1px solid rgba(17, 138, 178, 0.4)',
                 transformStyle: 'preserve-3d',
                 filter: 'drop-shadow(0 12px 30px rgba(0, 0, 0, 0.4))',
                 opacity: index === currentIconIndex ? 1 : 0,
                 transform: index === currentIconIndex ? 'translateZ(0px) scale(1)' :
-                          index === (currentIconIndex - 1 + icons.length) % icons.length ? 'translateZ(150px) scale(0.6)' : 'translateZ(-200px) scale(0.5)',
+                  index === (currentIconIndex - 1 + icons.length) % icons.length ? 'translateZ(150px) scale(0.6)' : 'translateZ(-200px) scale(0.5)',
                 transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
                 color: icon.className === 'calm' ? '#4CC9F0' :
-                       icon.className === 'noisy' ? '#FFD166' :
-                       icon.className === 'crowded' ? '#06D6A0' :
-                       icon.className === 'lively' ? '#EF476F' : '#118AB2',
-                boxShadow: index === currentIconIndex ? `0 0 40px currentColor` : 'none'
+                  icon.className === 'noisy' ? '#FFD166' :
+                    icon.className === 'crowded' ? '#06D6A0' :
+                      icon.className === 'lively' ? '#EF476F' : '#118AB2',
+                boxShadow: index === currentIconIndex ? '0 0 40px currentColor' : 'none',
               }}
             >
               {icon.emoji}
@@ -146,7 +146,7 @@ const SplashScreen: React.FC = () => { // Removed onComplete prop
           color: 'rgba(255, 255, 255, 0.5)',
           letterSpacing: '0.3px',
           marginTop: '20px',
-          animation: 'fadeIn 1s ease-out 0.6s both'
+          animation: 'fadeIn 1s ease-out 0.6s both',
         }}>
           {loadingTexts[currentTextIndex]}
         </div>

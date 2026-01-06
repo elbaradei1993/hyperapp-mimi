@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
 import Modal from './shared/Modal';
 
 interface PrivacyTermsModalProps {
@@ -9,7 +10,7 @@ interface PrivacyTermsModalProps {
 
 const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
   isOpen,
-  onClose
+  onClose,
 }) => {
   const { t } = useTranslation();
 
@@ -21,7 +22,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
       textAlign: 'justify',
       textJustify: 'inter-word',
       wordWrap: 'break-word',
-      overflowWrap: 'break-word'
+      overflowWrap: 'break-word',
     }}>
       <div style={{ marginBottom: '20px' }}>
         <h3 style={{
@@ -30,21 +31,21 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           color: 'var(--text-primary)',
           marginBottom: '12px',
           paddingBottom: '8px',
-          borderBottom: '2px solid var(--primary-color, #4361ee)'
+          borderBottom: '2px solid var(--primary-color, #4361ee)',
         }}>
           Privacy Policy
         </h3>
         <p style={{
           fontSize: '14px',
           marginBottom: '12px',
-          color: 'var(--text-secondary, #666666)'
+          color: 'var(--text-secondary, #666666)',
         }}>
           <strong>Last Updated:</strong> October 31, 2025
         </p>
         <p style={{
           fontSize: '14px',
           marginBottom: '16px',
-          color: 'var(--text-primary)'
+          color: 'var(--text-primary)',
         }}>
           HyperApp collects and uses information to provide community safety services and improve your experience.
         </p>
@@ -56,7 +57,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           Information We Collect
         </h4>
@@ -74,7 +75,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           How We Use Information
         </h4>
@@ -89,7 +90,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           Information Sharing
         </h4>
@@ -104,7 +105,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           Your Rights
         </h4>
@@ -125,7 +126,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
       textAlign: 'justify',
       textJustify: 'inter-word',
       wordWrap: 'break-word',
-      overflowWrap: 'break-word'
+      overflowWrap: 'break-word',
     }}>
       <div style={{ marginBottom: '20px' }}>
         <h3 style={{
@@ -134,21 +135,21 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           color: 'var(--text-primary)',
           marginBottom: '12px',
           paddingBottom: '8px',
-          borderBottom: '2px solid var(--primary-color, #4361ee)'
+          borderBottom: '2px solid var(--primary-color, #4361ee)',
         }}>
           Terms of Service
         </h3>
         <p style={{
           fontSize: '14px',
           marginBottom: '12px',
-          color: 'var(--text-secondary, #666666)'
+          color: 'var(--text-secondary, #666666)',
         }}>
           <strong>Last Updated:</strong> October 31, 2025
         </p>
         <p style={{
           fontSize: '14px',
           marginBottom: '16px',
-          color: 'var(--text-primary)'
+          color: 'var(--text-primary)',
         }}>
           Welcome to HyperApp! These terms govern your use of our community safety platform.
         </p>
@@ -160,7 +161,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           Service Description
         </h4>
@@ -175,7 +176,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           User Accounts
         </h4>
@@ -190,7 +191,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           Acceptable Use
         </h4>
@@ -205,7 +206,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           Emergency Services
         </h4>
@@ -220,7 +221,7 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
           fontWeight: '600',
           color: 'var(--text-primary)',
           marginBottom: '8px',
-          marginTop: '16px'
+          marginTop: '16px',
         }}>
           Disclaimers
         </h4>
@@ -247,13 +248,13 @@ const PrivacyTermsModal: React.FC<PrivacyTermsModalProps> = ({
         maxHeight: isMobile ? '55vh' : '70vh',
         overflowY: 'auto',
         padding: isMobile ? '0 8px 16px 8px' : '0 4px 8px 4px',
-        marginBottom: isMobile ? '8px' : '0'
+        marginBottom: isMobile ? '8px' : '0',
       }}>
         {privacyContent}
         <hr style={{
           border: 'none',
           borderTop: '1px solid var(--border-color)',
-          margin: isMobile ? '20px 0' : '30px 0'
+          margin: isMobile ? '20px 0' : '30px 0',
         }} />
         {termsContent}
       </div>

@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18next from 'i18next';
-import { useAuth } from '../contexts/AuthContext';
-import { useNotification } from '../contexts/NotificationContext';
-import { Box, VStack, HStack, Text, Button, Input, Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
+import { Box, VStack, HStack, Text, Button, Input } from '@chakra-ui/react';
 import { X, User, Mail, Lock, UserPlus, Camera, MapPin, Phone, FileText } from 'lucide-react';
-import InputComponent from './shared/Input';
+
+import { useNotification } from '../contexts/NotificationContext';
+import { useAuth } from '../contexts/AuthContext';
 import { INTEREST_CATEGORIES } from '../types';
 import { uploadService } from '../services/upload';
+
+import InputComponent from './shared/Input';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -31,7 +33,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     signupLastName: '',
     signupPhone: '',
     signupLocation: '',
-    resetEmail: ''
+    resetEmail: '',
   });
   const [signupInterests, setSignupInterests] = useState<string[]>([]);
   const [signupProfilePicture, setSignupProfilePicture] = useState<File | null>(null);
@@ -71,8 +73,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           {
             enableHighAccuracy: true,
             timeout: 15000, // Increased timeout for mobile
-            maximumAge: 300000 // 5 minutes
-          }
+            maximumAge: 300000, // 5 minutes
+          },
         );
       });
 
@@ -82,7 +84,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       // Try to reverse geocode to get address
       try {
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
         );
         const data = await response.json();
 
@@ -142,7 +144,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setSignupInterests(prev =>
       prev.includes(interest)
         ? prev.filter(i => i !== interest)
-        : [...prev, interest]
+        : [...prev, interest],
     );
   };
 
@@ -230,7 +232,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           phone: formData.signupPhone,
           location: formData.signupLocation,
           interests: signupInterests,
-          profile_completed_at: new Date().toISOString()
+          profile_completed_at: new Date().toISOString(),
         };
         localStorage.setItem(`pendingProfile_${response.data.user.id}`, JSON.stringify(profileData));
 
@@ -244,7 +246,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           signupFirstName: '',
           signupLastName: '',
           signupPhone: '',
-          signupLocation: ''
+          signupLocation: '',
         }));
         setSignupInterests([]);
         setSignupProfilePicture(null);
@@ -258,7 +260,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           type: 'success',
           title: t('auth.accountCreated'),
           message: t('auth.checkEmailForConfirmation'),
-          duration: 4000
+          duration: 4000,
         });
       } else if (response.data.session) {
         // Auto-confirmed (if disabled in Supabase) - save profile immediately
@@ -272,7 +274,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             phone: formData.signupPhone,
             location: formData.signupLocation,
             interests: signupInterests,
-            profile_completed_at: new Date().toISOString()
+            profile_completed_at: new Date().toISOString(),
           };
 
           // Update profile in database
@@ -290,7 +292,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           type: 'success',
           title: t('auth.accountCreated'),
           message: t('auth.welcomeMessage'),
-          duration: 5000
+          duration: 5000,
         });
 
         setActiveTab('login');
@@ -303,7 +305,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           signupFirstName: '',
           signupLastName: '',
           signupPhone: '',
-          signupLocation: ''
+          signupLocation: '',
         }));
         setSignupInterests([]);
         setSignupProfilePicture(null);
@@ -348,12 +350,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       await resetPassword(formData.resetEmail);
       console.log('Password reset email sent');
 
-        addNotification({
-          type: 'success',
-          title: t('auth.passwordResetSent'),
-          message: t('auth.passwordResetInstructions'),
-          duration: 4000
-        });
+      addNotification({
+        type: 'success',
+        title: t('auth.passwordResetSent'),
+        message: t('auth.passwordResetInstructions'),
+        duration: 4000,
+      });
 
       setShowForgotPassword(false);
       setFormData(prev => ({ ...prev, resetEmail: '' }));
@@ -363,7 +365,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Box
@@ -500,7 +504,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     borderRadius="12px"
                     border="1px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                     required
                   />
                 </Box>
@@ -520,7 +524,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     borderRadius="12px"
                     border="1px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                     required
                   />
                 </Box>
@@ -538,7 +542,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     borderRadius="12px"
                     border="1px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                     required
                   />
                 </Box>
@@ -552,7 +556,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   p={0}
                   fontSize="14px"
                   fontWeight="500"
-                  _hover={{ bg: "transparent", textDecoration: "underline" }}
+                  _hover={{ bg: 'transparent', textDecoration: 'underline' }}
                 >
                   {t('auth.forgotPassword')}
                 </Button>
@@ -579,7 +583,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                           style={{
                             width: '100%',
                             height: '100%',
-                            objectFit: 'cover'
+                            objectFit: 'cover',
                           }}
                         />
                       ) : (
@@ -638,7 +642,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         borderRadius="12px"
                         border="1px solid"
                         borderColor="gray.200"
-                        _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                        _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                         required
                       />
                     </Box>
@@ -655,7 +659,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         borderRadius="12px"
                         border="1px solid"
                         borderColor="gray.200"
-                        _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                        _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                         required
                       />
                     </Box>
@@ -674,7 +678,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       borderRadius="12px"
                       border="1px solid"
                       borderColor="gray.200"
-                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                       required
                     />
                   </Box>
@@ -692,7 +696,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       borderRadius="12px"
                       border="1px solid"
                       borderColor="gray.200"
-                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                       required
                     />
                   </Box>
@@ -711,7 +715,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         borderRadius="12px"
                         border="1px solid"
                         borderColor="gray.200"
-                        _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                        _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                       />
                     </Box>
                     <Box flex={1}>
@@ -727,7 +731,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         borderRadius="12px"
                         border="1px solid"
                         borderColor="gray.200"
-                        _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                        _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                         disabled={locationLoading}
                       />
                     </Box>
@@ -747,7 +751,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       borderRadius="12px"
                       border="1px solid"
                       borderColor="gray.200"
-                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                       required
                     />
                   </Box>
@@ -765,7 +769,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       borderRadius="12px"
                       border="1px solid"
                       borderColor="gray.200"
-                      _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                       required
                     />
                   </Box>
@@ -802,7 +806,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                 borderColor={signupInterests.includes(item) ? 'blue.500' : 'gray.200'}
                                 _hover={{
                                   bg: signupInterests.includes(item) ? 'blue.600' : 'gray.50',
-                                  borderColor: signupInterests.includes(item) ? 'blue.600' : 'gray.300'
+                                  borderColor: signupInterests.includes(item) ? 'blue.600' : 'gray.300',
                                 }}
                               >
                                 {t(`profile.interests.items.${item}`)}
@@ -874,7 +878,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 color="white"
                 onClick={handleResetPassword}
                 borderRadius="12px"
-                _hover={{ bg: "blue.600" }}
+                _hover={{ bg: 'blue.600' }}
                 disabled={isLoading}
               >
                 {isLoading ? t('auth.sending') : t('auth.sendResetLink')}
@@ -887,7 +891,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               color="white"
               onClick={handleLogin}
               borderRadius="12px"
-              _hover={{ bg: "blue.600" }}
+              _hover={{ bg: 'blue.600' }}
               disabled={isLoading}
             >
               {isLoading ? t('auth.loggingIn') : t('auth.login')}
@@ -899,7 +903,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               color="white"
               onClick={handleSignup}
               borderRadius="12px"
-              _hover={{ bg: "blue.600" }}
+              _hover={{ bg: 'blue.600' }}
               disabled={isLoading}
             >
               {isLoading ? t('auth.creatingAccount') : t('auth.signup')}

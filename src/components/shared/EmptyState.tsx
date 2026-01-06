@@ -13,7 +13,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   action,
-  className = ''
+  className = '',
 }) => {
   return (
     <div className={`text-center py-12 px-4 ${className}`}>

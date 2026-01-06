@@ -39,8 +39,8 @@ const theme = {
     },
   },
   fonts: {
-    heading: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif`,
-    body: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif`,
+    heading: '\'Inter\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', \'Roboto\', sans-serif',
+    body: '\'Inter\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', \'Roboto\', sans-serif',
   },
   shadows: {
     tab: '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',

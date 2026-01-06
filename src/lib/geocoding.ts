@@ -41,11 +41,11 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
       {
         method: 'GET',
         headers: {
-          'User-Agent': 'HyperApp/1.0 (https://github.com/elbaradei1993/hyperapp-mimi)' // Required by Nominatim
+          'User-Agent': 'HyperApp/1.0 (https://github.com/elbaradei1993/hyperapp-mimi)', // Required by Nominatim
         },
         // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(5000) // 5 second timeout
-      }
+        signal: AbortSignal.timeout(5000), // 5 second timeout
+      },
     );
 
     if (!response.ok) {
@@ -169,9 +169,9 @@ export async function forwardGeocode(address: string): Promise<[number, number] 
       {
         method: 'GET',
         headers: {
-          'User-Agent': 'HyperApp/1.0 (https://github.com/elbaradei1993/hyperapp-mimi)' // Required by Nominatim
-        }
-      }
+          'User-Agent': 'HyperApp/1.0 (https://github.com/elbaradei1993/hyperapp-mimi)', // Required by Nominatim
+        },
+      },
     );
 
     if (!response.ok) {
@@ -207,9 +207,9 @@ export async function searchPlaces(query: string, limit: number = 8): Promise<Se
       {
         method: 'GET',
         headers: {
-          'User-Agent': 'HyperApp/1.0 (https://github.com/elbaradei1993/hyperapp-mimi)' // Required by Nominatim
-        }
-      }
+          'User-Agent': 'HyperApp/1.0 (https://github.com/elbaradei1993/hyperapp-mimi)', // Required by Nominatim
+        },
+      },
     );
 
     if (!response.ok) {
@@ -311,26 +311,26 @@ export function getAddressComponents(result: SearchResult): string[] {
  */
 export function getPlaceTypeIcon(type: string): string {
   switch (type.toLowerCase()) {
-    case 'city':
-    case 'town':
-    case 'village':
-      return '🏙️';
-    case 'country':
-      return '🌍';
-    case 'state':
-    case 'province':
-      return '🏛️';
-    case 'road':
-    case 'highway':
-      return '🛣️';
-    case 'place':
-    case 'locality':
-      return '📍';
-    case 'building':
-    case 'amenity':
-      return '🏢';
-    default:
-      return '📍';
+  case 'city':
+  case 'town':
+  case 'village':
+    return '🏙️';
+  case 'country':
+    return '🌍';
+  case 'state':
+  case 'province':
+    return '🏛️';
+  case 'road':
+  case 'highway':
+    return '🛣️';
+  case 'place':
+  case 'locality':
+    return '📍';
+  case 'building':
+  case 'amenity':
+    return '🏢';
+  default:
+    return '📍';
   }
 }
 

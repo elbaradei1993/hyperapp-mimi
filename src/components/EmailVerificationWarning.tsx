@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 
@@ -17,7 +18,7 @@ const EmailVerificationWarning: React.FC = () => {
         type: 'warning',
         title: t('auth.verifyYourEmail'),
         message: t('auth.unverifiedAccountWarning'),
-        duration: 0 // 0 means persistent in notification bell, not a toast
+        duration: 0, // 0 means persistent in notification bell, not a toast
       });
       setHasShownNotification(true);
     }

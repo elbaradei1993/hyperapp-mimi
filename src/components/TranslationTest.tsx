@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { useLanguage } from '../contexts/LanguageContext';
 
 const TranslationTest: React.FC = () => {
@@ -10,14 +11,14 @@ const TranslationTest: React.FC = () => {
   const testKeys = [
     'test.arabicTranslation1',
     'test.arabicTranslation2',
-    'test.arabicMissingKey'
+    'test.arabicMissingKey',
   ];
 
   // Test Arabic-specific content
   const arabicTestContent = [
     { key: 'test.welcomeMessage', english: 'Welcome to our Arabic app!' },
     { key: 'test.safetyFirst', english: 'Safety comes first in our community' },
-    { key: 'test.reportIncident', english: 'Please report any safety incidents' }
+    { key: 'test.reportIncident', english: 'Please report any safety incidents' },
   ];
 
   return (
@@ -27,7 +28,7 @@ const TranslationTest: React.FC = () => {
       borderRadius: 'var(--radius-lg)',
       margin: '20px',
       backdropFilter: 'blur(20px)',
-      border: '1px solid var(--bg-glass-border)'
+      border: '1px solid var(--bg-glass-border)',
     }}>
       <h3 style={{ color: 'var(--text-primary)', marginBottom: '16px' }}>
         LibreTranslate Integration Test
@@ -43,7 +44,7 @@ const TranslationTest: React.FC = () => {
           marginBottom: '16px',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '8px',
         }}>
           <i className="fas fa-spinner fa-spin"></i>
           Translating...
@@ -60,7 +61,7 @@ const TranslationTest: React.FC = () => {
           padding: '8px',
           background: 'var(--bg-primary)',
           borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--border-color)'
+          border: '1px solid var(--border-color)',
         }}>
           <code style={{ color: 'var(--text-muted)' }}>{key}:</code>
           <div style={{ color: 'var(--text-primary)', marginTop: '4px' }}>
@@ -75,7 +76,7 @@ const TranslationTest: React.FC = () => {
         background: 'var(--bg-secondary)',
         borderRadius: 'var(--radius-sm)',
         fontSize: '14px',
-        color: 'var(--text-muted)'
+        color: 'var(--text-muted)',
       }}>
         <strong>Note:</strong> If you see actual translations instead of fallbacks, LibreTranslate API is working.
         Check browser console for translation logs.

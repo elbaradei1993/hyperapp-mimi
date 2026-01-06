@@ -3,8 +3,9 @@ import { Box, Text, VStack, Button as ChakraButton } from '@chakra-ui/react';
 import { motion, Variants } from 'framer-motion';
 import { Mail, CheckCircle, RefreshCw, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+
+import { useAuth } from '../contexts/AuthContext';
 
 interface EmailConfirmationPageProps {}
 
@@ -68,7 +69,9 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
   }, [resendCooldown]);
 
   const handleResendVerification = async () => {
-    if (isResending || resendCooldown > 0) return;
+    if (isResending || resendCooldown > 0) {
+      return;
+    }
 
     setIsResending(true);
     try {
@@ -105,9 +108,9 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
       transition: {
         duration: 1.2,
         ease: [0.25, 0.46, 0.45, 0.94],
-        staggerChildren: 0.15
-      }
-    }
+        staggerChildren: 0.15,
+      },
+    },
   };
 
   const logoVariants: Variants = {
@@ -119,10 +122,10 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
       transition: {
         duration: 0.8,
         ease: [0.25, 0.46, 0.45, 0.94],
-        type: "spring",
-        stiffness: 100
-      }
-    }
+        type: 'spring',
+        stiffness: 100,
+      },
+    },
   };
 
   const contentVariants: Variants = {
@@ -130,8 +133,8 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }
-    }
+      transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
+    },
   };
 
   const buttonVariants: Variants = {
@@ -143,18 +146,18 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
       transition: {
         duration: 0.6,
         ease: [0.25, 0.46, 0.45, 0.94],
-        delay: i * 0.1
-      }
+        delay: i * 0.1,
+      },
     }),
     hover: {
       scale: 1.05,
-      boxShadow: "0 25px 50px rgba(0, 0, 0, 0.15), 0 0 30px rgba(59, 130, 246, 0.3)",
-      transition: { duration: 0.3, ease: "easeOut" }
+      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15), 0 0 30px rgba(59, 130, 246, 0.3)',
+      transition: { duration: 0.3, ease: 'easeOut' },
     },
     tap: {
       scale: 0.95,
-      transition: { duration: 0.1 }
-    }
+      transition: { duration: 0.1 },
+    },
   };
 
   if (isVerified) {
@@ -196,8 +199,8 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                 <VStack align="center" gap={4}>
                   <Box position="relative">
                     <Box
-                      w={{ base: "100px", md: "140px" }}
-                      h={{ base: "100px", md: "140px" }}
+                      w={{ base: '100px', md: '140px' }}
+                      h={{ base: '100px', md: '140px' }}
                       bg="linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))"
                       borderRadius="30px"
                       display="flex"
@@ -215,7 +218,7 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
 
                   <VStack align="center" gap={2}>
                     <Text
-                      fontSize={{ base: "2xl", md: "3xl" }}
+                      fontSize={{ base: '2xl', md: '3xl' }}
                       fontWeight="800"
                       color="white"
                       textAlign="center"
@@ -225,7 +228,7 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                       {t('auth.emailVerified', 'Email Verified!')}
                     </Text>
                     <Text
-                      fontSize={{ base: "md", md: "lg" }}
+                      fontSize={{ base: 'md', md: 'lg' }}
                       color="rgba(255, 255, 255, 0.9)"
                       textAlign="center"
                       fontWeight="500"
@@ -285,7 +288,7 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
           left={`${Math.random() * 100}%`}
           animation={`floatParticle ${Math.random() * 10 + 10}s linear infinite`}
           style={{
-            animationDelay: `${Math.random() * 5}s`
+            animationDelay: `${Math.random() * 5}s`,
           }}
         />
       ))}
@@ -313,8 +316,8 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                 {/* Icon with glow effect */}
                 <Box position="relative">
                   <Box
-                    w={{ base: "80px", md: "120px" }}
-                    h={{ base: "80px", md: "120px" }}
+                    w={{ base: '80px', md: '120px' }}
+                    h={{ base: '80px', md: '120px' }}
                     bg="linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
                     borderRadius="30px"
                     display="flex"
@@ -333,8 +336,8 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                       top="50%"
                       left="50%"
                       transform="translate(-50%, -50%)"
-                      w={{ base: "50px", md: "80px" }}
-                      h={{ base: "50px", md: "80px" }}
+                      w={{ base: '50px', md: '80px' }}
+                      h={{ base: '50px', md: '80px' }}
                       bg="radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%)"
                       borderRadius="50%"
                     />
@@ -349,7 +352,7 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                       position: 'absolute',
                       top: '10px',
                       right: '10px',
-                      animation: 'sparkle 2s ease-in-out infinite'
+                      animation: 'sparkle 2s ease-in-out infinite',
                     }}
                   />
                 </Box>
@@ -357,7 +360,7 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                 {/* Title with premium typography */}
                 <VStack align="center" gap={1}>
                   <Text
-                    fontSize={{ base: "2xl", md: "4xl" }}
+                    fontSize={{ base: '2xl', md: '4xl' }}
                     fontWeight="800"
                     color="white"
                     textAlign="center"
@@ -367,13 +370,13 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                       background: 'linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%)',
                       backgroundClip: 'text',
                       WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
+                      WebkitTextFillColor: 'transparent',
                     }}
                   >
                     {t('auth.checkYourEmail', 'Check Your Email')}
                   </Text>
                   <Text
-                    fontSize={{ base: "xs", md: "sm" }}
+                    fontSize={{ base: 'xs', md: 'sm' }}
                     color="rgba(255, 255, 255, 0.7)"
                     textAlign="center"
                     fontWeight="500"
@@ -522,21 +525,21 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                       onClick={handleResendVerification}
                       disabled={isResending || resendCooldown > 0}
                       w="full"
-                      h={{ base: "50px", md: "60px" }}
+                      h={{ base: '50px', md: '60px' }}
                       bg="linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
                       backdropFilter="blur(30px)"
                       border="1px solid rgba(255, 255, 255, 0.25)"
                       borderRadius="20px"
                       color="white"
-                      fontSize={{ base: "md", md: "lg" }}
+                      fontSize={{ base: 'md', md: 'lg' }}
                       fontWeight="700"
                       letterSpacing="0.5px"
                       _hover={{
-                        bg: "linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))",
-                        borderColor: "rgba(255, 255, 255, 0.4)"
+                        bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))',
+                        borderColor: 'rgba(255, 255, 255, 0.4)',
                       }}
                       _active={{
-                        bg: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))"
+                        bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))',
                       }}
                       transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
                       display="flex"
@@ -571,16 +574,16 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                     <ChakraButton
                       onClick={handleContinueToApp}
                       w="full"
-                      h={{ base: "50px", md: "60px" }}
+                      h={{ base: '50px', md: '60px' }}
                       bg="linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)"
                       border="none"
                       borderRadius="20px"
                       color="white"
-                      fontSize={{ base: "md", md: "lg" }}
+                      fontSize={{ base: 'md', md: 'lg' }}
                       fontWeight="700"
                       letterSpacing="0.5px"
                       _hover={{
-                        bg: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)"
+                        bg: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
                       }}
                       transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
                       display="flex"
@@ -602,7 +605,7 @@ const EmailConfirmationPage: React.FC<EmailConfirmationPageProps> = () => {
                     variant="ghost"
                     color="rgba(255, 255, 255, 0.7)"
                     fontSize="sm"
-                    _hover={{ color: "white" }}
+                    _hover={{ color: 'white' }}
                     mt={2}
                   >
                     {t('auth.useDifferentEmail', 'Use a different email')}

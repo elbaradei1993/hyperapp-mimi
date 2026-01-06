@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
+import { Capacitor } from '@capacitor/core';
+import { getMessaging, onMessage } from 'firebase/messaging';
+
 import App from './App';
 // SplashScreen will be handled inside App.tsx now
 // import SplashScreen from './components/SplashScreen';
 import ErrorBoundary from './components/ErrorBoundary';
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 
 // import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
-import { Capacitor } from '@capacitor/core';
 
 import './index.css';
 import './themes.css';
@@ -64,7 +66,7 @@ const cleanupOneSignal = async () => {
   }
 };
 
-import { getMessaging, onMessage } from 'firebase/messaging';
+
 import { app } from './lib/firebase';
 
 // Register main service worker for caching and offline functionality
@@ -114,7 +116,7 @@ const registerFirebaseServiceWorker = async (retries = 3) => {
       const existingRegistrations = await navigator.serviceWorker.getRegistrations();
       const firebaseRegistration = existingRegistrations.find(reg =>
         reg.scope === window.location.origin + '/' &&
-        reg.active?.scriptURL.includes('firebase-messaging-sw.js')
+        reg.active?.scriptURL.includes('firebase-messaging-sw.js'),
       );
 
       if (firebaseRegistration) {
@@ -124,7 +126,7 @@ const registerFirebaseServiceWorker = async (retries = 3) => {
 
       // Register Firebase messaging service worker
       const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-        scope: '/'
+        scope: '/',
       });
 
       console.log('✅ Firebase service worker registered successfully:', registration.scope);
@@ -250,5 +252,5 @@ const CapacitorApp: React.FC = () => {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <CapacitorApp />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

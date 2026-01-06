@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, VStack, HStack, Text, Button, Grid, GridItem, Badge } from '@chakra-ui/react';
+import { Geolocation } from '@capacitor/geolocation';
+import { User as UserIcon, Mail, Phone, MapPin, Edit, List, Star, Trophy, Medal, PlusCircle, CheckCircle, ChevronUp, ChevronDown } from 'lucide-react';
+
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth';
 import { reportsService } from '../services/reports';
 import { uploadService } from '../services/upload';
-import { LoadingSpinner } from './shared';
 import { reverseGeocode } from '../lib/geocoding';
-import { Geolocation } from '@capacitor/geolocation';
 import type { User } from '../types';
 import { INTEREST_CATEGORIES } from '../types';
+
+import { LoadingSpinner } from './shared';
 import TranslationTest from './TranslationTest';
 import EditProfileModal from './EditProfileModal';
-import { User as UserIcon, Mail, Phone, MapPin, Edit, List, Star, Trophy, Medal, PlusCircle, CheckCircle, ChevronUp, ChevronDown } from 'lucide-react';
+
 
 interface UserStats {
   totalReports: number;
@@ -59,7 +62,7 @@ const ProfileView: React.FC = () => {
     totalReports: 0,
     totalUpvotes: 0,
     reputation: 0,
-    rank: null
+    rank: null,
   });
   const [badges, setBadges] = useState<Badge[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
@@ -79,7 +82,7 @@ const ProfileView: React.FC = () => {
     location: '',
     interests: [] as string[],
     profilePicture: null as File | null,
-    profilePicturePreview: ''
+    profilePicturePreview: '',
   });
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [locationAddress, setLocationAddress] = useState<string>('');
@@ -104,7 +107,7 @@ const ProfileView: React.FC = () => {
         const position = await Geolocation.getCurrentPosition({
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 300000 // 5 minutes
+          maximumAge: 300000, // 5 minutes
         });
 
         const { latitude, longitude } = position.coords;
@@ -151,8 +154,8 @@ const ProfileView: React.FC = () => {
             prevReports.map(report =>
               report.id === update.reportId
                 ? { ...report, upvotes: update.upvotes, downvotes: update.downvotes }
-                : report
-            )
+                : report,
+            ),
           );
 
           // Also update recent activity data
@@ -160,8 +163,8 @@ const ProfileView: React.FC = () => {
             prevActivity.map(activity =>
               activity.id === update.reportId
                 ? { ...activity, upvotes: update.upvotes, downvotes: update.downvotes }
-                : activity
-            )
+                : activity,
+            ),
           );
         }
 
@@ -182,7 +185,9 @@ const ProfileView: React.FC = () => {
   }, [user]);
 
   const loadProfileData = async () => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     try {
       setLoading(true);
@@ -231,7 +236,7 @@ const ProfileView: React.FC = () => {
 
       return { totalReports, totalUpvotes, reputation, rank };
     } catch (error) {
-      console.error("Error calculating user stats:", error);
+      console.error('Error calculating user stats:', error);
       return { totalReports: 0, totalUpvotes: 0, reputation: 0, rank: null };
     }
   };
@@ -254,7 +259,7 @@ const ProfileView: React.FC = () => {
       const reports = await reportsService.getReports({ userId });
       return calculateUserReputationFromReports(reports);
     } catch (error) {
-      console.error("Error calculating user reputation:", error);
+      console.error('Error calculating user reputation:', error);
       return 0;
     }
   };
@@ -264,20 +269,22 @@ const ProfileView: React.FC = () => {
       const { data: allUsers, error } = await authService.getAllUsersByReputation();
 
       if (error) {
-        console.error("Error calculating user rank:", error);
+        console.error('Error calculating user rank:', error);
         return null;
       }
 
       const userIndex = allUsers.findIndex((u: any) => u.user_id === userId);
       return userIndex !== -1 ? userIndex + 1 : null;
     } catch (error) {
-      console.error("Error calculating user rank:", error);
+      console.error('Error calculating user rank:', error);
       return null;
     }
   };
 
   const loadCommunityGuardAnalytics = async () => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     try {
       setIsLoadingAnalytics(true);
@@ -307,7 +314,7 @@ const ProfileView: React.FC = () => {
         description: t('profile.badges.communityGuard.description', 'Elite Community Guard - Trusted safety leader with proven track record'),
         icon: 'fas fa-shield-alt',
         color: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)',
-        earned: true
+        earned: true,
       });
     }
 
@@ -319,7 +326,7 @@ const ProfileView: React.FC = () => {
         description: t('profile.badges.communityLeader.description'),
         icon: 'fas fa-crown',
         color: 'linear-gradient(135deg, #FFD700, #FFA500)',
-        earned: true
+        earned: true,
       });
     } else if (reputation >= 50) {
       userBadges.push({
@@ -328,7 +335,7 @@ const ProfileView: React.FC = () => {
         description: t('profile.badges.trustedReporter.description'),
         icon: 'fas fa-shield-alt',
         color: 'linear-gradient(135deg, #4CAF50, #45A049)',
-        earned: true
+        earned: true,
       });
     } else if (reputation >= 10) {
       userBadges.push({
@@ -337,7 +344,7 @@ const ProfileView: React.FC = () => {
         description: t('profile.badges.activeContributor.description'),
         icon: 'fas fa-star',
         color: 'linear-gradient(135deg, #2196F3, #1976D2)',
-        earned: true
+        earned: true,
       });
     }
 
@@ -349,7 +356,7 @@ const ProfileView: React.FC = () => {
         description: t('profile.badges.safetyGuardian.description'),
         icon: 'fas fa-user-shield',
         color: 'linear-gradient(135deg, #9C27B0, #7B1FA2)',
-        earned: true
+        earned: true,
       });
     } else if (reportCount >= 20) {
       userBadges.push({
@@ -358,7 +365,7 @@ const ProfileView: React.FC = () => {
         description: t('profile.badges.communityWatch.description'),
         icon: 'fas fa-eye',
         color: 'linear-gradient(135deg, #FF5722, #D84315)',
-        earned: true
+        earned: true,
       });
     } else if (reportCount >= 5) {
       userBadges.push({
@@ -367,7 +374,7 @@ const ProfileView: React.FC = () => {
         description: t('profile.badges.firstResponder.description'),
         icon: 'fas fa-plus-circle',
         color: 'linear-gradient(135deg, #009688, #00796B)',
-        earned: true
+        earned: true,
       });
     }
 
@@ -378,7 +385,7 @@ const ProfileView: React.FC = () => {
     try {
       const reports = await reportsService.getReports({
         userId: user!.id,
-        limit: 5
+        limit: 5,
       });
 
       return reports.map(report => ({
@@ -388,10 +395,10 @@ const ProfileView: React.FC = () => {
         notes: report.notes || '',
         created_at: report.created_at,
         upvotes: report.upvotes,
-        downvotes: report.downvotes
+        downvotes: report.downvotes,
       }));
     } catch (error) {
-      console.error("Error loading user recent activity:", error);
+      console.error('Error loading user recent activity:', error);
       return [];
     }
   };
@@ -426,7 +433,7 @@ const ProfileView: React.FC = () => {
       festive: 'fas fa-glass-cheers',
       calm: 'fas fa-peace',
       suspicious: 'fas fa-eye-slash',
-      dangerous: 'fas fa-exclamation-triangle'
+      dangerous: 'fas fa-exclamation-triangle',
     };
     return icons[vibeType] || 'fas fa-question-circle';
   };
@@ -438,13 +445,15 @@ const ProfileView: React.FC = () => {
       festive: '#28A745',
       calm: '#17A2B8',
       suspicious: '#FFC107',
-      dangerous: '#DC3545'
+      dangerous: '#DC3545',
     };
     return colors[vibeType] || '#6C757D';
   };
 
   const loadReportsData = async () => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     try {
       setReportsLoading(true);
@@ -452,7 +461,7 @@ const ProfileView: React.FC = () => {
       // Load user's reports and nearby reports in parallel
       const [myReportsData, nearbyReportsData] = await Promise.all([
         loadMyReports(),
-        loadNearbyReports()
+        loadNearbyReports(),
       ]);
 
       setMyReports(myReportsData);
@@ -467,32 +476,32 @@ const ProfileView: React.FC = () => {
   const loadMyReports = async (): Promise<Report[]> => {
     try {
       if (!user?.id) {
-        console.log("No user ID available for loading reports");
+        console.log('No user ID available for loading reports');
         return [];
       }
 
-      console.log("Loading reports for user:", user.id);
+      console.log('Loading reports for user:', user.id);
 
       // First try to get reports with user_id
       let reports = await reportsService.getReports({ userId: user.id });
-      console.log("Reports with user_id:", reports.length);
+      console.log('Reports with user_id:', reports.length);
 
       // If no reports found with user_id, also check for reports without user_id
       // This handles existing reports created before user_id was added
       if (reports.length === 0) {
-        console.log("No reports found with user_id, checking for reports without user_id");
+        console.log('No reports found with user_id, checking for reports without user_id');
         const allReports = await reportsService.getReports({ limit: 50 });
         // For now, show recent reports as a fallback - in production you'd want to associate them properly
         reports = allReports.slice(0, 10);
-        console.log("Fallback reports loaded:", reports.length);
+        console.log('Fallback reports loaded:', reports.length);
       }
 
       return reports.map(report => ({
         ...report,
-        user_vote: null // User's own reports don't need vote tracking
+        user_vote: null, // User's own reports don't need vote tracking
       }));
     } catch (error) {
-      console.error("Error loading user reports:", error);
+      console.error('Error loading user reports:', error);
       return [];
     }
   };
@@ -510,26 +519,28 @@ const ProfileView: React.FC = () => {
             const voteType = await reportsService.getUserVote(report.id, user!.id);
             return {
               ...report,
-              user_vote: voteType
+              user_vote: voteType,
             };
           } catch (error) {
             return {
               ...report,
-              user_vote: null
+              user_vote: null,
             };
           }
-        })
+        }),
       );
 
       return reportsWithVotes;
     } catch (error) {
-      console.error("Error loading nearby reports:", error);
+      console.error('Error loading nearby reports:', error);
       return [];
     }
   };
 
   const voteOnReport = async (reportId: number, voteType: 'upvote' | 'downvote') => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     try {
       await reportsService.vote(reportId, user.id, voteType);
@@ -560,20 +571,22 @@ const ProfileView: React.FC = () => {
               ...report,
               upvotes: newUpvotes,
               downvotes: newDownvotes,
-              user_vote: voteType
+              user_vote: voteType,
             };
           }
           return report;
-        })
+        }),
       );
 
     } catch (error) {
-      console.error("Error voting on report:", error);
+      console.error('Error voting on report:', error);
     }
   };
 
   const capitalizeFirstLetter = (string: string): string => {
-    if (!string) return '';
+    if (!string) {
+      return '';
+    }
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
@@ -586,7 +599,7 @@ const ProfileView: React.FC = () => {
       'linear-gradient(45deg, #9C27B0, #BA68C8)', // Amethyst
       'linear-gradient(45deg, #2196F3, #64B5F6)', // Sapphire
       'linear-gradient(45deg, #4CAF50, #81C784)', // Emerald
-      'linear-gradient(45deg, #FF9800, #FFB74D)'  // Amber
+      'linear-gradient(45deg, #FF9800, #FFB74D)',  // Amber
     ];
 
     const shapes = ['circle', 'square', 'triangle', 'diamond', 'star'];
@@ -610,28 +623,28 @@ const ProfileView: React.FC = () => {
 
       // Shape-specific styling
       switch (shape) {
-        case 'circle':
-          confetti.style.borderRadius = '50%';
-          break;
-        case 'square':
-          confetti.style.borderRadius = '2px';
-          break;
-        case 'triangle':
-          confetti.style.width = '0';
-          confetti.style.height = '0';
-          confetti.style.borderLeft = size/2 + 'px solid transparent';
-          confetti.style.borderRight = size/2 + 'px solid transparent';
-          confetti.style.borderBottom = size + 'px solid';
-          confetti.style.background = 'none';
-          confetti.style.borderBottomColor = premiumColors[Math.floor(Math.random() * premiumColors.length)].split(',')[1].replace(')', '');
-          break;
-        case 'diamond':
-          confetti.style.transform = 'rotate(45deg)';
-          confetti.style.borderRadius = '2px';
-          break;
-        case 'star':
-          confetti.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
-          break;
+      case 'circle':
+        confetti.style.borderRadius = '50%';
+        break;
+      case 'square':
+        confetti.style.borderRadius = '2px';
+        break;
+      case 'triangle':
+        confetti.style.width = '0';
+        confetti.style.height = '0';
+        confetti.style.borderLeft = size/2 + 'px solid transparent';
+        confetti.style.borderRight = size/2 + 'px solid transparent';
+        confetti.style.borderBottom = size + 'px solid';
+        confetti.style.background = 'none';
+        confetti.style.borderBottomColor = premiumColors[Math.floor(Math.random() * premiumColors.length)].split(',')[1].replace(')', '');
+        break;
+      case 'diamond':
+        confetti.style.transform = 'rotate(45deg)';
+        confetti.style.borderRadius = '2px';
+        break;
+      case 'star':
+        confetti.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+        break;
       }
 
       // Premium shadow and glow effects
@@ -739,7 +752,7 @@ const ProfileView: React.FC = () => {
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
-                      borderRadius: '50%'
+                      borderRadius: '50%',
                     }}
                   />
                 ) : (
@@ -879,7 +892,7 @@ const ProfileView: React.FC = () => {
                     border="1px solid"
                     borderColor="gray.200"
                     transition="all 0.2s"
-                    _hover={{ transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)" }}
+                    _hover={{ transform: 'translateY(-1px)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)' }}
                   >
                     <HStack gap={3} align="flex-start">
                       <Box

@@ -42,7 +42,7 @@ class LocationService {
         const capacitorOptions: PositionOptions = {
           enableHighAccuracy: options.enableHighAccuracy ?? true,
           timeout: options.timeout ?? 30000,
-          maximumAge: options.maximumAge ?? 30000
+          maximumAge: options.maximumAge ?? 30000,
         };
 
         const position: Position = await Geolocation.getCurrentPosition(capacitorOptions);
@@ -51,7 +51,7 @@ class LocationService {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
-          timestamp: position.timestamp
+          timestamp: position.timestamp,
         };
 
       } else {
@@ -69,20 +69,20 @@ class LocationService {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
                 accuracy: position.coords.accuracy,
-                timestamp: position.timestamp
+                timestamp: position.timestamp,
               });
             },
             (error) => {
               reject({
                 code: error.code,
-                message: error.message
+                message: error.message,
               });
             },
             {
               enableHighAccuracy: options.enableHighAccuracy ?? true,
               timeout: options.timeout ?? 30000,
-              maximumAge: options.maximumAge ?? 30000
-            }
+              maximumAge: options.maximumAge ?? 30000,
+            },
           );
         });
       }
@@ -90,7 +90,7 @@ class LocationService {
       console.error('Error getting current position:', error);
       throw {
         code: error.code || 1,
-        message: error.message || 'Unknown location error'
+        message: error.message || 'Unknown location error',
       };
     }
   }
@@ -99,7 +99,7 @@ class LocationService {
   async watchPosition(
     callback: (result: LocationResult) => void,
     errorCallback: (error: LocationError) => void,
-    options: LocationOptions = {}
+    options: LocationOptions = {},
   ): Promise<string> {
     try {
       if (Capacitor.isNativePlatform()) {
@@ -108,7 +108,7 @@ class LocationService {
         const capacitorOptions: PositionOptions = {
           enableHighAccuracy: options.enableHighAccuracy ?? true,
           timeout: options.timeout ?? 30000,
-          maximumAge: options.maximumAge ?? 30000
+          maximumAge: options.maximumAge ?? 30000,
         };
 
         const id = await Geolocation.watchPosition(capacitorOptions, (position, error) => {
@@ -117,12 +117,12 @@ class LocationService {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               accuracy: position.coords.accuracy,
-              timestamp: position.timestamp
+              timestamp: position.timestamp,
             });
           } else if (error) {
             errorCallback({
               code: error.code || 1,
-              message: error.message || 'Watch position error'
+              message: error.message || 'Watch position error',
             });
           }
         });
@@ -144,20 +144,20 @@ class LocationService {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               accuracy: position.coords.accuracy,
-              timestamp: position.timestamp
+              timestamp: position.timestamp,
             });
           },
           (error) => {
             errorCallback({
               code: error.code,
-              message: error.message
+              message: error.message,
             });
           },
           {
             enableHighAccuracy: options.enableHighAccuracy ?? true,
             timeout: options.timeout ?? 30000,
-            maximumAge: options.maximumAge ?? 30000
-          }
+            maximumAge: options.maximumAge ?? 30000,
+          },
         );
 
         this.watchId = id.toString();
@@ -167,7 +167,7 @@ class LocationService {
       console.error('Error watching position:', error);
       errorCallback({
         code: error.code || 1,
-        message: error.message || 'Unknown watch error'
+        message: error.message || 'Unknown watch error',
       });
       return '';
     }
@@ -177,7 +177,9 @@ class LocationService {
   clearWatch(watchId?: string): void {
     const idToClear = watchId || this.watchId;
 
-    if (!idToClear) return;
+    if (!idToClear) {
+      return;
+    }
 
     try {
       if (Capacitor.isNativePlatform()) {

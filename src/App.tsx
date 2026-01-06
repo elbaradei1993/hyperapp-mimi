@@ -1,4 +1,8 @@
-import React, { useState, useEffect, Suspense, lazy, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { Box, Text as ChakraText } from '@chakra-ui/react';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import { useAuth } from './contexts/AuthContext';
 import { useNotification } from './contexts/NotificationContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -6,7 +10,6 @@ import { VibeProvider } from './contexts/VibeContext';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { NotificationManager } from './components/shared/Notification';
 import TabNavigation, { TabType } from './components/TabNavigation';
-
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import AuthCallback from './components/AuthCallback';
@@ -17,11 +20,8 @@ import VibeReportModal from './components/VibeReportModal';
 import EmergencyReportModal from './components/EmergencyReportModal';
 import LocationOverrideModal from './components/LocationOverrideModal';
 import LocationPermissionModal from './components/LocationPermissionModal';
-import EmailVerificationWarning from './components/EmailVerificationWarning';
-
 import SplashScreen from './components/SplashScreen';
 import LanguageSelectionScreen from './components/LanguageSelectionScreen';
-
 import ErrorBoundary from './components/ErrorBoundary';
 import { LoadingSpinner } from './components/shared';
 import { reportsService } from './services/reports';
@@ -31,22 +31,15 @@ import { notificationService } from './services/notificationService';
 import { pushNotificationService } from './services/pushNotificationService';
 import { fcmService } from './lib/firebase';
 import { locationService } from './services/locationService';
-import { Capacitor } from '@capacitor/core';
-import { Box, Text as ChakraText } from '@chakra-ui/react';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { Vibe, SOS } from './types';
 
-// Import main tab components directly to avoid loading states on tab switch
-import MapComponent from './components/MapComponent';
-import ProfileView from './components/ProfileView';
-import SettingsView from './components/SettingsView';
-// @ts-ignore - CommunityDashboard has default export but TypeScript can't infer it
-import CommunityDashboard from './components/CommunityDashboard';
-import GuardianView from './components/GuardianView';
-import HubView from './components/HubView';
-
-// Keep AdminLocationDashboard lazy-loaded as it's not used in main tabs
-const AdminLocationDashboard = lazy(() => import('./components/AdminLocationDashboard'));
+// Lazy load heavy components for better performance
+const MapComponent = React.lazy(() => import('./components/MapComponent'));
+const ProfileView = React.lazy(() => import('./components/ProfileView'));
+const SettingsView = React.lazy(() => import('./components/SettingsView'));
+const CommunityDashboard = React.lazy(() => import('./components/CommunityDashboard'));
+const GuardianView = React.lazy(() => import('./components/GuardianView'));
+const HubView = React.lazy(() => import('./components/HubView'));
 
 
 const AppContent: React.FC = () => {
@@ -126,7 +119,7 @@ const AppContent: React.FC = () => {
           type: 'warning',
           title: 'Notifications Disabled',
           message: 'Enable notifications in your browser settings to receive safety alerts. Click the lock icon in the address bar.',
-          duration: 10000 // Show for 10 seconds
+          duration: 10000, // Show for 10 seconds
         });
       }
     };
@@ -235,7 +228,7 @@ const AppContent: React.FC = () => {
             console.log('📡 Attempting to get GPS location...');
             const position = await locationService.getCurrentPosition({
               enableHighAccuracy: true,
-              timeout: 30000
+              timeout: 30000,
             });
 
             const location: [number, number] = [position.latitude, position.longitude];
@@ -252,7 +245,7 @@ const AppContent: React.FC = () => {
                   user.id,
                   position.latitude,
                   position.longitude,
-                  position.accuracy
+                  position.accuracy,
                 );
                 if (saveResult) {
                   console.log('📍 User location saved to database successfully');
@@ -260,7 +253,7 @@ const AppContent: React.FC = () => {
                   console.error('❌ Failed to save location to database - updateUserLocation returned false');
                 }
               } catch (error) {
-                console.error('❌ Failed to save location to database:', error as any);
+                console.error('❌ Failed to save location to database:', error instanceof Error ? error.message : String(error));
               }
             } else if (isAuthenticated && user?.id && !settings?.locationSharing) {
               // If location sharing is disabled, remove user's location from database
@@ -281,7 +274,7 @@ const AppContent: React.FC = () => {
                   position.longitude,
                   10, // 10km radius
                   user.id, // exclude current user
-                  20 // limit to 20 users
+                  20, // limit to 20 users
                 );
                 setNearbyUsers(nearby);
                 console.log(`👥 Found ${nearby.length} nearby users`);
@@ -385,7 +378,7 @@ const AppContent: React.FC = () => {
       if (currentUserId !== user.id) {
         // Set up notification service with real context methods
         notificationService.setNotificationContext({
-          notifications: notifications,
+          notifications,
           unreadCount: notifications.filter(n => !n.read).length,
           recentNotifications: notifications.filter(n => {
             const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
@@ -398,7 +391,7 @@ const AppContent: React.FC = () => {
           removeNotification,
           markAsRead,
           markAllAsRead,
-          clearAll
+          clearAll,
         });
 
         // Set current user ID to filter out own reports
@@ -456,7 +449,7 @@ const AppContent: React.FC = () => {
             // Load vibes and SOS alerts from Supabase with error handling
             const [vibesData, sosData] = await Promise.all([
               reportsService.getVibes({ limit: 500 }),    // Reduced from 1000 to 500
-              reportsService.getSOSAlerts({ limit: 200 }) // Reduced from 500 to 200
+              reportsService.getSOSAlerts({ limit: 200 }), // Reduced from 500 to 200
             ]);
 
             setVibes(vibesData || []);
@@ -471,18 +464,22 @@ const AppContent: React.FC = () => {
         }, 500); // Increased debounce to 500ms
       };
     })(),
-    []
+    [],
   );
 
   const loadData = useCallback(async () => {
-    if (dataLoaded) return; // Prevent reloading if data is already loaded
+    if (dataLoaded) {
+      return;
+    } // Prevent reloading if data is already loaded
     debouncedLoadData();
     setDataLoaded(true);
   }, [debouncedLoadData, dataLoaded]);
 
   // Optimized subscription setup with proper cleanup
   useEffect(() => {
-    if (!isAuthenticated || !user?.onboarding_completed) return;
+    if (!isAuthenticated || !user?.onboarding_completed) {
+      return;
+    }
 
     // Clean up existing subscriptions
     Object.values(subscriptionsRef.current).forEach(subscription => {
@@ -505,12 +502,12 @@ const AppContent: React.FC = () => {
       setVibes(prev => prev.map(vibe =>
         vibe.id === update.reportId
           ? { ...vibe, upvotes: update.upvotes, downvotes: update.downvotes }
-          : vibe
+          : vibe,
       ));
       setSosAlerts(prev => prev.map(sos =>
         sos.id === update.reportId
           ? { ...sos, upvotes: update.upvotes, downvotes: update.downvotes }
-          : sos
+          : sos,
       ));
     });
 
@@ -529,7 +526,7 @@ const AppContent: React.FC = () => {
       isAuthenticated,
       userId: user?.id,
       userLocation,
-      locationSharing: settings?.locationSharing
+      locationSharing: settings?.locationSharing,
     });
 
     const updateNearbyUsers = async () => {
@@ -537,7 +534,7 @@ const AppContent: React.FC = () => {
         console.log('❌ Skipping nearby users fetch - missing requirements:', {
           isAuthenticated,
           userId: user?.id,
-          userLocation
+          userLocation,
         });
         return;
       }
@@ -550,7 +547,7 @@ const AppContent: React.FC = () => {
           userLocation[1],
           10, // 10km radius
           user.id, // exclude current user
-          20 // limit to 20 users
+          20, // limit to 20 users
         );
         setNearbyUsers(nearby);
         setLastNearbyUsersUpdate(Date.now());
@@ -586,7 +583,7 @@ const AppContent: React.FC = () => {
           userLocation[1],
           10, // 10km radius
           user.id, // exclude current user
-          20 // limit to 20 users
+          20, // limit to 20 users
         );
         setNearbyUsers(nearby);
         setLastNearbyUsersUpdate(now);
@@ -608,7 +605,9 @@ const AppContent: React.FC = () => {
 
   // Integrate with background location service for location-based updates
   useEffect(() => {
-    if (!isAuthenticated || !user?.id) return;
+    if (!isAuthenticated || !user?.id) {
+      return;
+    }
 
     let unsubscribe: (() => void) | undefined;
 
@@ -620,7 +619,9 @@ const AppContent: React.FC = () => {
         if (oldLocation) {
           // Calculate distance using Haversine formula
           const distance = calculateDistance(newLocation, oldLocation);
-          if (distance < 0.5) return; // Skip if movement is too small (500m = 0.5km)
+          if (distance < 0.5) {
+            return;
+          } // Skip if movement is too small (500m = 0.5km)
         }
 
         console.log('📍 Location changed significantly, updating nearby users...');
@@ -630,7 +631,7 @@ const AppContent: React.FC = () => {
             newLocation[1],
             10, // 10km radius
             user.id, // exclude current user
-            20 // limit to 20 users
+            20, // limit to 20 users
           );
           setNearbyUsers(nearby);
           setLastNearbyUsersUpdate(Date.now());
@@ -742,7 +743,7 @@ const AppContent: React.FC = () => {
       type: 'success',
       title: 'Report Submitted Successfully!',
       message: 'Your safety report has been shared with the community.',
-      duration: 3000
+      duration: 3000,
     });
   };
 
@@ -804,51 +805,83 @@ const AppContent: React.FC = () => {
     const pageVariants = {
       initial: { opacity: 0, y: 20 },
       in: { opacity: 1, y: 0 },
-      out: { opacity: 0, y: -20 }
+      out: { opacity: 0, y: -20 },
     };
 
     const pageTransition = {
-      duration: 0.4
+      duration: 0.4,
     };
 
     const view = (() => {
       switch (activeTab) {
-        case 'map':
-          return (
-            <MapComponent
-              vibes={vibes}
-              sosAlerts={sosAlerts}
-              center={center}
-              zoom={zoom}
-              userLocation={userLocation}
-              nearbyUsers={nearbyUsers}
-              isHeatmapVisible={isHeatmapVisible}
-              onToggleHeatmap={handleToggleHeatmap}
-              userId={user?.id || 'demo-user'}
-              targetLocation={targetLocation}
-            />
-          );
-        case 'profile':
-          return <ProfileView />;
-        case 'reports':
-          return (
-            <CommunityDashboard
-              vibes={vibes}
-              userLocation={userLocation}
-              isLoading={false}
-              onNewReport={handleNewReport}
-              onNavigateToMap={handleNavigateToMap}
-              onNavigateToProfile={handleNavigateToProfile}
-            />
-          );
-        case 'hub':
-          return <HubView userLocation={userLocation} />;
-        case 'guardian':
-          return <GuardianView />;
-        case 'settings':
-          return <SettingsView />;
-        default:
-          return null;
+      case 'map':
+        return (
+          <ErrorBoundary>
+            <React.Suspense fallback={<LoadingFallback />}>
+              <MapComponent
+                vibes={vibes}
+                sosAlerts={sosAlerts}
+                center={center}
+                zoom={zoom}
+                userLocation={userLocation}
+                nearbyUsers={nearbyUsers}
+                isHeatmapVisible={isHeatmapVisible}
+                onToggleHeatmap={handleToggleHeatmap}
+                userId={user?.id || 'demo-user'}
+                targetLocation={targetLocation}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
+        );
+      case 'profile':
+        return (
+          <ErrorBoundary>
+            <React.Suspense fallback={<LoadingFallback />}>
+              <ProfileView />
+            </React.Suspense>
+          </ErrorBoundary>
+        );
+      case 'reports':
+        return (
+          <ErrorBoundary>
+            <React.Suspense fallback={<LoadingFallback />}>
+              <CommunityDashboard
+                vibes={vibes}
+                userLocation={userLocation}
+                isLoading={false}
+                onNewReport={handleNewReport}
+                onNavigateToMap={handleNavigateToMap}
+                onNavigateToProfile={handleNavigateToProfile}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
+        );
+      case 'hub':
+        return (
+          <ErrorBoundary>
+            <React.Suspense fallback={<LoadingFallback />}>
+              <HubView userLocation={userLocation} />
+            </React.Suspense>
+          </ErrorBoundary>
+        );
+      case 'guardian':
+        return (
+          <ErrorBoundary>
+            <React.Suspense fallback={<LoadingFallback />}>
+              <GuardianView />
+            </React.Suspense>
+          </ErrorBoundary>
+        );
+      case 'settings':
+        return (
+          <ErrorBoundary>
+            <React.Suspense fallback={<LoadingFallback />}>
+              <SettingsView />
+            </React.Suspense>
+          </ErrorBoundary>
+        );
+      default:
+        return null;
       }
     })();
 
@@ -879,7 +912,7 @@ const AppContent: React.FC = () => {
         // Prevent horizontal scrolling on mobile
         overflowX: 'hidden',
         // Ensure proper mobile viewport handling
-        WebkitOverflowScrolling: 'touch'
+        WebkitOverflowScrolling: 'touch',
       }}
     >
 
@@ -906,7 +939,7 @@ const AppContent: React.FC = () => {
             // Ensure proper stacking context
             position: 'relative',
             // Ensure consistent background color
-            backgroundColor: 'white'
+            backgroundColor: 'white',
           }}>
             {renderActiveView()}
           </div>

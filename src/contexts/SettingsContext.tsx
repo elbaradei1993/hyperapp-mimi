@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
 import { storageManager } from '../lib/storage';
 import { userLocationService } from '../services/userLocationService';
 import { supabase } from '../lib/supabase';
@@ -23,7 +24,7 @@ const defaultSettings: Settings = {
   notifications: true,
   locationSharing: false,
   notificationRadius: 5,
-  hideNearbyUsers: false
+  hideNearbyUsers: false,
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -87,7 +88,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
   const value: SettingsContextType = {
     settings,
     updateSettings,
-    isLoading
+    isLoading,
   };
 
   return (

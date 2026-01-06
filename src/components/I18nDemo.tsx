@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
 import {
   formatDate,
   formatTime,
@@ -13,7 +14,7 @@ import {
   formatSpeed,
   formatFileSize,
   formatDuration,
-  translateWithContext
+  translateWithContext,
 } from '../lib/i18nUtils';
 
 const I18nDemo: React.FC = () => {
@@ -28,7 +29,7 @@ const I18nDemo: React.FC = () => {
     temperature: 25, // celsius
     speed: 60, // km/h
     fileSize: 1048576, // bytes
-    duration: 3661 // seconds
+    duration: 3661, // seconds
   };
 
   return (

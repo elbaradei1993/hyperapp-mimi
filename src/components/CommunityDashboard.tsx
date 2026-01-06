@@ -1,20 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, VStack, HStack, Text, Button, Grid, GridItem, Select, IconButton } from '@chakra-ui/react';
-import { LoadingSpinner, EmptyState, CircularProgress, MultiSegmentCircularProgress } from './shared';
-import { clusterReports, formatDistance, analyzeClusterVibes, calculateDistance, type LocationCluster } from '../lib/clustering';
-import { reportsService } from '../services/reports';
-import { reverseGeocode } from '../lib/geocoding';
-import { VIBE_CONFIG, VibeType } from '../constants/vibes';
-import { useVibe } from '../contexts/VibeContext';
-import { useAuth } from '../contexts/AuthContext';
 import { ChevronUp, ChevronDown, MapPin, Activity, Users, Clock } from 'lucide-react';
-
-import VibePulseCard from './VibePulseCard';
-import PremiumEmptyState from './PremiumEmptyState';
-import { backgroundLocationService } from '../services/backgroundLocationService';
-import { CredibilityIndicator, UserVerificationBadge, ValidationButtons } from './CredibilityIndicator';
-import { credibilityService } from '../services/credibilityService';
 import {
   ShieldCheck,
   CloudSnow,
@@ -23,9 +10,23 @@ import {
   EyeOff,
   AlertTriangle,
   Volume2,
-  VolumeX
+  VolumeX,
 } from 'lucide-react';
+
+import { clusterReports, formatDistance, analyzeClusterVibes, calculateDistance, type LocationCluster } from '../lib/clustering';
+import { reportsService } from '../services/reports';
+import { reverseGeocode } from '../lib/geocoding';
+import { VIBE_CONFIG, VibeType } from '../constants/vibes';
+import { useVibe } from '../contexts/VibeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { backgroundLocationService } from '../services/backgroundLocationService';
+import { credibilityService } from '../services/credibilityService';
 import type { Vibe, Report } from '../types';
+
+import VibePulseCard from './VibePulseCard';
+import PremiumEmptyState from './PremiumEmptyState';
+import { CredibilityIndicator, UserVerificationBadge, ValidationButtons } from './CredibilityIndicator';
+import { LoadingSpinner, EmptyState, CircularProgress, MultiSegmentCircularProgress } from './shared';
 
 interface CommunityDashboardProps {
   vibes: Vibe[];
@@ -48,7 +49,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
   onNewReport,
   onNavigateToMap,
   onNavigateToProfile,
-  onVibesUpdate
+  onVibesUpdate,
 }) => {
   const { t } = useTranslation();
   const { setCurrentLocationVibe } = useVibe();
@@ -101,7 +102,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       dangerous: '🚨',
       noisy: '🔊',
       quiet: '🤫',
-      unknown: '❓'
+      unknown: '❓',
     };
     return iconMap;
   }, []);
@@ -117,38 +118,40 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
   const getVibeIconComponent = useCallback((vibeType: string) => {
     switch (vibeType) {
-      case 'safe':
-        return <ShieldCheck size={32} />;
-      case 'calm':
-        return <CloudSnow size={32} />;
-      case 'lively':
-        return <Music size={32} />;
-      case 'festive':
-        return <PartyPopper size={32} />;
-      case 'crowded':
-        return <Users size={32} />;
-      case 'suspicious':
-        return <EyeOff size={32} />;
-      case 'dangerous':
-        return <AlertTriangle size={32} />;
-      case 'noisy':
-        return <Volume2 size={32} />;
-      case 'quiet':
-        return <VolumeX size={32} />;
-      default:
-        return <ShieldCheck size={32} />;
+    case 'safe':
+      return <ShieldCheck size={32} />;
+    case 'calm':
+      return <CloudSnow size={32} />;
+    case 'lively':
+      return <Music size={32} />;
+    case 'festive':
+      return <PartyPopper size={32} />;
+    case 'crowded':
+      return <Users size={32} />;
+    case 'suspicious':
+      return <EyeOff size={32} />;
+    case 'dangerous':
+      return <AlertTriangle size={32} />;
+    case 'noisy':
+      return <Volume2 size={32} />;
+    case 'quiet':
+      return <VolumeX size={32} />;
+    default:
+      return <ShieldCheck size={32} />;
     }
   }, []);
 
   // Extract vibe analysis logic
   const analyzeNearbyVibes = useCallback((location: [number, number], vibes: Vibe[]) => {
     const nearbyReports = vibes.filter((vibe: Vibe) => {
-      if (vibe.latitude == null || vibe.longitude == null) return false;
+      if (vibe.latitude == null || vibe.longitude == null) {
+        return false;
+      }
       const distance = calculateDistance(
         location[0],
         location[1],
         vibe.latitude!,
-        vibe.longitude!
+        vibe.longitude!,
       );
       return distance <= 1;
     });
@@ -175,7 +178,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
           type,
           count,
           percentage,
-          color
+          color,
         };
       })
       .sort((a, b) => b.percentage - a.percentage);
@@ -195,7 +198,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       const reports = await reportsService.getReports({ limit: 10 });
       return reports;
     } catch (error) {
-      console.error("Error loading user reports:", error);
+      console.error('Error loading user reports:', error);
       return [];
     } finally {
       setUserReportsLoading(false);
@@ -210,7 +213,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
     const processedClusters = clusterReports(vibes, userLocation, 1);
     return processedClusters.filter(cluster =>
-      cluster.locationName && cluster.locationName.trim() !== ''
+      cluster.locationName && cluster.locationName.trim() !== '',
     );
   }, [vibes, userLocation]);
 
@@ -236,7 +239,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       try {
         const [address, vibeAnalysis] = await Promise.all([
           reverseGeocode(userLocation[0], userLocation[1]),
-          analyzeNearbyVibes(userLocation, vibes)
+          analyzeNearbyVibes(userLocation, vibes),
         ]);
 
         setCurrentLocationAddress(address);
@@ -248,7 +251,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
             type: vibeAnalysis.dominantVibe.type,
             percentage: vibeAnalysis.dominantVibe.percentage,
             count: vibeAnalysis.dominantVibe.count,
-            color: getVibeColor(vibeAnalysis.dominantVibe.type)
+            color: getVibeColor(vibeAnalysis.dominantVibe.type),
           });
         } else {
           setCurrentLocationVibe(null);
@@ -274,8 +277,12 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
         const aIsTrusted = a.profile?.verification_level === 'trusted';
         const bIsTrusted = b.profile?.verification_level === 'trusted';
 
-        if (aIsTrusted && !bIsTrusted) return -1;
-        if (!aIsTrusted && bIsTrusted) return 1;
+        if (aIsTrusted && !bIsTrusted) {
+          return -1;
+        }
+        if (!aIsTrusted && bIsTrusted) {
+          return 1;
+        }
 
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       })
@@ -301,7 +308,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
         time: new Date(report.created_at).toLocaleTimeString('en-US', {
           hour: 'numeric',
           minute: '2-digit',
-          hour12: true
+          hour12: true,
         }),
         type: report.emergency ? 'safe' : report.vibe_type,
         vibeType: report.vibe_type,
@@ -309,7 +316,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
         createdAt: report.created_at,
         credibilityScore: report.credibility_score || 0.5,
         validationCount: report.validation_count || 0,
-        verificationLevel: report.profile?.verification_level || 'basic'
+        verificationLevel: report.profile?.verification_level || 'basic',
       };
     });
   }, [vibes]);
@@ -326,7 +333,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       try {
         const [count, users] = await Promise.all([
           reportsService.getUniqueLocationCount(),
-          reportsService.getRecentReporters(4)
+          reportsService.getRecentReporters(4),
         ]);
         setCommunityCount(count);
         setRecentUsers(users);
@@ -379,7 +386,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       if (success) {
         setUserValidations(prev => ({
           ...prev,
-          [reportId]: validationType
+          [reportId]: validationType,
         }));
       }
     } catch (error) {
@@ -391,7 +398,9 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
   // Set up real-time subscriptions
   useEffect(() => {
-    if (!isAuthenticated || !user?.onboarding_completed) return;
+    if (!isAuthenticated || !user?.onboarding_completed) {
+      return;
+    }
 
     Object.values(subscriptionsRef.current).forEach(subscription => {
       subscription?.unsubscribe?.();
@@ -403,7 +412,9 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
 
     subscriptionsRef.current.reports = reportsService.subscribeToReports((newReport) => {
       const now = Date.now();
-      if (now - lastUpdate < 2000) return;
+      if (now - lastUpdate < 2000) {
+        return;
+      }
 
       lastUpdate = now;
 
@@ -424,12 +435,12 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
         onVibesUpdate?.(vibes.map((vibe: Vibe) =>
           vibe.id === update.reportId
             ? { ...vibe, upvotes: update.upvotes, downvotes: update.downvotes }
-            : vibe
+            : vibe,
         ));
         setUserReports(prev => prev.map(report =>
           report.id === update.reportId
             ? { ...report, upvotes: update.upvotes, downvotes: update.downvotes }
-            : report
+            : report,
         ));
       }, 100);
     });
@@ -438,20 +449,20 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
       onVibesUpdate?.(vibes.map((vibe: Vibe) =>
         vibe.id === update.reportId
           ? {
-              ...vibe,
-              credibility_score: update.credibility_score,
-              validation_count: update.validation_count
-            }
-          : vibe
+            ...vibe,
+            credibility_score: update.credibility_score,
+            validation_count: update.validation_count,
+          }
+          : vibe,
       ));
       setUserReports(prev => prev.map(report =>
         report.id === update.reportId
           ? {
-              ...report,
-              credibility_score: update.credibility_score,
-              validation_count: update.validation_count
-            }
-          : report
+            ...report,
+            credibility_score: update.credibility_score,
+            validation_count: update.validation_count,
+          }
+          : report,
       ));
     });
 
@@ -591,7 +602,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                             .map(vibe => ({
                               percentage: vibe.percentage,
                               color: vibe.color,
-                              label: String(t(`vibes.${vibe.type}`, vibe.type))
+                              label: String(t(`vibes.${vibe.type}`, vibe.type)),
                             }))}
                           size={120}
                           strokeWidth={12}
@@ -693,9 +704,9 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
                 ) : (
                   <Box bg="gray.50" borderRadius="16px" p={8} border="2px solid" borderColor="gray.200" textAlign="center">
                     <Activity size={32} color="#9ca3af" />
-                  <Text fontSize="14px" fontWeight="500" color="gray.600" mt={2}>
-                    {t('community.noCommunityReportsYet')}
-                  </Text>
+                    <Text fontSize="14px" fontWeight="500" color="gray.600" mt={2}>
+                      {t('community.noCommunityReportsYet')}
+                    </Text>
                   </Box>
                 )}
               </VStack>
@@ -716,7 +727,7 @@ const CommunityDashboard: React.FC<CommunityDashboardProps> = ({
           <Box bg="white" borderRadius="16px" border="1px solid" borderColor="gray.200" boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)">
             <Box
               p={5}
-              borderBottom={isActivityExpanded ? "1px solid" : "none"}
+              borderBottom={isActivityExpanded ? '1px solid' : 'none'}
               borderColor="gray.200"
               cursor="pointer"
               onClick={() => setIsActivityExpanded(!isActivityExpanded)}

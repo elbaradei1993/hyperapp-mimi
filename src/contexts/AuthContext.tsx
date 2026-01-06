@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import type { User, AuthState } from '../types';
 import type { AuthResponse } from '@supabase/supabase-js';
+
+import type { User, AuthState } from '../types';
 import { authService } from '../services/auth';
 
 interface AuthContextType {
@@ -85,7 +86,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = authService.onAuthStateChange(async (authUser) => {
       console.log('🔐 Auth state change detected:', !!authUser, authUser?.email);
-      if (!isMounted) return;
+      if (!isMounted) {
+        return;
+      }
 
       try {
         if (authUser) {
@@ -139,7 +142,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const updateProfile = async (updates: Partial<User>) => {
-    if (!user) throw new Error('No user logged in');
+    if (!user) {
+      throw new Error('No user logged in');
+    }
     const response = await authService.updateUserProfile(user.id, updates);
     if (response.data) {
       setUser({ ...user, ...response.data });
@@ -148,7 +153,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const refreshProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
     const { session } = await authService.getSession();
     if (session?.user) {
       const userProfile = await authService.syncUserWithProfile(session.user);
@@ -166,7 +173,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut,
     resetPassword,
     updateProfile,
-    refreshProfile
+    refreshProfile,
   };
 
   return (

@@ -26,7 +26,7 @@ export function calculateDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371; // Earth's radius in kilometers
   const dLat = toRadians(lat2 - lat1);
@@ -53,7 +53,7 @@ function toRadians(degrees: number): number {
 export function clusterReports(
   reports: Vibe[],
   userLocation: [number, number] | null,
-  maxDistanceKm: number = 1
+  maxDistanceKm: number = 1,
 ): LocationCluster[] {
   const clusters: LocationCluster[] = [];
   const processed = new Set<number>();
@@ -64,7 +64,9 @@ export function clusterReports(
 
   // First, cluster reports with coordinates AND location names using distance-based grouping
   for (const report of reportsWithCoords) {
-    if (processed.has(report.id) || !report.location || report.location.trim() === '') continue;
+    if (processed.has(report.id) || !report.location || report.location.trim() === '') {
+      continue;
+    }
 
     // Start a new cluster with this report
     const clusterReports = [report];
@@ -72,13 +74,15 @@ export function clusterReports(
 
     // Find all reports within maxDistanceKm of this report that also have location names
     for (const otherReport of reportsWithCoords) {
-      if (processed.has(otherReport.id) || !otherReport.location || otherReport.location.trim() === '') continue;
+      if (processed.has(otherReport.id) || !otherReport.location || otherReport.location.trim() === '') {
+        continue;
+      }
 
       const distance = calculateDistance(
         report.latitude!,
         report.longitude!,
         otherReport.latitude!,
-        otherReport.longitude!
+        otherReport.longitude!,
       );
 
       if (distance <= maxDistanceKm) {
@@ -98,7 +102,7 @@ export function clusterReports(
         userLocation[0],
         userLocation[1],
         centerLat,
-        centerLng
+        centerLng,
       );
     }
 
@@ -113,7 +117,7 @@ export function clusterReports(
       dominantVibe: vibeAnalysis.dominantVibe,
       topVibes: vibeAnalysis.topVibes,
       reportCount: clusterReports.length,
-      distance
+      distance,
     };
 
     clusters.push(cluster);
@@ -122,7 +126,9 @@ export function clusterReports(
   // Then, group reports without coordinates by location text (only if they have location names)
   const locationGroups: Record<string, Vibe[]> = {};
   for (const report of reportsWithoutCoords) {
-    if (processed.has(report.id) || !report.location || report.location.trim() === '') continue;
+    if (processed.has(report.id) || !report.location || report.location.trim() === '') {
+      continue;
+    }
 
     const locationKey = report.location;
     if (!locationGroups[locationKey]) {
@@ -135,7 +141,9 @@ export function clusterReports(
   // Create clusters for location-based groups (only if we have user location)
   if (userLocation) {
     for (const [locationName, locationReports] of Object.entries(locationGroups)) {
-      if (locationReports.length === 0 || !locationName || locationName.trim() === '') continue;
+      if (locationReports.length === 0 || !locationName || locationName.trim() === '') {
+        continue;
+      }
 
       // Use user location as center for location-based clusters
       const centerLat = userLocation[0];
@@ -151,11 +159,11 @@ export function clusterReports(
         id: `cluster_location_${locationName.replace(/\s+/g, '_')}_${Date.now()}`,
         center: [centerLat, centerLng],
         reports: locationReports,
-        locationName: locationName,
+        locationName,
         dominantVibe: vibeAnalysis.dominantVibe,
         topVibes: vibeAnalysis.topVibes,
         reportCount: locationReports.length,
-        distance
+        distance,
       };
 
       clusters.push(cluster);
@@ -181,7 +189,7 @@ export function analyzeClusterVibes(reports: Vibe[]): {
   if (reports.length === 0) {
     return {
       dominantVibe: { type: 'unknown', percentage: 0, count: 0 },
-      topVibes: []
+      topVibes: [],
     };
   }
 
@@ -198,7 +206,7 @@ export function analyzeClusterVibes(reports: Vibe[]): {
     .map(([type, count]) => ({
       type,
       count,
-      percentage: Math.round((count / totalReports) * 100)
+      percentage: Math.round((count / totalReports) * 100),
     }))
     .sort((a, b) => b.count - a.count);
 
@@ -207,7 +215,7 @@ export function analyzeClusterVibes(reports: Vibe[]): {
 
   return {
     dominantVibe,
-    topVibes
+    topVibes,
   };
 }
 

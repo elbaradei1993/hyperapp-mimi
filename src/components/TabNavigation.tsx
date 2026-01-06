@@ -9,8 +9,9 @@ import {
   Settings,
   Plus,
   Shield,
-  Activity
+  Activity,
 } from 'lucide-react';
+
 import i18n from '../i18n';
 
 export type TabType = 'map' | 'reports' | 'hub' | 'guardian' | 'profile' | 'settings';
@@ -33,38 +34,38 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
       id: 'map' as TabType,
       label: t('tabs.map'),
       icon: Map,
-      ariaLabel: t('tabs.map')
+      ariaLabel: t('tabs.map'),
     },
     {
       id: 'reports' as TabType,
       label: t('tabs.community'),
       icon: Users,
-      ariaLabel: t('tabs.community')
+      ariaLabel: t('tabs.community'),
     },
     {
       id: 'hub' as TabType,
       label: t('tabs.hub', 'Hub'),
       icon: Activity,
-      ariaLabel: t('tabs.hub', 'Hub')
+      ariaLabel: t('tabs.hub', 'Hub'),
     },
     {
       id: 'guardian' as TabType,
       label: t('tabs.guardian', 'Guardian'),
       icon: Shield,
-      ariaLabel: t('tabs.guardian', 'Guardian')
+      ariaLabel: t('tabs.guardian', 'Guardian'),
     },
     {
       id: 'profile' as TabType,
       label: t('tabs.profile'),
       icon: User,
-      ariaLabel: t('tabs.profile')
+      ariaLabel: t('tabs.profile'),
     },
     {
       id: 'settings' as TabType,
       label: t('tabs.settings'),
       icon: Settings,
-      ariaLabel: t('tabs.settings')
-    }
+      ariaLabel: t('tabs.settings'),
+    },
   ];
 
   // Handle responsive behavior
@@ -99,7 +100,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
         const buttonRect = activeButton.getBoundingClientRect();
         setIndicatorStyle({
           width: buttonRect.width,
-          left: buttonRect.left - navRect.left
+          left: buttonRect.left - navRect.left,
         });
       }
     }
@@ -111,7 +112,9 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
 
   // Handle window resize and orientation change
   useEffect(() => {
-    if (!isMobile) return;
+    if (!isMobile) {
+      return;
+    }
 
     const handleResize = () => {
       // Use requestAnimationFrame to ensure DOM is updated
@@ -179,9 +182,9 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               left: indicatorStyle.left,
             }}
             transition={{
-              type: "spring",
+              type: 'spring',
               stiffness: 300,
-              damping: 30
+              damping: 30,
             }}
           />
         )}
@@ -194,29 +197,29 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
               data-tab={tab.id}
               onClick={() => onTabChange(tab.id)}
               flex={1}
-              p={isMobile ? "10px 8px" : "14px 12px"}
+              p={isMobile ? '10px 8px' : '14px 12px'}
               border="none"
               bg="transparent"
-              color={activeTab === tab.id ? "brand.500" : "gray.500"}
+              color={activeTab === tab.id ? 'brand.500' : 'gray.500'}
               display="flex"
               flexDirection="column"
               alignItems="center"
               justifyContent="center"
               gap={1}
               cursor="pointer"
-              fontSize={isMobile ? "0.7rem" : "0.875rem"}
-              fontWeight={activeTab === tab.id ? "600" : "500"}
+              fontSize={isMobile ? '0.7rem' : '0.875rem'}
+              fontWeight={activeTab === tab.id ? '600' : '500'}
               borderRadius="12px"
               position="relative"
               zIndex={1}
-              minH={isMobile ? "60px" : "65px"}
+              minH={isMobile ? '60px' : '65px'}
               style={{
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
               whileTap={{ scale: 0.95 }}
               _hover={{
-                color: activeTab === tab.id ? "brand.500" : "gray.700",
+                color: activeTab === tab.id ? 'brand.500' : 'gray.700',
               }}
             >
               <MotionBox
@@ -224,30 +227,30 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                w={isMobile ? "1.125rem" : "1.375rem"}
-                h={isMobile ? "1.125rem" : "1.375rem"}
+                w={isMobile ? '1.125rem' : '1.375rem'}
+                h={isMobile ? '1.125rem' : '1.375rem'}
                 animate={{
                   y: activeTab === tab.id ? -2 : 0,
                   opacity: activeTab === tab.id ? 1 : 0.8,
                 }}
                 transition={{
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 400,
-                  damping: 17
+                  damping: 17,
                 }}
               >
                 <tab.icon
                   size={isMobile ? 18 : 22}
-                  color={activeTab === tab.id ? "#3b82f6" : "#6b7280"}
+                  color={activeTab === tab.id ? '#3b82f6' : '#6b7280'}
                 />
               </MotionBox>
               <MotionBox
-                fontSize={isMobile ? "0.7rem" : "0.875rem"}
-                fontWeight={activeTab === tab.id ? "600" : "500"}
+                fontSize={isMobile ? '0.7rem' : '0.875rem'}
+                fontWeight={activeTab === tab.id ? '600' : '500'}
                 transition={{
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 400,
-                  damping: 17
+                  damping: 17,
                 }}
               >
                 {tab.label}
@@ -278,13 +281,13 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
                 }}
                 whileHover={{
                   y: -2,
-                  boxShadow: "0 6px 16px rgba(59, 130, 246, 0.4), 0 3px 8px rgba(59, 130, 246, 0.3)",
+                  boxShadow: '0 6px 16px rgba(59, 130, 246, 0.4), 0 3px 8px rgba(59, 130, 246, 0.3)',
                 }}
                 whileTap={{ scale: 0.92 }}
                 transition={{
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 400,
-                  damping: 17
+                  damping: 17,
                 }}
                 title={t('app.newReport')}
                 aria-label={t('app.newReport')}
@@ -293,9 +296,9 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, o
                   animate={{ rotate: 0 }}
                   whileHover={{ rotate: 90 }}
                   transition={{
-                    type: "spring",
+                    type: 'spring',
                     stiffness: 300,
-                    damping: 20
+                    damping: 20,
                   }}
                 >
                   <Plus size={20} />

@@ -30,9 +30,9 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
       transition: {
         duration: 1.2,
         ease: [0.25, 0.46, 0.45, 0.94],
-        staggerChildren: 0.15
-      }
-    }
+        staggerChildren: 0.15,
+      },
+    },
   };
 
   const logoVariants: Variants = {
@@ -44,10 +44,10 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
       transition: {
         duration: 0.8,
         ease: [0.25, 0.46, 0.45, 0.94],
-        type: "spring",
-        stiffness: 100
-      }
-    }
+        type: 'spring',
+        stiffness: 100,
+      },
+    },
   };
 
   const titleVariants: Variants = {
@@ -55,8 +55,8 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }
-    }
+      transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
+    },
   };
 
   const buttonVariants: Variants = {
@@ -68,18 +68,18 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
       transition: {
         duration: 0.6,
         ease: [0.25, 0.46, 0.45, 0.94],
-        delay: i * 0.1
-      }
+        delay: i * 0.1,
+      },
     }),
     hover: {
       scale: 1.08,
-      boxShadow: "0 25px 50px rgba(0, 0, 0, 0.15), 0 0 30px rgba(255, 255, 255, 0.1)",
-      transition: { duration: 0.3, ease: "easeOut" }
+      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15), 0 0 30px rgba(255, 255, 255, 0.1)',
+      transition: { duration: 0.3, ease: 'easeOut' },
     },
     tap: {
       scale: 0.95,
-      transition: { duration: 0.1 }
-    }
+      transition: { duration: 0.1 },
+    },
   };
 
   return (
@@ -125,7 +125,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
           left={`${Math.random() * 100}%`}
           animation={`floatParticle ${Math.random() * 10 + 10}s linear infinite`}
           style={{
-            animationDelay: `${Math.random() * 5}s`
+            animationDelay: `${Math.random() * 5}s`,
           }}
         />
       ))}
@@ -153,8 +153,8 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                 {/* Icon with glow effect */}
                 <Box position="relative">
                   <Box
-                    w={{ base: "80px", md: "120px" }}
-                    h={{ base: "80px", md: "120px" }}
+                    w={{ base: '80px', md: '120px' }}
+                    h={{ base: '80px', md: '120px' }}
                     bg="linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
                     borderRadius="30px"
                     display="flex"
@@ -173,16 +173,16 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                       top="50%"
                       left="50%"
                       transform="translate(-50%, -50%)"
-                      w={{ base: "50px", md: "80px" }}
-                      h={{ base: "50px", md: "80px" }}
+                      w={{ base: '50px', md: '80px' }}
+                      h={{ base: '50px', md: '80px' }}
                       bg="radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%)"
                       borderRadius="50%"
                     />
                     <Image
                       src="/hyperapp-logo.png"
                       alt="HyperApp Logo"
-                      w={{ base: "50px", md: "80px" }}
-                      h={{ base: "50px", md: "80px" }}
+                      w={{ base: '50px', md: '80px' }}
+                      h={{ base: '50px', md: '80px' }}
                       borderRadius="20px"
                       objectFit="cover"
                       position="relative"
@@ -199,7 +199,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                       position: 'absolute',
                       top: '10px',
                       right: '10px',
-                      animation: 'sparkle 2s ease-in-out infinite'
+                      animation: 'sparkle 2s ease-in-out infinite',
                     }}
                   />
                 </Box>
@@ -207,7 +207,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                 {/* Title with premium typography */}
                 <VStack align="center" gap={1}>
                   <Text
-                    fontSize={{ base: "2xl", md: "4xl" }}
+                    fontSize={{ base: '2xl', md: '4xl' }}
                     fontWeight="800"
                     color="white"
                     textAlign="center"
@@ -217,13 +217,13 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                       background: 'linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%)',
                       backgroundClip: 'text',
                       WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
+                      WebkitTextFillColor: 'transparent',
                     }}
                   >
                     HyperApp
                   </Text>
                   <Text
-                    fontSize={{ base: "xs", md: "sm" }}
+                    fontSize={{ base: 'xs', md: 'sm' }}
                     color="rgba(255, 255, 255, 0.7)"
                     textAlign="center"
                     fontWeight="500"
@@ -239,7 +239,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
             <motion.div variants={titleVariants}>
               <VStack w="full" align="center" gap={[6, 8]}>
                 <Text
-                  fontSize={{ base: "md", md: "xl" }}
+                  fontSize={{ base: 'md', md: 'xl' }}
                   fontWeight="600"
                   color="white"
                   textAlign="center"
@@ -262,21 +262,21 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                     <ChakraButton
                       onClick={() => onLanguageSelect('en')}
                       w="full"
-                      h={{ base: "50px", md: "70px" }}
+                      h={{ base: '50px', md: '70px' }}
                       bg="linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
                       backdropFilter="blur(30px)"
                       border="1px solid rgba(255, 255, 255, 0.25)"
                       borderRadius="20px"
                       color="white"
-                      fontSize={{ base: "sm", md: "lg" }}
+                      fontSize={{ base: 'sm', md: 'lg' }}
                       fontWeight="700"
                       letterSpacing="0.5px"
                       _hover={{
-                        bg: "linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))",
-                        borderColor: "rgba(255, 255, 255, 0.4)"
+                        bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))',
+                        borderColor: 'rgba(255, 255, 255, 0.4)',
                       }}
                       _active={{
-                        bg: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))"
+                        bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))',
                       }}
                       transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
                       display="flex"
@@ -299,7 +299,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                         transition="opacity 0.3s ease"
                         _groupHover={{ opacity: 1 }}
                       />
-                      <Text fontSize={{ base: "sm", md: "lg" }} fontWeight="700" zIndex="1">English</Text>
+                      <Text fontSize={{ base: 'sm', md: 'lg' }} fontWeight="700" zIndex="1">English</Text>
                       <ChevronRight size={18} style={{ zIndex: 1 }} />
                     </ChakraButton>
                   </motion.div>
@@ -315,21 +315,21 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                     <ChakraButton
                       onClick={() => onLanguageSelect('ar')}
                       w="full"
-                      h={{ base: "50px", md: "70px" }}
+                      h={{ base: '50px', md: '70px' }}
                       bg="linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))"
                       backdropFilter="blur(30px)"
                       border="1px solid rgba(255, 255, 255, 0.25)"
                       borderRadius="20px"
                       color="white"
-                      fontSize={{ base: "sm", md: "lg" }}
+                      fontSize={{ base: 'sm', md: 'lg' }}
                       fontWeight="700"
                       letterSpacing="0.5px"
                       _hover={{
-                        bg: "linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))",
-                        borderColor: "rgba(255, 255, 255, 0.4)"
+                        bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))',
+                        borderColor: 'rgba(255, 255, 255, 0.4)',
                       }}
                       _active={{
-                        bg: "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))"
+                        bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))',
                       }}
                       transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
                       display="flex"
@@ -352,7 +352,7 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ onLan
                         transition="opacity 0.3s ease"
                         _groupHover={{ opacity: 1 }}
                       />
-                      <Text fontSize={{ base: "sm", md: "lg" }} fontWeight="700" zIndex="1">العربية</Text>
+                      <Text fontSize={{ base: 'sm', md: 'lg' }} fontWeight="700" zIndex="1">العربية</Text>
                       <ChevronRight size={18} style={{ zIndex: 1 }} />
                     </ChakraButton>
                   </motion.div>

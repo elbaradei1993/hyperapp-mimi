@@ -46,7 +46,7 @@ class UserLocationService {
     centerLng: number,
     radiusKm: number = 10,
     excludeUserId?: string,
-    limit: number = 50
+    limit: number = 50,
   ): Promise<NearbyUser[]> {
     console.log('🚨 findNearbyUsers CALLED with params:', { centerLat, centerLng, radiusKm, excludeUserId, limit });
     try {
@@ -143,7 +143,7 @@ class UserLocationService {
           centerLat,
           centerLng,
           user.latitude,
-          user.longitude
+          user.longitude,
         );
 
         console.log(`📍 User ${user.user_id}: ${user.latitude}, ${user.longitude} - Distance: ${distance.toFixed(2)}km`);
@@ -158,8 +158,8 @@ class UserLocationService {
             last_name: profile?.last_name || null,
             latitude: user.latitude,
             longitude: user.longitude,
-            distance: distance,
-            last_updated: user.last_updated
+            distance,
+            last_updated: user.last_updated,
           });
         }
       }
@@ -186,7 +186,7 @@ class UserLocationService {
     userId: string,
     latitude: number,
     longitude: number,
-    accuracy?: number
+    accuracy?: number,
   ): Promise<boolean> {
     try {
       console.log('📍 Updating user location:', { userId, latitude, longitude, accuracy });
@@ -205,11 +205,11 @@ class UserLocationService {
 
       const locationData = {
         user_id: userId,
-        latitude: latitude,
-        longitude: longitude,
+        latitude,
+        longitude,
         location: null, // No PostGIS geometry available
-        accuracy: accuracy,
-        last_updated: new Date().toISOString()
+        accuracy,
+        last_updated: new Date().toISOString(),
       };
 
       let result;
@@ -220,7 +220,7 @@ class UserLocationService {
           .from('user_locations')
           .update({
             ...locationData,
-            created_at: existing.created_at // Keep original created_at
+            created_at: existing.created_at, // Keep original created_at
           })
           .eq('user_id', userId);
       } else {
@@ -230,7 +230,7 @@ class UserLocationService {
           .from('user_locations')
           .insert({
             ...locationData,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
           });
       }
 
@@ -298,7 +298,7 @@ class UserLocationService {
     centerLng: number,
     radiusKm: number = 10,
     excludeUserId?: string,
-    limit: number = 50
+    limit: number = 50,
   ): Promise<NearbyUser[]> {
     // This is essentially the same as findNearbyUsers but can be optimized for frequent calls
     return this.findNearbyUsers(centerLat, centerLng, radiusKm, excludeUserId, limit);

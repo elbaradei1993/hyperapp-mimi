@@ -20,7 +20,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
   onSecondaryAction,
   communityCount = 0,
   recentUsers = [],
-  className = ''
+  className = '',
 }) => {
   const { t } = useTranslation();
 
@@ -60,13 +60,13 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px',
-      ...className && { className }
+      ...className && { className },
     }}>
       {/* Background Effects */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}>
         {/* Animated background orbs */}
         <div style={{
@@ -78,7 +78,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
           background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
           borderRadius: '50%',
           filter: 'blur(48px)',
-          animation: 'pulse 3s ease-in-out infinite'
+          animation: 'pulse 3s ease-in-out infinite',
         }}></div>
         <div style={{
           position: 'absolute',
@@ -89,7 +89,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
           background: 'radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)',
           borderRadius: '50%',
           filter: 'blur(48px)',
-          animation: 'pulse 3s ease-in-out infinite 1s'
+          animation: 'pulse 3s ease-in-out infinite 1s',
         }}></div>
         <div style={{
           position: 'absolute',
@@ -101,7 +101,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
           background: 'radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%)',
           borderRadius: '50%',
           filter: 'blur(32px)',
-          animation: 'pulse 3s ease-in-out infinite 0.5s'
+          animation: 'pulse 3s ease-in-out infinite 0.5s',
         }}></div>
       </div>
 
@@ -110,7 +110,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
         position: 'relative',
         zIndex: 10,
         width: '100%',
-        maxWidth: '512px'
+        maxWidth: '512px',
       }}>
         <div style={{
           backdropFilter: 'blur(24px) saturate(180%)',
@@ -119,24 +119,24 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
           border: '1px solid rgba(255, 255, 255, 0.2)',
           borderRadius: '24px',
           padding: '32px',
-          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
         }}>
           {/* Hero Icon Section */}
           <div style={{
             textAlign: 'center',
-            marginBottom: '32px'
+            marginBottom: '32px',
           }}>
             <div style={{
               position: 'relative',
               display: 'inline-block',
-              marginBottom: '24px'
+              marginBottom: '24px',
             }}>
               {/* Main safety shield icon with glow */}
               <div style={{
                 width: '96px',
                 height: '96px',
                 margin: '0 auto 0 auto',
-                position: 'relative'
+                position: 'relative',
               }}>
                 <div style={{
                   position: 'absolute',
@@ -145,7 +145,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                   borderRadius: '16px',
                   boxShadow: '0 16px 32px rgba(59, 130, 246, 0.3), 0 8px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                   transform: 'rotate(45deg)',
-                  animation: 'pulse 2s ease-in-out infinite'
+                  animation: 'pulse 2s ease-in-out infinite',
                 }}></div>
                 <div style={{
                   position: 'absolute',
@@ -153,20 +153,20 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                   background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
                   borderRadius: '12px',
                   boxShadow: '0 8px 24px rgba(37, 99, 235, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                  transform: 'rotate(45deg)'
+                  transform: 'rotate(45deg)',
                 }}></div>
                 <div style={{
                   position: 'absolute',
                   inset: 0,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
                 }}>
                   <div style={{
                     color: 'white',
                     fontSize: '36px',
                     fontWeight: 'bold',
-                    transform: 'rotate(-45deg)'
+                    transform: 'rotate(-45deg)',
                   }}>🛡️</div>
                 </div>
               </div>
@@ -180,7 +180,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                 height: '12px',
                 background: '#fbbf24',
                 borderRadius: '50%',
-                animation: 'bounce 2s ease-in-out infinite 0.3s'
+                animation: 'bounce 2s ease-in-out infinite 0.3s',
               }}></div>
               <div style={{
                 position: 'absolute',
@@ -190,7 +190,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                 height: '8px',
                 background: '#10b981',
                 borderRadius: '50%',
-                animation: 'bounce 2s ease-in-out infinite 0.7s'
+                animation: 'bounce 2s ease-in-out infinite 0.7s',
               }}></div>
               <div style={{
                 position: 'absolute',
@@ -201,7 +201,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                 height: '8px',
                 background: '#3b82f6',
                 borderRadius: '50%',
-                animation: 'bounce 2s ease-in-out infinite 1s'
+                animation: 'bounce 2s ease-in-out infinite 1s',
               }}></div>
             </div>
 
@@ -215,7 +215,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
               backgroundClip: 'text',
               marginBottom: '16px',
               lineHeight: '1.2',
-              letterSpacing: '-0.02em'
+              letterSpacing: '-0.02em',
             }}>
               {t('community.emptyState.title', 'Be the First Safety Guardian')}
             </h1>
@@ -225,7 +225,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
               fontSize: '20px',
               color: 'var(--text-secondary)',
               marginBottom: '8px',
-              fontWeight: '600'
+              fontWeight: '600',
             }}>
               {t('community.emptyState.subtitle', 'Your community needs you')}
             </p>
@@ -236,7 +236,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
               color: 'var(--text-muted)',
               maxWidth: '400px',
               margin: '0 auto 32px auto',
-              lineHeight: '1.5'
+              lineHeight: '1.5',
             }}>
               {t('community.emptyState.description',
                 'No safety reports in your area yet. Be the first to help create a safer community by sharing real-time safety information with your neighbors.')}
@@ -248,7 +248,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
             gap: '16px',
-            marginBottom: '32px'
+            marginBottom: '32px',
           }}>
             <div style={{
               textAlign: 'center',
@@ -258,23 +258,23 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
               border: '1px solid var(--border-color)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: 'var(--shadow-sm)'
+              boxShadow: 'var(--shadow-sm)',
             }}>
               <div style={{
                 fontSize: '24px',
-                marginBottom: '8px'
+                marginBottom: '8px',
               }}>🚨</div>
               <div style={{
                 fontSize: '14px',
                 fontWeight: '600',
                 color: 'var(--text-primary)',
-                marginBottom: '4px'
+                marginBottom: '4px',
               }}>
                 {t('community.emptyState.benefit1.title', 'Instant Alerts')}
               </div>
               <div style={{
                 fontSize: '12px',
-                color: 'var(--text-muted)'
+                color: 'var(--text-muted)',
               }}>
                 {t('community.emptyState.benefit1.desc', 'Get notified of safety issues nearby')}
               </div>
@@ -288,23 +288,23 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
               border: '1px solid var(--border-color)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: 'var(--shadow-sm)'
+              boxShadow: 'var(--shadow-sm)',
             }}>
               <div style={{
                 fontSize: '24px',
-                marginBottom: '8px'
+                marginBottom: '8px',
               }}>👥</div>
               <div style={{
                 fontSize: '14px',
                 fontWeight: '600',
                 color: 'var(--text-primary)',
-                marginBottom: '4px'
+                marginBottom: '4px',
               }}>
                 {t('community.emptyState.benefit2.title', 'Community Power')}
               </div>
               <div style={{
                 fontSize: '12px',
-                color: 'var(--text-muted)'
+                color: 'var(--text-muted)',
               }}>
                 {t('community.emptyState.benefit2.desc', 'Strengthen your neighborhood together')}
               </div>
@@ -318,23 +318,23 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
               border: '1px solid var(--border-color)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: 'var(--shadow-sm)'
+              boxShadow: 'var(--shadow-sm)',
             }}>
               <div style={{
                 fontSize: '24px',
-                marginBottom: '8px'
+                marginBottom: '8px',
               }}>⭐</div>
               <div style={{
                 fontSize: '14px',
                 fontWeight: '600',
                 color: 'var(--text-primary)',
-                marginBottom: '4px'
+                marginBottom: '4px',
               }}>
                 {t('community.emptyState.benefit3.title', 'Build Trust')}
               </div>
               <div style={{
                 fontSize: '12px',
-                color: 'var(--text-muted)'
+                color: 'var(--text-muted)',
               }}>
                 {t('community.emptyState.benefit3.desc', 'Earn reputation as a community leader')}
               </div>
@@ -344,7 +344,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
           {/* Call-to-Action Button */}
           <div style={{
             display: 'flex',
-            justifyContent: 'center'
+            justifyContent: 'center',
           }}>
             {/* Primary CTA */}
             {onPrimaryAction && (
@@ -366,7 +366,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  minHeight: '60px'
+                  minHeight: '60px',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
@@ -382,19 +382,19 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                   inset: 0,
                   background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
                   opacity: 0,
-                  transition: 'opacity 0.3s ease'
+                  transition: 'opacity 0.3s ease',
                 }}></div>
                 <div style={{
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px'
+                  gap: '12px',
                 }}>
                   <span style={{ fontSize: '20px' }}>📝</span>
                   <span>{t('community.emptyState.primaryCTA', 'Submit First Report')}</span>
                   <span style={{
                     fontSize: '18px',
-                    transition: 'transform 0.3s ease'
+                    transition: 'transform 0.3s ease',
                   }}>→</span>
                 </div>
               </button>
@@ -406,18 +406,18 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
             textAlign: 'center',
             marginTop: '32px',
             paddingTop: '24px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              marginBottom: '8px'
+              marginBottom: '8px',
             }}>
               <div style={{
                 display: 'flex',
-                gap: '-4px'
+                gap: '-4px',
               }}>
                 {recentUsers.length > 0 ? (
                   recentUsers.slice(0, 4).map((user, index) => (
@@ -433,7 +433,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                         zIndex: 4 - index, // Stack them properly
                         background: user.profile_picture_url
                           ? 'transparent'
-                          : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
+                          : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
                       }}
                       title={getUserDisplayName(user)}
                     >
@@ -444,7 +444,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                           style={{
                             width: '100%',
                             height: '100%',
-                            objectFit: 'cover'
+                            objectFit: 'cover',
                           }}
                           onError={(e) => {
                             // Fallback to initials if image fails to load
@@ -475,7 +475,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                           justifyContent: 'center',
                           color: 'white',
                           fontSize: '10px',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
                         }}>
                           {getUserInitials(user)}
                         </div>
@@ -490,28 +490,28 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
                       height: '24px',
                       borderRadius: '50%',
                       background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                      border: '2px solid rgba(255, 255, 255, 0.2)'
+                      border: '2px solid rgba(255, 255, 255, 0.2)',
                     }}></div>
                     <div style={{
                       width: '24px',
                       height: '24px',
                       borderRadius: '50%',
                       background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
-                      border: '2px solid rgba(255, 255, 255, 0.2)'
+                      border: '2px solid rgba(255, 255, 255, 0.2)',
                     }}></div>
                     <div style={{
                       width: '24px',
                       height: '24px',
                       borderRadius: '50%',
                       background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-                      border: '2px solid rgba(255, 255, 255, 0.2)'
+                      border: '2px solid rgba(255, 255, 255, 0.2)',
                     }}></div>
                     <div style={{
                       width: '24px',
                       height: '24px',
                       borderRadius: '50%',
                       background: 'linear-gradient(135deg, #eab308 0%, #f97316 100%)',
-                      border: '2px solid rgba(255, 255, 255, 0.2)'
+                      border: '2px solid rgba(255, 255, 255, 0.2)',
                     }}></div>
                   </>
                 )}
@@ -519,14 +519,14 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
               <span style={{
                 fontSize: '12px',
                 color: 'var(--text-secondary)',
-                fontWeight: '500'
+                fontWeight: '500',
               }}>
                 {communityCount > 0 ? `+${communityCount.toLocaleString()} communities protected` : 'Be the first in your area'}
               </span>
             </div>
             <p style={{
               fontSize: '12px',
-              color: 'var(--text-muted)'
+              color: 'var(--text-muted)',
             }}>
               {t('community.emptyState.socialProof', 'Join thousands of safety-conscious communities worldwide')}
             </p>
@@ -543,7 +543,7 @@ const PremiumEmptyState: React.FC<PremiumEmptyStateProps> = ({
           height: '32px',
           background: 'linear-gradient(to top, rgba(255, 255, 255, 0.05) 0%, transparent 100%)',
           borderRadius: '50% 50% 0 0',
-          filter: 'blur(8px)'
+          filter: 'blur(8px)',
         }}></div>
       </div>
     </div>

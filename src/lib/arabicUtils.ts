@@ -4,7 +4,9 @@
  * Converts Western Arabic numerals (0-9) to Eastern Arabic numerals (٠-٩)
  */
 export const convertToArabicNumerals = (text: string | number): string => {
-  if (text === null || text === undefined) return '';
+  if (text === null || text === undefined) {
+    return '';
+  }
 
   const textStr = String(text);
 
@@ -18,7 +20,7 @@ export const convertToArabicNumerals = (text: string | number): string => {
     '6': '٦',
     '7': '٧',
     '8': '٨',
-    '9': '٩'
+    '9': '٩',
   };
 
   return textStr.replace(/[0-9]/g, (digit) => numeralMap[digit]);
@@ -28,7 +30,9 @@ export const convertToArabicNumerals = (text: string | number): string => {
  * Converts Eastern Arabic numerals (٠-٩) to Western Arabic numerals (0-9)
  */
 export const convertToWesternNumerals = (text: string): string => {
-  if (!text || typeof text !== 'string') return text;
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
 
   const numeralMap: { [key: string]: string } = {
     '٠': '0',
@@ -40,7 +44,7 @@ export const convertToWesternNumerals = (text: string): string => {
     '٦': '6',
     '٧': '7',
     '٨': '8',
-    '٩': '9'
+    '٩': '9',
   };
 
   return text.replace(/[٠-٩]/g, (digit) => numeralMap[digit]);
@@ -52,7 +56,9 @@ export const convertToWesternNumerals = (text: string): string => {
  * - Other languages: Western Arabic numerals (0-9)
  */
 export const formatNumber = (num: number | string, language: string = 'en'): string => {
-  if (num === null || num === undefined) return '';
+  if (num === null || num === undefined) {
+    return '';
+  }
 
   const numStr = String(num);
 
@@ -69,9 +75,11 @@ export const formatNumber = (num: number | string, language: string = 'en'): str
 export const formatNumberLocalized = (
   num: number,
   options?: Intl.NumberFormatOptions,
-  language: string = 'en'
+  language: string = 'en',
 ): string => {
-  if (typeof num !== 'number' || isNaN(num)) return '';
+  if (typeof num !== 'number' || isNaN(num)) {
+    return '';
+  }
 
   // Use Intl.NumberFormat for proper locale formatting
   const formatter = new Intl.NumberFormat(language === 'ar' ? 'ar' : 'en', options);

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, MapPin, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import { searchPlaces, SearchResult, formatSearchResult, getPlaceTypeIcon, getCoordinatesFromResult } from '../lib/geocoding';
 
 interface LocationSearchProps {
@@ -20,15 +21,15 @@ interface SearchState {
 
 const LocationSearch: React.FC<LocationSearchProps> = ({
   onLocationSelect,
-  placeholder = "Search for places...",
-  className = ""
+  placeholder = 'Search for places...',
+  className = '',
 }) => {
   const [state, setState] = useState<SearchState>({
     query: '',
     results: [],
     isLoading: false,
     isOpen: false,
-    selectedIndex: -1
+    selectedIndex: -1,
   });
 
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
@@ -52,7 +53,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
         ...prev,
         results,
         isLoading: false,
-        selectedIndex: results.length > 0 ? 0 : -1
+        selectedIndex: results.length > 0 ? 0 : -1,
       }));
     } catch (error) {
       console.error('Search failed:', error);
@@ -85,7 +86,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       ...prev,
       query: address,
       isOpen: false,
-      results: []
+      results: [],
     }));
 
     onLocationSelect(coordinates, address);
@@ -93,40 +94,42 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!state.isOpen || state.results.length === 0) return;
+    if (!state.isOpen || state.results.length === 0) {
+      return;
+    }
 
     switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setState(prev => ({
-          ...prev,
-          selectedIndex: prev.selectedIndex < prev.results.length - 1
-            ? prev.selectedIndex + 1
-            : 0
-        }));
-        break;
+    case 'ArrowDown':
+      e.preventDefault();
+      setState(prev => ({
+        ...prev,
+        selectedIndex: prev.selectedIndex < prev.results.length - 1
+          ? prev.selectedIndex + 1
+          : 0,
+      }));
+      break;
 
-      case 'ArrowUp':
-        e.preventDefault();
-        setState(prev => ({
-          ...prev,
-          selectedIndex: prev.selectedIndex > 0
-            ? prev.selectedIndex - 1
-            : prev.results.length - 1
-        }));
-        break;
+    case 'ArrowUp':
+      e.preventDefault();
+      setState(prev => ({
+        ...prev,
+        selectedIndex: prev.selectedIndex > 0
+          ? prev.selectedIndex - 1
+          : prev.results.length - 1,
+      }));
+      break;
 
-      case 'Enter':
-        e.preventDefault();
-        if (state.selectedIndex >= 0 && state.selectedIndex < state.results.length) {
-          handleResultSelect(state.results[state.selectedIndex]);
-        }
-        break;
+    case 'Enter':
+      e.preventDefault();
+      if (state.selectedIndex >= 0 && state.selectedIndex < state.results.length) {
+        handleResultSelect(state.results[state.selectedIndex]);
+      }
+      break;
 
-      case 'Escape':
-        e.preventDefault();
-        setState(prev => ({ ...prev, isOpen: false, selectedIndex: -1 }));
-        break;
+    case 'Escape':
+      e.preventDefault();
+      setState(prev => ({ ...prev, isOpen: false, selectedIndex: -1 }));
+      break;
     }
   }, [state.isOpen, state.results, state.selectedIndex, handleResultSelect]);
 
@@ -136,7 +139,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       const rect = inputRef.current.getBoundingClientRect();
       setDropdownPosition({
         top: rect.bottom + window.scrollY + 8,
-        left: Math.max(16, Math.min(rect.left + window.scrollX, window.innerWidth - 336))
+        left: Math.max(16, Math.min(rect.left + window.scrollX, window.innerWidth - 336)),
       });
     }
   }, []);
@@ -161,7 +164,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       results: [],
       isLoading: false,
       isOpen: false,
-      selectedIndex: -1
+      selectedIndex: -1,
     });
     inputRef.current?.focus();
   }, []);
@@ -225,7 +228,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
               initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
               onClick={handleClear}
               className="absolute inset-y-0 right-0 pr-4 flex items-center z-10 text-gray-400 hover:text-gray-600 transition-all duration-300 hover:scale-110"
               aria-label="Clear search"
@@ -255,14 +258,14 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
               initial={{ opacity: 0, y: -8, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
               className="fixed bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 z-[10000] max-h-96 overflow-hidden"
               style={{
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)',
                 width: '320px',
                 maxWidth: '90vw',
                 top: dropdownPosition?.top || 0,
-                left: dropdownPosition?.left || 0
+                left: dropdownPosition?.left || 0,
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -332,7 +335,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
             </motion.div>
           )}
         </AnimatePresence>,
-        document.body
+        document.body,
       )}
     </div>
   );

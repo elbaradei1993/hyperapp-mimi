@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Heart, MessageCircle, Clock } from 'lucide-react';
+
 import type { Vibe } from '../types';
 
 interface MapMarkerProps {
@@ -19,7 +20,7 @@ const vibeColors: Record<string, { bg: string; text: string; border: string }> =
   suspicious: { bg: 'bg-orange-500', text: 'text-orange-600', border: 'border-orange-500' },
   dangerous: { bg: 'bg-red-600', text: 'text-red-600', border: 'border-red-600' },
   noisy: { bg: 'bg-yellow-500', text: 'text-yellow-600', border: 'border-yellow-500' },
-  quiet: { bg: 'bg-cyan-500', text: 'text-cyan-600', border: 'border-cyan-500' }
+  quiet: { bg: 'bg-cyan-500', text: 'text-cyan-600', border: 'border-cyan-500' },
 };
 
 export function MapMarker({ vibe, style, onClick, onVote }: MapMarkerProps) {
@@ -29,9 +30,15 @@ export function MapMarker({ vibe, style, onClick, onVote }: MapMarkerProps) {
 
   const getTimeAgo = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 60) {
+      return 'Just now';
+    }
+    if (seconds < 3600) {
+      return `${Math.floor(seconds / 60)}m ago`;
+    }
+    if (seconds < 86400) {
+      return `${Math.floor(seconds / 3600)}h ago`;
+    }
     return `${Math.floor(seconds / 86400)}d ago`;
   };
 
@@ -65,7 +72,7 @@ export function MapMarker({ vibe, style, onClick, onVote }: MapMarkerProps) {
           transition={{
             duration: 2,
             repeat: Infinity,
-            repeatType: "reverse"
+            repeatType: 'reverse',
           }}
           className={`absolute w-4 h-4 rounded-full opacity-30 ${vibeColor.bg} top-0 left-1/2 -translate-x-1/2`}
         />

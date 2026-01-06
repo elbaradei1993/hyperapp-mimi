@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+
 import { supabase } from '../lib/supabase';
+
 import { LoadingSpinner } from './shared';
 
 const AuthCallback: React.FC = () => {
@@ -53,12 +55,12 @@ const AuthCallback: React.FC = () => {
       justifyContent: 'center',
       background: 'var(--bg-primary)',
       color: 'var(--text-primary)',
-      padding: '20px'
+      padding: '20px',
     }}>
       <div style={{
         textAlign: 'center',
         maxWidth: '400px',
-        width: '100%'
+        width: '100%',
       }}>
         {status === 'loading' && (
           <>
@@ -67,14 +69,14 @@ const AuthCallback: React.FC = () => {
               marginTop: '20px',
               marginBottom: '10px',
               fontSize: '1.5rem',
-              fontWeight: '600'
+              fontWeight: '600',
             }}>
               Confirming Your Email
             </h2>
             <p style={{
               color: 'var(--text-secondary)',
               fontSize: '1rem',
-              lineHeight: '1.5'
+              lineHeight: '1.5',
             }}>
               {message}
             </p>
@@ -85,7 +87,7 @@ const AuthCallback: React.FC = () => {
           <>
             <div style={{
               fontSize: '4rem',
-              marginBottom: '20px'
+              marginBottom: '20px',
             }}>
               ✅
             </div>
@@ -93,14 +95,14 @@ const AuthCallback: React.FC = () => {
               marginBottom: '10px',
               fontSize: '1.5rem',
               fontWeight: '600',
-              color: 'var(--success)'
+              color: 'var(--success)',
             }}>
               Email Confirmed!
             </h2>
             <p style={{
               color: 'var(--text-secondary)',
               fontSize: '1rem',
-              lineHeight: '1.5'
+              lineHeight: '1.5',
             }}>
               {message}
             </p>
@@ -111,7 +113,7 @@ const AuthCallback: React.FC = () => {
           <>
             <div style={{
               fontSize: '4rem',
-              marginBottom: '20px'
+              marginBottom: '20px',
             }}>
               ❌
             </div>
@@ -119,7 +121,7 @@ const AuthCallback: React.FC = () => {
               marginBottom: '10px',
               fontSize: '1.5rem',
               fontWeight: '600',
-              color: 'var(--danger)'
+              color: 'var(--danger)',
             }}>
               Confirmation Failed
             </h2>
@@ -127,7 +129,7 @@ const AuthCallback: React.FC = () => {
               color: 'var(--text-secondary)',
               fontSize: '1rem',
               lineHeight: '1.5',
-              marginBottom: '20px'
+              marginBottom: '20px',
             }}>
               {message}
             </p>
@@ -142,7 +144,7 @@ const AuthCallback: React.FC = () => {
                 fontSize: '1rem',
                 fontWeight: '500',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.background = 'var(--accent-secondary)';

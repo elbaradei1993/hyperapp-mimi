@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, VStack, HStack, Text, Button, Input, Textarea, Grid, GridItem } from '@chakra-ui/react';
-import { VibeType } from '../types';
-import { reportsService } from '../services/reports';
-import { reverseGeocode, formatCoordinates } from '../lib/geocoding';
-import { SupabaseStorageService } from '../services/upload';
-import CameraModal from './CameraModal';
 import {
   AlertTriangle,
   Flame,
@@ -18,8 +13,15 @@ import {
   Camera,
   X,
   MapPin,
-  FileText
+  FileText,
 } from 'lucide-react';
+
+import { VibeType } from '../types';
+import { reportsService } from '../services/reports';
+import { reverseGeocode, formatCoordinates } from '../lib/geocoding';
+import { SupabaseStorageService } from '../services/upload';
+
+import CameraModal from './CameraModal';
 
 interface EmergencyReportModalProps {
   isOpen: boolean;
@@ -38,7 +40,7 @@ interface EmergencyType {
 const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
   isOpen,
   onClose,
-  onSuccess
+  onSuccess,
 }) => {
   const { t } = useTranslation();
   const [selectedEmergency, setSelectedEmergency] = useState<string | null>(null);
@@ -59,43 +61,43 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
       label: t('emergency.fire'),
       icon: Flame,
       color: 'var(--danger)',
-      description: t('emergency.fireDesc')
+      description: t('emergency.fireDesc'),
     },
     {
       id: 'medical',
       label: t('emergency.medical'),
       icon: Ambulance,
       color: '#dc2626',
-      description: t('emergency.medicalDesc')
+      description: t('emergency.medicalDesc'),
     },
     {
       id: 'crime',
       label: t('emergency.crime'),
       icon: Shield,
       color: '#7c2d12',
-      description: t('emergency.crimeDesc')
+      description: t('emergency.crimeDesc'),
     },
     {
       id: 'accident',
       label: t('emergency.accident'),
       icon: Car,
       color: '#ea580c',
-      description: t('emergency.accidentDesc')
+      description: t('emergency.accidentDesc'),
     },
     {
       id: 'hazard',
       label: t('emergency.hazard'),
       icon: Triangle,
       color: '#d97706',
-      description: t('emergency.hazardDesc')
+      description: t('emergency.hazardDesc'),
     },
     {
       id: 'other',
       label: t('emergency.other'),
       icon: HelpCircle,
       color: 'var(--text-muted)',
-      description: t('emergency.otherDesc')
-    }
+      description: t('emergency.otherDesc'),
+    },
   ];
 
   useEffect(() => {
@@ -140,7 +142,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
           console.error('Error getting location:', error);
           setLocationLoading(false);
         },
-        { timeout: 10000, enableHighAccuracy: true }
+        { timeout: 10000, enableHighAccuracy: true },
       );
     } else {
       setLocationLoading(false);
@@ -174,7 +176,9 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!selectedEmergency || !description.trim()) return;
+    if (!selectedEmergency || !description.trim()) {
+      return;
+    }
 
     // If location is not available but loading, wait for it
     if (!userLocation && locationLoading) {
@@ -184,10 +188,14 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
       }
-      if (!userLocation) return; // Still no location after waiting
+      if (!userLocation) {
+        return;
+      } // Still no location after waiting
     }
 
-    if (!userLocation) return;
+    if (!userLocation) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -200,7 +208,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
       const emergencyNotes = [
         `EMERGENCY: ${selectedType?.label}`,
         `Urgency: ${urgency.toUpperCase()}`,
-        description.trim()
+        description.trim(),
       ].filter(Boolean).join(' | ');
 
       await reportsService.createReport({
@@ -210,7 +218,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
         notes: emergencyNotes,
         location: location.trim() || undefined,
         media_url: mediaUrl || undefined,
-        emergency: true
+        emergency: true,
       });
 
       // Show success animation
@@ -228,7 +236,9 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
   };
 
   // Don't render anything if modal is not open and not showing success
-  if (!isOpen && !showSuccess) return null;
+  if (!isOpen && !showSuccess) {
+    return null;
+  }
 
   if (showSuccess) {
     return (
@@ -245,7 +255,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-        padding: window.innerWidth < 480 ? '16px' : '20px'
+        padding: window.innerWidth < 480 ? '16px' : '20px',
       }}>
         <div style={{
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
@@ -259,7 +269,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
           border: '1px solid rgba(255, 255, 255, 0.2)',
           textAlign: 'center',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}>
           {/* Premium Background Gradient */}
           <div style={{
@@ -269,7 +279,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
             right: 0,
             bottom: 0,
             background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.06) 50%, rgba(185, 28, 28, 0.04) 100%)',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
           }}></div>
 
           {/* Premium Inner Shadow */}
@@ -281,14 +291,14 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
             bottom: 0,
             boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)',
             pointerEvents: 'none',
-            borderRadius: '24px'
+            borderRadius: '24px',
           }}></div>
 
           {/* Emergency Success Icon Animation */}
           <div style={{
             position: 'relative',
             zIndex: 1,
-            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem'
+            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem',
           }}>
             <div style={{
               width: window.innerWidth < 480 ? '80px' : '100px',
@@ -300,11 +310,11 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
               justifyContent: 'center',
               margin: '0 auto',
               boxShadow: '0 20px 40px rgba(239, 68, 68, 0.3), 0 10px 20px rgba(239, 68, 68, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.2)',
-              animation: 'emergencySuccessPulse 2s ease-in-out infinite'
+              animation: 'emergencySuccessPulse 2s ease-in-out infinite',
             }}>
               <svg
-                width={window.innerWidth < 480 ? "32" : "40"}
-                height={window.innerWidth < 480 ? "32" : "40"}
+                width={window.innerWidth < 480 ? '32' : '40'}
+                height={window.innerWidth < 480 ? '32' : '40'}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
@@ -312,13 +322,13 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 style={{
-                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))'
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
                 }}
               >
                 <polyline points="20,6 9,17 4,12" style={{
                   strokeDasharray: '24',
                   strokeDashoffset: '24',
-                  animation: 'emergencySuccessCheck 0.8s ease-in-out 0.2s forwards'
+                  animation: 'emergencySuccessCheck 0.8s ease-in-out 0.2s forwards',
                 }}></polyline>
               </svg>
             </div>
@@ -336,7 +346,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               letterSpacing: '-0.025em',
-              lineHeight: '1.2'
+              lineHeight: '1.2',
             }}>
               {t('modals.emergencyReport.successTitle', 'Emergency Report Submitted Successfully!')}
             </h3>
@@ -348,7 +358,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
               lineHeight: '1.5',
               maxWidth: '280px',
               marginLeft: 'auto',
-              marginRight: 'auto'
+              marginRight: 'auto',
             }}>
               {t('modals.emergencyReport.successMessage', 'Emergency services have been notified. Help is on the way.')}
             </p>
@@ -486,15 +496,15 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                       p={4}
                       borderRadius="12px"
                       border="2px solid"
-                      borderColor={selectedEmergency === emergency.id ? "red.400" : "gray.200"}
-                      bg={selectedEmergency === emergency.id ? "red.50" : "white"}
+                      borderColor={selectedEmergency === emergency.id ? 'red.400' : 'gray.200'}
+                      bg={selectedEmergency === emergency.id ? 'red.50' : 'white'}
                       cursor="pointer"
                       transition="all 0.2s"
                       textAlign="center"
                       _hover={{
-                        transform: "translateY(-1px)",
+                        transform: 'translateY(-1px)',
                         boxShadow: `0 4px 12px ${emergency.color}30`,
-                        borderColor: `${emergency.color}60`
+                        borderColor: `${emergency.color}60`,
                       }}
                     >
                       <Box
@@ -529,7 +539,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                 {[
                   { value: 'low' as const, label: t('modals.emergencyReport.urgencyLow'), color: '#10b981' },
                   { value: 'medium' as const, label: t('modals.emergencyReport.urgencyMedium'), color: '#f59e0b' },
-                  { value: 'high' as const, label: t('modals.emergencyReport.urgencyHigh'), color: '#ef4444' }
+                  { value: 'high' as const, label: t('modals.emergencyReport.urgencyHigh'), color: '#ef4444' },
                 ].map((level) => (
                   <Box
                     key={level.value}
@@ -538,15 +548,15 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                     py={3}
                     borderRadius="12px"
                     border="2px solid"
-                    borderColor={urgency === level.value ? `${level.color}80` : "gray.200"}
-                    bg={urgency === level.value ? `${level.color}10` : "white"}
+                    borderColor={urgency === level.value ? `${level.color}80` : 'gray.200'}
+                    bg={urgency === level.value ? `${level.color}10` : 'white'}
                     cursor="pointer"
                     transition="all 0.2s"
                     textAlign="center"
                     _hover={{
-                      transform: "translateY(-1px)",
+                      transform: 'translateY(-1px)',
                       boxShadow: `0 4px 12px ${level.color}30`,
-                      borderColor: `${level.color}60`
+                      borderColor: `${level.color}60`,
                     }}
                   >
                     <Text fontSize="14px" fontWeight="600" color="gray.900">
@@ -569,7 +579,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                 borderRadius="12px"
                 border="1px solid"
                 borderColor="gray.200"
-                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
               />
             </Box>
 
@@ -586,7 +596,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                 borderRadius="12px"
                 border="1px solid"
                 borderColor="gray.200"
-                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                 resize="vertical"
                 maxLength={500}
               />
@@ -609,7 +619,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                   textAlign="center"
                   cursor="pointer"
                   transition="all 0.2s"
-                  _hover={{ borderColor: "blue.400", bg: "blue.50" }}
+                  _hover={{ borderColor: 'blue.400', bg: 'blue.50' }}
                   onClick={() => setShowCamera(true)}
                 >
                   <Camera size={48} color="#3b82f6" style={{ marginBottom: '1rem' }} />
@@ -628,7 +638,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                     style={{
                       width: '100%',
                       height: '200px',
-                      objectFit: 'cover'
+                      objectFit: 'cover',
                     }}
                   />
                   <Button
@@ -640,7 +650,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
                     borderRadius="full"
                     bg="red.500"
                     color="white"
-                    _hover={{ bg: "red.600" }}
+                    _hover={{ bg: 'red.600' }}
                     onClick={removeMedia}
                     p={1}
                     minW="auto"
@@ -679,7 +689,7 @@ const EmergencyReportModal: React.FC<EmergencyReportModalProps> = ({
               color="white"
               onClick={handleSubmit}
               borderRadius="12px"
-              _hover={{ bg: "red.600" }}
+              _hover={{ bg: 'red.600' }}
               disabled={!selectedEmergency || !description.trim() || (!userLocation && !locationLoading) || isSubmitting}
             >
               <HStack gap={2}>

@@ -20,7 +20,7 @@ import {
   formatTemperature,
   formatSpeed,
   formatFileSize,
-  formatDuration
+  formatDuration,
 } from './lib/i18nUtils';
 
 // Arabic pluralization rules - FIXED
@@ -53,15 +53,15 @@ const resources = {
   en: {
     translation: {
       ...commonEnTranslations,
-      ...enTranslations
-    }
+      ...enTranslations,
+    },
   },
   ar: {
     translation: {
       ...commonArTranslations,
-      ...arTranslations
-    }
-  }
+      ...arTranslations,
+    },
+  },
 };
 
 // Track missing keys to avoid duplicate translation requests
@@ -72,7 +72,9 @@ const translationCache = new Map<string, string>();
 
 // Function to check if text is Arabic
 const isArabicText = (text: string): boolean => {
-  if (!text || typeof text !== 'string') return false;
+  if (!text || typeof text !== 'string') {
+    return false;
+  }
 
   // Arabic Unicode range: U+0600 to U+06FF, U+0750 to U+077F, U+08A0 to U+08FF, U+FB50 to U+FDFF, U+FE70 to U+FEFF
   const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
@@ -112,11 +114,15 @@ const getEnglishTextSafely = (key: string, fallbackValue: string): string => {
 const processArabicTranslations = () => {
   try {
     const arResources = resources.ar?.translation;
-    if (!arResources) return;
+    if (!arResources) {
+      return;
+    }
 
     // Clean up common issues in Arabic translations
     const cleanup = (obj: any, path: string = ''): void => {
-      if (!obj || typeof obj !== 'object') return;
+      if (!obj || typeof obj !== 'object') {
+        return;
+      }
 
       Object.keys(obj).forEach(key => {
         const fullPath = path ? `${path}.${key}` : key;
@@ -157,7 +163,7 @@ i18n
     lng: 'en', // default language
     fallbackLng: {
       'ar': ['en'],
-      'default': ['en']
+      'default': ['en'],
     },
 
     // Enable debug only in development
@@ -169,72 +175,72 @@ i18n
         // Handle advanced formatting
         if (format) {
           switch (format) {
-            // Date/Time formatting
-            case 'date':
-              return formatDate(value);
-            case 'time':
-              return formatTime(value);
-            case 'datetime':
-              return formatDateTime(value);
-            case 'relativeTime':
-              return formatRelativeTime(value);
+          // Date/Time formatting
+          case 'date':
+            return formatDate(value);
+          case 'time':
+            return formatTime(value);
+          case 'datetime':
+            return formatDateTime(value);
+          case 'relativeTime':
+            return formatRelativeTime(value);
 
             // Number formatting
-            case 'number':
-              return formatNumber(value);
-            case 'currency':
-              return formatCurrency(value);
-            case 'percent':
-              return formatPercent(value);
+          case 'number':
+            return formatNumber(value);
+          case 'currency':
+            return formatCurrency(value);
+          case 'percent':
+            return formatPercent(value);
 
             // Custom formatters
-            case 'distance':
-              return formatDistance(value);
-            case 'temperature':
-              return formatTemperature(value);
-            case 'speed':
-              return formatSpeed(value);
-            case 'fileSize':
-              return formatFileSize(value);
-            case 'duration':
-              return formatDuration(value);
+          case 'distance':
+            return formatDistance(value);
+          case 'temperature':
+            return formatTemperature(value);
+          case 'speed':
+            return formatSpeed(value);
+          case 'fileSize':
+            return formatFileSize(value);
+          case 'duration':
+            return formatDuration(value);
 
             // Arabic numeral conversion
-            case 'arabicNumerals':
-              if (typeof value === 'string' && lng === 'ar') {
-                return convertToArabicNumerals(value);
-              }
-              return value;
+          case 'arabicNumerals':
+            if (typeof value === 'string' && lng === 'ar') {
+              return convertToArabicNumerals(value);
+            }
+            return value;
 
-            default:
-              // Check for custom format options like 'currency:EUR' or 'date:short'
-              const [formatter, option] = format.split(':');
-              switch (formatter) {
-                case 'currency':
-                  return formatCurrency(value, option || 'USD');
-                case 'date':
-                  if (option === 'short') {
-                    return formatDate(value, { dateStyle: 'short' });
-                  } else if (option === 'long') {
-                    return formatDate(value, { dateStyle: 'long' });
-                  }
-                  return formatDate(value);
-                case 'time':
-                  if (option === 'short') {
-                    return formatTime(value, { timeStyle: 'short' });
-                  }
-                  return formatTime(value);
-                case 'number':
-                  if (option === 'integer') {
-                    return formatNumber(value, { maximumFractionDigits: 0 });
-                  }
-                  return formatNumber(value);
-                case 'temperature':
-                  return formatTemperature(value, (option as 'C' | 'F') || 'C');
-                case 'speed':
-                  return formatSpeed(value, (option as 'kmh' | 'mph') || 'kmh');
+          default:
+            // Check for custom format options like 'currency:EUR' or 'date:short'
+            const [formatter, option] = format.split(':');
+            switch (formatter) {
+            case 'currency':
+              return formatCurrency(value, option || 'USD');
+            case 'date':
+              if (option === 'short') {
+                return formatDate(value, { dateStyle: 'short' });
+              } else if (option === 'long') {
+                return formatDate(value, { dateStyle: 'long' });
               }
-              break;
+              return formatDate(value);
+            case 'time':
+              if (option === 'short') {
+                return formatTime(value, { timeStyle: 'short' });
+              }
+              return formatTime(value);
+            case 'number':
+              if (option === 'integer') {
+                return formatNumber(value, { maximumFractionDigits: 0 });
+              }
+              return formatNumber(value);
+            case 'temperature':
+              return formatTemperature(value, (option as 'C' | 'F') || 'C');
+            case 'speed':
+              return formatSpeed(value, (option as 'kmh' | 'mph') || 'kmh');
+            }
+            break;
           }
         }
 
@@ -243,20 +249,20 @@ i18n
           return convertToArabicNumerals(value);
         }
         return value;
-      }
+      },
     },
 
     react: {
       useSuspense: false,
       bindI18n: 'languageChanged loaded',
-      bindI18nStore: 'added removed'
+      bindI18nStore: 'added removed',
     },
 
     // Language detection configuration
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       lookupLocalStorage: 'i18nextLng',
-      caches: ['localStorage']
+      caches: ['localStorage'],
     },
 
     // Handle missing keys - OPTIMIZED FOR ARABIC
@@ -313,7 +319,7 @@ i18n
         const translatedText = await translationService.translate(
           sourceText,
           'en',
-          'ar'
+          'ar',
         );
 
         // Validate translated text
@@ -347,7 +353,7 @@ i18n
     },
 
     // Configure saveMissing
-    saveMissing: process.env.NODE_ENV === 'development'
+    saveMissing: process.env.NODE_ENV === 'development',
   });
 
 // Process Arabic translations after init
@@ -361,7 +367,7 @@ i18n.on('initialized', (options: any) => {
         i18n.services.pluralResolver.addRule('ar', {
           name: 'arabic',
           numbers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 100],
-          plurals: arabicPluralization
+          plurals: arabicPluralization,
         });
 
         console.log('✅ Arabic pluralization configured');
@@ -396,7 +402,9 @@ export const isRTL = (): boolean => {
 
 // Function to convert Western Arabic numerals to Eastern Arabic numerals
 const convertToArabicNumerals = (text: string): string => {
-  if (!text || typeof text !== 'string') return text;
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
 
   const numeralMap: { [key: string]: string } = {
     '0': '٠',
@@ -408,7 +416,7 @@ const convertToArabicNumerals = (text: string): string => {
     '6': '٦',
     '7': '٧',
     '8': '٨',
-    '9': '٩'
+    '9': '٩',
   };
 
   return text.replace(/[0-9]/g, (digit) => numeralMap[digit]);
@@ -416,7 +424,9 @@ const convertToArabicNumerals = (text: string): string => {
 
 // Function to convert Eastern Arabic numerals to Western Arabic numerals
 export const convertToWesternNumerals = (text: string): string => {
-  if (!text || typeof text !== 'string') return text;
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
 
   const numeralMap: { [key: string]: string } = {
     '٠': '0',
@@ -428,7 +438,7 @@ export const convertToWesternNumerals = (text: string): string => {
     '٦': '6',
     '٧': '7',
     '٨': '8',
-    '٩': '9'
+    '٩': '9',
   };
 
   return text.replace(/[٠-٩]/g, (digit) => numeralMap[digit]);

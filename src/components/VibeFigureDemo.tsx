@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import VibeFigure from './VibeFigure';
+
 import { VIBE_CONFIG } from '../constants/vibes';
 import type { VibeType } from '../constants/vibes';
+
+import VibeFigure from './VibeFigure';
 
 const VibeFigureDemo: React.FC = () => {
   const [selectedVibe, setSelectedVibe] = useState<VibeType>('calm');
@@ -14,7 +16,7 @@ const VibeFigureDemo: React.FC = () => {
       padding: '20px',
       background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
       minHeight: '100vh',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
+      fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <h1 style={{
@@ -25,7 +27,7 @@ const VibeFigureDemo: React.FC = () => {
           marginBottom: '2rem',
           background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
           WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
+          WebkitTextFillColor: 'transparent',
         }}>
           Animated Human Figures Demo
         </h1>
@@ -40,7 +42,7 @@ const VibeFigureDemo: React.FC = () => {
           padding: '1.5rem',
           background: 'white',
           borderRadius: '12px',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <label style={{ fontWeight: '500', color: '#374151' }}>Animation:</label>
@@ -54,7 +56,7 @@ const VibeFigureDemo: React.FC = () => {
                 color: 'white',
                 cursor: 'pointer',
                 fontWeight: '500',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
               }}
             >
               {animated ? 'ON' : 'OFF'}
@@ -69,14 +71,14 @@ const VibeFigureDemo: React.FC = () => {
           padding: '2rem',
           background: 'white',
           borderRadius: '16px',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
         }}>
           <h2 style={{
             fontSize: '1.5rem',
             fontWeight: '600',
             color: '#1e293b',
             marginBottom: '1rem',
-            textTransform: 'capitalize'
+            textTransform: 'capitalize',
           }}>
             {selectedVibe} Figure
           </h2>
@@ -84,7 +86,7 @@ const VibeFigureDemo: React.FC = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '120px'
+            height: '120px',
           }}>
             <VibeFigure
               vibeType={selectedVibe}
@@ -95,7 +97,7 @@ const VibeFigureDemo: React.FC = () => {
           <p style={{
             color: '#6b7280',
             marginTop: '1rem',
-            fontSize: '0.9rem'
+            fontSize: '0.9rem',
           }}>
             {VIBE_CONFIG[selectedVibe].label} • {VIBE_CONFIG[selectedVibe].icon}
           </p>
@@ -106,7 +108,7 @@ const VibeFigureDemo: React.FC = () => {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '1.5rem',
-          marginBottom: '2rem'
+          marginBottom: '2rem',
         }}>
           {vibeTypes.map((vibeType) => (
             <div
@@ -123,7 +125,7 @@ const VibeFigureDemo: React.FC = () => {
                 boxShadow: selectedVibe === vibeType
                   ? '0 10px 15px -3px rgba(59, 130, 246, 0.1)'
                   : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-                transform: selectedVibe === vibeType ? 'translateY(-2px)' : 'translateY(0)'
+                transform: selectedVibe === vibeType ? 'translateY(-2px)' : 'translateY(0)',
               }}
             >
               <div style={{
@@ -131,7 +133,7 @@ const VibeFigureDemo: React.FC = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 height: '80px',
-                marginBottom: '1rem'
+                marginBottom: '1rem',
               }}>
                 <VibeFigure
                   vibeType={vibeType}
@@ -144,14 +146,14 @@ const VibeFigureDemo: React.FC = () => {
                 fontWeight: '600',
                 color: '#1e293b',
                 marginBottom: '0.5rem',
-                textTransform: 'capitalize'
+                textTransform: 'capitalize',
               }}>
                 {vibeType}
               </h3>
               <p style={{
                 color: '#6b7280',
                 fontSize: '0.9rem',
-                marginBottom: '0.5rem'
+                marginBottom: '0.5rem',
               }}>
                 {VIBE_CONFIG[vibeType].icon} {VIBE_CONFIG[vibeType].label}
               </p>
@@ -160,7 +162,7 @@ const VibeFigureDemo: React.FC = () => {
                 height: '4px',
                 background: VIBE_CONFIG[vibeType].color,
                 borderRadius: '2px',
-                opacity: 0.7
+                opacity: 0.7,
               }} />
             </div>
           ))}
@@ -172,13 +174,13 @@ const VibeFigureDemo: React.FC = () => {
           padding: '2rem',
           borderRadius: '12px',
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          textAlign: 'center'
+          textAlign: 'center',
         }}>
           <h3 style={{
             fontSize: '1.25rem',
             fontWeight: '600',
             color: '#1e293b',
-            marginBottom: '1rem'
+            marginBottom: '1rem',
           }}>
             How to Use VibeFigure Component
           </h3>
@@ -190,7 +192,7 @@ const VibeFigureDemo: React.FC = () => {
             fontSize: '0.9rem',
             color: '#374151',
             textAlign: 'left',
-            marginBottom: '1rem'
+            marginBottom: '1rem',
           }}>
             {`<VibeFigure
   vibeType="calm"        // 'safe' | 'calm' | 'lively' | 'festive' | etc.
@@ -202,7 +204,7 @@ const VibeFigureDemo: React.FC = () => {
           <p style={{
             color: '#6b7280',
             fontSize: '0.9rem',
-            lineHeight: '1.5'
+            lineHeight: '1.5',
           }}>
             Each figure automatically animates based on its vibe type using React Spring physics.
             The animations are optimized for performance and respect user motion preferences.

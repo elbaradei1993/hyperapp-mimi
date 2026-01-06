@@ -12,7 +12,7 @@ const LocationSearchButton: React.FC<LocationSearchButtonProps> = ({ onClick, to
       onClick={onClick}
       style={{
         position: 'absolute',
-        top: top,
+        top,
         right: '10px',
         backgroundColor: 'white',
         border: 'none',

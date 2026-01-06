@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Loader2, Search, Building, Coffee, Car, Plane, Train, Bus, ShoppingBag, Heart, Star, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Modal from './shared/Modal';
+
 import { searchPlaces, SearchResult, formatSearchResult, getPlaceTypeIcon, getCoordinatesFromResult } from '../lib/geocoding';
+
+import Modal from './shared/Modal';
 import styles from './LocationSearchModal.module.css';
 
 interface LocationSearchModalProps {
@@ -24,7 +26,7 @@ interface SearchState {
 const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
   isOpen,
   onClose,
-  onLocationSelect
+  onLocationSelect,
 }) => {
   const { t } = useTranslation();
   const [state, setState] = useState<SearchState>({
@@ -33,7 +35,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
     isLoading: false,
     selectedIndex: -1,
     isFocused: false,
-    recentSearches: []
+    recentSearches: [],
   });
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,7 +86,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
         ...prev,
         results,
         isLoading: false,
-        selectedIndex: results.length > 0 ? 0 : -1
+        selectedIndex: results.length > 0 ? 0 : -1,
       }));
     } catch (error) {
       console.error('Search failed:', error);
@@ -122,7 +124,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
       isLoading: false,
       selectedIndex: -1,
       isFocused: false,
-      recentSearches: prev.recentSearches
+      recentSearches: prev.recentSearches,
     }));
 
     onLocationSelect(coordinates, address);
@@ -131,40 +133,42 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (state.results.length === 0) return;
+    if (state.results.length === 0) {
+      return;
+    }
 
     switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setState(prev => ({
-          ...prev,
-          selectedIndex: prev.selectedIndex < prev.results.length - 1
-            ? prev.selectedIndex + 1
-            : 0
-        }));
-        break;
+    case 'ArrowDown':
+      e.preventDefault();
+      setState(prev => ({
+        ...prev,
+        selectedIndex: prev.selectedIndex < prev.results.length - 1
+          ? prev.selectedIndex + 1
+          : 0,
+      }));
+      break;
 
-      case 'ArrowUp':
-        e.preventDefault();
-        setState(prev => ({
-          ...prev,
-          selectedIndex: prev.selectedIndex > 0
-            ? prev.selectedIndex - 1
-            : prev.results.length - 1
-        }));
-        break;
+    case 'ArrowUp':
+      e.preventDefault();
+      setState(prev => ({
+        ...prev,
+        selectedIndex: prev.selectedIndex > 0
+          ? prev.selectedIndex - 1
+          : prev.results.length - 1,
+      }));
+      break;
 
-      case 'Enter':
-        e.preventDefault();
-        if (state.selectedIndex >= 0 && state.selectedIndex < state.results.length) {
-          handleResultSelect(state.results[state.selectedIndex]);
-        }
-        break;
+    case 'Enter':
+      e.preventDefault();
+      if (state.selectedIndex >= 0 && state.selectedIndex < state.results.length) {
+        handleResultSelect(state.results[state.selectedIndex]);
+      }
+      break;
 
-      case 'Escape':
-        e.preventDefault();
-        onClose();
-        break;
+    case 'Escape':
+      e.preventDefault();
+      onClose();
+      break;
     }
   }, [state.results, state.selectedIndex, handleResultSelect, onClose]);
 
@@ -185,7 +189,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
       isLoading: false,
       selectedIndex: -1,
       isFocused: false,
-      recentSearches: prev.recentSearches
+      recentSearches: prev.recentSearches,
     }));
     inputRef.current?.focus();
   }, []);
@@ -201,7 +205,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
         isLoading: false,
         selectedIndex: -1,
         isFocused: false,
-        recentSearches: recent
+        recentSearches: recent,
       }));
       // Focus input after modal animation
       setTimeout(() => {
@@ -346,7 +350,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                     transition={{ delay: 0.15 }}
                     className={styles.resultItem}
                     onClick={() => {
-                      const location = "Mission District, San Francisco, CA";
+                      const location = 'Mission District, San Francisco, CA';
                       setState(prev => ({ ...prev, query: location }));
                       performSearch(location);
                     }}
@@ -366,7 +370,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                     transition={{ delay: 0.2 }}
                     className={styles.resultItem}
                     onClick={() => {
-                      const location = "Tenderloin District, San Francisco, CA";
+                      const location = 'Tenderloin District, San Francisco, CA';
                       setState(prev => ({ ...prev, query: location }));
                       performSearch(location);
                     }}
@@ -404,7 +408,7 @@ const LocationSearchModal: React.FC<LocationSearchModalProps> = ({
                         transition={{
                           delay: index * 0.03,
                           duration: 0.2,
-                          ease: "easeOut"
+                          ease: 'easeOut',
                         }}
                         onClick={() => handleResultSelect(result)}
                         className={`${styles.resultItem} ${index === state.selectedIndex ? styles.selected : ''}`}

@@ -8,8 +8,8 @@ class GeocodingService {
 
       const response = await fetch(nominatimUrl, {
         headers: {
-          'User-Agent': 'HyperApp/1.0 (https://hyperapp-mimi.com)' // Required by Nominatim
-        }
+          'User-Agent': 'HyperApp/1.0 (https://hyperapp-mimi.com)', // Required by Nominatim
+        },
       });
 
       if (!response.ok) {
@@ -52,7 +52,9 @@ class GeocodingService {
 
       // Try each radius level
       for (const radiusKm of searchRadii) {
-        if (allResults.length >= limit) break;
+        if (allResults.length >= limit) {
+          break;
+        }
 
         let url = `${this.NOMINATIM_BASE}/search?format=json&q=${encodeURIComponent(query)}&limit=${currentLimit * 3}&addressdetails=1`;
 
@@ -72,8 +74,8 @@ class GeocodingService {
 
         const response = await fetch(url, {
           headers: {
-            'User-Agent': 'HyperApp/1.0 (https://hyperapp-mimi.com)'
-          }
+            'User-Agent': 'HyperApp/1.0 (https://hyperapp-mimi.com)',
+          },
         });
 
         if (!response.ok) {
@@ -90,7 +92,7 @@ class GeocodingService {
           latitude: parseFloat(place.lat),
           longitude: parseFloat(place.lon),
           type: place.type || 'unknown',
-          distance: latitude && longitude ? this.calculateDistance(latitude, longitude, parseFloat(place.lat), parseFloat(place.lon)) : 0
+          distance: latitude && longitude ? this.calculateDistance(latitude, longitude, parseFloat(place.lat), parseFloat(place.lon)) : 0,
         }));
 
         // Add to all results, avoiding duplicates
@@ -98,7 +100,7 @@ class GeocodingService {
           const isDuplicate = allResults.some(existing =>
             existing.name === result.name &&
             Math.abs(existing.latitude - result.latitude) < 0.001 &&
-            Math.abs(existing.longitude - result.longitude) < 0.001
+            Math.abs(existing.longitude - result.longitude) < 0.001,
           );
 
           if (!isDuplicate) {
@@ -117,8 +119,8 @@ class GeocodingService {
         try {
           const globalResponse = await fetch(globalUrl, {
             headers: {
-              'User-Agent': 'HyperApp/1.0 (https://hyperapp-mimi.com)'
-            }
+              'User-Agent': 'HyperApp/1.0 (https://hyperapp-mimi.com)',
+            },
           });
 
           if (globalResponse.ok) {
@@ -130,7 +132,7 @@ class GeocodingService {
               latitude: parseFloat(place.lat),
               longitude: parseFloat(place.lon),
               type: place.type || 'unknown',
-              distance: latitude && longitude ? this.calculateDistance(latitude, longitude, parseFloat(place.lat), parseFloat(place.lon)) : 999999
+              distance: latitude && longitude ? this.calculateDistance(latitude, longitude, parseFloat(place.lat), parseFloat(place.lon)) : 999999,
             }));
 
             // Add global results, avoiding duplicates
@@ -138,7 +140,7 @@ class GeocodingService {
               const isDuplicate = allResults.some(existing =>
                 existing.name === result.name &&
                 Math.abs(existing.latitude - result.latitude) < 0.001 &&
-                Math.abs(existing.longitude - result.longitude) < 0.001
+                Math.abs(existing.longitude - result.longitude) < 0.001,
               );
 
               if (!isDuplicate) {
@@ -170,8 +172,8 @@ class GeocodingService {
 
       const response = await fetch(nominatimUrl, {
         headers: {
-          'User-Agent': 'HyperApp/1.0 (https://hyperapp-mimi.com)'
-        }
+          'User-Agent': 'HyperApp/1.0 (https://hyperapp-mimi.com)',
+        },
       });
 
       if (!response.ok) {
@@ -183,7 +185,7 @@ class GeocodingService {
       if (data && data.length > 0) {
         return {
           latitude: parseFloat(data[0].lat),
-          longitude: parseFloat(data[0].lon)
+          longitude: parseFloat(data[0].lon),
         };
       }
 
@@ -262,8 +264,8 @@ class GeocodingService {
         method: 'POST',
         body: overpassQuery,
         headers: {
-          'Content-Type': 'text/plain'
-        }
+          'Content-Type': 'text/plain',
+        },
       });
 
       if (!response.ok) {
@@ -278,7 +280,9 @@ class GeocodingService {
           const lat = element.lat || (element.center && element.center.lat);
           const lon = element.lon || (element.center && element.center.lon);
 
-          if (!lat || !lon) return null;
+          if (!lat || !lon) {
+            return null;
+          }
 
           // Calculate distance using Haversine formula
           const distance = this.calculateDistance(latitude, longitude, lat, lon);
@@ -288,7 +292,7 @@ class GeocodingService {
             type: element.tags.amenity || 'poi',
             latitude: lat,
             longitude: lon,
-            distance: Math.round(distance)
+            distance: Math.round(distance),
           };
         })
         .filter((poi: any) => poi !== null)

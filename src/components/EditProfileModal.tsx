@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, VStack, HStack, Text, Button, Input } from '@chakra-ui/react';
+import { Geolocation } from '@capacitor/geolocation';
+import { User, MapPin, Phone, FileText, Camera, X } from 'lucide-react';
+
 import { useAuth } from '../contexts/AuthContext';
 import { uploadService } from '../services/upload';
 import { userLocationService } from '../services/userLocationService';
 import { reverseGeocode } from '../lib/geocoding';
-import { Geolocation } from '@capacitor/geolocation';
-import { User, MapPin, Phone, FileText, Camera, X } from 'lucide-react';
 import { INTEREST_CATEGORIES } from '../types';
 
 // Arabic translations for interests
@@ -117,7 +118,7 @@ const INTEREST_TRANSLATIONS: { [key: string]: string } = {
   'Tools': 'الأدوات',
   'Renovation': 'التجديد',
   'Smart Home': 'المنزل الذكي',
-  'Pets': 'الحيوانات الأليفة'
+  'Pets': 'الحيوانات الأليفة',
 };
 
 interface EditProfileModalProps {
@@ -136,7 +137,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     email: '',
     phone: '',
     location: '',
-    interests: [] as string[]
+    interests: [] as string[],
   });
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState('');
@@ -153,7 +154,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
         email: user.email || '',
         phone: user.phone || '',
         location: typeof user.location === 'string' ? user.location : '',
-        interests: user.interests || []
+        interests: user.interests || [],
       });
       setProfilePicturePreview(user.profile_picture_url || '');
 
@@ -177,7 +178,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       const position = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 300000 // 5 minutes
+        maximumAge: 300000, // 5 minutes
       });
 
       const { latitude, longitude } = position.coords;
@@ -234,7 +235,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       ...prev,
       interests: prev.interests.includes(interest)
         ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest]
+        : [...prev.interests, interest],
     }));
   };
 
@@ -257,7 +258,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
         phone: formData.phone,
         location: formData.location,
         interests: formData.interests,
-        profile_picture_url: profilePictureUrl
+        profile_picture_url: profilePictureUrl,
       });
 
       // Update user location in user_locations table if coordinates were detected
@@ -266,7 +267,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
           await userLocationService.updateUserLocation(
             user.id,
             detectedCoordinates[0],
-            detectedCoordinates[1]
+            detectedCoordinates[1],
           );
           console.log('User location updated in database');
         } catch (locationError) {
@@ -283,7 +284,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Box
@@ -369,7 +372,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                       style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: 'cover'
+                        objectFit: 'cover',
                       }}
                     />
                   ) : (
@@ -397,7 +400,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                     borderRadius="full"
                     bg="red.500"
                     color="white"
-                    _hover={{ bg: "red.600" }}
+                    _hover={{ bg: 'red.600' }}
                     onClick={removeProfilePicture}
                     p={1}
                     minW="auto"
@@ -444,7 +447,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                     borderRadius="12px"
                     border="1px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                   />
                 </Box>
                 <Box flex={1}>
@@ -458,7 +461,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                     borderRadius="12px"
                     border="1px solid"
                     borderColor="gray.200"
-                    _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                   />
                 </Box>
               </HStack>
@@ -476,7 +479,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                   borderRadius="12px"
                   border="1px solid"
                   borderColor="gray.200"
-                  _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                 />
               </Box>
 
@@ -493,7 +496,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                   borderRadius="12px"
                   border="1px solid"
                   borderColor="gray.200"
-                  _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                 />
               </Box>
 
@@ -509,7 +512,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                   borderRadius="12px"
                   border="1px solid"
                   borderColor="gray.200"
-                  _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                 />
               </Box>
             </VStack>
@@ -546,7 +549,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
                           borderColor={formData.interests.includes(item) ? 'blue.500' : 'gray.200'}
                           _hover={{
                             bg: formData.interests.includes(item) ? 'blue.600' : 'gray.50',
-                            borderColor: formData.interests.includes(item) ? 'blue.600' : 'gray.300'
+                            borderColor: formData.interests.includes(item) ? 'blue.600' : 'gray.300',
                           }}
                         >
                           {INTEREST_TRANSLATIONS[item] || item}
@@ -584,7 +587,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
               color="white"
               onClick={handleSave}
               borderRadius="12px"
-              _hover={{ bg: "blue.600" }}
+              _hover={{ bg: 'blue.600' }}
               disabled={isLoading}
             >
               {isLoading ? t('profile.editProfileModal.saving') : t('profile.editProfileModal.saveChanges')}

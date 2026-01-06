@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+
 import { useNotification } from '../../contexts/NotificationContext';
 
 interface NotificationBellProps {
@@ -64,11 +65,11 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
 
   const getNotificationIcon = (type: string): string => {
     switch (type) {
-      case 'success': return '✅';
-      case 'error': return '❌';
-      case 'warning': return '⚠️';
-      case 'info': return 'ℹ️';
-      default: return '🔔';
+    case 'success': return '✅';
+    case 'error': return '❌';
+    case 'warning': return '⚠️';
+    case 'info': return 'ℹ️';
+    default: return '🔔';
     }
   };
 
@@ -89,7 +90,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
           justifyContent: 'center',
           cursor: 'pointer',
           transition: 'all 0.2s ease',
-          padding: '8px'
+          padding: '8px',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
@@ -114,7 +115,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
             color: permissionStatus === 'denied' ? 'var(--text-muted)' : 'var(--text-primary)',
             position: 'relative',
             opacity: permissionStatus === 'denied' ? 0.6 : 1,
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
           }}
         >
           <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
@@ -138,7 +139,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
             fontSize: '11px',
             fontWeight: '600',
             border: '2px solid var(--bg-primary)',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
           }}>
             {unreadCount > 99 ? '99+' : unreadCount}
           </div>
@@ -163,7 +164,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
             maxHeight: '400px',
             overflow: 'hidden',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
           }}
         >
           {/* Header */}
@@ -171,20 +172,20 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
             padding: '16px',
             borderBottom: '1px solid var(--border-color)',
             background: 'var(--bg-secondary)',
-            borderRadius: '12px 12px 0 0'
+            borderRadius: '12px 12px 0 0',
           }}>
             <h3 style={{
               fontSize: '16px',
               fontWeight: '600',
               color: 'var(--text-primary)',
-              margin: '0'
+              margin: '0',
             }}>
               Notifications
             </h3>
             <p style={{
               fontSize: '12px',
               color: 'var(--text-muted)',
-              margin: '4px 0 0 0'
+              margin: '4px 0 0 0',
             }}>
               Past 12 hours
             </p>
@@ -194,13 +195,13 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
           <div style={{
             flex: 1,
             overflowY: 'auto',
-            maxHeight: '300px'
+            maxHeight: '300px',
           }}>
             {recentNotifications.length === 0 ? (
               <div style={{
                 padding: '40px 20px',
                 textAlign: 'center',
-                color: 'var(--text-muted)'
+                color: 'var(--text-muted)',
               }}>
                 <span style={{ fontSize: '32px', marginBottom: '8px', display: 'block' }}>🔔</span>
                 <p style={{ fontSize: '14px', margin: '0' }}>No recent notifications</p>
@@ -221,7 +222,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
-                      minHeight: '48px'
+                      minHeight: '48px',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = notification.read
@@ -237,7 +238,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
                     {/* Icon */}
                     <div style={{
                       fontSize: '16px',
-                      flexShrink: 0
+                      flexShrink: 0,
                     }}>
                       {getNotificationIcon(notification.type)}
                     </div>
@@ -248,7 +249,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
                       minWidth: 0, // Allow text to truncate
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
                     }}>
                       <div style={{
                         fontSize: '13px', // Slightly smaller for mobile
@@ -258,7 +259,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
                         whiteSpace: 'nowrap', // NO WRAPPING
                         overflow: 'hidden',
                         textOverflow: 'ellipsis', // Show ... when truncated
-                        marginBottom: notification.message ? '1px' : '0'
+                        marginBottom: notification.message ? '1px' : '0',
                       }}>
                         {notification.title}
                       </div>
@@ -269,7 +270,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
                           lineHeight: '1.1', // Very tight
                           whiteSpace: 'nowrap', // NO WRAPPING
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis' // Show ... when truncated
+                          textOverflow: 'ellipsis', // Show ... when truncated
                         }}>
                           {notification.message}
                         </div>
@@ -282,12 +283,12 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
                       flexDirection: 'column',
                       alignItems: 'flex-end',
                       gap: '2px',
-                      flexShrink: 0
+                      flexShrink: 0,
                     }}>
                       <span style={{
                         fontSize: '11px',
                         color: 'var(--text-muted)',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
                       }}>
                         {formatTimeAgo(notification.timestamp)}
                       </span>
@@ -296,7 +297,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
                           width: '6px',
                           height: '6px',
                           borderRadius: '50%',
-                          background: '#ef4444'
+                          background: '#ef4444',
                         }} />
                       )}
                     </div>
@@ -305,7 +306,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onNotificationClick
             )}
           </div>
         </div>,
-        document.body // Portal target - renders at document root level
+        document.body, // Portal target - renders at document root level
       )}
     </div>
   );

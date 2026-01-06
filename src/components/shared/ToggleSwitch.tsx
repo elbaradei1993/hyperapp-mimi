@@ -13,24 +13,24 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   onChange,
   disabled = false,
   size = 'md',
-  className = ''
+  className = '',
 }) => {
   const sizeStyles = {
     sm: {
       container: { width: '32px', height: '16px' },
       knob: { width: '12px', height: '12px' },
-      translate: '16px'
+      translate: '16px',
     },
     md: {
       container: { width: '44px', height: '24px' },
       knob: { width: '20px', height: '20px' },
-      translate: '20px'
+      translate: '20px',
     },
     lg: {
       container: { width: '56px', height: '28px' },
       knob: { width: '24px', height: '24px' },
-      translate: '24px'
-    }
+      translate: '24px',
+    },
   };
 
   const handleClick = () => {
@@ -55,8 +55,8 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
       onKeyDown={handleKeyDown}
       tabIndex={disabled ? -1 : 0}
       role="switch"
-      aria-checked={checked ? "true" : "false"}
-      aria-disabled={disabled ? "true" : "false"}
+      aria-checked={checked ? 'true' : 'false'}
+      aria-disabled={disabled ? 'true' : 'false'}
       style={{
         position: 'relative',
         display: 'inline-flex',
@@ -68,7 +68,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         opacity: disabled ? 0.5 : 1,
         cursor: disabled ? 'not-allowed' : 'pointer',
         transition: 'background-color 0.2s ease-in-out',
-        WebkitTapHighlightColor: 'transparent'
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       <span
@@ -82,7 +82,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
           backgroundColor: 'white',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
           transition: 'left 0.2s ease-in-out',
-          zIndex: 1
+          zIndex: 1,
         }}
       />
     </div>

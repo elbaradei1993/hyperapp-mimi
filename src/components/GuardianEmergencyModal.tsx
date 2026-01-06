@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, VStack, HStack, Text, Button, Input, Textarea } from '@chakra-ui/react';
-import { LoadingSpinner } from './shared';
 import {
   AlertTriangle,
   Heart,
@@ -9,8 +8,10 @@ import {
   MessageSquare,
   Send,
   X,
-  CheckCircle
+  CheckCircle,
 } from 'lucide-react';
+
+import { LoadingSpinner } from './shared';
 
 interface GuardianEmergencyModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ interface EmergencyType {
 const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
   isOpen,
   onClose,
-  onSendAlert
+  onSendAlert,
 }) => {
   const { t } = useTranslation();
   const [selectedEmergency, setSelectedEmergency] = useState<string | null>(null);
@@ -44,29 +45,29 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
       label: t('guardian.emergency.medical', 'Medical Emergency'),
       icon: AlertTriangle,
       color: '#dc2626',
-      description: t('guardian.emergency.medicalDesc', 'Need immediate medical attention')
+      description: t('guardian.emergency.medicalDesc', 'Need immediate medical attention'),
     },
     {
       id: 'safety',
       label: t('guardian.emergency.safety', 'Personal Safety'),
       icon: Heart,
       color: '#ea580c',
-      description: t('guardian.emergency.safetyDesc', 'Feel unsafe or threatened')
+      description: t('guardian.emergency.safetyDesc', 'Feel unsafe or threatened'),
     },
     {
       id: 'location',
       label: t('guardian.emergency.location', 'Location Check-in'),
       icon: MapPin,
       color: '#059669',
-      description: t('guardian.emergency.locationDesc', 'Let guardians know your location')
+      description: t('guardian.emergency.locationDesc', 'Let guardians know your location'),
     },
     {
       id: 'custom',
       label: t('guardian.emergency.custom', 'Custom Alert'),
       icon: MessageSquare,
       color: '#7c3aed',
-      description: t('guardian.emergency.customDesc', 'Send a custom message')
-    }
+      description: t('guardian.emergency.customDesc', 'Send a custom message'),
+    },
   ];
 
   useEffect(() => {
@@ -81,7 +82,9 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
   }, [isOpen]);
 
   const handleSubmit = async () => {
-    if (!selectedEmergency) return;
+    if (!selectedEmergency) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -101,7 +104,9 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
   };
 
   // Don't render anything if modal is not open and not showing success
-  if (!isOpen && !showSuccess) return null;
+  if (!isOpen && !showSuccess) {
+    return null;
+  }
 
   if (showSuccess) {
     return (
@@ -118,7 +123,7 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-        padding: window.innerWidth < 480 ? '16px' : '20px'
+        padding: window.innerWidth < 480 ? '16px' : '20px',
       }}>
         <div style={{
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
@@ -132,7 +137,7 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
           border: '1px solid rgba(255, 255, 255, 0.2)',
           textAlign: 'center',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}>
           {/* Premium Background Gradient */}
           <div style={{
@@ -142,7 +147,7 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
             right: 0,
             bottom: 0,
             background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.06) 50%, rgba(185, 28, 28, 0.04) 100%)',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
           }}></div>
 
           {/* Premium Inner Shadow */}
@@ -154,14 +159,14 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
             bottom: 0,
             boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)',
             pointerEvents: 'none',
-            borderRadius: '24px'
+            borderRadius: '24px',
           }}></div>
 
           {/* Success Icon Animation */}
           <div style={{
             position: 'relative',
             zIndex: 1,
-            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem'
+            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem',
           }}>
             <div style={{
               width: window.innerWidth < 480 ? '80px' : '100px',
@@ -173,9 +178,9 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
               justifyContent: 'center',
               margin: '0 auto',
               boxShadow: '0 20px 40px rgba(239, 68, 68, 0.3), 0 10px 20px rgba(239, 68, 68, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.2)',
-              animation: 'guardianSuccessPulse 2s ease-in-out infinite'
+              animation: 'guardianSuccessPulse 2s ease-in-out infinite',
             }}>
-              <CheckCircle size={window.innerWidth < 480 ? "32" : "40"} color="white" />
+              <CheckCircle size={window.innerWidth < 480 ? '32' : '40'} color="white" />
             </div>
           </div>
 
@@ -191,7 +196,7 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               letterSpacing: '-0.025em',
-              lineHeight: '1.2'
+              lineHeight: '1.2',
             }}>
               {t('guardian.alertSent', 'Alert Sent Successfully!')}
             </h3>
@@ -203,7 +208,7 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
               lineHeight: '1.5',
               maxWidth: '280px',
               marginLeft: 'auto',
-              marginRight: 'auto'
+              marginRight: 'auto',
             }}>
               {t('guardian.alertSentDesc', 'Your guardians have been notified and help is on the way.')}
             </p>
@@ -314,7 +319,7 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
                       justifyContent="flex-start"
                       _hover={{
                         bg: selectedEmergency === emergency.id ? `${emergency.color}15` : 'gray.50',
-                        borderColor: selectedEmergency === emergency.id ? emergency.color : 'gray.300'
+                        borderColor: selectedEmergency === emergency.id ? emergency.color : 'gray.300',
                       }}
                     >
                       <VStack gap={2} align="start" w="full">
@@ -348,7 +353,7 @@ const GuardianEmergencyModal: React.FC<GuardianEmergencyModalProps> = ({
                 borderRadius="12px"
                 border="1px solid"
                 borderColor="gray.200"
-                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                 minH="80px"
                 resize="vertical"
                 maxLength={500}

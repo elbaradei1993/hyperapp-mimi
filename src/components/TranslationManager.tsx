@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import i18n from '../i18n';
 import { validateTranslations } from '../lib/i18nUtils';
 
@@ -20,7 +21,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
 
   const languages = [
     { code: 'en', name: 'English' },
-    { code: 'ar', name: 'العربية' }
+    { code: 'ar', name: 'العربية' },
   ];
 
   const namespaces = ['translation', 'common'];
@@ -51,7 +52,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
   const handleTranslationChange = (key: string, value: string) => {
     setEditedTranslations(prev => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
 
@@ -104,13 +105,13 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
             padding: '16px',
             border: '1px solid #d1d5db',
             borderRadius: '8px',
-            marginBottom: '16px'
+            marginBottom: '16px',
           }}>
             <div style={{
               fontWeight: 'bold',
               fontSize: '14px',
               color: '#6b7280',
-              marginBottom: '8px'
+              marginBottom: '8px',
             }}>
               {key}
             </div>
@@ -125,7 +126,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
                 borderRadius: '4px',
                 fontSize: '14px',
                 minHeight: '60px',
-                resize: 'vertical'
+                resize: 'vertical',
               }}
             />
           </div>
@@ -135,7 +136,9 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
   };
 
   const renderValidationResults = () => {
-    if (!validationResults) return <div>Loading validation...</div>;
+    if (!validationResults) {
+      return <div>Loading validation...</div>;
+    }
 
     const { missing, invalid, stats } = validationResults;
 
@@ -147,7 +150,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
           padding: '20px',
           borderRadius: '8px',
           marginBottom: '20px',
-          border: '1px solid #e5e7eb'
+          border: '1px solid #e5e7eb',
         }}>
           <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>
             Translation Statistics
@@ -181,7 +184,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
             border: '1px solid #f59e0b',
             padding: '16px',
             borderRadius: '8px',
-            marginBottom: '16px'
+            marginBottom: '16px',
           }}>
             <h4 style={{ fontWeight: 'bold', color: '#92400e', marginBottom: '8px' }}>
               Missing Translations ({missing.length})
@@ -208,7 +211,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
             border: '1px solid #ef4444',
             padding: '16px',
             borderRadius: '8px',
-            marginBottom: '16px'
+            marginBottom: '16px',
           }}>
             <h4 style={{ fontWeight: 'bold', color: '#dc2626', marginBottom: '8px' }}>
               Invalid Translations ({invalid.length})
@@ -229,7 +232,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
             background: '#d1fae5',
             border: '1px solid #10b981',
             padding: '16px',
-            borderRadius: '8px'
+            borderRadius: '8px',
           }}>
             <h4 style={{ fontWeight: 'bold', color: '#065f46' }}>
               All translations are valid!
@@ -243,7 +246,9 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
     );
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div style={{
@@ -257,7 +262,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 2000,
-      padding: '16px'
+      padding: '16px',
     }}>
       <div style={{
         backgroundColor: 'white',
@@ -266,7 +271,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
         width: '100%',
         maxHeight: '90vh',
         overflow: 'hidden',
-        boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)',
       }}>
         {/* Header */}
         <div style={{
@@ -274,7 +279,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
           borderBottom: '1px solid #e5e7eb',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
         }}>
           <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Translation Manager</h2>
           <button
@@ -284,7 +289,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
               border: 'none',
               fontSize: '24px',
               cursor: 'pointer',
-              padding: '4px'
+              padding: '4px',
             }}
           >
             ✕
@@ -306,7 +311,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
                   border: '1px solid #d1d5db',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  minWidth: '150px'
+                  minWidth: '150px',
                 }}
               >
                 {languages.map(lang => (
@@ -329,7 +334,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
                   border: '1px solid #d1d5db',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  minWidth: '150px'
+                  minWidth: '150px',
                 }}
               >
                 {namespaces.map(ns => (
@@ -348,7 +353,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
                 border: '1px solid #d1d5db',
                 borderRadius: '6px',
                 fontSize: '14px',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Refresh
@@ -367,7 +372,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
                 borderBottom: activeTab === 'edit' ? '2px solid #3b82f6' : 'none',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '500'
+                fontWeight: '500',
               }}
             >
               Edit Translations
@@ -382,7 +387,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
                 borderBottom: activeTab === 'validate' ? '2px solid #3b82f6' : 'none',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '500'
+                fontWeight: '500',
               }}
             >
               Validation
@@ -402,7 +407,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
             borderTop: '1px solid #e5e7eb',
             display: 'flex',
             justifyContent: 'flex-end',
-            gap: '12px'
+            gap: '12px',
           }}>
             <button
               onClick={onClose}
@@ -412,7 +417,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
                 border: '1px solid #d1d5db',
                 borderRadius: '6px',
                 fontSize: '14px',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Cancel
@@ -427,7 +432,7 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ isOpen, onClose
                 border: 'none',
                 borderRadius: '6px',
                 fontSize: '14px',
-                cursor: isSaving ? 'not-allowed' : 'pointer'
+                cursor: isSaving ? 'not-allowed' : 'pointer',
               }}
             >
               {isSaving ? 'Saving...' : 'Save Changes'}

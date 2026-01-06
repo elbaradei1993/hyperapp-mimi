@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Button, LoadingSpinner } from './shared';
+import { Mic, MicOff, Volume2, VolumeX, MessageCircle, AlertTriangle } from 'lucide-react';
+
 import { transcriptionService } from '../services/transcription';
 import { reportsService } from '../services/reports';
 import { ttsService } from '../services/tts';
 import type { Report } from '../types';
-import { Mic, MicOff, Volume2, VolumeX, MessageCircle, AlertTriangle } from 'lucide-react';
+
+import { Modal, Button, LoadingSpinner } from './shared';
+
 
 // Animated Listening Indicator Component with Speech Detection
 const ListeningIndicator: React.FC<{ isActive: boolean; speechDetected?: boolean }> = ({ isActive, speechDetected = false }) => {
@@ -12,7 +15,9 @@ const ListeningIndicator: React.FC<{ isActive: boolean; speechDetected?: boolean
   const [intensity, setIntensity] = useState(1);
 
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      return;
+    }
 
     // Increase intensity when speech is detected
     setIntensity(speechDetected ? 1.5 : 1);
@@ -35,7 +40,7 @@ const ListeningIndicator: React.FC<{ isActive: boolean; speechDetected?: boolean
       alignItems: 'center',
       justifyContent: 'center',
       gap: '2px',
-      height: '40px'
+      height: '40px',
     }}>
       {bars.map((height, i) => (
         <div
@@ -47,7 +52,7 @@ const ListeningIndicator: React.FC<{ isActive: boolean; speechDetected?: boolean
             borderRadius: '2px',
             transition: 'all 0.2s ease',
             opacity: isActive ? 1 : 0.3,
-            boxShadow: speechDetected ? '0 0 8px rgba(16, 185, 129, 0.6)' : 'none'
+            boxShadow: speechDetected ? '0 0 8px rgba(16, 185, 129, 0.6)' : 'none',
           }}
         />
       ))}
@@ -60,7 +65,9 @@ const ProcessingIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const [dots, setDots] = useState([0, 0, 0]);
 
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      return;
+    }
 
     const interval = setInterval(() => {
       setDots(prev => prev.map((_, i) => {
@@ -78,7 +85,7 @@ const ProcessingIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => {
       alignItems: 'center',
       justifyContent: 'center',
       gap: '8px',
-      height: '40px'
+      height: '40px',
     }}>
       {dots.map((opacity, i) => (
         <div
@@ -90,7 +97,7 @@ const ProcessingIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => {
             backgroundColor: '#f59e0b',
             opacity: isActive ? opacity : 0.3,
             transition: 'opacity 0.3s ease',
-            animation: isActive ? `bounce 1.4s ease-in-out ${i * 0.16}s infinite both` : 'none'
+            animation: isActive ? `bounce 1.4s ease-in-out ${i * 0.16}s infinite both` : 'none',
           }}
         />
       ))}
@@ -111,7 +118,9 @@ const SpeakingIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const [waveform, setWaveform] = useState([0.3, 0.7, 0.5, 0.9, 0.2, 0.8, 0.4, 0.6]);
 
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      return;
+    }
 
     const interval = setInterval(() => {
       setWaveform(prev => prev.map((_, i) => {
@@ -132,7 +141,7 @@ const SpeakingIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => {
       alignItems: 'center',
       justifyContent: 'center',
       gap: '1px',
-      height: '40px'
+      height: '40px',
     }}>
       {waveform.map((height, i) => (
         <div
@@ -143,7 +152,7 @@ const SpeakingIndicator: React.FC<{ isActive: boolean }> = ({ isActive }) => {
             backgroundColor: '#10b981',
             borderRadius: '1px',
             transition: 'height 0.05s ease',
-            opacity: isActive ? 1 : 0.3
+            opacity: isActive ? 1 : 0.3,
           }}
         />
       ))}
@@ -162,7 +171,7 @@ type RecordingState = 'idle' | 'recording' | 'processing' | 'speaking' | 'error'
 const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
   isOpen,
   onClose,
-  userLocation
+  userLocation,
 }) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [transcript, setTranscript] = useState('');
@@ -221,24 +230,24 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
 
         // Provide more specific error messages
         switch (event.error) {
-          case 'network':
-            friendlyMessage = 'Network error. Please check your internet connection.';
-            break;
-          case 'not-allowed':
-            friendlyMessage = 'Microphone access denied. Please allow microphone permissions and try again.';
-            break;
-          case 'no-speech':
-            friendlyMessage = 'No speech detected. Please speak clearly into your microphone.';
-            break;
-          case 'aborted':
-            friendlyMessage = 'Speech recognition was interrupted. Please try again.';
-            break;
-          case 'audio-capture':
-            friendlyMessage = 'Microphone error. Please check your audio settings.';
-            break;
-          case 'service-not-allowed':
-            friendlyMessage = 'Speech recognition service unavailable. Please try again later.';
-            break;
+        case 'network':
+          friendlyMessage = 'Network error. Please check your internet connection.';
+          break;
+        case 'not-allowed':
+          friendlyMessage = 'Microphone access denied. Please allow microphone permissions and try again.';
+          break;
+        case 'no-speech':
+          friendlyMessage = 'No speech detected. Please speak clearly into your microphone.';
+          break;
+        case 'aborted':
+          friendlyMessage = 'Speech recognition was interrupted. Please try again.';
+          break;
+        case 'audio-capture':
+          friendlyMessage = 'Microphone error. Please check your audio settings.';
+          break;
+        case 'service-not-allowed':
+          friendlyMessage = 'Speech recognition service unavailable. Please try again later.';
+          break;
         }
 
         setErrorMessage(friendlyMessage);
@@ -252,13 +261,15 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
   };
 
   const loadNearbyReports = async () => {
-    if (!userLocation) return;
+    if (!userLocation) {
+      return;
+    }
 
     try {
       // Get reports within 2km radius for better context
       const bounds = {
         northEast: [userLocation[0] + 0.02, userLocation[1] + 0.02] as [number, number],
-        southWest: [userLocation[0] - 0.02, userLocation[1] - 0.02] as [number, number]
+        southWest: [userLocation[0] - 0.02, userLocation[1] - 0.02] as [number, number],
       };
 
       const reports = await reportsService.getReports({ bounds, limit: 200 });
@@ -290,12 +301,12 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
-        }
+          autoGainControl: true,
+        },
       });
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: 'audio/webm;codecs=opus',
       });
 
       mediaRecorderRef.current = mediaRecorder;
@@ -400,7 +411,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
       await ttsService.speak(text, {
         speed: 0.75,  // Slower, more natural pace
         pitch: 1.1,   // Slightly higher pitch for more natural sound
-        volume: 0.85  // Good volume level
+        volume: 0.85,  // Good volume level
       });
       setRecordingState('idle');
     } catch (error) {
@@ -416,46 +427,46 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
 
   const getStateDisplay = () => {
     switch (recordingState) {
-      case 'recording':
-        return {
-          text: 'Listening...',
-          color: '#ef4444',
-          icon: Mic,
-          isLoadingSpinner: false,
-          description: 'Speak now - I\'m listening'
-        };
-      case 'processing':
-        return {
-          text: 'Thinking...',
-          color: '#f59e0b',
-          icon: null,
-          isLoadingSpinner: true,
-          description: 'Processing your question'
-        };
-      case 'speaking':
-        return {
-          text: 'Speaking...',
-          color: '#10b981',
-          icon: Volume2,
-          isLoadingSpinner: false,
-          description: 'Here\'s what I found'
-        };
-      case 'error':
-        return {
-          text: 'Error',
-          color: '#ef4444',
-          icon: AlertTriangle,
-          isLoadingSpinner: false,
-          description: errorMessage || 'Something went wrong'
-        };
-      default:
-        return {
-          text: 'Tap to speak',
-          color: '#6b7280',
-          icon: Mic,
-          isLoadingSpinner: false,
-          description: 'Ask me about safety in your area'
-        };
+    case 'recording':
+      return {
+        text: 'Listening...',
+        color: '#ef4444',
+        icon: Mic,
+        isLoadingSpinner: false,
+        description: 'Speak now - I\'m listening',
+      };
+    case 'processing':
+      return {
+        text: 'Thinking...',
+        color: '#f59e0b',
+        icon: null,
+        isLoadingSpinner: true,
+        description: 'Processing your question',
+      };
+    case 'speaking':
+      return {
+        text: 'Speaking...',
+        color: '#10b981',
+        icon: Volume2,
+        isLoadingSpinner: false,
+        description: 'Here\'s what I found',
+      };
+    case 'error':
+      return {
+        text: 'Error',
+        color: '#ef4444',
+        icon: AlertTriangle,
+        isLoadingSpinner: false,
+        description: errorMessage || 'Something went wrong',
+      };
+    default:
+      return {
+        text: 'Tap to speak',
+        color: '#6b7280',
+        icon: Mic,
+        isLoadingSpinner: false,
+        description: 'Ask me about safety in your area',
+      };
     }
   };
 
@@ -483,7 +494,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
             margin: '0 auto 20px',
             border: `3px solid ${stateDisplay.color}40`,
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}>
             {/* Background pulse animation */}
             <div style={{
@@ -495,7 +506,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
               borderRadius: '50%',
               background: `${stateDisplay.color}30`,
               transform: 'translate(-50%, -50%)',
-              animation: (isRecording || isProcessing || isSpeaking) ? 'pulse 2s infinite' : 'none'
+              animation: (isRecording || isProcessing || isSpeaking) ? 'pulse 2s infinite' : 'none',
             }} />
 
             {/* State-specific animated content */}
@@ -516,7 +527,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
             fontSize: '24px',
             fontWeight: 'bold',
             marginBottom: '8px',
-            color: 'var(--text-primary)'
+            color: 'var(--text-primary)',
           }}>
             Voice Chat
           </h2>
@@ -525,7 +536,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
             color: stateDisplay.color,
             fontWeight: '600',
             fontSize: '16px',
-            marginBottom: '4px'
+            marginBottom: '4px',
           }}>
             {stateDisplay.text}
           </p>
@@ -533,7 +544,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
           <p style={{
             color: 'var(--text-secondary)',
             fontSize: '14px',
-            margin: 0
+            margin: 0,
           }}>
             {stateDisplay.description}
           </p>
@@ -571,7 +582,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
               transition: 'all 0.3s ease',
               boxShadow: `0 8px 24px ${stateDisplay.color}40`,
               opacity: isProcessing ? 0.6 : 1,
-              margin: '0 auto'
+              margin: '0 auto',
             }}
           >
             {isProcessing ? (
@@ -594,13 +605,13 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              marginBottom: '8px'
+              marginBottom: '8px',
             }}>
               <MessageCircle size={16} color="var(--text-secondary)" />
               <span style={{
                 fontSize: '14px',
                 fontWeight: '600',
-                color: 'var(--text-secondary)'
+                color: 'var(--text-secondary)',
               }}>
                 You said:
               </span>
@@ -611,7 +622,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
               borderRadius: '8px',
               border: '1px solid var(--border-color)',
               fontStyle: 'italic',
-              color: 'var(--text-primary)'
+              color: 'var(--text-primary)',
             }}>
               "{transcript}"
             </div>
@@ -625,13 +636,13 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              marginBottom: '8px'
+              marginBottom: '8px',
             }}>
               <Volume2 size={16} color="var(--accent-primary)" />
               <span style={{
                 fontSize: '14px',
                 fontWeight: '600',
-                color: 'var(--accent-primary)'
+                color: 'var(--accent-primary)',
               }}>
                 Voice Chat:
               </span>
@@ -641,7 +652,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
               background: 'var(--accent-primary)',
               color: 'white',
               borderRadius: '8px',
-              lineHeight: '1.5'
+              lineHeight: '1.5',
             }}>
               {response}
             </div>
@@ -655,13 +666,13 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
             background: '#fef2f2',
             border: '1px solid #fecaca',
             borderRadius: '8px',
-            marginBottom: '24px'
+            marginBottom: '24px',
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              color: '#dc2626'
+              color: '#dc2626',
             }}>
               <AlertTriangle size={16} />
               <span style={{ fontWeight: '600' }}>Error</span>
@@ -669,7 +680,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
             <p style={{
               margin: '8px 0 0 0',
               color: '#dc2626',
-              fontSize: '14px'
+              fontSize: '14px',
             }}>
               {errorMessage}
             </p>
@@ -682,7 +693,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           gap: '8px',
-          marginBottom: '24px'
+          marginBottom: '24px',
         }}>
           <button
             onClick={() => setIsTTSEnabled(!isTTSEnabled)}
@@ -691,7 +702,7 @@ const VoiceChatModal: React.FC<VoiceChatModalProps> = ({
               border: '1px solid var(--border-color)',
               borderRadius: '6px',
               background: 'var(--bg-primary)',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
           >
             {isTTSEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}

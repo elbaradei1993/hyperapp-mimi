@@ -22,7 +22,7 @@ class UploadService {
   async uploadProfilePicture(
     file: File,
     userId: string,
-    options: UploadOptions = {}
+    options: UploadOptions = {},
   ): Promise<UploadResult> {
     try {
       // Validate file
@@ -41,7 +41,7 @@ class UploadService {
         .from(this.BUCKET_NAME)
         .upload(filePath, processedFile, {
           cacheControl: '3600',
-          upsert: true // Replace existing file
+          upsert: true, // Replace existing file
         });
 
       if (error) {
@@ -56,7 +56,7 @@ class UploadService {
 
       return {
         url: publicUrl,
-        path: filePath
+        path: filePath,
       };
     } catch (error) {
       console.error('Profile picture upload failed:', error);
@@ -167,7 +167,7 @@ class UploadService {
             if (blob) {
               const processedFile = new File([blob], file.name, {
                 type: file.type,
-                lastModified: Date.now()
+                lastModified: Date.now(),
               });
               resolve(processedFile);
             } else {
@@ -175,7 +175,7 @@ class UploadService {
             }
           },
           file.type,
-          quality
+          quality,
         );
       };
 
@@ -187,7 +187,9 @@ class UploadService {
    * Get file size in human readable format
    */
   static formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -205,7 +207,7 @@ export class SupabaseStorageService {
   static async uploadReportMedia(
     file: File,
     reportId: string,
-    type: 'image' | 'video' = 'image'
+    type: 'image' | 'video' = 'image',
   ): Promise<string> {
     try {
       // Validate file type
@@ -236,7 +238,7 @@ export class SupabaseStorageService {
         .upload(filePath, file, {
           cacheControl: '3600', // 1 hour cache
           upsert: false, // Don't overwrite existing files
-          contentType: file.type
+          contentType: file.type,
         });
 
       if (error) {
@@ -282,7 +284,7 @@ export class SupabaseStorageService {
         throw error;
       }
 
-      console.log(`✅ Media deleted successfully`);
+      console.log('✅ Media deleted successfully');
     } catch (error) {
       console.error('❌ Media deletion failed:', error);
       throw error;
@@ -302,10 +304,12 @@ export class SupabaseStorageService {
       const { data, error } = await supabase.storage
         .from(this.BUCKET_NAME)
         .list('', {
-          search: fileName
+          search: fileName,
         });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return data?.[0] || null;
     } catch (error) {

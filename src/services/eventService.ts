@@ -49,7 +49,9 @@ class EventService {
         .order('start_time', { ascending: true })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return (data || []).map(event => ({
         id: `db_${event.id}`,
@@ -62,11 +64,11 @@ class EventService {
         startTime: event.start_time,
         endTime: event.end_time,
         attendeeCount: event.attendee_count,
-        source: 'community'
+        source: 'community',
       })).filter(event => {
         // Filter by distance
         const distance = this.calculateDistance(
-          latitude, longitude, event.latitude, event.longitude
+          latitude, longitude, event.latitude, event.longitude,
         );
         return distance <= radius;
       });
@@ -171,7 +173,7 @@ class EventService {
           { title: 'Food Festival', category: 'food', description: 'Street food and local cuisine' },
           { title: 'Tech Meetup', category: 'technology', description: 'Technology and startup networking' },
           { title: 'Yoga in the Park', category: 'fitness', description: 'Outdoor yoga session' },
-          { title: 'Book Reading', category: 'education', description: 'Author reading and discussion' }
+          { title: 'Book Reading', category: 'education', description: 'Author reading and discussion' },
         ];
 
         const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
@@ -193,7 +195,7 @@ class EventService {
           longitude: longitude + lonOffset,
           startTime: eventDate.toISOString(),
           attendeeCount: Math.floor(Math.random() * 200) + 20,
-          source: 'generated'
+          source: 'generated',
         });
       }
     }
@@ -227,10 +229,12 @@ class EventService {
           start_time: eventData.startTime,
           end_time: eventData.endTime,
           attendee_count: eventData.attendeeCount || 0,
-          source: 'user'
+          source: 'user',
         });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error('Error submitting event:', error);
@@ -278,7 +282,7 @@ class EventService {
       { value: 'community', label: 'Community' },
       { value: 'fitness', label: 'Fitness & Health' },
       { value: 'market', label: 'Markets & Shopping' },
-      { value: 'other', label: 'Other' }
+      { value: 'other', label: 'Other' },
     ];
   }
 }

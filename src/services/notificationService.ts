@@ -1,7 +1,9 @@
-import { reportsService } from './reports';
 import { NotificationContextType } from '../contexts/NotificationContext';
-import { pushNotificationService } from './pushNotificationService';
 import type { Vibe, SOS } from '../types';
+
+import { reportsService } from './reports';
+import { pushNotificationService } from './pushNotificationService';
+
 
 interface NotificationServiceOptions {
   userLocation?: [number, number] | null;
@@ -56,13 +58,15 @@ class NotificationService {
 
   // Check if a report is within notification radius
   private isWithinRadius(report: Vibe | SOS): boolean {
-    if (!this.userLocation) return false;
+    if (!this.userLocation) {
+      return false;
+    }
 
     const distance = this.calculateDistance(
       this.userLocation[0],
       this.userLocation[1],
       report.latitude!,
-      report.longitude!
+      report.longitude!,
     );
 
     return distance <= this.notificationRadius;
@@ -106,37 +110,37 @@ class NotificationService {
       title = '🚨 Emergency Reported Nearby';
       message = `Emergency alert ${Math.round(this.calculateDistance(
         this.userLocation![0], this.userLocation![1],
-        report.latitude!, report.longitude!
+        report.latitude!, report.longitude!,
       ) * 10) / 10}km away`;
     } else {
       // Regular Vibe Report
       const vibeReport = report as Vibe;
       const distance = Math.round(this.calculateDistance(
         this.userLocation![0], this.userLocation![1],
-        report.latitude!, report.longitude!
+        report.latitude!, report.longitude!,
       ) * 10) / 10;
 
       // Determine notification type based on vibe
       switch (vibeReport.vibe_type) {
-        case 'dangerous':
-          notificationType = 'error';
-          title = '⚠️ High Risk Area Reported';
-          break;
-        case 'suspicious':
-          notificationType = 'warning';
-          title = '⚠️ Suspicious Activity Reported';
-          break;
-        case 'crowded':
-          notificationType = 'warning';
-          title = '👥 Crowded Area Reported';
-          break;
-        case 'noisy':
-          notificationType = 'warning';
-          title = '🔊 Noisy Area Reported';
-          break;
-        default:
-          notificationType = 'info';
-          title = '📍 New Safety Report';
+      case 'dangerous':
+        notificationType = 'error';
+        title = '⚠️ High Risk Area Reported';
+        break;
+      case 'suspicious':
+        notificationType = 'warning';
+        title = '⚠️ Suspicious Activity Reported';
+        break;
+      case 'crowded':
+        notificationType = 'warning';
+        title = '👥 Crowded Area Reported';
+        break;
+      case 'noisy':
+        notificationType = 'warning';
+        title = '🔊 Noisy Area Reported';
+        break;
+      default:
+        notificationType = 'info';
+        title = '📍 New Safety Report';
       }
 
       message = `${vibeReport.vibe_type} report ${distance}km away`;
@@ -148,14 +152,14 @@ class NotificationService {
       onClick: () => {
         // This will be handled by the parent component
         console.log('Navigate to report location:', report.latitude, report.longitude);
-      }
+      },
     };
 
     this.notificationContext.addNotification({
       type: notificationType,
       title,
       message,
-      action
+      action,
     });
 
     // Also send push notification to nearby users (if this is an emergency or high-risk report)
@@ -169,7 +173,9 @@ class NotificationService {
 
   // Generate notification for multiple reports in area
   private generateAreaSummaryNotification(reports: (Vibe | SOS)[], hours: number = 1): void {
-    if (!this.notificationContext || !this.userLocation) return;
+    if (!this.notificationContext || !this.userLocation) {
+      return;
+    }
 
     const recentReports = reports.filter(report => {
       const reportTime = new Date(report.created_at).getTime();
@@ -177,7 +183,9 @@ class NotificationService {
       return reportTime > hoursAgo && this.isWithinRadius(report);
     });
 
-    if (recentReports.length < 3) return; // Only notify if multiple reports
+    if (recentReports.length < 3) {
+      return;
+    } // Only notify if multiple reports
 
     const emergencyCount = recentReports.filter(r => 'emergency' in r && r.emergency).length;
     const dangerCount = recentReports.filter(r => !('emergency' in r) && (r as Vibe).vibe_type === 'dangerous').length;
@@ -203,7 +211,7 @@ class NotificationService {
     this.notificationContext.addNotification({
       type,
       title,
-      message
+      message,
     });
   }
 
@@ -253,7 +261,7 @@ class NotificationService {
       // Get recent reports from the last hour
       const [vibes, sosAlerts] = await Promise.all([
         reportsService.getVibes({ limit: 100 }),
-        reportsService.getSOSAlerts({ limit: 50 })
+        reportsService.getSOSAlerts({ limit: 50 }),
       ]);
 
       const allReports = [...(vibes || []), ...(sosAlerts || [])];

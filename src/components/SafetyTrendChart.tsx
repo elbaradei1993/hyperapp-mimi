@@ -8,8 +8,9 @@ import {
   Tooltip,
   ResponsiveContainer,
   Area,
-  AreaChart
+  AreaChart,
 } from 'recharts';
+
 import { calculateSafetyTrends, getSafetyLevel, getSafetyTrend, type SafetyDataPoint } from '../lib/safetyAnalytics';
 import type { Report } from '../types';
 
@@ -20,7 +21,7 @@ interface SafetyTrendChartProps {
 
 const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
   reports,
-  height = 200
+  height = 200,
 }) => {
   const chartData = useMemo(() => {
     const dataPoints = calculateSafetyTrends(reports, 24);
@@ -32,7 +33,7 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
       safety: point.safetyScore,
       reports: point.totalReports,
       positive: point.positiveReports,
-      negative: point.negativeReports
+      negative: point.negativeReports,
     }));
   }, [reports]);
 
@@ -42,7 +43,9 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
   }, [reports]);
 
   const currentSafety = useMemo(() => {
-    if (chartData.length === 0) return null;
+    if (chartData.length === 0) {
+      return null;
+    }
     const latest = chartData[chartData.length - 1];
     return getSafetyLevel(latest.safety);
   }, [chartData]);
@@ -60,13 +63,13 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
           borderRadius: '8px',
           padding: '12px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          minWidth: '180px'
+          minWidth: '180px',
         }}>
           <div style={{
             color: '#1f2937',
             fontSize: '14px',
             fontWeight: '600',
-            marginBottom: '8px'
+            marginBottom: '8px',
           }}>
             {data.hour}
           </div>
@@ -75,18 +78,18 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            marginBottom: '6px'
+            marginBottom: '6px',
           }}>
             <div style={{
               width: '12px',
               height: '12px',
               borderRadius: '50%',
-              background: safetyLevel.color
+              background: safetyLevel.color,
             }}></div>
             <span style={{
               color: safetyLevel.color,
               fontSize: '16px',
-              fontWeight: '700'
+              fontWeight: '700',
             }}>
               {data.safety}% {safetyLevel.description}
             </span>
@@ -95,7 +98,7 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
           <div style={{
             color: '#6b7280',
             fontSize: '12px',
-            lineHeight: '1.4'
+            lineHeight: '1.4',
           }}>
             {data.reports} total reports<br/>
             {data.positive} positive • {data.negative} concerning
@@ -109,7 +112,9 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
   // Custom dot component for the line
   const CustomDot = (props: any) => {
     const { cx, cy, payload } = props;
-    if (!payload || payload.reports === 0) return null; // Don't show dots for hours with no reports
+    if (!payload || payload.reports === 0) {
+      return null;
+    } // Don't show dots for hours with no reports
 
     return (
       <circle
@@ -127,13 +132,13 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
   if (chartData.length === 0) {
     return (
       <div style={{
-        height: height,
+        height,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
         borderRadius: '8px',
-        border: '1px solid #e5e7eb'
+        border: '1px solid #e5e7eb',
       }}>
         <div style={{ textAlign: 'center', color: '#6b7280' }}>
           <i className="fas fa-chart-line" style={{ fontSize: '24px', marginBottom: '8px', opacity: 0.5 }}></i>
@@ -144,13 +149,13 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
   }
 
   return (
-    <div style={{ width: '100%', height: height }}>
+    <div style={{ width: '100%', height }}>
       {/* Trend indicator */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: '12px'
+        marginBottom: '12px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {currentSafety && (
@@ -159,12 +164,12 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
                 width: '12px',
                 height: '12px',
                 borderRadius: '50%',
-                background: currentSafety.color
+                background: currentSafety.color,
               }}></div>
               <span style={{
                 color: currentSafety.color,
                 fontSize: '14px',
-                fontWeight: '600'
+                fontWeight: '600',
               }}>
                 {currentSafety.description} Area
               </span>
@@ -177,7 +182,7 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
           alignItems: 'center',
           gap: '4px',
           fontSize: '12px',
-          color: '#6b7280'
+          color: '#6b7280',
         }}>
           {trend === 'improving' && (
             <>
@@ -257,7 +262,7 @@ const SafetyTrendChart: React.FC<SafetyTrendChartProps> = ({
               fill: '#3b82f6',
               stroke: 'white',
               strokeWidth: 2,
-              style: { filter: 'drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4))' }
+              style: { filter: 'drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4))' },
             }}
           />
         </AreaChart>

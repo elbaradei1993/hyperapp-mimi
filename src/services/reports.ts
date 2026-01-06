@@ -91,8 +91,8 @@ class ReportsService {
         profile_picture_url: item.users.profile_picture_url,
         // Include user credibility data
         reputation: item.users.reputation,
-        verification_level: item.users.verification_level
-      } : undefined
+        verification_level: item.users.verification_level,
+      } : undefined,
     }));
   }
 
@@ -186,7 +186,7 @@ class ReportsService {
           media_url: reportData.media_url,
           emergency: reportData.emergency || false,
           upvotes: 0,
-          downvotes: 0
+          downvotes: 0,
         }])
         .select(`
           *,
@@ -227,8 +227,8 @@ class ReportsService {
           last_name: data.users.last_name,
           profile_picture_url: data.users.profile_picture_url,
           reputation: data.users.reputation,
-          verification_level: data.users.verification_level
-        } : undefined
+          verification_level: data.users.verification_level,
+        } : undefined,
       };
     } catch (error) {
       console.error('Failed to create report:', error);
@@ -249,8 +249,8 @@ class ReportsService {
         profile: {
           username: 'Demo User',
           first_name: 'Demo',
-          last_name: 'User'
-        }
+          last_name: 'User',
+        },
       };
     }
   }
@@ -312,7 +312,7 @@ class ReportsService {
         .insert([{
           report_id: reportId,
           user_id: userId,
-          vote_type: voteType
+          vote_type: voteType,
         }]);
 
       if (error) {
@@ -354,7 +354,7 @@ class ReportsService {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'reports'
+          table: 'reports',
         },
         async (payload) => {
           // Fetch the complete report with user and credibility data
@@ -398,12 +398,12 @@ class ReportsService {
                 last_name: data.users.last_name,
                 profile_picture_url: data.users.profile_picture_url,
                 reputation: data.users.reputation,
-                verification_level: data.users.verification_level
-              } : undefined
+                verification_level: data.users.verification_level,
+              } : undefined,
             };
             callback(report);
           }
-        }
+        },
       )
       .subscribe();
   }
@@ -429,7 +429,9 @@ class ReportsService {
           .eq('report_id', reportId)
           .eq('user_id', userId);
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
       } else {
         // Create new validation
         const { error } = await supabase
@@ -437,10 +439,12 @@ class ReportsService {
           .insert({
             report_id: reportId,
             user_id: userId,
-            validation_type: validationType
+            validation_type: validationType,
           });
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
       }
 
       return true;
@@ -489,7 +493,9 @@ class ReportsService {
         .select('validation_type')
         .eq('report_id', reportId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       const confirmCount = data.filter(v => v.validation_type === 'confirm').length;
       const denyCount = data.filter(v => v.validation_type === 'deny').length;
@@ -497,7 +503,7 @@ class ReportsService {
       return {
         confirmCount,
         denyCount,
-        totalValidations: data.length
+        totalValidations: data.length,
       };
     } catch (error) {
       console.error('Error getting validation stats:', error);
@@ -516,17 +522,17 @@ class ReportsService {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'reports'
+          table: 'reports',
         },
         (payload: any) => {
           if (payload.new && (payload.new.upvotes !== payload.old?.upvotes || payload.new.downvotes !== payload.old?.downvotes)) {
             callback({
               reportId: payload.new.id,
               upvotes: payload.new.upvotes || 0,
-              downvotes: payload.new.downvotes || 0
+              downvotes: payload.new.downvotes || 0,
             });
           }
-        }
+        },
       )
       .subscribe();
   }
@@ -542,7 +548,7 @@ class ReportsService {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'reports'
+          table: 'reports',
         },
         (payload: any) => {
           if (payload.new && (
@@ -552,10 +558,10 @@ class ReportsService {
             callback({
               reportId: payload.new.id,
               credibility_score: payload.new.credibility_score || 0.5,
-              validation_count: payload.new.validation_count || 0
+              validation_count: payload.new.validation_count || 0,
             });
           }
-        }
+        },
       )
       .subscribe();
   }
@@ -622,8 +628,12 @@ class ReportsService {
         const bIsTrusted = b.profile?.verification_level === 'trusted';
 
         // If one is trusted and the other isn't, trusted comes first
-        if (aIsTrusted && !bIsTrusted) return -1;
-        if (!aIsTrusted && bIsTrusted) return 1;
+        if (aIsTrusted && !bIsTrusted) {
+          return -1;
+        }
+        if (!aIsTrusted && bIsTrusted) {
+          return 1;
+        }
 
         // If both are trusted or both are not, sort by creation time (newest first)
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -682,7 +692,7 @@ class ReportsService {
         avgCredibilityScore,
         communityRank,
         totalReports,
-        trustedSince
+        trustedSince,
       };
     } catch (error) {
       console.error('Error getting Community Guard analytics:', error);
@@ -692,7 +702,7 @@ class ReportsService {
         avgCredibilityScore: 0.5,
         communityRank: null,
         totalReports: 0,
-        trustedSince: null
+        trustedSince: null,
       };
     }
   }
@@ -757,12 +767,14 @@ class ReportsService {
           radius_km: alertData.radius_km,
           expires_at: alertData.expires_at,
           created_by: alertData.user_id,
-          is_active: true
+          is_active: true,
         }])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error('Error creating Guardian Alert:', error);
@@ -791,13 +803,15 @@ class ReportsService {
         .gte('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Filter by distance (since we can't do geospatial queries easily)
       return data.filter(alert => {
         const distance = this.calculateDistance(
           latitude, longitude,
-          alert.latitude, alert.longitude
+          alert.latitude, alert.longitude,
         );
         return distance <= alert.radius_km;
       });
@@ -859,7 +873,7 @@ class ReportsService {
         message: this.getAchievementMessage(achievementType, achievementData),
         data: achievementData,
         read: false,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       };
 
       // Store in local storage for demo (in production, this would be in database)
@@ -885,7 +899,7 @@ class ReportsService {
         alert.latitude,
         alert.longitude,
         alert.radius_km,
-        alert.created_by // Exclude the creator
+        alert.created_by, // Exclude the creator
       );
 
       const notifications = nearbyUsers.map((user: any) => ({
@@ -897,10 +911,10 @@ class ReportsService {
           alert_id: alert.id,
           alert_type: alert.alert_type,
           latitude: alert.latitude,
-          longitude: alert.longitude
+          longitude: alert.longitude,
         },
         read: false,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       }));
 
       // Store notifications
@@ -968,7 +982,7 @@ class ReportsService {
       'reports_milestone': '📊 Reporting Milestone Reached!',
       'validation_milestone': '✅ Validation Expert!',
       'rank_improved': '⬆️ Community Rank Improved!',
-      'first_alert': '🚨 First Guardian Alert Created!'
+      'first_alert': '🚨 First Guardian Alert Created!',
     };
     return titles[type] || '🎉 Achievement Unlocked!';
   }
@@ -978,18 +992,18 @@ class ReportsService {
    */
   private getAchievementMessage(type: string, data: any): string {
     switch (type) {
-      case 'became_trusted':
-        return 'Congratulations! You\'ve earned the Community Guard badge through consistent, accurate safety reporting. You now have access to exclusive leadership features!';
-      case 'reports_milestone':
-        return `Amazing! You've submitted ${data.totalReports} safety reports. Your community contributions are making a real difference!`;
-      case 'validation_milestone':
-        return `Expert Validator! You've performed ${data.validationsPerformed} community validations, helping ensure report accuracy.`;
-      case 'rank_improved':
-        return `Rank Up! You're now #${data.newRank} among Community Guards. Keep up the excellent work!`;
-      case 'first_alert':
-        return 'Guardian Alert Created! You\'ve successfully alerted your community about an important safety matter.';
-      default:
-        return 'You\'ve unlocked a new achievement! Keep contributing to make your community safer.';
+    case 'became_trusted':
+      return 'Congratulations! You\'ve earned the Community Guard badge through consistent, accurate safety reporting. You now have access to exclusive leadership features!';
+    case 'reports_milestone':
+      return `Amazing! You've submitted ${data.totalReports} safety reports. Your community contributions are making a real difference!`;
+    case 'validation_milestone':
+      return `Expert Validator! You've performed ${data.validationsPerformed} community validations, helping ensure report accuracy.`;
+    case 'rank_improved':
+      return `Rank Up! You're now #${data.newRank} among Community Guards. Keep up the excellent work!`;
+    case 'first_alert':
+      return 'Guardian Alert Created! You\'ve successfully alerted your community about an important safety matter.';
+    default:
+      return 'You\'ve unlocked a new achievement! Keep contributing to make your community safer.';
     }
   }
 
@@ -1034,10 +1048,12 @@ class ReportsService {
             username: userData.username,
             first_name: userData.first_name,
             last_name: userData.last_name,
-            profile_picture_url: userData.profile_picture_url
+            profile_picture_url: userData.profile_picture_url,
           });
         }
-        if (userMap.size >= limit) break;
+        if (userMap.size >= limit) {
+          break;
+        }
       }
 
       return Array.from(userMap.values());

@@ -28,10 +28,10 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
 
       const constraints = {
         video: {
-          facingMode: facingMode,
+          facingMode,
           width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        }
+          height: { ideal: 1080 },
+        },
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -65,13 +65,17 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
 
   // Capture photo
   const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current) {
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-    if (!context) return;
+    if (!context) {
+      return;
+    }
 
     // Set canvas size to video size
     canvas.width = video.videoWidth;
@@ -86,7 +90,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
         // Create file from blob
         const file = new File([blob], `camera-${Date.now()}.jpg`, {
           type: 'image/jpeg',
-          lastModified: Date.now()
+          lastModified: Date.now(),
         });
 
         onCapture(file);
@@ -115,7 +119,9 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
     }
   }, [facingMode]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div style={{
@@ -127,7 +133,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
       background: 'rgba(0,0,0,0.9)',
       display: 'flex',
       flexDirection: 'column',
-      zIndex: 1000
+      zIndex: 1000,
     }}>
       {/* Header */}
       <div style={{
@@ -135,7 +141,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '20px',
-        background: 'rgba(0,0,0,0.8)'
+        background: 'rgba(0,0,0,0.8)',
       }}>
         <h3 style={{ color: 'white', margin: 0, fontSize: '18px' }}>
           Take Photo
@@ -149,7 +155,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
             fontSize: '24px',
             cursor: 'pointer',
             padding: '8px',
-            borderRadius: '4px'
+            borderRadius: '4px',
           }}
           aria-label="Close camera"
         >
@@ -164,13 +170,13 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}>
         {error ? (
           <div style={{
             color: 'white',
             textAlign: 'center',
-            padding: '20px'
+            padding: '20px',
           }}>
             <p style={{ marginBottom: '20px', fontSize: '16px' }}>
               {error}
@@ -184,7 +190,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
                 padding: '12px 24px',
                 borderRadius: '8px',
                 fontSize: '16px',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Try Again
@@ -201,7 +207,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
+                transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
               }}
             />
 
@@ -213,7 +219,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
               transform: 'translateX(-50%)',
               display: 'flex',
               gap: '20px',
-              alignItems: 'center'
+              alignItems: 'center',
             }}>
               {/* Switch Camera Button */}
               <button
@@ -229,7 +235,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
                 }}
                 aria-label="Switch camera"
               >
@@ -252,7 +258,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
                   justifyContent: 'center',
                   cursor: isStreaming ? 'pointer' : 'not-allowed',
                   transition: 'all 0.2s ease',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                 }}
                 aria-label="Take photo"
               >
@@ -273,7 +279,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
                 }}
                 aria-label="Cancel"
               >

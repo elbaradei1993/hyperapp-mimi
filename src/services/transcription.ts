@@ -1,4 +1,4 @@
-import Bytez from "bytez.js";
+import Bytez from 'bytez.js';
 
 interface TranscriptionResult {
   text: string;
@@ -16,7 +16,7 @@ class TranscriptionService {
     if (apiKey) {
       try {
         this.bytezSdk = new Bytez(apiKey);
-        this.model = this.bytezSdk.model("openai/whisper-large-v3");
+        this.model = this.bytezSdk.model('openai/whisper-large-v3');
       } catch (error) {
         console.warn('Failed to initialize Bytez SDK:', error);
       }
@@ -49,7 +49,7 @@ class TranscriptionService {
       return {
         text: transcription,
         confidence: output?.confidence || 0.8,
-        language: output?.language || 'en'
+        language: output?.language || 'en',
       };
     } catch (error) {
       console.error('Transcription service error:', error);
@@ -78,7 +78,9 @@ class TranscriptionService {
    * Extract transcription text from API response
    */
   private extractTranscription(output: any): string {
-    if (!output) return '';
+    if (!output) {
+      return '';
+    }
 
     // Handle different response formats
     if (typeof output === 'string') {
@@ -134,21 +136,21 @@ class TranscriptionService {
     if (!supportedFormats.includes(file.type)) {
       return {
         valid: false,
-        error: `Unsupported audio format. Supported formats: ${supportedFormats.join(', ')}`
+        error: `Unsupported audio format. Supported formats: ${supportedFormats.join(', ')}`,
       };
     }
 
     if (file.size > maxSize) {
       return {
         valid: false,
-        error: `Audio file too large. Maximum size: 25MB`
+        error: 'Audio file too large. Maximum size: 25MB',
       };
     }
 
     if (file.size < 1000) { // 1KB minimum
       return {
         valid: false,
-        error: 'Audio file too small or empty'
+        error: 'Audio file too small or empty',
       };
     }
 

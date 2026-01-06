@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, VStack, HStack, Text, Button, Input, Textarea, Grid, GridItem, IconButton } from '@chakra-ui/react';
-import { VibeType } from '../types';
-import { reportsService } from '../services/reports';
-import { hubService } from '../services/hub';
-import { reverseGeocode, formatCoordinates } from '../lib/geocoding';
-import { VIBE_CONFIG } from '../constants/vibes';
-import { SupabaseStorageService } from '../services/upload';
-import CameraModal from './CameraModal';
 import {
   ShieldCheck,
   CloudSnow,
@@ -27,8 +20,17 @@ import {
   Car,
   Settings,
   MapPin,
-  FileText
+  FileText,
 } from 'lucide-react';
+
+import { VibeType } from '../types';
+import { reportsService } from '../services/reports';
+import { hubService } from '../services/hub';
+import { reverseGeocode, formatCoordinates } from '../lib/geocoding';
+import { VIBE_CONFIG } from '../constants/vibes';
+import { SupabaseStorageService } from '../services/upload';
+
+import CameraModal from './CameraModal';
 
 interface VibeReportModalProps {
   isOpen: boolean;
@@ -49,7 +51,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
-  currentLocation
+  currentLocation,
 }) => {
   const { t } = useTranslation();
   const [selectedVibe, setSelectedVibe] = useState<VibeType | null>(null);
@@ -65,7 +67,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
   const [deviceCapabilities, setDeviceCapabilities] = useState({
     supports3D: true,
     isLowEndDevice: false,
-    prefersReducedMotion: false
+    prefersReducedMotion: false,
   });
 
   const vibeOptions: VibeOption[] = [
@@ -74,63 +76,63 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
       label: t('vibes.safe'),
       icon: 'shield-check',
       color: '#10b981',
-      description: t('vibes.safeDesc')
+      description: t('vibes.safeDesc'),
     },
     {
       type: VibeType.Calm,
       label: t('vibes.calm'),
       icon: 'cloud-snow',
       color: '#3b82f6',
-      description: t('vibes.calmDesc')
+      description: t('vibes.calmDesc'),
     },
     {
       type: VibeType.Lively,
       label: t('vibes.lively'),
       icon: 'music',
       color: '#eab308',
-      description: t('vibes.livelyDesc')
+      description: t('vibes.livelyDesc'),
     },
     {
       type: VibeType.Festive,
       label: t('vibes.festive'),
       icon: 'party-popper',
       color: '#f59e0b',
-      description: t('vibes.festiveDesc')
+      description: t('vibes.festiveDesc'),
     },
     {
       type: VibeType.Crowded,
       label: t('vibes.crowded'),
       icon: 'users',
       color: '#f97316',
-      description: t('vibes.crowdedDesc')
+      description: t('vibes.crowdedDesc'),
     },
     {
       type: VibeType.Suspicious,
       label: t('vibes.suspicious'),
       icon: 'eye-off',
       color: '#a855f7',
-      description: t('vibes.suspiciousDesc')
+      description: t('vibes.suspiciousDesc'),
     },
     {
       type: VibeType.Dangerous,
       label: t('vibes.dangerous'),
       icon: 'alert-triangle',
       color: '#ef4444',
-      description: t('vibes.dangerousDesc')
+      description: t('vibes.dangerousDesc'),
     },
     {
       type: VibeType.Noisy,
       label: t('vibes.noisy'),
       icon: 'volume-2',
       color: '#06b6d4',
-      description: t('vibes.noisyDesc')
+      description: t('vibes.noisyDesc'),
     },
     {
       type: VibeType.Quiet,
       label: t('vibes.quiet'),
       icon: 'volume-x',
       color: '#2dd4bf',
-      description: t('vibes.quietDesc')
+      description: t('vibes.quietDesc'),
     },
     // Infrastructure report types
     {
@@ -138,43 +140,43 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
       label: t('infrastructure.streetlight.label'),
       icon: 'lightbulb',
       color: '#f59e0b',
-      description: t('infrastructure.streetlight.description')
+      description: t('infrastructure.streetlight.description'),
     },
     {
       type: VibeType.Sidewalk,
       label: t('infrastructure.sidewalk.label'),
       icon: 'route',
       color: '#f59e0b',
-      description: t('infrastructure.sidewalk.description')
+      description: t('infrastructure.sidewalk.description'),
     },
     {
       type: VibeType.Construction,
       label: t('infrastructure.construction.label'),
       icon: 'wrench',
       color: '#f59e0b',
-      description: t('infrastructure.construction.description')
+      description: t('infrastructure.construction.description'),
     },
     {
       type: VibeType.Pothole,
       label: t('infrastructure.pothole.label'),
       icon: 'triangle',
       color: '#f59e0b',
-      description: t('infrastructure.pothole.description')
+      description: t('infrastructure.pothole.description'),
     },
     {
       type: VibeType.Traffic,
       label: t('infrastructure.traffic.label'),
       icon: 'car',
       color: '#f59e0b',
-      description: t('infrastructure.traffic.description')
+      description: t('infrastructure.traffic.description'),
     },
     {
       type: VibeType.Other,
       label: t('infrastructure.other.label'),
       icon: 'settings',
       color: '#f59e0b',
-      description: t('infrastructure.other.description')
-    }
+      description: t('infrastructure.other.description'),
+    },
   ];
 
   // Detect device capabilities for 3D effects
@@ -195,7 +197,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
       setDeviceCapabilities({
         supports3D,
         isLowEndDevice,
-        prefersReducedMotion
+        prefersReducedMotion,
       });
     };
 
@@ -226,7 +228,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
           console.error('Error getting location:', error);
           setLocationLoading(false);
         },
-        { timeout: 10000, enableHighAccuracy: true }
+        { timeout: 10000, enableHighAccuracy: true },
       );
     } else {
       setLocationLoading(false);
@@ -286,43 +288,45 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
 
   const getVibeIconComponent = (iconName: string) => {
     switch (iconName) {
-      case 'shield-check':
-        return <ShieldCheck size={24} />;
-      case 'cloud-snow':
-        return <CloudSnow size={24} />;
-      case 'music':
-        return <Music size={24} />;
-      case 'party-popper':
-        return <PartyPopper size={24} />;
-      case 'users':
-        return <Users size={24} />;
-      case 'eye-off':
-        return <EyeOff size={24} />;
-      case 'alert-triangle':
-        return <AlertTriangle size={24} />;
-      case 'volume-2':
-        return <Volume2 size={24} />;
-      case 'volume-x':
-        return <VolumeX size={24} />;
-      case 'lightbulb':
-        return <Lightbulb size={24} />;
-      case 'route':
-        return <Route size={24} />;
-      case 'wrench':
-        return <Wrench size={24} />;
-      case 'triangle':
-        return <Triangle size={24} />;
-      case 'car':
-        return <Car size={24} />;
-      case 'settings':
-        return <Settings size={24} />;
-      default:
-        return <ShieldCheck size={24} />;
+    case 'shield-check':
+      return <ShieldCheck size={24} />;
+    case 'cloud-snow':
+      return <CloudSnow size={24} />;
+    case 'music':
+      return <Music size={24} />;
+    case 'party-popper':
+      return <PartyPopper size={24} />;
+    case 'users':
+      return <Users size={24} />;
+    case 'eye-off':
+      return <EyeOff size={24} />;
+    case 'alert-triangle':
+      return <AlertTriangle size={24} />;
+    case 'volume-2':
+      return <Volume2 size={24} />;
+    case 'volume-x':
+      return <VolumeX size={24} />;
+    case 'lightbulb':
+      return <Lightbulb size={24} />;
+    case 'route':
+      return <Route size={24} />;
+    case 'wrench':
+      return <Wrench size={24} />;
+    case 'triangle':
+      return <Triangle size={24} />;
+    case 'car':
+      return <Car size={24} />;
+    case 'settings':
+      return <Settings size={24} />;
+    default:
+      return <ShieldCheck size={24} />;
     }
   };
 
   const handleSubmit = async () => {
-    if (!selectedVibe) return;
+    if (!selectedVibe) {
+      return;
+    }
 
     // If location is not available but loading, wait for it
     if (!userLocation && locationLoading) {
@@ -332,10 +336,14 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
       }
-      if (!userLocation) return; // Still no location after waiting
+      if (!userLocation) {
+        return;
+      } // Still no location after waiting
     }
 
-    if (!userLocation) return;
+    if (!userLocation) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -346,22 +354,22 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
         VibeType.Construction,
         VibeType.Pothole,
         VibeType.Traffic,
-        VibeType.Other
+        VibeType.Other,
       ].includes(selectedVibe);
 
       if (isInfrastructureReport) {
         // Submit infrastructure report
         const severity = selectedVibe === VibeType.Streetlight || selectedVibe === VibeType.Sidewalk ? 'medium' :
-                        selectedVibe === VibeType.Construction || selectedVibe === VibeType.Pothole ? 'high' :
-                        selectedVibe === VibeType.Traffic ? 'high' : 'low';
+          selectedVibe === VibeType.Construction || selectedVibe === VibeType.Pothole ? 'high' :
+            selectedVibe === VibeType.Traffic ? 'high' : 'low';
 
         await hubService.submitInfrastructureReport({
           latitude: userLocation[0],
           longitude: userLocation[1],
           reportType: selectedVibe,
           description: notes.trim() || `Infrastructure issue: ${selectedVibe}`,
-          severity: severity,
-          userId: 'anonymous' // Could be updated to use actual user ID if available
+          severity,
+          userId: 'anonymous', // Could be updated to use actual user ID if available
         });
       } else {
         // Submit regular vibe report
@@ -377,7 +385,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
           notes: notes.trim() || undefined,
           location: location.trim() || undefined,
           media_url: mediaUrl || undefined,
-          emergency: false
+          emergency: false,
         });
       }
 
@@ -395,7 +403,9 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
   };
 
   // Don't render anything if modal is not open
-  if (!isOpen && !showSuccess) return null;
+  if (!isOpen && !showSuccess) {
+    return null;
+  }
 
   if (showSuccess) {
     return (
@@ -412,7 +422,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-        padding: window.innerWidth < 480 ? '16px' : '20px'
+        padding: window.innerWidth < 480 ? '16px' : '20px',
       }}>
         <div style={{
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
@@ -426,7 +436,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
           border: '1px solid rgba(255, 255, 255, 0.2)',
           textAlign: 'center',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}>
           {/* Premium Background Gradient */}
           <div style={{
@@ -436,7 +446,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
             right: 0,
             bottom: 0,
             background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(34, 197, 94, 0.06) 50%, rgba(16, 185, 129, 0.04) 100%)',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
           }}></div>
 
           {/* Premium Inner Shadow */}
@@ -448,14 +458,14 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
             bottom: 0,
             boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.05)',
             pointerEvents: 'none',
-            borderRadius: '24px'
+            borderRadius: '24px',
           }}></div>
 
           {/* Success Checkmark Animation */}
           <div style={{
             position: 'relative',
             zIndex: 1,
-            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem'
+            marginBottom: window.innerWidth < 480 ? '1.5rem' : '2rem',
           }}>
             <div style={{
               width: window.innerWidth < 480 ? '80px' : '100px',
@@ -467,11 +477,11 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
               justifyContent: 'center',
               margin: '0 auto',
               boxShadow: '0 20px 40px rgba(16, 185, 129, 0.3), 0 10px 20px rgba(16, 185, 129, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.2)',
-              animation: 'successPulse 2s ease-in-out infinite'
+              animation: 'successPulse 2s ease-in-out infinite',
             }}>
               <svg
-                width={window.innerWidth < 480 ? "32" : "40"}
-                height={window.innerWidth < 480 ? "32" : "40"}
+                width={window.innerWidth < 480 ? '32' : '40'}
+                height={window.innerWidth < 480 ? '32' : '40'}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
@@ -479,13 +489,13 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 style={{
-                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))'
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
                 }}
               >
                 <polyline points="20,6 9,17 4,12" style={{
                   strokeDasharray: '24',
                   strokeDashoffset: '24',
-                  animation: 'successCheck 0.8s ease-in-out 0.2s forwards'
+                  animation: 'successCheck 0.8s ease-in-out 0.2s forwards',
                 }}></polyline>
               </svg>
             </div>
@@ -503,7 +513,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               letterSpacing: '-0.025em',
-              lineHeight: '1.2'
+              lineHeight: '1.2',
             }}>
               {t('modals.vibeReport.successTitle')}
             </h3>
@@ -515,7 +525,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
               lineHeight: '1.5',
               maxWidth: '280px',
               marginLeft: 'auto',
-              marginRight: 'auto'
+              marginRight: 'auto',
             }}>
               {t('modals.vibeReport.successMessage')}
             </p>
@@ -636,15 +646,15 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                     p={4}
                     borderRadius="12px"
                     border="2px solid"
-                    borderColor={selectedVibe === vibe.type ? `${vibe.color}80` : "gray.200"}
-                    bg={selectedVibe === vibe.type ? `${vibe.color}10` : "white"}
+                    borderColor={selectedVibe === vibe.type ? `${vibe.color}80` : 'gray.200'}
+                    bg={selectedVibe === vibe.type ? `${vibe.color}10` : 'white'}
                     cursor="pointer"
                     transition="all 0.2s"
                     textAlign="center"
                     _hover={{
-                      transform: "translateY(-1px)",
+                      transform: 'translateY(-1px)',
                       boxShadow: `0 4px 12px ${vibe.color}30`,
-                      borderColor: `${vibe.color}60`
+                      borderColor: `${vibe.color}60`,
                     }}
                   >
                     <Box
@@ -686,7 +696,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                   textAlign="center"
                   cursor="pointer"
                   transition="all 0.2s"
-                  _hover={{ borderColor: "blue.400", bg: "blue.50" }}
+                  _hover={{ borderColor: 'blue.400', bg: 'blue.50' }}
                   onClick={() => setShowCamera(true)}
                 >
                   <Camera size={48} color="#3b82f6" style={{ marginBottom: '1rem' }} />
@@ -705,7 +715,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                     style={{
                       width: '100%',
                       height: '200px',
-                      objectFit: 'cover'
+                      objectFit: 'cover',
                     }}
                   />
                   <Button
@@ -717,7 +727,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                     borderRadius="full"
                     bg="red.500"
                     color="white"
-                    _hover={{ bg: "red.600" }}
+                    _hover={{ bg: 'red.600' }}
                     onClick={removeMedia}
                     p={1}
                     minW="auto"
@@ -741,7 +751,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                 borderRadius="12px"
                 border="1px solid"
                 borderColor="gray.200"
-                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
               />
             </Box>
 
@@ -758,7 +768,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
                 borderRadius="12px"
                 border="1px solid"
                 borderColor="gray.200"
-                _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #3b82f6" }}
+                _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px #3b82f6' }}
                 resize="vertical"
                 maxLength={500}
               />
@@ -794,7 +804,7 @@ const VibeReportModal: React.FC<VibeReportModalProps> = ({
               color="white"
               onClick={handleSubmit}
               borderRadius="12px"
-              _hover={{ bg: "blue.600" }}
+              _hover={{ bg: 'blue.600' }}
               disabled={!selectedVibe || (!userLocation && !locationLoading) || isSubmitting}
             >
               {isSubmitting ? t('modals.vibeReport.submitting') : t('modals.vibeReport.submitReport')}

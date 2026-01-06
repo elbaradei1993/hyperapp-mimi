@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { pushNotificationService } from '../services/pushNotificationService';
 import { fcmService } from '../lib/firebase';
 import { supabase } from '../lib/supabase';
@@ -104,7 +105,7 @@ const PushNotificationTest: React.FC = () => {
       backgroundColor: '#f5f5f5',
       borderRadius: '8px',
       margin: '20px',
-      fontFamily: 'monospace'
+      fontFamily: 'monospace',
     }}>
       <h3>🔔 Push Notification Test</h3>
       <p>This tool helps debug push notification registration issues.</p>
@@ -120,7 +121,7 @@ const PushNotificationTest: React.FC = () => {
             border: 'none',
             borderRadius: '4px',
             cursor: isLoading ? 'not-allowed' : 'pointer',
-            marginRight: '10px'
+            marginRight: '10px',
           }}
         >
           {isLoading ? 'Testing...' : 'Run Full Test'}
@@ -134,7 +135,7 @@ const PushNotificationTest: React.FC = () => {
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: 'pointer'
+            cursor: 'pointer',
           }}
         >
           Clear Results
@@ -152,7 +153,7 @@ const PushNotificationTest: React.FC = () => {
         padding: '10px',
         maxHeight: '400px',
         overflowY: 'auto',
-        fontSize: '12px'
+        fontSize: '12px',
       }}>
         {testResults.length === 0 ? (
           <p style={{ color: '#666', fontStyle: 'italic' }}>Click "Run Full Test" to start testing...</p>

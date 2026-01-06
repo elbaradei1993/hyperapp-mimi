@@ -10,7 +10,7 @@ export const getVibeIcon = (vibeType: string) => {
     suspicious: 'fas fa-eye-slash',
     dangerous: 'fas fa-exclamation-triangle',
     noisy: 'fas fa-volume-up',
-    quiet: 'fas fa-moon'
+    quiet: 'fas fa-moon',
   };
 
   return iconMap[vibeType] || 'fas fa-question-circle';
@@ -36,7 +36,7 @@ export const sosIcon = L.divIcon({
   `,
   className: 'sos-marker',
   iconSize: [32, 32],
-  iconAnchor: [16, 16]
+  iconAnchor: [16, 16],
 });
 
 // User location icon - Premium radiating pulse design with white pulsing
@@ -96,5 +96,5 @@ export const userLocationIcon = L.divIcon({
   `,
   className: 'user-location-marker-premium',
   iconSize: [54, 54],
-  iconAnchor: [27, 27]
+  iconAnchor: [27, 27],
 });

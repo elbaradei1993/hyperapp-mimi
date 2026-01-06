@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+
 import { calculateSafetyScore } from '../lib/safetyAnalytics';
 import type { Vibe } from '../types';
 
@@ -58,7 +59,7 @@ const SafetyWaveOverlay: React.FC<SafetyWaveOverlayProps> = ({ vibes, className 
       opacity: Math.random() * 0.6 + 0.2,
       speed: Math.random() * 0.5 + 0.2,
       direction: Math.random() * Math.PI * 2,
-      type: (['dot', 'circle', 'star'] as const)[Math.floor(Math.random() * 3)]
+      type: (['dot', 'circle', 'star'] as const)[Math.floor(Math.random() * 3)],
     }));
   }, [colors, particleIntensity]);
 
@@ -82,13 +83,13 @@ const SafetyWaveOverlay: React.FC<SafetyWaveOverlayProps> = ({ vibes, className 
             0,
             Math.sin(particle.direction) * 30 * particle.speed,
             Math.sin(particle.direction + Math.PI) * 20 * particle.speed,
-            0
+            0,
           ],
           y: [
             0,
             Math.cos(particle.direction) * 15 * particle.speed,
             Math.cos(particle.direction + Math.PI) * 25 * particle.speed,
-            0
+            0,
           ],
           scale: [1, 1.2, 0.8, 1],
           opacity: [particle.opacity, particle.opacity * 1.5, particle.opacity * 0.5, particle.opacity],
@@ -96,7 +97,7 @@ const SafetyWaveOverlay: React.FC<SafetyWaveOverlayProps> = ({ vibes, className 
         transition={{
           duration: 8 / particle.speed,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
           delay: particle.id * 0.1,
         }}
       >
@@ -175,7 +176,7 @@ const SafetyWaveOverlay: React.FC<SafetyWaveOverlayProps> = ({ vibes, className 
         transition={{
           duration: 6,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       />
 
@@ -198,7 +199,7 @@ const SafetyWaveOverlay: React.FC<SafetyWaveOverlayProps> = ({ vibes, className 
         transition={{
           duration: 3,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       />
 

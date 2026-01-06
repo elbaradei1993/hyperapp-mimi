@@ -20,7 +20,7 @@ class TranslationService {
   private readonly LIBRETRANSLATE_INSTANCES = [
     'https://libretranslate.com/translate',
     'https://translate.argosopentech.com/translate',
-    'https://libretranslate.de/translate'
+    'https://libretranslate.de/translate',
   ];
 
   // Request tracking to prevent overwhelming services
@@ -80,7 +80,7 @@ class TranslationService {
       q: text,
       source: sourceLang,
       target: targetLang,
-      format: 'text'
+      format: 'text',
     };
 
     // Try each LibreTranslate instance with timeout and better error handling
@@ -98,7 +98,7 @@ class TranslationService {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(requestData),
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
@@ -165,7 +165,7 @@ class TranslationService {
   private setCachedTranslation(key: string, translation: string): void {
     this.cache.set(key, {
       translation,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 

@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, VStack, HStack, Text, Button, Grid, GridItem, Select } from '@chakra-ui/react';
+import { Capacitor } from '@capacitor/core';
+import { Settings, UserCog, Sliders, Shield, Info, LogOut, Key, Trash, Globe, Bell, Users, MapPin, FileText, ShieldCheck } from 'lucide-react';
+
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTheme } from '../contexts/ThemeContext';
-
 import { authService } from '../services/auth';
 import { pushNotificationService } from '../services/pushNotificationService';
 import { notificationService } from '../services/notificationService';
 import { fcmService } from '../lib/firebase';
-import { Capacitor } from '@capacitor/core';
 import { storageManager } from '../lib/storage';
 
 import ToggleSwitch from './shared/ToggleSwitch';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsOfServiceModal from './TermsOfServiceModal';
 import MarketingEmailAdmin from './MarketingEmailAdmin';
-import { Settings, UserCog, Sliders, Shield, Info, LogOut, Key, Trash, Globe, Bell, Users, MapPin, FileText, ShieldCheck } from 'lucide-react';
+
 
 const SettingsView: React.FC = () => {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ const SettingsView: React.FC = () => {
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
@@ -45,7 +46,7 @@ const SettingsView: React.FC = () => {
 
   const languages = [
     { code: 'en', name: 'English' },
-    { code: 'ar', name: 'العربية' }
+    { code: 'ar', name: 'العربية' },
   ];
 
   // Sync selectedLanguage with currentLanguage
@@ -117,13 +118,17 @@ const SettingsView: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     const confirmDelete = window.confirm(
-      t('settings.deleteConfirmMessage')
+      t('settings.deleteConfirmMessage'),
     );
 
-    if (!confirmDelete) return;
+    if (!confirmDelete) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -175,7 +180,7 @@ const SettingsView: React.FC = () => {
       try {
         await pushNotificationService.updatePreferences({
           emergency_alerts: false,
-          safety_reports: false
+          safety_reports: false,
         });
       } catch (error) {
         console.error('Error updating push notification preferences:', error);
@@ -213,7 +218,7 @@ const SettingsView: React.FC = () => {
                 setLocationPermissionStatus('denied');
                 reject(error);
               },
-              { timeout: 10000 }
+              { timeout: 10000 },
             );
           });
         } catch (error) {
@@ -280,8 +285,8 @@ const SettingsView: React.FC = () => {
                   fontSize="16px"
                   fontWeight="600"
                   onClick={() => setShowPasswordModal(true)}
-                  _hover={{ bg: "blue.600", transform: "translateY(-1px)" }}
-                  _active={{ transform: "translateY(0)" }}
+                  _hover={{ bg: 'blue.600', transform: 'translateY(-1px)' }}
+                  _active={{ transform: 'translateY(0)' }}
                   transition="all 0.2s"
                   flex={1}
                 >
@@ -303,8 +308,8 @@ const SettingsView: React.FC = () => {
                   fontSize="16px"
                   fontWeight="600"
                   onClick={() => setShowDeleteModal(true)}
-                  _hover={{ bg: "red.600", transform: "translateY(-1px)" }}
-                  _active={{ transform: "translateY(0)" }}
+                  _hover={{ bg: 'red.600', transform: 'translateY(-1px)' }}
+                  _active={{ transform: 'translateY(0)' }}
                   transition="all 0.2s"
                   flex={1}
                 >
@@ -352,7 +357,7 @@ const SettingsView: React.FC = () => {
                       fontWeight: '500',
                       cursor: isChanging ? 'not-allowed' : 'pointer',
                       minWidth: '120px',
-                      opacity: isChanging ? 0.6 : 1
+                      opacity: isChanging ? 0.6 : 1,
                     }}
                   >
                     {languages.map(lang => (
@@ -440,8 +445,8 @@ const SettingsView: React.FC = () => {
                   p={4}
                   h="auto"
                   onClick={() => setShowPrivacyPolicyModal(true)}
-                  _hover={{ bg: "green.600", transform: "translateY(-1px)" }}
-                  _active={{ transform: "translateY(0)" }}
+                  _hover={{ bg: 'green.600', transform: 'translateY(-1px)' }}
+                  _active={{ transform: 'translateY(0)' }}
                   transition="all 0.2s"
                 >
                   <VStack gap={2}>
@@ -457,8 +462,8 @@ const SettingsView: React.FC = () => {
                   p={4}
                   h="auto"
                   onClick={() => setShowTermsOfServiceModal(true)}
-                  _hover={{ bg: "orange.600", transform: "translateY(-1px)" }}
-                  _active={{ transform: "translateY(0)" }}
+                  _hover={{ bg: 'orange.600', transform: 'translateY(-1px)' }}
+                  _active={{ transform: 'translateY(0)' }}
                   transition="all 0.2s"
                 >
                   <VStack gap={2}>
@@ -482,8 +487,8 @@ const SettingsView: React.FC = () => {
               fontWeight="700"
               onClick={handleLogout}
               w="full"
-              _hover={{ bg: "red.600", transform: "translateY(-1px)" }}
-              _active={{ transform: "translateY(0)" }}
+              _hover={{ bg: 'red.600', transform: 'translateY(-1px)' }}
+              _active={{ transform: 'translateY(0)' }}
               transition="all 0.2s"
             >
               <HStack gap={3} justify="center">
@@ -555,7 +560,7 @@ const SettingsView: React.FC = () => {
                       padding: '12px',
                       border: '1px solid #d1d5db',
                       borderRadius: '8px',
-                      fontSize: '16px'
+                      fontSize: '16px',
                     }}
                   />
                 </Box>
@@ -572,7 +577,7 @@ const SettingsView: React.FC = () => {
                       padding: '12px',
                       border: '1px solid #d1d5db',
                       borderRadius: '8px',
-                      fontSize: '16px'
+                      fontSize: '16px',
                     }}
                   />
                 </Box>
@@ -589,7 +594,7 @@ const SettingsView: React.FC = () => {
                       padding: '12px',
                       border: '1px solid #d1d5db',
                       borderRadius: '8px',
-                      fontSize: '16px'
+                      fontSize: '16px',
                     }}
                   />
                 </Box>
@@ -616,7 +621,7 @@ const SettingsView: React.FC = () => {
                   py={3}
                   onClick={handlePasswordChange}
                   disabled={loading}
-                  _hover={{ bg: "blue.600" }}
+                  _hover={{ bg: 'blue.600' }}
                 >
                   {loading ? t('settings.modals.changePassword.changing') : t('settings.modals.changePassword.submit')}
                 </Button>
@@ -674,7 +679,7 @@ const SettingsView: React.FC = () => {
                   py={3}
                   onClick={handleDeleteAccount}
                   disabled={loading}
-                  _hover={{ bg: "red.600" }}
+                  _hover={{ bg: 'red.600' }}
                 >
                   {loading ? 'Deleting...' : 'Delete Account'}
                 </Button>
@@ -798,7 +803,7 @@ const SettingsView: React.FC = () => {
                   borderRadius="8px"
                   py={3}
                   onClick={confirmLocationSharing}
-                  _hover={{ bg: "green.600" }}
+                  _hover={{ bg: 'green.600' }}
                 >
                   I Agree - Enable Sharing
                 </Button>

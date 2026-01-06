@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
-import { LoadingSpinner } from './shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Users, Clock, Navigation, RefreshCw, AlertTriangle } from 'lucide-react';
+
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+
+import { LoadingSpinner } from './shared';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
@@ -81,7 +83,7 @@ const AdminLocationDashboard: React.FC = () => {
           event: 'UPDATE',
           schema: 'public',
           table: 'push_subscriptions',
-          filter: 'is_active=eq.true'
+          filter: 'is_active=eq.true',
         }, (payload) => {
           console.log('Real-time location update:', payload);
           // Refresh data when location changes
@@ -108,9 +110,15 @@ const AdminLocationDashboard: React.FC = () => {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 60) {
+      return 'Just now';
+    }
+    if (seconds < 3600) {
+      return `${Math.floor(seconds / 60)}m ago`;
+    }
+    if (seconds < 86400) {
+      return `${Math.floor(seconds / 3600)}h ago`;
+    }
     return `${Math.floor(seconds / 86400)}d ago`;
   };
 
@@ -142,7 +150,7 @@ const AdminLocationDashboard: React.FC = () => {
       `,
       className: 'custom-user-marker',
       iconSize: [40, 40],
-      iconAnchor: [20, 20]
+      iconAnchor: [20, 20],
     });
   };
 
@@ -212,7 +220,7 @@ const AdminLocationDashboard: React.FC = () => {
                 position={[userLoc.latitude, userLoc.longitude]}
                 icon={createUserIcon(userLoc)}
                 eventHandlers={{
-                  click: () => setSelectedUser(userLoc)
+                  click: () => setSelectedUser(userLoc),
                 }}
               >
                 <Popup>
@@ -265,7 +273,7 @@ const AdminLocationDashboard: React.FC = () => {
                     color: '#3b82f6',
                     fillColor: '#3b82f6',
                     fillOpacity: 0.1,
-                    weight: 1
+                    weight: 1,
                   }}
                 />
               )}

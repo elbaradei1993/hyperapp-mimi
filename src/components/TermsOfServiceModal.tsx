@@ -12,11 +12,13 @@ interface TermsOfServiceModalProps {
 const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
   isOpen,
   onClose,
-  onAccept
+  onAccept,
 }) => {
   const { t } = useTranslation();
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Box
@@ -173,7 +175,7 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
                 onClose();
               }}
               borderRadius="12px"
-              _hover={{ bg: "blue.600" }}
+              _hover={{ bg: 'blue.600' }}
             >
               {t('terms.acceptButton', 'Accept Terms')}
             </Button>

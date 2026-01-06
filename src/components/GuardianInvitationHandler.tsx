@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+
 import { useAuth } from '../contexts/AuthContext';
 import { guardianService } from '../services/guardian';
+
 import { LoadingSpinner } from './shared';
 
 const GuardianInvitationHandler: React.FC = () => {
@@ -88,12 +90,12 @@ const GuardianInvitationHandler: React.FC = () => {
       justifyContent: 'center',
       background: 'var(--bg-primary)',
       color: 'var(--text-primary)',
-      padding: '20px'
+      padding: '20px',
     }}>
       <div style={{
         textAlign: 'center',
         maxWidth: '400px',
-        width: '100%'
+        width: '100%',
       }}>
         {status === 'loading' && (
           <>
@@ -102,14 +104,14 @@ const GuardianInvitationHandler: React.FC = () => {
               marginTop: '20px',
               marginBottom: '10px',
               fontSize: '1.5rem',
-              fontWeight: '600'
+              fontWeight: '600',
             }}>
               Accepting Guardian Invitation
             </h2>
             <p style={{
               color: 'var(--text-secondary)',
               fontSize: '1rem',
-              lineHeight: '1.5'
+              lineHeight: '1.5',
             }}>
               {message}
             </p>
@@ -120,14 +122,14 @@ const GuardianInvitationHandler: React.FC = () => {
           <>
             <div style={{
               fontSize: '4rem',
-              marginBottom: '20px'
+              marginBottom: '20px',
             }}>
               🛡️
             </div>
             <h2 style={{
               marginBottom: '10px',
               fontSize: '1.5rem',
-              fontWeight: '600'
+              fontWeight: '600',
             }}>
               Guardian Invitation
             </h2>
@@ -135,7 +137,7 @@ const GuardianInvitationHandler: React.FC = () => {
               color: 'var(--text-secondary)',
               fontSize: '1rem',
               lineHeight: '1.5',
-              marginBottom: '20px'
+              marginBottom: '20px',
             }}>
               {message}
             </p>
@@ -150,7 +152,7 @@ const GuardianInvitationHandler: React.FC = () => {
                 fontSize: '1rem',
                 fontWeight: '500',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.background = 'var(--accent-secondary)';
@@ -168,7 +170,7 @@ const GuardianInvitationHandler: React.FC = () => {
           <>
             <div style={{
               fontSize: '4rem',
-              marginBottom: '20px'
+              marginBottom: '20px',
             }}>
               ✅
             </div>
@@ -176,21 +178,21 @@ const GuardianInvitationHandler: React.FC = () => {
               marginBottom: '10px',
               fontSize: '1.5rem',
               fontWeight: '600',
-              color: 'var(--success)'
+              color: 'var(--success)',
             }}>
               Guardian Connected!
             </h2>
             <p style={{
               color: 'var(--text-secondary)',
               fontSize: '1rem',
-              lineHeight: '1.5'
+              lineHeight: '1.5',
             }}>
               {message}
             </p>
             <p style={{
               color: 'var(--text-secondary)',
               fontSize: '0.9rem',
-              marginTop: '10px'
+              marginTop: '10px',
             }}>
               Redirecting to your Guardian dashboard...
             </p>
@@ -201,7 +203,7 @@ const GuardianInvitationHandler: React.FC = () => {
           <>
             <div style={{
               fontSize: '4rem',
-              marginBottom: '20px'
+              marginBottom: '20px',
             }}>
               ❌
             </div>
@@ -209,7 +211,7 @@ const GuardianInvitationHandler: React.FC = () => {
               marginBottom: '10px',
               fontSize: '1.5rem',
               fontWeight: '600',
-              color: 'var(--danger)'
+              color: 'var(--danger)',
             }}>
               Invitation Failed
             </h2>
@@ -217,7 +219,7 @@ const GuardianInvitationHandler: React.FC = () => {
               color: 'var(--text-secondary)',
               fontSize: '1rem',
               lineHeight: '1.5',
-              marginBottom: '20px'
+              marginBottom: '20px',
             }}>
               {message}
             </p>
@@ -232,7 +234,7 @@ const GuardianInvitationHandler: React.FC = () => {
                 fontSize: '1rem',
                 fontWeight: '500',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.background = 'var(--accent-secondary)';

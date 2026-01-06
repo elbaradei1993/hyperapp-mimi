@@ -20,7 +20,7 @@ export class DateTimeFormatter {
     const defaultOptions: Intl.DateTimeFormatOptions = {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     };
 
     return new Intl.DateTimeFormat(locale, { ...defaultOptions, ...options }).format(dateObj);
@@ -32,7 +32,7 @@ export class DateTimeFormatter {
 
     const defaultOptions: Intl.DateTimeFormatOptions = {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     };
 
     return new Intl.DateTimeFormat(locale, { ...defaultOptions, ...options }).format(dateObj);
@@ -47,7 +47,7 @@ export class DateTimeFormatter {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     };
 
     return new Intl.DateTimeFormat(locale, { ...defaultOptions, ...options }).format(dateObj);
@@ -95,7 +95,7 @@ export class NumberFormatter {
 
     const defaultOptions: Intl.NumberFormatOptions = {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     };
 
     return new Intl.NumberFormat(locale, { ...defaultOptions, ...options }).format(num);
@@ -106,7 +106,7 @@ export class NumberFormatter {
 
     const defaultOptions: Intl.NumberFormatOptions = {
       style: 'currency',
-      currency: currency
+      currency,
     };
 
     return new Intl.NumberFormat(locale, { ...defaultOptions, ...options }).format(amount);
@@ -118,7 +118,7 @@ export class NumberFormatter {
     const defaultOptions: Intl.NumberFormatOptions = {
       style: 'percent',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 1
+      maximumFractionDigits: 1,
     };
 
     return new Intl.NumberFormat(locale, { ...defaultOptions, ...options }).format(value);
@@ -209,7 +209,7 @@ export class TranslationValidator {
     const stats = {
       totalKeys: 0,
       translatedKeys: 0,
-      languages: Object.keys(i18n.services.resourceStore.data)
+      languages: Object.keys(i18n.services.resourceStore.data),
     };
 
     // This is a basic implementation - in a real app you'd want more sophisticated validation

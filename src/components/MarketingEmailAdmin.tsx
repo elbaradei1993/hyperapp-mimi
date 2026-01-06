@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, VStack, HStack, Button, Input, Textarea, Select, Badge, Spinner, useToast } from '@chakra-ui/react';
-import { Checkbox } from '@chakra-ui/react';
-import { supabase } from '../lib/supabase';
+import { Box, Text, VStack, HStack, Button, Input, Textarea, Select, Badge, Spinner, Checkbox } from '@chakra-ui/react';
 import { Mail, Send, Users, Eye, Trash2, Plus, CheckSquare, Square } from 'lucide-react';
+
+import { supabase } from '../lib/supabase';
 
 interface MarketingEmailAdminProps {}
 
@@ -17,13 +17,13 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
   const [showRecipientSelector, setShowRecipientSelector] = useState(false);
   const [customSubject, setCustomSubject] = useState('');
   const [customHtml, setCustomHtml] = useState('');
-  const toast = useToast();
+
 
   const [newCampaign, setNewCampaign] = useState({
     name: '',
     subject: '',
     content_html: '',
-    content_text: ''
+    content_text: '',
   });
 
   useEffect(() => {
@@ -38,15 +38,12 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       setCampaigns(data || []);
     } catch (error: any) {
-      toast({
-        title: 'Error loading campaigns',
-        description: error.message,
-        status: 'error',
-        duration: 5000,
-      });
+      console.error('Error loading campaigns:', error.message);
     }
   };
 
@@ -55,7 +52,9 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
       const { data, error } = await supabase
         .rpc('get_marketing_recipients', { p_limit: 100 });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       console.log('Loaded recipients:', data);
       setRecipients(data || []);
     } catch (error: any) {
@@ -90,26 +89,30 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
           subject: newCampaign.subject,
           content_html: newCampaign.content_html,
           content_text: newCampaign.content_text || null,
-          status: 'draft'
+          status: 'draft',
         }])
         .select()
         .single();
 
-      if (campaignError) throw campaignError;
+      if (campaignError) {
+        throw campaignError;
+      }
 
       // Add recipients to campaign
       const recipientInserts = recipients.map(recipient => ({
         campaign_id: campaign.id,
         user_id: recipient.user_id,
         email: recipient.email,
-        status: 'pending'
+        status: 'pending',
       }));
 
       const { error: recipientError } = await supabase
         .from('email_recipients')
         .insert(recipientInserts);
 
-      if (recipientError) throw recipientError;
+      if (recipientError) {
+        throw recipientError;
+      }
 
       toast({
         title: 'Campaign created',
@@ -147,10 +150,12 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-marketing-email', {
-        body: { testEmail }
+        body: { testEmail },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       toast({
         title: 'Test email sent',
@@ -200,8 +205,8 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
       // Send to each selected recipient individually
       const promises = selectedRecipientEmails.map(email =>
         supabase.functions.invoke('send-marketing-email', {
-          body: { testEmail: email, subject: customSubject, html: customHtml }
-        })
+          body: { testEmail: email, subject: customSubject, html: customHtml },
+        }),
       );
 
       const results = await Promise.allSettled(promises);
@@ -255,10 +260,12 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-marketing-email', {
-        body: { campaignId }
+        body: { campaignId },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       toast({
         title: 'Campaign sent',
@@ -281,7 +288,9 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
   };
 
   const deleteCampaign = async (campaignId: number) => {
-    if (!confirm('Are you sure you want to delete this campaign?')) return;
+    if (!confirm('Are you sure you want to delete this campaign?')) {
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -289,7 +298,9 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
         .delete()
         .eq('id', campaignId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       toast({
         title: 'Campaign deleted',
@@ -310,12 +321,12 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'gray';
-      case 'scheduled': return 'blue';
-      case 'sending': return 'yellow';
-      case 'sent': return 'green';
-      case 'failed': return 'red';
-      default: return 'gray';
+    case 'draft': return 'gray';
+    case 'scheduled': return 'blue';
+    case 'sending': return 'yellow';
+    case 'sent': return 'green';
+    case 'failed': return 'red';
+    default: return 'gray';
     }
   };
 
@@ -433,8 +444,8 @@ const MarketingEmailAdmin: React.FC<MarketingEmailAdminProps> = () => {
                         key={recipient.user_id}
                         p={2}
                         borderRadius="md"
-                        bg={selectedRecipients.has(recipient.user_id) ? "green.100" : "transparent"}
-                        _hover={{ bg: selectedRecipients.has(recipient.user_id) ? "green.100" : "green.50" }}
+                        bg={selectedRecipients.has(recipient.user_id) ? 'green.100' : 'transparent'}
+                        _hover={{ bg: selectedRecipients.has(recipient.user_id) ? 'green.100' : 'green.50' }}
                         cursor="pointer"
                         onClick={() => toggleRecipient(recipient.user_id)}
                       >

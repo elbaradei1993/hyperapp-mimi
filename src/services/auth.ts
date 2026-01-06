@@ -1,4 +1,5 @@
 import { AuthResponse, User } from '@supabase/supabase-js';
+
 // import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'; // Disabled to fix 500 error
 import { supabase } from '../lib/supabase';
 import type { User as AppUser } from '../types';
@@ -11,9 +12,15 @@ class AuthService {
   // Authentication methods
   async signUp(email: string, password: string, username: string, marketingConsent: boolean = false, language: string = 'en'): Promise<AuthResponse> {
     // Validate inputs
-    if (!email?.trim()) throw new Error('Email is required');
-    if (!password || password.length < 6) throw new Error('Password must be at least 6 characters');
-    if (!username?.trim()) throw new Error('Username is required');
+    if (!email?.trim()) {
+      throw new Error('Email is required');
+    }
+    if (!password || password.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+    if (!username?.trim()) {
+      throw new Error('Username is required');
+    }
 
     const cleanEmail = email.toLowerCase().trim();
     const cleanUsername = username.trim();
@@ -28,11 +35,11 @@ class AuthService {
           username: cleanUsername,
           display_name: cleanUsername,
           reputation: 0,
-          language: language,
+          language,
           signup_timestamp: new Date().toISOString(),
-          marketing_consent: marketingConsent
-        }
-      }
+          marketing_consent: marketingConsent,
+        },
+      },
     });
 
     if (response.error) {
@@ -49,14 +56,14 @@ class AuthService {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseKey}`
+            'Authorization': `Bearer ${supabaseKey}`,
           },
           body: JSON.stringify({
             email: cleanEmail,
             userId: response.data.user.id,
             userName: cleanUsername,
-            language: language
-          })
+            language,
+          }),
         });
 
         const emailResult = await emailResponse.json();
@@ -77,12 +84,16 @@ class AuthService {
   }
 
   async signIn(email: string, password: string): Promise<AuthResponse> {
-    if (!email?.trim()) throw new Error('Email is required');
-    if (!password) throw new Error('Password is required');
+    if (!email?.trim()) {
+      throw new Error('Email is required');
+    }
+    if (!password) {
+      throw new Error('Password is required');
+    }
 
     const response = await supabase.auth.signInWithPassword({
       email: email.toLowerCase().trim(),
-      password
+      password,
     });
 
     if (response.error) {
@@ -159,13 +170,17 @@ class AuthService {
 
   async getCurrentUser(): Promise<User | null> {
     const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return user;
   }
 
   async getSession() {
     const { data, error } = await supabase.auth.getSession();
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return data;
   }
 
@@ -177,7 +192,7 @@ class AuthService {
         user_id: userId,
         ...profileData,
         reputation: 0,
-        language: 'en'
+        language: 'en',
       }])
       .select()
       .single();
@@ -242,7 +257,7 @@ class AuthService {
           email: authUser.email!,
           email_verified: authUser.email_confirmed_at ? true : false,
           email_verified_at: authUser.email_confirmed_at,
-          ...profile
+          ...profile,
         };
 
         // If we have pending profile data and the profile is incomplete, update it
@@ -271,11 +286,11 @@ class AuthService {
                         'User';
 
         const profileData = {
-          username: username,
+          username,
           email: authUser.email,
           reputation: 0,
           language: authUser.user_metadata?.language || 'en',
-          email_verified: authUser.email_confirmed_at ? true : false
+          email_verified: authUser.email_confirmed_at ? true : false,
         };
 
         const { data: newProfile, error: createError } = await this.createUserProfile(authUser.id, profileData);
@@ -287,11 +302,11 @@ class AuthService {
           const minimalProfile: AppUser = {
             id: authUser.id,
             email: authUser.email!,
-            username: username,
+            username,
             reputation: 0,
             language: 'en',
             email_verified: authUser.email_confirmed_at ? true : false,
-            email_verified_at: authUser.email_confirmed_at
+            email_verified_at: authUser.email_confirmed_at,
           };
           return minimalProfile;
         }
@@ -302,7 +317,7 @@ class AuthService {
           email: authUser.email!,
           email_verified: authUser.email_confirmed_at ? true : false,
           email_verified_at: authUser.email_confirmed_at,
-          ...newProfile
+          ...newProfile,
         };
       }
     } catch (error) {
@@ -315,7 +330,7 @@ class AuthService {
         reputation: 0,
         language: 'en',
         email_verified: authUser.email_confirmed_at ? true : false,
-        email_verified_at: authUser.email_confirmed_at
+        email_verified_at: authUser.email_confirmed_at,
       };
       console.log('Using fallback user profile');
       return fallbackUser;
@@ -332,7 +347,7 @@ class AuthService {
   // Password reset
   async resetPassword(email: string): Promise<{ error: any }> {
     return supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: `${window.location.origin}/reset-password`,
     });
   }
 
@@ -388,7 +403,7 @@ class AuthService {
       .insert([{
         user_id: userId,
         report_id: reportId,
-        vote_type: voteType
+        vote_type: voteType,
       }]);
   }
 

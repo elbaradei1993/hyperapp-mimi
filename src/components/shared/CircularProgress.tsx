@@ -34,7 +34,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   backgroundColor = '#e5e7eb',
   showPercentage = true,
   animationDuration = 1500,
-  className = ''
+  className = '',
 }) => {
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
   const radius = (size - strokeWidth) / 2;
@@ -57,14 +57,14 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
       height: size,
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     }}>
       <svg
         width={size}
         height={size}
         style={{
           transform: 'rotate(-90deg)',
-          filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))'
+          filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
         }}
       >
         {/* Background circle */}
@@ -90,7 +90,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
           strokeLinecap="round"
           style={{
             transition: `stroke-dashoffset ${animationDuration}ms ease-in-out`,
-            filter: `drop-shadow(0 0 6px ${color}40)`
+            filter: `drop-shadow(0 0 6px ${color}40)`,
           }}
         />
       </svg>
@@ -105,8 +105,8 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
           textAlign: 'center',
           fontSize: Math.max(12, size * 0.12),
           fontWeight: '900',
-          color: color,
-          textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+          color,
+          textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
         }}>
           {Math.round(animatedPercentage)}%
         </div>
@@ -123,7 +123,7 @@ const MultiSegmentCircularProgress: React.FC<MultiSegmentCircularProgressProps> 
   showCenterContent = true,
   centerContent,
   animationDuration = 2000,
-  className = ''
+  className = '',
 }) => {
   const [animatedSegments, setAnimatedSegments] = useState(segments.map(() => 0));
   const radius = (size - strokeWidth) / 2;
@@ -164,13 +164,13 @@ const MultiSegmentCircularProgress: React.FC<MultiSegmentCircularProgressProps> 
       height: size,
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     }}>
       <svg
         width={size}
         height={size}
         style={{
-          filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))'
+          filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
         }}
       >
         {/* Background circle */}
@@ -190,7 +190,9 @@ const MultiSegmentCircularProgress: React.FC<MultiSegmentCircularProgressProps> 
           const endPercentage = Math.min(cumulativePercentage + animatedSegments[index], 100);
           cumulativePercentage += animatedSegments[index];
 
-          if (animatedSegments[index] === 0) return null;
+          if (animatedSegments[index] === 0) {
+            return null;
+          }
 
           return (
             <path
@@ -202,7 +204,7 @@ const MultiSegmentCircularProgress: React.FC<MultiSegmentCircularProgressProps> 
               strokeLinecap="round"
               style={{
                 transition: `all ${animationDuration}ms ease-in-out`,
-                filter: `drop-shadow(0 0 4px ${segment.color}30)`
+                filter: `drop-shadow(0 0 4px ${segment.color}30)`,
               }}
             />
           );
@@ -216,7 +218,7 @@ const MultiSegmentCircularProgress: React.FC<MultiSegmentCircularProgressProps> 
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          textAlign: 'center'
+          textAlign: 'center',
         }}>
           {centerContent}
         </div>

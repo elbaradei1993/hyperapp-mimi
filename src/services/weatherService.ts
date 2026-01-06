@@ -1,5 +1,6 @@
-import { WeatherData } from './hub';
 import { supabase } from '../lib/supabase';
+
+import { WeatherData } from './hub';
 
 class WeatherService {
   private readonly BASE_URL = 'https://api.open-meteo.com/v1/forecast';
@@ -8,7 +9,7 @@ class WeatherService {
     try {
       // Fetch current weather and hourly forecast from Open-Meteo with additional parameters
       const response = await fetch(
-        `${this.BASE_URL}?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,precipitation_probability,rain,showers,visibility,windspeed_10m,winddirection_10m,relativehumidity_2m,uv_index&forecast_days=1`
+        `${this.BASE_URL}?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,precipitation_probability,rain,showers,visibility,windspeed_10m,winddirection_10m,relativehumidity_2m,uv_index&forecast_days=1`,
       );
 
       if (!response.ok) {
@@ -61,7 +62,7 @@ class WeatherService {
         windDirection: Math.round(windDirection),
         humidity: Math.round(humidity),
         uvIndex: Math.round(uvIndex * 10) / 10, // Round to 1 decimal place
-        hourlyForecast
+        hourlyForecast,
       };
     } catch (error) {
       console.error('Error fetching weather data:', error);
@@ -110,7 +111,7 @@ class WeatherService {
       'Snow': 'Snow',
       'Mist': 'Foggy',
       'Fog': 'Foggy',
-      'Haze': 'Hazy'
+      'Haze': 'Hazy',
     };
 
     return conditionMap[condition] || 'Partly Cloudy';
@@ -147,7 +148,7 @@ class WeatherService {
       86: 'Snow',        // Snow showers heavy
       95: 'Thunderstorm', // Thunderstorm: Slight or moderate
       96: 'Thunderstorm', // Thunderstorm with slight hail
-      99: 'Thunderstorm'  // Thunderstorm with heavy hail
+      99: 'Thunderstorm',  // Thunderstorm with heavy hail
     };
 
     return codeMap[code] || 'Partly Sunny';
@@ -155,8 +156,12 @@ class WeatherService {
 
   private calculateVisibility(visibility: number): 'Low' | 'Medium' | 'High' {
     // Visibility in meters
-    if (visibility < 1000) return 'Low';
-    if (visibility < 5000) return 'Medium';
+    if (visibility < 1000) {
+      return 'Low';
+    }
+    if (visibility < 5000) {
+      return 'Medium';
+    }
     return 'High';
   }
 
@@ -194,7 +199,7 @@ class WeatherService {
     visibility: number,
     temperature: number,
     weatherCode: number,
-    hourlyData: any
+    hourlyData: any,
   ): Promise<void> {
     try {
       // Extract additional weather data from hourly data
@@ -211,7 +216,7 @@ class WeatherService {
         p_humidity_percent: humidity,
         p_wind_speed_ms: windSpeed,
         p_precipitation_mm: precipitation,
-        p_weather_code: weatherCode
+        p_weather_code: weatherCode,
       });
 
       if (error) {
@@ -229,8 +234,12 @@ class WeatherService {
 
     // Base temperature varies by latitude (rough approximation)
     let baseTemp = 20;
-    if (Math.abs(latitude) > 40) baseTemp = 10; // Colder at higher latitudes
-    else if (Math.abs(latitude) < 20) baseTemp = 25; // Warmer at lower latitudes
+    if (Math.abs(latitude) > 40) {
+      baseTemp = 10;
+    } // Colder at higher latitudes
+    else if (Math.abs(latitude) < 20) {
+      baseTemp = 25;
+    } // Warmer at lower latitudes
 
     // Add daily temperature variation
     const tempVariation = Math.sin((hour - 6) * Math.PI / 12) * 8; // Peak at 6 PM
@@ -238,7 +247,7 @@ class WeatherService {
 
     // Weather conditions based on time and location
     const conditions = ['Clear', 'Clouds', 'Rain', 'Drizzle', 'Mist', 'Fog'];
-    let conditionWeights = [0.4, 0.3, 0.1, 0.1, 0.05, 0.05]; // Default weights
+    const conditionWeights = [0.4, 0.3, 0.1, 0.1, 0.05, 0.05]; // Default weights
 
     // Adjust for time of day
     if (hour >= 6 && hour <= 18) {
@@ -291,7 +300,7 @@ class WeatherService {
       rainStartsIn,
       visibility,
       pedestrianTraffic: Math.round(Math.max(-80, Math.min(20, pedestrianTraffic))),
-      visibilityChange
+      visibilityChange,
     };
   }
 
@@ -333,11 +342,11 @@ class WeatherService {
           forecast.push({
             time: forecastTime.toLocaleTimeString('en-US', {
               hour: 'numeric',
-              hour12: true
+              hour12: true,
             }),
             temperature: temp,
             condition: this.mapOpenMeteoWeatherCode(weatherCode),
-            precipitationProbability: Math.round(precipProb)
+            precipitationProbability: Math.round(precipProb),
           });
         }
       }
@@ -356,7 +365,7 @@ class WeatherService {
       rainStartsIn: 42,
       visibility: 'Low',
       pedestrianTraffic: -60,
-      visibilityChange: -23
+      visibilityChange: -23,
     };
   }
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import i18n from '../i18n';
 
 interface LanguageContextType {
@@ -147,7 +148,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       isRTL,
       isInitialized,
       isChanging,
-      isTranslating
+      isTranslating,
     }}>
       {children}
     </LanguageContext.Provider>

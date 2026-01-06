@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { credibilityService } from '../services/credibilityService';
 import { Check, X, Shield, Crown } from 'lucide-react';
+
+import { credibilityService } from '../services/credibilityService';
 
 // Simple toast function
 const showToast = (message: string) => {
@@ -57,7 +58,7 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
   validationCount = 0,
   size = 'xs', // Changed default to 'xs' for mobile
   showDetails = false,
-  onClick
+  onClick,
 }) => {
   const { t } = useTranslation();
   const credibilityInfo = credibilityService.getCredibilityLevel(score);
@@ -65,8 +66,8 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
 
   // Translate credibility labels
   const translatedLabel = score >= 0.8 ? t('credibility.highlyCredible') :
-                         score >= 0.6 ? t('credibility.moderatelyCredible') :
-                         t('credibility.lowCredibility');
+    score >= 0.6 ? t('credibility.moderatelyCredible') :
+      t('credibility.lowCredibility');
 
   // Mobile-responsive sizing
   const isMobile = window.innerWidth < 480;
@@ -75,13 +76,13 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
       return {
         padding: '1px 3px',
         fontSize: '0.5rem',
-        gap: '2px'
+        gap: '2px',
       };
     }
     return {
       padding: '2px 6px',
       fontSize: '0.6rem',
-      gap: '4px'
+      gap: '4px',
     };
   };
 
@@ -113,7 +114,7 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         whiteSpace: 'nowrap',
-        flexShrink: 0
+        flexShrink: 0,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'scale(1.05)';
@@ -130,7 +131,7 @@ export const CredibilityIndicator: React.FC<CredibilityIndicatorProps> = ({
         <span style={{
           fontSize: isMobile ? '0.4rem' : '0.5rem',
           opacity: 0.8,
-          fontWeight: '600'
+          fontWeight: '600',
         }}>
           ({validationCount})
         </span>
@@ -158,7 +159,7 @@ export const ValidationButtons: React.FC<ValidationButtonsProps> = ({
   size = 'md',
   isAuthenticated = true,
   isValidating = false,
-  userVerificationLevel = 'basic'
+  userVerificationLevel = 'basic',
 }) => {
   const { t } = useTranslation();
   const isDisabled = disabled || !isAuthenticated || isValidating;
@@ -169,13 +170,13 @@ export const ValidationButtons: React.FC<ValidationButtonsProps> = ({
       return {
         padding: '2px 4px',
         fontSize: '9px',
-        emojiSize: '10px'
+        emojiSize: '10px',
       };
     }
     return {
       padding: '3px 6px',
       fontSize: '10px',
-      emojiSize: '12px'
+      emojiSize: '12px',
     };
   };
 
@@ -199,43 +200,45 @@ export const ValidationButtons: React.FC<ValidationButtonsProps> = ({
     minHeight: '28px', // Slightly smaller for minimalism
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
-    ...sizeStyles
+    ...sizeStyles,
   };
 
   const confirmButtonStyle = userValidation === 'confirm'
     ? {
-        ...baseButtonStyle,
-        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        color: 'white',
-        borderColor: 'rgba(16, 185, 129, 0.3)',
-        boxShadow: '0 2px 12px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-      }
+      ...baseButtonStyle,
+      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      color: 'white',
+      borderColor: 'rgba(16, 185, 129, 0.3)',
+      boxShadow: '0 2px 12px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    }
     : {
-        ...baseButtonStyle,
-        background: 'rgba(255, 255, 255, 0.05)',
-        color: 'var(--text-secondary)',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-      };
+      ...baseButtonStyle,
+      background: 'rgba(255, 255, 255, 0.05)',
+      color: 'var(--text-secondary)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+    };
 
   const denyButtonStyle = userValidation === 'deny'
     ? {
-        ...baseButtonStyle,
-        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-        color: 'white',
-        borderColor: 'rgba(239, 68, 68, 0.3)',
-        boxShadow: '0 2px 12px rgba(239, 68, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-      }
+      ...baseButtonStyle,
+      background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+      color: 'white',
+      borderColor: 'rgba(239, 68, 68, 0.3)',
+      boxShadow: '0 2px 12px rgba(239, 68, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    }
     : {
-        ...baseButtonStyle,
-        background: 'rgba(239, 68, 68, 0.08)', // Subtle red background when not pressed
-        color: '#dc2626', // Red text color
-        borderColor: 'rgba(239, 68, 68, 0.2)', // Subtle red border
-        boxShadow: '0 1px 3px rgba(239, 68, 68, 0.1)' // Subtle red shadow
-      };
+      ...baseButtonStyle,
+      background: 'rgba(239, 68, 68, 0.08)', // Subtle red background when not pressed
+      color: '#dc2626', // Red text color
+      borderColor: 'rgba(239, 68, 68, 0.2)', // Subtle red border
+      boxShadow: '0 1px 3px rgba(239, 68, 68, 0.1)', // Subtle red shadow
+    };
 
   const handleValidation = (type: 'confirm' | 'deny') => {
-    if (isDisabled) return;
+    if (isDisabled) {
+      return;
+    }
 
     if (!isAuthenticated) {
       showToast(t('credibility.loginRequired'));
@@ -252,7 +255,7 @@ export const ValidationButtons: React.FC<ValidationButtonsProps> = ({
     gap: '6px', // Reduced gap
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
   };
 
   return (
@@ -329,15 +332,15 @@ export const UserVerificationBadge: React.FC<UserVerificationBadgeProps> = ({
   level,
   size = 'xs', // Changed default to 'xs' for mobile
   showLabel = true,
-  onClick
+  onClick,
 }) => {
   const { t } = useTranslation();
   const verificationInfo = credibilityService.getVerificationLevelInfo(level);
 
   // Translate verification labels
   const translatedLabel = level === 'trusted' ? t('credibility.trustedReporter') :
-                         level === 'verified' ? t('credibility.verifiedUser') :
-                         t('credibility.basicUser');
+    level === 'verified' ? t('credibility.verifiedUser') :
+      t('credibility.basicUser');
 
   // Mobile-responsive sizing
   const isMobile = window.innerWidth < 480;
@@ -347,14 +350,14 @@ export const UserVerificationBadge: React.FC<UserVerificationBadgeProps> = ({
         padding: '1px 3px',
         fontSize: '0.5rem',
         gap: '2px',
-        iconSize: '8px'
+        iconSize: '8px',
       };
     }
     return {
       padding: '2px 6px',
       fontSize: '0.6rem',
       gap: '4px',
-      iconSize: '10px'
+      iconSize: '10px',
     };
   };
 
@@ -386,7 +389,7 @@ export const UserVerificationBadge: React.FC<UserVerificationBadgeProps> = ({
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         whiteSpace: 'nowrap',
-        flexShrink: 0
+        flexShrink: 0,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'scale(1.05)';
@@ -427,37 +430,37 @@ export const CommunityGuardBadge: React.FC<CommunityGuardBadgeProps> = ({
   size = 'md',
   showLabel = true,
   animated = false,
-  onClick
+  onClick,
 }) => {
   const { t } = useTranslation();
 
   // Size configurations
   const getSizeConfig = () => {
     switch (size) {
-      case 'xs':
-        return {
-          container: { padding: '2px 4px', fontSize: '0.5rem', gap: '2px' },
-          icon: 8,
-          borderRadius: '3px'
-        };
-      case 'sm':
-        return {
-          container: { padding: '3px 6px', fontSize: '0.6rem', gap: '3px' },
-          icon: 10,
-          borderRadius: '4px'
-        };
-      case 'lg':
-        return {
-          container: { padding: '6px 12px', fontSize: '0.8rem', gap: '6px' },
-          icon: 16,
-          borderRadius: '6px'
-        };
-      default: // md
-        return {
-          container: { padding: '4px 8px', fontSize: '0.7rem', gap: '4px' },
-          icon: 12,
-          borderRadius: '5px'
-        };
+    case 'xs':
+      return {
+        container: { padding: '2px 4px', fontSize: '0.5rem', gap: '2px' },
+        icon: 8,
+        borderRadius: '3px',
+      };
+    case 'sm':
+      return {
+        container: { padding: '3px 6px', fontSize: '0.6rem', gap: '3px' },
+        icon: 10,
+        borderRadius: '4px',
+      };
+    case 'lg':
+      return {
+        container: { padding: '6px 12px', fontSize: '0.8rem', gap: '6px' },
+        icon: 16,
+        borderRadius: '6px',
+      };
+    default: // md
+      return {
+        container: { padding: '4px 8px', fontSize: '0.7rem', gap: '4px' },
+        icon: 12,
+        borderRadius: '5px',
+      };
     }
   };
 
@@ -482,7 +485,7 @@ export const CommunityGuardBadge: React.FC<CommunityGuardBadgeProps> = ({
       ? '0 2px 8px rgba(255, 215, 0, 0.4), 0 0 16px rgba(255, 215, 0, 0.2)'
       : '0 2px 6px rgba(255, 215, 0, 0.3)',
     position: 'relative' as const,
-    overflow: 'hidden' as const
+    overflow: 'hidden' as const,
   };
 
   const handleClick = () => {
@@ -517,7 +520,7 @@ export const CommunityGuardBadge: React.FC<CommunityGuardBadgeProps> = ({
         height: '100%',
         background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
         animation: animated ? 'shimmer 2s infinite' : 'none',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       }} />
 
       {/* Crown icon */}
@@ -541,7 +544,7 @@ export const CommunityGuardBadge: React.FC<CommunityGuardBadgeProps> = ({
           fontWeight: '900',
           textShadow: '0 1px 2px rgba(255, 255, 255, 0.3)',
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
         }}>
           {t('community.communityGuard', 'Community Guard')}
         </span>
@@ -564,7 +567,7 @@ interface CredibilityMeterProps {
 
 export const CredibilityMeter: React.FC<CredibilityMeterProps> = ({
   score,
-  className = ''
+  className = '',
 }) => {
   const percentage = Math.round(score * 100);
   const credibilityInfo = credibilityService.getCredibilityLevel(score);
@@ -583,7 +586,7 @@ export const CredibilityMeter: React.FC<CredibilityMeterProps> = ({
             className="h-2 rounded-full transition-all duration-300"
             style={{
               width: `${percentage}%`,
-              backgroundColor: credibilityInfo.color
+              backgroundColor: credibilityInfo.color,
             }}
           />
         </div>
@@ -604,7 +607,7 @@ export const ValidationStats: React.FC<ValidationStatsProps> = ({
   confirmCount,
   denyCount,
   totalValidations,
-  className = ''
+  className = '',
 }) => {
   if (totalValidations === 0) {
     return (

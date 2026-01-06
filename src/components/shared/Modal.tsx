@@ -15,15 +15,17 @@ const Modal: React.FC<ModalProps> = ({
   children,
   title,
   size = 'lg',
-  showCloseButton = true
+  showCloseButton = true,
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const maxWidth = {
     sm: '400px',
     md: '500px',
     lg: '600px',
-    xl: '800px'
+    xl: '800px',
   }[size];
 
   return (
@@ -40,7 +42,7 @@ const Modal: React.FC<ModalProps> = ({
         alignItems: 'center',
         zIndex: 9999,
         padding: '20px',
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(10px)',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -54,13 +56,13 @@ const Modal: React.FC<ModalProps> = ({
           borderRadius: '16px',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
           width: '100%',
-          maxWidth: maxWidth,
+          maxWidth,
           maxHeight: '90vh',
           overflowY: 'auto',
           overflowX: 'hidden',
           position: 'relative',
           transform: 'translateY(0) scale(1)',
-          transition: 'transform 0.3s ease-out, opacity 0.3s ease-out'
+          transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
         }}
       >
         {/* Close Button */}
@@ -84,7 +86,7 @@ const Modal: React.FC<ModalProps> = ({
               justifyContent: 'center',
               zIndex: 10,
               transition: 'all 0.2s ease',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
@@ -106,7 +108,7 @@ const Modal: React.FC<ModalProps> = ({
               fontSize: '24px',
               fontWeight: 'bold',
               color: '#1a1a1a',
-              margin: 0
+              margin: 0,
             }}>
               {title}
             </h2>

@@ -145,7 +145,7 @@ export class FCMService {
         const firebaseRegistration = existingRegistrations.find(reg =>
           reg.active?.scriptURL.includes('firebase-messaging-sw.js') ||
           reg.waiting?.scriptURL.includes('firebase-messaging-sw.js') ||
-          reg.installing?.scriptURL.includes('firebase-messaging-sw.js')
+          reg.installing?.scriptURL.includes('firebase-messaging-sw.js'),
         );
 
         if (firebaseRegistration) {
@@ -156,7 +156,7 @@ export class FCMService {
           try {
             console.log('🔄 🌐 Firebase service worker not found, attempting registration...');
             registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-              scope: '/'
+              scope: '/',
             });
             console.log('✅ 🌐 Firebase service worker registered successfully');
 
@@ -189,7 +189,7 @@ export class FCMService {
         console.log('🌐 Getting FCM token with VAPID key...');
         const token = await getToken(messaging, {
           vapidKey: this.vapidKey,
-          serviceWorkerRegistration: registration
+          serviceWorkerRegistration: registration,
         });
 
         if (token) {
@@ -249,12 +249,12 @@ export class FCMService {
       try {
         const { receive } = await PushNotifications.checkPermissions();
         switch (receive) {
-          case 'granted':
-            return 'granted';
-          case 'denied':
-            return 'denied';
-          default:
-            return 'default';
+        case 'granted':
+          return 'granted';
+        case 'denied':
+          return 'denied';
+        default:
+          return 'default';
         }
       } catch (error) {
         console.warn('Error getting Capacitor push notification permission status:', error);

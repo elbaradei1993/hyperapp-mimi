@@ -1,42 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../contexts/AuthContext';
-import { useVibe } from '../contexts/VibeContext';
 import { motion } from 'framer-motion';
 import { Box } from '@chakra-ui/react';
-import VibeFigure from './VibeFigure';
-import NotificationBell from './shared/NotificationBell';
+
+import { useAuth } from '../contexts/AuthContext';
+import { useVibe } from '../contexts/VibeContext';
 import { VIBE_CONFIG } from '../constants/vibes';
 import { fcmService } from '../lib/firebase';
+
+import VibeFigure from './VibeFigure';
+import NotificationBell from './shared/NotificationBell';
 
 // Pulsing Line Animation Component - Simple heartbeat effect
 const PulsingLineAnimation: React.FC<{ vibeType: string }> = ({ vibeType }) => {
   // Vibe-based animation durations (pulse rates) - slower for better visibility
   const getAnimationDuration = (vibe: string) => {
     switch (vibe) {
-      case 'calm': return 3.0; // ~20 BPM (relaxed)
-      case 'safe': return 2.5; // ~24 BPM (normal)
-      case 'lively': return 1.5; // ~40 BPM (active)
-      case 'festive': return 1.2; // ~50 BPM (excited)
-      case 'noisy': return 1.0; // ~60 BPM (stress)
-      case 'dangerous': return 0.8; // ~75 BPM (alert)
-      default: return 2.5;
+    case 'calm': return 3.0; // ~20 BPM (relaxed)
+    case 'safe': return 2.5; // ~24 BPM (normal)
+    case 'lively': return 1.5; // ~40 BPM (active)
+    case 'festive': return 1.2; // ~50 BPM (excited)
+    case 'noisy': return 1.0; // ~60 BPM (stress)
+    case 'dangerous': return 0.8; // ~75 BPM (alert)
+    default: return 2.5;
     }
   };
 
   // Vibe-based colors using Chakra theme colors
   const getVibeColor = (vibe: string) => {
     switch (vibe) {
-      case 'safe': return '#10b981'; // green.500
-      case 'calm': return '#3b82f6'; // blue.500
-      case 'lively': return '#f59e0b'; // amber.500
-      case 'festive': return '#8b5cf6'; // violet.500
-      case 'crowded': return '#ef4444'; // red.500
-      case 'suspicious': return '#f97316'; // orange.500
-      case 'dangerous': return '#dc2626'; // red.600
-      case 'noisy': return '#eab308'; // yellow.500
-      case 'quiet': return '#06b6d4'; // cyan.500
-      default: return '#6b7280'; // gray.500
+    case 'safe': return '#10b981'; // green.500
+    case 'calm': return '#3b82f6'; // blue.500
+    case 'lively': return '#f59e0b'; // amber.500
+    case 'festive': return '#8b5cf6'; // violet.500
+    case 'crowded': return '#ef4444'; // red.500
+    case 'suspicious': return '#f97316'; // orange.500
+    case 'dangerous': return '#dc2626'; // red.600
+    case 'noisy': return '#eab308'; // yellow.500
+    case 'quiet': return '#06b6d4'; // cyan.500
+    default: return '#6b7280'; // gray.500
     }
   };
 
@@ -62,10 +64,10 @@ const PulsingLineAnimation: React.FC<{ vibeType: string }> = ({ vibeType }) => {
         }}
         initial={{ opacity: 0.3 }}
         animate={{
-          opacity: [0.3, 1, 0.3]
+          opacity: [0.3, 1, 0.3],
         }}
         transition={{
-          duration: duration,
+          duration,
           repeat: Infinity,
           ease: 'easeInOut',
         }}
@@ -112,7 +114,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
 
   // Get vibe display information
   const getVibeDisplayInfo = () => {
-    if (!currentLocationVibe) return null;
+    if (!currentLocationVibe) {
+      return null;
+    }
 
     const vibeConfig = VIBE_CONFIG[currentLocationVibe.type as keyof typeof VIBE_CONFIG];
     return {
@@ -120,25 +124,25 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
       icon: vibeConfig?.icon || '❓',
       color: currentLocationVibe.color,
       percentage: Math.round(currentLocationVibe.percentage),
-      count: currentLocationVibe.count
+      count: currentLocationVibe.count,
     };
   };
 
   // Get cool vibe description text
   const getVibeDescription = (vibeType: string) => {
     const descriptions = {
-      safe: "🛡️ Your fortress of safety! Community reports show this area is well-protected and secure.",
-      calm: "😌 Serenity surrounds you. This peaceful environment promotes relaxation and tranquility.",
-      lively: "🎉 Energy is high! The vibrant atmosphere here is perfect for social connections.",
-      festive: "🎊 Celebration mode activated! This area is buzzing with joyful, festive vibes.",
-      crowded: "👥 People power! The density here creates a lively, communal atmosphere.",
-      suspicious: "⚠️ Stay alert! Community reports suggest being cautious in this area.",
-      dangerous: "🚨 High alert! Safety reports indicate this area requires extra caution.",
-      noisy: "🔊 Sound symphony! The energetic noise level here matches the vibrant activity.",
-      quiet: "🤫 Whisper zone! This serene area offers peaceful respite from urban bustle.",
-      unknown: "❓ Mystery awaits! Limited reports mean this area is still being discovered."
+      safe: '🛡️ Your fortress of safety! Community reports show this area is well-protected and secure.',
+      calm: '😌 Serenity surrounds you. This peaceful environment promotes relaxation and tranquility.',
+      lively: '🎉 Energy is high! The vibrant atmosphere here is perfect for social connections.',
+      festive: '🎊 Celebration mode activated! This area is buzzing with joyful, festive vibes.',
+      crowded: '👥 People power! The density here creates a lively, communal atmosphere.',
+      suspicious: '⚠️ Stay alert! Community reports suggest being cautious in this area.',
+      dangerous: '🚨 High alert! Safety reports indicate this area requires extra caution.',
+      noisy: '🔊 Sound symphony! The energetic noise level here matches the vibrant activity.',
+      quiet: '🤫 Whisper zone! This serene area offers peaceful respite from urban bustle.',
+      unknown: '❓ Mystery awaits! Limited reports mean this area is still being discovered.',
     };
-    return descriptions[vibeType as keyof typeof descriptions] || "🌟 Every location has its own unique energy!";
+    return descriptions[vibeType as keyof typeof descriptions] || '🌟 Every location has its own unique energy!';
   };
 
   const vibeInfo = getVibeDisplayInfo();
@@ -301,7 +305,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
         <MotionDiv
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
           style={{
             zIndex: 2,
             flexShrink: 0,
@@ -326,7 +330,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
         <MotionDiv
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
           style={{
             position: 'absolute',
             right: '0',
@@ -334,7 +338,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateToProfile }) => {
             zIndex: 3, // Higher z-index so ECG line shows behind it
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
           }}
         >
           {/* Notification Bell */}

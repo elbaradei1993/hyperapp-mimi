@@ -48,7 +48,9 @@ export class CommunityAnalytics {
    * Analyze time patterns in reporting activity
    */
   static analyzeTimePatterns(reports: Report[]): TimePattern[] {
-    if (reports.length === 0) return [];
+    if (reports.length === 0) {
+      return [];
+    }
 
     // Group reports by hour of day and day of week
     const hourlyStats: Record<string, number> = {};
@@ -78,7 +80,7 @@ export class CommunityAnalytics {
           dayOfWeek,
           reportCount,
           percentage,
-          peakHours: reportCount >= maxReports * 0.7 // Top 30% of busiest times
+          peakHours: reportCount >= maxReports * 0.7, // Top 30% of busiest times
         });
       }
     }
@@ -90,7 +92,9 @@ export class CommunityAnalytics {
    * Detect emerging hotspots by comparing recent activity to historical baseline
    */
   static detectEmergingHotspots(reports: Report[], daysBack: number = 7): Hotspot[] {
-    if (reports.length === 0) return [];
+    if (reports.length === 0) {
+      return [];
+    }
 
     const now = new Date();
     const cutoffDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
@@ -113,13 +117,15 @@ export class CommunityAnalytics {
 
     // Build recent clusters
     recentReports.forEach(report => {
-      if (report.latitude == null || report.longitude == null) return;
+      if (report.latitude == null || report.longitude == null) {
+        return;
+      }
 
       const key = getGridKey(report.latitude, report.longitude);
       if (!recentClusters[key]) {
         recentClusters[key] = {
           reports: [],
-          center: [report.latitude, report.longitude]
+          center: [report.latitude, report.longitude],
         };
       }
       recentClusters[key].reports.push(report);
@@ -127,13 +133,15 @@ export class CommunityAnalytics {
 
     // Build historical clusters
     historicalReports.forEach(report => {
-      if (report.latitude == null || report.longitude == null) return;
+      if (report.latitude == null || report.longitude == null) {
+        return;
+      }
 
       const key = getGridKey(report.latitude, report.longitude);
       if (!historicalClusters[key]) {
         historicalClusters[key] = {
           reports: [],
-          center: [report.latitude, report.longitude]
+          center: [report.latitude, report.longitude],
         };
       }
       historicalClusters[key].reports.push(report);
@@ -158,7 +166,7 @@ export class CommunityAnalytics {
             activityChange,
             currentReports,
             previousReports,
-            timeframe: `${daysBack} days`
+            timeframe: `${daysBack} days`,
           });
         }
       }
@@ -171,17 +179,23 @@ export class CommunityAnalytics {
    * Calculate correlations between different vibe types
    */
   static calculateVibeCorrelations(reports: Report[]): VibeCorrelation[] {
-    if (reports.length === 0) return [];
+    if (reports.length === 0) {
+      return [];
+    }
 
     // Group reports by location clusters to find co-occurring vibes
     const gridSize = 0.005; // Smaller grid for correlation analysis
     const clusters: Record<string, Report[]> = {};
 
     reports.forEach(report => {
-      if (report.latitude == null || report.longitude == null) return;
+      if (report.latitude == null || report.longitude == null) {
+        return;
+      }
 
       const key = `${Math.round(report.latitude / gridSize)}-${Math.round(report.longitude / gridSize)}`;
-      if (!clusters[key]) clusters[key] = [];
+      if (!clusters[key]) {
+        clusters[key] = [];
+      }
       clusters[key].push(report);
     });
 
@@ -190,14 +204,18 @@ export class CommunityAnalytics {
     const allVibes = Object.values(VibeType);
 
     Object.values(clusters).forEach(clusterReports => {
-      if (clusterReports.length < 2) return; // Need at least 2 reports for correlation
+      if (clusterReports.length < 2) {
+        return;
+      } // Need at least 2 reports for correlation
 
       const vibesInCluster = new Set(clusterReports.map(r => r.vibe_type));
 
       // Check all possible vibe pairs
       allVibes.forEach(vibeA => {
         allVibes.forEach(vibeB => {
-          if (vibeA >= vibeB) return; // Avoid duplicate pairs
+          if (vibeA >= vibeB) {
+            return;
+          } // Avoid duplicate pairs
 
           const key = `${vibeA}-${vibeB}`;
           if (!vibePairs[key]) {
@@ -217,7 +235,9 @@ export class CommunityAnalytics {
     const correlations: VibeCorrelation[] = [];
 
     Object.entries(vibePairs).forEach(([key, stats]) => {
-      if (stats.total < 5) return; // Minimum sample size
+      if (stats.total < 5) {
+        return;
+      } // Minimum sample size
 
       const [vibeA, vibeB] = key.split('-') as [VibeType, VibeType];
       const pAB = stats.together / stats.total; // P(A and B)
@@ -238,7 +258,7 @@ export class CommunityAnalytics {
           correlation,
           confidence,
           sampleSize: stats.total,
-          description: this.generateCorrelationDescription(vibeA, vibeB, correlation)
+          description: this.generateCorrelationDescription(vibeA, vibeB, correlation),
         });
       }
     });
@@ -254,9 +274,13 @@ export class CommunityAnalytics {
     const direction = correlation > 0 ? 'tend to appear together' : 'rarely appear together';
 
     let strengthText = '';
-    if (strength >= 0.7) strengthText = 'strongly';
-    else if (strength >= 0.4) strengthText = 'moderately';
-    else strengthText = 'weakly';
+    if (strength >= 0.7) {
+      strengthText = 'strongly';
+    } else if (strength >= 0.4) {
+      strengthText = 'moderately';
+    } else {
+      strengthText = 'weakly';
+    }
 
     return `${vibeA} and ${vibeB} ${strengthText} ${direction}`;
   }
@@ -281,8 +305,8 @@ export class CommunityAnalytics {
       totalReports: reports.length,
       analyzedTimeframe: {
         start: startDate,
-        end: endDate
-      }
+        end: endDate,
+      },
     };
   }
 }

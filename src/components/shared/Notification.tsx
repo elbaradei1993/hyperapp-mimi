@@ -16,7 +16,7 @@ const Notification: React.FC<NotificationProps> = ({
   message,
   duration = 5000,
   onClose,
-  style: customStyle
+  style: customStyle,
 }) => {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(true);
@@ -40,7 +40,9 @@ const Notification: React.FC<NotificationProps> = ({
     }, 300); // Match transition duration
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    return null;
+  }
 
   const typeClasses = {
     success: {
@@ -49,7 +51,7 @@ const Notification: React.FC<NotificationProps> = ({
       icon: 'text-green-400',
       iconBg: 'bg-green-100',
       title: 'text-green-800',
-      message: 'text-green-700'
+      message: 'text-green-700',
     },
     error: {
       bg: 'bg-red-50',
@@ -57,7 +59,7 @@ const Notification: React.FC<NotificationProps> = ({
       icon: 'text-red-400',
       iconBg: 'bg-red-100',
       title: 'text-red-800',
-      message: 'text-red-700'
+      message: 'text-red-700',
     },
     warning: {
       bg: 'bg-yellow-50',
@@ -65,7 +67,7 @@ const Notification: React.FC<NotificationProps> = ({
       icon: 'text-yellow-400',
       iconBg: 'bg-yellow-100',
       title: 'text-yellow-800',
-      message: 'text-yellow-700'
+      message: 'text-yellow-700',
     },
     info: {
       bg: 'bg-blue-50',
@@ -73,8 +75,8 @@ const Notification: React.FC<NotificationProps> = ({
       icon: 'text-blue-400',
       iconBg: 'bg-blue-100',
       title: 'text-blue-800',
-      message: 'text-blue-700'
-    }
+      message: 'text-blue-700',
+    },
   };
 
   const icons = {
@@ -97,7 +99,7 @@ const Notification: React.FC<NotificationProps> = ({
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
       </svg>
-    )
+    ),
   };
 
   const defaultStyle: React.CSSProperties = {
@@ -116,7 +118,7 @@ const Notification: React.FC<NotificationProps> = ({
     opacity: isExiting ? 0 : 1,
     transition: 'all 300ms ease-in-out',
     fontFamily: 'system-ui, -apple-system, sans-serif',
-    pointerEvents: 'auto'
+    pointerEvents: 'auto',
   };
 
   return (
@@ -128,10 +130,10 @@ const Notification: React.FC<NotificationProps> = ({
           flexShrink: 0,
           backgroundColor: type === 'success' ? '#a7f3d0' : type === 'error' ? '#fecaca' : type === 'warning' ? '#fde68a' : '#bfdbfe',
           borderRadius: '8px',
-          padding: '4px'
+          padding: '4px',
         }}>
           <div style={{
-            color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af'
+            color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af',
           }}>
             {icons[type]}
           </div>
@@ -142,7 +144,7 @@ const Notification: React.FC<NotificationProps> = ({
             fontSize: '12px',
             fontWeight: '500',
             margin: '0 0 4px 0',
-            color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af'
+            color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af',
           }}>
             {title}
           </p>
@@ -150,7 +152,7 @@ const Notification: React.FC<NotificationProps> = ({
             <p style={{
               fontSize: '12px',
               margin: '4px 0 0 0',
-              color: type === 'success' ? '#047857' : type === 'error' ? '#dc2626' : type === 'warning' ? '#d97706' : '#1d4ed8'
+              color: type === 'success' ? '#047857' : type === 'error' ? '#dc2626' : type === 'warning' ? '#d97706' : '#1d4ed8',
             }}>
               {message}
             </p>
@@ -171,7 +173,7 @@ const Notification: React.FC<NotificationProps> = ({
               color: type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : type === 'warning' ? '#92400e' : '#1e40af',
               cursor: 'pointer',
               fontSize: '18px',
-              lineHeight: 1
+              lineHeight: 1,
             }}
           >
             <span className="sr-only">{t('common.close')}</span>
@@ -199,7 +201,7 @@ interface NotificationManagerProps {
 
 export const NotificationManager: React.FC<NotificationManagerProps> = ({
   notifications,
-  onRemove
+  onRemove,
 }) => {
   // Limit to maximum 3 notifications to prevent screen coverage
   const visibleNotifications = notifications.slice(0, 3);
@@ -215,7 +217,7 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
           duration={notification.duration}
           onClose={() => onRemove(notification.id)}
           style={{
-            top: `calc(80px + env(safe-area-inset-top, 0px) + 20px + ${index * 80}px)`
+            top: `calc(80px + env(safe-area-inset-top, 0px) + 20px + ${index * 80}px)`,
           }}
         />
       ))}

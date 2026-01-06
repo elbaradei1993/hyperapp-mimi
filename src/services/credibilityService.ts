@@ -71,7 +71,7 @@ class CredibilityService {
             .insert({
               report_id: reportId,
               user_id: userId,
-              validation_type: validationType
+              validation_type: validationType,
             });
 
           if (insertError) {
@@ -102,7 +102,7 @@ class CredibilityService {
           .insert({
             report_id: reportId,
             user_id: userId,
-            validation_type: validationType
+            validation_type: validationType,
           });
 
         if (error) {
@@ -165,7 +165,9 @@ class CredibilityService {
         .select('validation_type')
         .eq('report_id', reportId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       const confirmCount = data.filter(v => v.validation_type === 'confirm').length;
       const denyCount = data.filter(v => v.validation_type === 'deny').length;
@@ -173,7 +175,7 @@ class CredibilityService {
       return {
         confirmCount,
         denyCount,
-        totalValidations: data.length
+        totalValidations: data.length,
       };
     } catch (error) {
       console.error('Error getting validation stats:', error);
@@ -245,7 +247,7 @@ class CredibilityService {
   async updateUserVerificationLevel(userId: string, level: 'basic' | 'verified' | 'trusted'): Promise<boolean> {
     try {
       const updateData: any = {
-        verification_level: level
+        verification_level: level,
       };
 
       if (level !== 'basic') {
@@ -260,7 +262,9 @@ class CredibilityService {
         .update(updateData)
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error('Error updating user verification level:', error);
@@ -278,7 +282,7 @@ class CredibilityService {
       user_reputation?: number;
       created_at: string;
     },
-    validationStats?: { confirmCount: number; denyCount: number; totalValidations: number }
+    validationStats?: { confirmCount: number; denyCount: number; totalValidations: number },
   ): number {
     // If server-calculated score exists, use it
     if (report.credibility_score !== undefined) {
@@ -314,21 +318,21 @@ class CredibilityService {
         level: 'high',
         label: 'Highly Credible',
         color: '#10b981',
-        icon: '⭐'
+        icon: '⭐',
       };
     } else if (score >= 0.6) {
       return {
         level: 'medium',
         label: 'Moderately Credible',
         color: '#f59e0b',
-        icon: '⚖️'
+        icon: '⚖️',
       };
     } else {
       return {
         level: 'low',
         label: 'Low Credibility',
         color: '#ef4444',
-        icon: '⚠️'
+        icon: '⚠️',
       };
     }
   }
@@ -343,27 +347,27 @@ class CredibilityService {
     description: string;
   } {
     switch (level) {
-      case 'trusted':
-        return {
-          label: 'Trusted Reporter',
-          color: '#10b981',
-          icon: '⭐',
-          description: 'High reputation + accurate reporting history'
-        };
-      case 'verified':
-        return {
-          label: 'Verified User',
-          color: '#3b82f6',
-          icon: '✅',
-          description: 'Identity verified + activity history'
-        };
-      default:
-        return {
-          label: 'Basic User',
-          color: '#6b7280',
-          icon: '👤',
-          description: 'Email/phone verified'
-        };
+    case 'trusted':
+      return {
+        label: 'Trusted Reporter',
+        color: '#10b981',
+        icon: '⭐',
+        description: 'High reputation + accurate reporting history',
+      };
+    case 'verified':
+      return {
+        label: 'Verified User',
+        color: '#3b82f6',
+        icon: '✅',
+        description: 'Identity verified + activity history',
+      };
+    default:
+      return {
+        label: 'Basic User',
+        color: '#6b7280',
+        icon: '👤',
+        description: 'Email/phone verified',
+      };
     }
   }
 
@@ -377,7 +381,9 @@ class CredibilityService {
         .select('upvotes, downvotes')
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Calculate net upvotes: sum of (upvotes - downvotes) for all reports
       const netUpvotes = data.reduce((total, report) => {
@@ -419,7 +425,9 @@ class CredibilityService {
         .eq('user_id', userId)
         .single();
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        throw fetchError;
+      }
 
       const isEmailVerified = userData.email_verified || false;
       const currentLevel = userData.verification_level || 'basic';
