@@ -1,14 +1,29 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 
-const supabaseUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Debug environment variables
+console.log('🔧 Environment variables check:', {
+  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? '[PRESENT]' : '[MISSING]',
+  allEnvKeys: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')),
+});
+
+// Fallback for development if env vars are missing
+const fallbackUrl = 'https://nqwejzbayquzsvcodunl.supabase.co';
+const fallbackKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xd2VqemJheXF1enN2Y29kdW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTA0MjAsImV4cCI6MjA3Mzk2NjQyMH0.01yifC-tfEbBHD5u315fpb_nZrqMZCbma_UrMacMb78';
+
+const finalUrl = supabaseUrl || fallbackUrl;
+const finalKey = supabaseKey || fallbackKey;
 
 console.log('🔧 Supabase client initialization', {
-  url: supabaseUrl,
-  hasKey: !!supabaseKey,
-  keyLength: supabaseKey.length,
+  url: finalUrl,
+  hasKey: !!finalKey,
+  keyLength: finalKey.length,
   isNative: Capacitor.isNativePlatform(),
+  usedFallback: !supabaseUrl || !supabaseKey,
   timestamp: new Date().toISOString(),
 });
 
@@ -38,7 +53,7 @@ const capacitorStorageAdapter = {
   },
 };
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+export const supabase = createClient(finalUrl, finalKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
